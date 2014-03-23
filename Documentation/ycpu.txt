@@ -1,0 +1,1440 @@
+YCPU Specification
+Version 0.3a
+
+=============================[ Table of Contents ]==============================
+
+1.      Introduction
+1.A.        Public Domain Dedication
+2.      Hardware Information
+2.A.        Registers
+2.B.        Supervisor/User Modes
+2.C.        Hardware Devices
+2.D.        Interrupts
+2.E.        Addressing Modes
+2.F.        Memory Management
+2.G.        Boot Sequence
+2.H.        The Real Time Clock
+3.      Instructions
+3.A.        Bit Patterns
+3.B.        ALU Instructions
+3.C.        Bit Shifting Instructions
+3.D.        Bit Testing Instructions
+3.E.        Branch Instructions
+3.F.        FPU Operations
+3.G.        Interrupt Instructions
+3.H.        Jump & Call Instructions
+3.I.        Stack Instructions
+3.J.        Processor Function Instructions
+4.      History
+
+
+==============================[ 1. Introduction ]===============================
+The YCPU Specification describes an imaginary processor with a comprehensive
+instruction set and features that make it powerful and easy to program for. A
+modular hardware bus allows flexibility in extending the system.
+
+
+=======================[ 1.A. Public Domain Dedication ]========================
+This document is dedicated to the public domain under the terms of the Creative
+Commons Zero (CC0) waiver. All rights have been waived with regard to
+copyright law, including all related and neighboring rights, to the extent
+allowed by law.
+
+You can copy, modify, and distribute this document, and use it to create
+derivative works, even for commercial purposes, all without asking permission.
+
+More information about CC0 waiver is available online at: 
+http://creativecommons.org/about/cc0
+
+
+==========================[ 2. Hardware Information ]===========================
+The YCPU is a 16-bit imaginary processor. Internally, all registers and cache
+words are 16-bit, and the only addressable unit of memory is a 16-bit word.
+Although the processor does have a 32-bit external bus, all logical addresses
+are 16-bit, and thus an instruction can only address 64 kilowords of memory at
+any time. Any multi-word values are stored in little-endian format.
+
+The processor connects to devices via a universal hardware bus, which can host
+up to 256 devices.
+
+
+===============================[ 2.A. Registers ]===============================
+General Purpose Registers: R0-R7 (Also referenced as A,B,C,I,J,X,Y, and Z/SP)
+Flags register: FL
+Interrupt Address: IA
+IRQ Index: II
+Program Counter: PC
+Program Status: PS, P2
+Stack Pointer R7/Z/SP, consists of USP or SSP.
+
+
+2.A.1. GENERAL PURPOSE REGISTERS
+
+The processor has 8 general purpose 16-bit registers, which can be referenced as
+R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers can be
+used as both data and address registers, are interchangable and directly
+modified by most instructions.
+
+R0 has a special purpose in the following situations:
+    * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
+      If R0 is also the src/dest register, then the high 16-bits are lost, and
+      R0 will contain the low 16-bits after the instruction completes.
+      
+R7 is also used as the stack pointer for all stack operations.
+
+
+2.A.2. PROCESSOR STATUS REGISTERS
+
+The processor also has several specific purpose 16-bit registers. Unlike the
+general purpose registers, these are not generally accessible by most ALU
+addressing modes. The exception is the Stack Pointer (SP), which is also
+accessible as the eighth general purpose register, R7.
+    FL: The FLag register. This register contains flags that are set by ALU
+        operations.
+        The flags are as follows:
+        FEDC BA98 7654 3210
+        NZCV .... .... ....
+            [N]egative, [Z]ero, [C]arry, o[V]erflow
+         
+    IA: The Interrupt Address. This is the base address of the interrupt address
+        table, which is comprised of 16 words. IA is initialized to $0000.
+        
+    II: The IRQ Index. This is the bus index of the device that raised the last
+        hardware interrupt.
+    
+    PC: The Program Counter. Contains the address of the next instruction to
+        execute. It is incremented by 1 after executing an opcode that does
+        not reference a next word, or 2 after executing an opcode that does
+        reference a next word value.
+    
+    PS: The Processor Status. Setting or clearing bits in this register enables
+        and disables processor features. The bits are as follows:
+        FEDC BA98 7654 3210
+        SMIR QUWE .... ....
+            [S] -   [S]upervisor Mode enabled
+            [M] -   Memory [M]anagement enabled
+            [I] -   Hardware [I]nterrupts enabled.
+            [R] -   0: Load processor ROM bank $00 at $0000-$0FFF on interrupt.
+                    1: Load processor RAM bank $00 at $0000-$0FFF on interrupt.
+            [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
+            [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
+            [W] -   Bank Fault, Attempt to Write to Read-Only Memory
+            [E] -   Bank Fault, Attempt to Execute in Non-Execute Memory
+            
+    P2: Processor Status 2. Set during certain interrupts.
+    
+    SP: The Stack Pointer is the address of the first full stack space. It is
+        decremented before a stack value is pushed onto the stack, and is
+        incremented after a stack value is popped from the stack. Thus the
+        grows downward from its initial address, and should be initialized to
+        an address at (Stack Bottom + 1).
+            Stack push is internally implemented as: STO Rn, [-SP]
+            Stack pop is internally implemented as:  LOD Rn, [SP+]
+        
+        The processor has two different stack pointers - the Supervisor Stack
+        Pointer, or SSP, is used while the processor is in Supervisor mode, and
+        the User Stack Pointer, or USP, is used while the processor is not in
+        Supervisor mode. Thus, a program running in User mode can ruin the
+        stack, and the Supervisor mode stack will remain untouched. 
+
+        
+========================[ 2.B. Supervisor/User Modes ]==========================
+Supervisor mode is enabled when the S bit in the PS register is set, which is
+true on processor boot and whenever an interrupt is called. When the S status
+bit is clear, the processor is in User mode.
+
+In Supervisor mode, the processor:
+    * Can execute privileged opcodes.
+    * Can access Supervisor-only memory banks.
+    * Raises a 'Bank fault' interrupt on attempting to write to read-only
+      memory, or execute execute-protected memory.
+    * Can set and clear all bits in the process status registers.
+    * Has access to all Special Registers.
+    * Can directly access the hardware bus.
+    * Uses the Supervisor Stack Pointer (SSP).
+
+In User mode, the processor:
+    * Raises an 'Unprivileged opcode' interrupt on executing a privileged opcode.
+    * Raises a 'Bank fault' interrupt on attempting to read, write, or execute
+      supervisor-only memory, write to read-only memory, or execute
+      execute-protected memory.
+    * Cannot access any special registers.
+    * Cannot directly access the hardware bus.
+    * Uses the User Stack Pointer (USP).
+
+
+===========================[ 2.C. Hardware Devices ]============================
+All additional Devices connect to the processor through a modular Hardware Bus.
+This Hardware Bus can host up to 256 Devices. The processor can directly address
+memory banks exposed by the Devices, and can also directly communicate with a
+Device by executing a Hardware Query instruction. Devices can request the
+processor's attention by raising an interrupt.
+
+
+=============================[ 2.D. Interrupts ]================================
+An interrupt is a signal which indicates that an event requires immediate
+attention. Interrupts can be triggered by a hardware device, by software using
+the SWI opcode, or when the processor encounters an error state.
+
+
+2.D.1. HARDWARE INTERRUPTS
+
+A device on the CPU's hardware bus may request the CPU's attention by asserting
+an interrupt request (IRQ). While the Q status bit is clear and the I status bit
+is set, the processor checks for IRQs before executing every opcode. If a
+hardware device is asserting an IRQ when the processor checks, the processor
+will load the bus index of the first device on thus bus which is asserting an
+IRQ into the II register, and then raise the 'hardware interrupt' interrupt.
+
+Note that devices in lower index slots in the hardware bus always have
+priority over devices in higher index slots.
+
+
+2.D.2. SOFTWARE INTERRUPTS
+
+An interrupt may also be triggered by the SWI opcode. In this case, the
+processor will raise the 'software interrupt' interrupt vector, and the code
+at that interrupt must determine what function has been requested, based on the
+contents of the registers. Like hardware interrupts, software interrupts will
+not be acknowledged by the CPU if the I status bit is clear, but will be called
+regardless of the status of the Q status bit, allowing interrupts to call other
+interrupts.
+
+    
+2.D.3. OTHER INTERRUPTS
+
+The processor can also raise interrupts on its own, in response to error
+states. These interrupts are named and described in the Interrupt Vector Table,
+below.
+
+    
+2.D.4. THE INTERRUPT SEQUENCE
+
+When an interrupt is raised, the processor halts the current executing process.
+It then executes the following sequence:
+    1.  Save the current PS value to a temporary value.
+    2.  Set the S status bit. Clear the M status bit.
+        The processor is now in Supervisor mode, with the MMU disabled.
+    3.  If this is a hardware interrupt, the Q status bit will be set. This
+        blocks other hardware interrupts from occuring while the current
+        interrupt is being processed.
+    4.  Push the saved value of PS to the Stack.
+    5.  Push PC to the Stack.
+    6.  Set PC to Mem[HWI].
+    7.  Execution continues.  
+
+For the interrupts which are raised by an error condition, the PC is rewound to
+the instruction that *caused* the the interrupt. Interrupts raised by error
+conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
+BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
+interrupts, the PC is unchanged, pointing to the address following the
+instruction the processor was executing immediately prior to the interrupt.
+
+
+2.D.5. RETURNING FROM AN INTERRUPT
+
+When an interrupt handler ends, it should call RTI, which restores the values of
+PS and PC. If the MMU was enabled before, the processor's memory space will be
+restored as well.
+
+If an interrupt handler modifies a register or changes the MMU cache, it should
+save that register before doing so, and restore the register before ending the
+interrupt handler.
+
+The RTI instruction follows this sequence:
+    1.  Pop PC from the Stack.
+    2.  Pop PS from the Stack.
+        Note that bits Q, U, W, and E are cleared on RTI.
+    3.  Execution Continues.
+    
+
+2.D.6. THE INTERRUPT VECTOR TABLE
+
+There are 16 interrupts in the Interrupt Vector Table. The software interrupt
+is raised by the instruction SWI, and the Hardware Interrupt is raised by a 
+hardware which asserts an interrupt request. All other interrupts are raised
+by the processor itself on specified error states. The 16 interrupts are:
+
+Idx Name            Description
+$0  Reset           Raised when the processor's RESET line is pulled high.
+                    The processor will follow the boot sequence (See 2.G.).
+$1  Clock           Raised when the processor's Real Time Clock ticks. The tick
+                    rate can be set by writing to the RTC register.
+$2  DivideByZero    Raised when the processor executes a division or modulus
+                    opcode where the operand containing the denominator is zero.
+$3  FPUError        Raised when the processor executes a floating point
+                    operation that fails due to bad input.
+$4  StackFault      Raised when the processor executes a Pull opcode with SP 
+                    equal to the high-value limit of the Stack, or the processor 
+                    executes a Push opcode with SP equal to the low-value limit 
+                    of the Stack.
+                    Note that limits to the Stack are not yet included in this
+                    Specification.
+$5  BankFault       Raised when the processor attempts to read, write, or 
+                    execute an address within a Bank which has been protected 
+                    from these operations. The UWE bits in the PS register will 
+                    describe the error, and the P2 register will contain the 
+                    memory address that the processor attempted to access.
+$6  UnprivOpcode    Raised when the processor attempts to execute a privileged
+                    opcode while in User mode.
+$7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
+                    opcode.
+$8  RESERVED        Not currently used, never raised.
+$9  RESERVED        Not currently used, never raised.
+$A  RESERVED        Not currently used, never raised.
+$B  RESERVED        Not currently used, never raised.
+$C  HWI             A device on the Hardware Bus has requested an interrupt.
+                    II = bus index of the requesting device.
+$D  BusRefresh      Raised when the hardware on the bus has changed. Note that
+                    all hardware ids at this point may be invalidated.
+$E  DebugQuery      Raised when the processor's DEBUG line is pulled high.
+$F  SWI             Raised by the SWI opcode.
+
+
+===========================[ 2.E. Addressing Modes ]============================
+Any instruction which requires source data can can access that data using one
+of eight addressing modes. 
+
+Addressing Mode     Syntax      Value is...
+Immediate           $1234       Value of Next Word
+Register            R           Value of Register
+Indirect            [R]         Mem[R]
+Indirect Offset     [R,$1234]   Mem[R + Next Word]
+Absolute Offset     [$1234,R]   Mem[R + Next Word] /// Same as Indirect Offset
+Indirect Post-inc   [R+]        Mem[R], R is post-incremented.
+Indirect Pre-dec    [-R]        Mem[R], R is pre-decremented.
+Indirect Indexed    [R,R]       Mem[R+R]
+
+
+=========================[ 2.F. Memory Management ]=============================
+Because the processor has a 16-bit logical address space, it can only address
+$10000 words of linear address space at a time. This limited address space is
+augmented by the processor's integrated memory management unit (MMU) which,
+when enabled, provides virtual address translation.
+
+
+2.F.1. ADDRESS SPACE WHEN THE MMU IS DISABLED
+
+While the 'Memory Banking' status bit is clear, the MMU is disabled, and the
+processor's address space is mapped as follows:
+    Bank $0 - If R status bit is clear, Internal ROM Bank $00
+              If R statis bit is set, Internal RAM Bank $00
+    Bank $1 - Internal RAM Bank $01
+    Bank $2 - Internal RAM Bank $02
+        ...
+    Bank $E - Internal RAM Bank $0E
+    Bank $F - Internal RAM Bank $0F
+
+    
+2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED
+    
+While the 'Memory Banking' status bit is set, the MMU is enabled, and will
+translate memory references to physical addresses. It does so by dividing the
+processor's virtual address space into 16 banks of 4 kilowords each. The high
+four bits of the virtual address select the bank of memory that is accessed,
+and the low twelve bits of the virtual address select a word of memory within
+that bank.
+
+
+2.F.3. THE MMU CACHE
+
+The MMU has 32 words of internal cache that describe the 16 banks currently
+loaded into the virtual address space. Each pair of words describes the
+physical address that is mapped to a single MMU bank. 
+
+Word $00___________     Word $01___________
+FEDC BA98 7654 3210     FEDC BA98 7654 3210
+bbbb bbbb bbbb bbbb     SWEH AP.. .... bbbb
+
+    S - Supervisor only flag:
+        0:  User mode and Supervisor mode may access this bank.
+        1:  User mode accesses to this bank cause a bank fault.
+    W - Write protection flag:
+        0:  Write operations to this bank will succeed.
+        1:  Writing to this bank will fail and cause a bank fault.
+    E - Execute protect flag:
+        0:  The processor can execute opcodes within this bank.
+        1:  Execution of opcodes while PC is in this bank raises a bank fault.
+    H - Hardware bank flag:
+        0:  This bank is taken from the internal processor address space.
+        1:  This bank is taken from a device on the hardware bus.
+    A - Access flag:
+        This bit is set every time this bank is written to.
+    P - Not present flag:
+        If this bit is set, any access to this bank will raise a bank fault.
+    b - These bits determine the bank of memory that is mapped to this bank of
+        virtual address space. If the 'H' bit is clear, this bank is mapped to
+        RAM or ROM internal to the processor. If the 'H' bit is set, then this
+        bank is mapped to a memory bank within a hardware device.
+
+        
+2.F.4. ADDRESS TRANSLATION
+
+Counting the 'H' bit, which selects internal vs external physical addresses, the
+MMU has access to 33 bits of physical address space. A physical address is thus:
+
+        H   FEDC BA98 7654 3210     FEDC BA98 7654 3210
+        h   bbbb bbbb bbbb bbbb     bbbb aaaa aaaa aaaa
+
+Where 'H' is the 'hardware select' bit (bit $1C in the mmu cache entry for the 
+current bank), the 20 'b' bits are the bank select bits taken from the same mmu
+cache entry, and 'a' is the 12-bit address of a single word within that bank.
+
+If the 'H' bit is clear, the 20 'b' bits reference an internal processor bank of
+RAM or ROM. These banks are selected by these indexes:
+    Index           Description
+    $00000-$7FFFF   One of 16 internal RAM banks, with index = (b & 0x0000F).
+    $80000-$FFFFF   One of 16 internal ROM banks, with index = (b & 0x0000F).
+
+If the 'H' bit is set, the 20 'b' bits reference a bank of RAM or ROM from a
+device on the hardware bus. The uppermost 8 'b' bits (bits $0C-$13 in the MMU
+cache entry) are the 8 bit hardware bus index, and the lower 12 'b' bits (bits
+$00-$0B) are the bank index within the hardware device. Thus, the maximum number
+of banks which a single hardware device can make available is 2^12 = 4096 banks,
+comprising a total of 16 mega words of memory.
+
+
+2.F.5. BANK FAULTS
+
+When a bank fault is raised, the processor status bits U, W, and E will describe
+the operation that caused the bank fault:
+        U W E   Bank Fault Type
+        0 0 0   Bank not present
+        0 0 1   Attempted execution of execute-protected memory.
+        0 1 0   Attempted supervisor write of write-protected memory.
+        1 0 0   Attempted user read of supervisor-only memory.
+        1 1 0   Attempted user write of supervisor-only memory.
+
+Note that writes to ROM banks will fail silently unless the MMU is enabled and
+the write-protect bit is set, which will generate a bank fault.
+        
+============================[ 2.G. Boot Sequence ]==============================
+At initial power on, the state of all memory, registers, and cache is unknown.
+The processor raises the RESET interrupt at power on, which puts the processor
+in the following known state:
+
+    RTC Tick <- Disabled            ; RTC will not raise interrupts.
+    PS <- $8000                     ; Supervisor mode is enabled, all other
+                                    ; processor features disabled.
+    IA <- $0000                     ; Interrupt vector table begins at $0000
+    PC <- [InterruptTable[$0]]      ; Execute 'RESET' interrupt code.
+
+Because Memory Banking is disabled, the processor's virtual address space is set
+up as follows: $0000-$0FFF is processor ROM $0000-$0FFF, and $1000-$FFFF is 
+processor RAM $1000-$FFFF. This is discussed in further detail in 2.F.1., infra.
+    
+
+=========================[ 2.H. The Real Time Clock ]===========================
+The processor contains an integrated Real Time Clock (RTC). The RTC maintains
+and updates its internal time data indefinitely, even when the processor is
+powered down. The processor can query the RTC for the current time.
+
+2.H.1. RTC Date/Time data
+
+The clock provides time data with the following precision:
+    Year:    8 bits (0-255)
+    Month:   4 bits (0-11)
+    Day:     5 bits (0-31)
+    Hour:    5 bits (0-23)
+    Minute:  6 bits (0-59)
+    Second:  6 bits (0-59)
+    M.Sec.: 12 bits (0-1000)
+    
+This data is saved to R0-R3 upon calling HWQ $04, in this format:
+
+                                                    FEDC BA98 7654 3210
+                    R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
+                    R1: 5 bits Day, 5 bits Hour     ...D DDDD ...h hhhh
+                    R2: 6 bits Min, 6 bits Second   ..mm mmmm ..ss ssss
+                    R3: 16 bits Tick                .... tttt tttt tttt
+                    
+2.H.2. The CLOCK interrupt
+    
+The RTC also provides a CLOCK interrupt, which can be enabled, disabled, and the
+frequency of which can be specified. When the RTC interrupt is enabled, the RTC
+will raise the CLOCK interrupt at an interval which is specified by the
+processor. The RESET interrupt disables the RTC.
+
+The processor can set the desired interrupt interval by calling HWQ $03, with an
+input value in R0. If R0 is $FFFF, the interupt will be disabled. Otherwise, 
+the CLOCK interrupt will be raised at a rate of (2 ^ (R0)) times per second.
+
+Note that the maximum tick rate is capped at 1024.
+
+    
+==============================[ 3. Instructions ]===============================
+Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
+0000 0AAA   LOD                 ALU             Load                        1
+0000 1AAA   STO                 ALU             Store                       1
+0001 0AAA   ADD                 ALU             R = R + M                   1
+0001 1AAA   SUB                 ALU             R = R - M                   1
+0010 0AAA   ADC                 ALU             R = R + M + C               1
+0010 1AAA   SBC                 ALU             R = R - M - (1 - C)         1
+0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)       1    
+0011 1AAA   DIV                 ALU             R = R / M                   32
+0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b)1
+0100 1AAA   DVI                 ALU             R = R / M (signed)          32
+0101 0AAA   MOD                 ALU             R = R % M (modulus)         32
+0101 1AAA   MDI                 ALU             R = R % M (modulus, signed) 32
+0110 0AAA   AND                 ALU             Bitwise and                 1
+0110 1AAA   ORR                 ALU             Bitwise or                  1
+0111 0AAA   EOR                 ALU             Bitwise exclusive or        1    
+0111 1AAA   NOT                 ALU             Bitwise not                 1
+
+1000 0AAA   CMP                 ALU             Compare R and M, sets FL    1
+1000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1    
+1001 0bbb   Bxx                 BRA             Branch operations           1
+1001 1bbb   Bxx                 BRA             Branch operations           1
+1010 0000   ASL                 SHF             Arithmatic Shift left       1
+1010 0001   LSL                 SHF             Logical Shift Left          1
+1010 0010   ROL                 SHF             Rotate Through-Carry Left   1
+1010 0011   RNL                 SHF             Rotate No-Carry Left        1
+1010 0100   ASR                 SHF             Arithmatic Shift Right      4
+1010 0101   LSR                 SHF             Logical Shift Right         4
+1010 0110   ROR                 SHF             Rotate Through-Carry Right  1
+1010 0111   RNR                 SHF             Rotate No-Carry Right       1
+1010 1000   BIT                 BIT             Test a bit                  2
+1010 1001   BTX                 BIT             Test a bit and change it    2
+1010 1010   BTC                 BIT             Test a bit and clear it     2
+1010 1011   BTS                 BIT             Test a bit and set it       2    
+1010 1100   SWO                 SWO             Switch Octet                1
+1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
+1010 1110   SEF                 FLG             Set flag bit                1
+1010 1111   CLF                 FLG             Clear flag bit              1
+1011 00xx   PSH                 PSH             Push to stack               1
+1011 01xx   POP                 PSH             Pop from stack              1
+1011 1000   INC/ADI             INC             Inc / Add immediate         1
+1011 1001   DEC/SBI             INC             Dec / Subtract immediate    1
+1011 1010   TSR         X       TSR             Special Purpose Reg -> Rx   1
+1011 1011   TRS         X       TSR             Rx -> Special Purpose Reg   1
+1100 1100   MMR         X       MMU             Read from MMU               1
+1100 1101   MMW         X       MMU             Write to MMU                1
+1100 1110   MML         X       JMP             MMU State Load (MMU->Mem)   16
+1100 1111   MMS         X       JMP             MMU State Store (Mem->MMU)  16
+
+1100 0000   JMP                 JMP             Jump                        1
+1100 0001   JSR                 JMP             Jump to Subroutine          2
+1100 0010   JUM         X       JMP             Jump and enter User Mode    32
+1100 0011   JCX         X       ---             Jump and Switch Context     64
+1100 0100   HWQ         X       HWQ             Hardware Bus Query          1
+1100 0101   SLP         X       ---             Sleep until Interrupt       1
+1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
+1100 0111   RTI         X       ---             Return from Interrupt       48
+1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)
+1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)
+111x xxxx   ---                 ---             UNDEFINED (32 opcodes)
+
+There are 63 remaining uspecified opcodes. These remaining unspecified opcodes
+will raise the 'undefined' interrupt on execution.
+
+
+============================[ 3.A. Bit Patterns ]===============================
+ALU Bit Pattern
+    FEDC BA98 7654 3210                             
+    RRRr rrii AAAO OOOO
+        O = Opcode
+        A = Addressing Mode
+        r = First Operand/Destination Register
+        v = Second Operand Register
+        i = Index Register (lower 2 bits, high bit in bit 7)
+    
+    RRRr rrii OOOO OAAA     Addressing Mode     Example Syntax          Cycles
+    RRR. ....       000     Immediate           ADD R0, $1234           +1
+    RRRr rr..       001     Register            ADD R0, R1              
+    RRRr rr..       010     Indirect            ADD R0, [R1]            
+    RRRr rr..       011     Indirect Offset     ADD R0, [R1,$1234]      +1
+    RRRr rr..       011     Absolute Offset     ADD R0, [$1234,R1]      +1
+    RRRr rr..       100     Indirect PostInc    ADD R0, [R1+]           
+    RRRr rr..       101     Indirect PreDec     ADD R0, [-R1]           
+    RRRr rrII       110     Indirect Indexed    ADD R0, [R1,R2]         
+    RRRr rrII       111     Indirect Indexed    ADD R0, [R1,R2]         
+    
+BIT Bit Pattern
+    FEDC BA98 7654 3210
+    RRRb bbbT OOOO OOcc
+        O = Opcode
+        c = Condition
+            00 = test a bit
+            01 = test a bit and change
+            10 = test a bit and clear
+            11 = test a bit and set
+        r = register to test
+        T = 0: test bit with value = b ($0 - $f)
+            1: test bit with value = (Rx & $0F) - (bbbb used as rrr.o00i)
+
+BRA Bit Pattern
+    FEDC BA98 7654 3210                        
+    oooo oooo OOOO Occc                    
+        O = opcode
+        o = signed 8-bit offset
+        c = condition (See 3.E. 'Branch Operations')
+     
+FLG Bit Pattern
+    FEDC BA98 7654 3210
+    NZCV .... OOOO OOOO
+        O = Opcode
+        N = Negative flag bit
+        Z = Zero flag bit
+        C = Carry flag bit
+        V = oVerflow flag bit
+        
+FPU Bit Pattern
+    FEDC BA98 7654 3210
+    RRRr rroo OOOO OOOO
+        O = Opcode
+        o = Sub-opcode, 00: Add, 01: Subtract, 10: Multiply, 11: Divide 
+        r = general purpose register used as address for Ry
+        R = general purpose register used as address for Rx
+        
+HWQ Bit Pattern
+    FEDC BA98 7654 3210
+    iiii iiii OOOO OOOO
+        O = Opcode
+        i = Index of bus query operation
+            Index   Operation
+            $00     Bus Device Count. R0 = # of devices attached to bus.
+            $01     Bus Device Query. R0-R3 are set with information about the
+                    device at Bus index = R0
+                    R0: Manufacturer ID
+                    R1: Device ID
+                    R2: Device Version
+                    R3: Device Type
+            $02     Bus Device Message. Send a message to device at bus index =
+                    R0, with parameters in R1-R3, and possibly in memory if a
+                    register is a pointer.
+            $03     Set RTC data based on the value of R0.
+                    See 2.H.2. for the input format of R0.
+            $04     Gets RTC data in R0-R3.
+                    See 2.H.1. for the format of the data. 
+    
+JMP Bit Pattern
+    FEDC BA98 7654 3210 
+    AAAr rrii OOOO OOOO
+        O = Opcode
+        A = Addressing mode
+        r = Source register
+        i = Index Register (lower 2 bits, high bit in bit 7)
+        
+    AAAr rrii OOOO OOOO     Addressing Mode     Syntax              Cycles
+    000. ....               Immediate           JMP $1234           +1
+    001r rr..               Register            JMP R1              
+    010r rr..               Indirect            JMP [R1]            
+    011r rr..               Indirect Offset     JMP [R1,$1234]      +1
+    100r rr..               Indirect PostInc    JMP [R1+]           
+    101r rr..               Indirect PostDec    JMP [-R1]           
+    110r rrii               Indirect Indexed    JMP [R1,R2]         
+    111r rrii               Indirect Indexed    JMP [R1,R2]         
+    
+INC Bit Pattern
+    FEDC BA98 7654 3210
+    RRRv vvvv OOOO OOOO
+        O = Opcode
+        r = register to be incremented
+        v = value to increment register by (5-bit value + 1, range of $01-$20)
+
+MMU Bit Pattern
+    FEDC BA98 7654 3210 
+    RRRr rr.. OOOO OOOO
+        O = Opcode
+        r = register containing value to write/destination for value read
+        R = register containing index of MMU word to read from/write to (0-31)
+            
+PSH Bit Pattern
+    FEDC BA98 7654 3210                        
+    rrrr rrrr OOOO OPfp
+        O = Opcode
+        P = 0: push, 1: pop
+        r = push general purpose registers with indexes = (bit# - 8)
+            Current Stack Pointer (USP / SSP) is used as R7
+        f = push FL register
+        p = push PC register
+
+SHF Bit Pattern
+    FEDC BA98 7654 3210 
+    rrr. ssss OOOO ODoo
+        O = Opcode
+        o = Sub-Opcode
+            00 = ASx, 01 = LSx, 10 = ROx, 11 = RNx
+        D = direction
+            0 = L, 1 = R
+        r = register to shift
+        s = bits to shift (0-15)
+        
+SWO Bit Pattern
+    FEDC BA98 7654 3210
+    RRRr rroo OOOO OOOO
+        O = Opcode
+        r = source register
+        R = dest register
+        o = operation
+            00: src low octet -> dest low octet, clear dest upper 8 bits.
+            01: src high octect -> dest low octet, clear dest upper 8 bits.
+            10: src low octect -> dest low octet, preserves dest upper 8 bits.
+            11: src low octect -> dest high octect, preserves dest lower 8 bits.
+        
+TSR Bit Pattern
+    FEDC BA98 7654 3210                        
+    RRRi iiii OOOO OOOO
+        O = opcode
+        w = 0: Read, 1: Write
+        R = register index to read to or write from.
+        i = Index of special register
+            Index   R/W Result          Supervisor only?
+            0x00    R   Rx = PC         
+                    W   PC = Rx         
+            0x01    R   Rx = IA         X
+                    W   IA = Rx         X
+            0x02    R   Rx = USP        X
+                    W   USP = Rx        X
+            0x03    R   Rx = II         X
+                    W   II = Rx         X
+            0x04    R   Rx = PS         
+                    W   PS = Rx         X
+            0x05    R   Rx = P2         X
+                    W   P2 = Rx         X
+            Undefined specials have no functionality, but are supervisor only.
+            R0 is unchanged.
+
+            
+===========================[ 3.B. ALU Instructions ]============================
+
+ADC         Add value to register with carry
+Operation:  Rx + M + C -> Rx, C
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+
+
+ADD         Add value to register, carry is ignored.
+Operation:  Rx + M -> Rx, C
+For small immediate values, ($01-$20), ADD should be replaced with ADI.
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+
+
+ADI         Add immediate value to register, carry is ignored.
+Operation:  Rx + M -> Rx, C
+M is a 5-bit value + 1, for a range of ($01-$20).
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+AND         Bitwise AND register with value
+Operation:  Rx & M -> M
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+CMP         Compares register with value and sets appropriate flags
+Operation:  Z,C,N,V = Rx - M
+    N [Negative] Set if Rx >= M (signed)
+    Z [Zero] Set if Rx == M.
+    C [Carry] Set if Rx >= M (unsigned)
+    V [Overflow] Not effected.
+
+
+DEC         Decrement register by 1.
+Operation:  Rx + M -> Rx, C
+This operation is an assembler macro for SBI Rx,#$01
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+DIV         Unsigned Divide register by value
+Operation:  Rx / M -> Rx
+If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+    N [Negative] Always cleared.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+DVI         Signed divide of register by value
+Operation:  Rx / M -> Rx
+If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+    N [Negative] Set if bit 15 of Rx is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Set if 0x8000 / 0xFFFF is attempted, Rx = 0x8000
+
+EOR         Bitwise Exclusive OR of register with value
+Operation:  Rx ^ M -> Rx
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+    
+    
+INC         Increment register by 1.
+Operation:  Rx + M -> Rx, C
+This operation is an assembler macro for ADI Rx,#$01
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+
+    
+LOD         Loads a value into a specified register
+Operation:  M -> Rx
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+    
+MDI         Signed modulus of register by value.
+Operation:  Rx % M -> Rx
+Sign of the result is the same as the sign of the dividend.
+If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+MLI         Signed 16b register X 16b value with 32b result.
+Operation:  Rx * M -> Rx,R0
+R0 is set to the high 16-bits of the result before Rx is set with the low
+16-bits of the result. If Rx and R0 are the same, R0 will equal the low
+16-bits of the result, and the high 16-bits will be lost.
+    N [Negative] Set if bit 15 of the high 16-bits is set.
+    Z [Zero] Set if both the high 16-bits and Rx == 0.
+    C [Carry] Set if high 16-bits != 0.
+    V [Overflow] Not effected.
+
+
+MOD         Modulus of register by value.
+Operation:  Rx % M -> Rx
+If a divide by zero is attempted, interrupt 0x03 is raised.
+    N [Negative] Set if bit 15 of Rx is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+MUL         Unsigned 16b register X 16b value with 32b result.
+Operation:  Rx * M -> Rx,R0
+R0 is set to the high 16-bits of the result before Rx is set with the low
+16-bits of the result. If Rx and R0 are the same, R0 will equal the low
+16-bits of the result, and the high 16-bits will be lost.
+    N [Negative] Always cleared.
+    Z [Zero] Set if the high 16-bits and Rx == 0.
+    C [Carry] Set if high 16-bits != 0.
+    V [Overflow] Not effected.
+
+
+NEG         Changes the sign of a value, stores result in Source Reg.
+Operation:  NEG(M) -> Rx
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Set if input value is 0x8000, Rx = 0x8000;
+
+
+NOT         Bitwise NOT of value, stores result in Source Reg.
+Operation:  !M -> Rx
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+ORR         Bitwise OR of register with value.
+Operation:  Rx | M -> Rx
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+    
+    
+SBC         Subtract value from register, with carry.
+Operation:  Rx - M - (1-C) -> Rx, C
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+SBI         Subtract immediate value from register, carry is ignored.
+Operation:  Rx + M -> Rx, C
+M is a 5-bit value + 1, for a range of ($01-$20).
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+
+
+STO         Stores the value of a register into another register or memory
+Operation:  Rx -> M
+NOTE:   Immediate and Register addressing is not available with STO opcodes.
+        Thus the two opcodes that would code for STO with these addressing
+        modes are UNDEFINED.
+        STO Rx, Ry is an assembler macro for LOD Ry, Rx
+    N [Negative] Not effected.
+    Z [Zero] Not effected.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+	
+	
+SUB         Subtract value from register, ignoring carry.
+Operation:  Rx - M -> Rx, C
+For small immediate values, ($01-$20), SUB should be replaced with SBI.
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+=======================[ 3.C. Bit Shifting Instructions ]=======================
+All bit-shifting operations must specify the number of bits to be shifted. This
+number is a 4-bit number from ($00 - $0F). If the number of bits to shift is
+specified as $00, then no shift takes place, but flags are still effected.
+
+
+ASL         Arithmetic Shift Left
+Shifts all the bits of Rx X bits to the left. The leftmost X bits are set to 0.
+The carry flag is set if any bits shifted out were 1, otherwise clear. The
+result is that Rx is multiplied by 2^X, treating Rx as an unsigned word, and
+setting the carry flag if the result does not fit in 16 bits.
+Operation:  
+    N [Negative]    Set if bit 15 of the result is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set if any bits shifted out were 1, otherwise clear.
+                    Clear on shift zero.
+    V [Overflow]    Not effected.
+    
+    
+ASR         Arithmetic Shift Right
+Shifts all the bits of Rx X bits to the right. The rightmost X bits are copied
+from the old bit 15. The carry flag is set if any bits shifted out were 1,
+otherwise clear. The result is that Rx is divided by 2^X, treating Rx as a
+signed word, and setting the carry flag if the result does not fit in 16 bits.
+For positive values, this operation will divide towards 0; for negative values,
+this operation will divide towards -1.
+Operation:  
+    N [Negative]    Set if bit 15 is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set if any bits shifted out were 1, otherwise clear.
+                    Clear on shift zero.
+    V [Overflow]    Set if input != $FFFF (-1), and output == $FFFF.
+    
+   
+LSL         Logical Shift Left
+This operation is equivalent to ASL.
+Operation:  
+    N [Negative]    Set if bit 15 of the result is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set if any bits shifted out were 1, otherwise clear.
+                    Clear on shift zero.
+    V [Overflow]    Not effected.
+    
+    
+LSR         Logical Shift Right
+Shifts all the bits of Rx X bits to the right. The rightmost X bits are set to
+zero. The carry flag is set if any bits shifted out were 1, otherwise clear. The
+result is that Rx is divided by 2^X, treating Rx as an unsigned word, and
+setting the carry flag if the result does not fit in 16 bits.
+Operation:  
+    N [Negative]    Set if bit 15 of the result is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set if any bits shifted out were 1, otherwise clear.
+                    Clear on shift zero.
+    V [Overflow]    Not effected.
+    
+    
+RNL         Rotate No-Carry Left
+Rorate all of the bits in Rx X bits to the left, without using the carry bit.
+Operation:  
+    N [Negative]    Set if bit 15 is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Not effected.
+    V [Overflow]    Not effected.
+    
+    
+RNR         Rotate No-Carry Right
+Rorate all of the bits in Rx X bits to the right, without using the carry bit.
+Operation:  
+    N [Negative]    Set if bit 15 is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Not effected.
+    V [Overflow]    Not effected.
+    
+    
+ROL         Rotate Through-Carry Left
+Rorate all of the bits in Rx X bits to the left, through carry.
+Operation:  
+    N [Negative]    Set if bit 15 is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set to the contents of the old bit (16-X).
+                    Not effected on shift of zero.
+    V [Overflow]    Not effected.
+    
+    
+ROR         Rotate Through-Carry Right
+Rorate all of the bits in Rx X bits to the right, through carry.
+Operation:  
+    N [Negative]    Set if bit 15 is set.
+    Z [Zero]        Set if Rx == 0.
+    C [Carry]       Set to the contents of the old bit (X-1).
+                    Not effected on shift of zero.
+    V [Overflow]    Not effected.
+  
+  
+======================[ 3.D. Bit Testing Instructions ]=========================
+
+BIT         Test a bit
+Operation:  Rx{B} -> Z, C
+    N [Negative] Not effected.
+    Z [Zero] Set if Rx{B} is clear, clear otherwise.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+BTX         Test a bit and change it
+Operation:  !Rx{B} -> Rx{B}, Z, C
+    N [Negative] Not effected.
+    Z [Zero] Set if old Rx{B} was clear, clear otherwise.
+    C [Carry] Set if new Rx{B} is set.
+    V [Overflow] Not effected.
+
+    
+BTC         Test a bit and clear it
+Operation:  Rx{B} -> Rx{B}, Z, C
+    N [Negative] Not effected.
+    Z [Zero] Set if old Rx{B} was clear, clear otherwise.
+    C [Carry] Set if old Rx{B} != new Rx{B}.
+    V [Overflow] Not effected.
+
+    
+BTS         Test a bit and set it
+Operation:  !Rx{B} -> Rx{B}, Z, C
+    N [Negative] Not effected.
+    Z [Zero] Set if old Rx{B} was clear, clear otherwise.
+    C [Carry] Set if old Rx{B} != new Rx{B}.
+    V [Overflow] Not effected.
+    
+  
+=========================[ 3.E. Branch Instructions ]===========================
+ccc0 0011   BXX
+    000 = BCC / BLU, Branch on carry clear AKA Less Than Unsigned
+    001 = BCS / BHU, Branch on carry set AKA Higher Than or Same Unsigned  
+    010 = BNE, Branch on zero clear
+    011 = BEQ, Branch on zero set
+    100 = BPL / BLS, Branch on negative clear AKA Less Than Signed
+    101 = BMI / BHS, Branch on negative set AKA Higher Than Or Same Signed
+    110 = BVC, Branch on overflow clear
+    111 = BVS, Branch on overflow set
+    
+    
+ccc1 0011   BXX
+    000 = BGU, Branch on greater than Unsigned
+    001 = BGS, Branch on greater than Signed
+    010 = BAW, Branch on less than or equal [signed]
+    011 = Undefined
+    100 = Undefined
+    101 = Undefined
+    110 = Undefined
+    111 = Undefined
+
+    
+===========================[ 3.F. FPU Instructions ]============================
+This section describes the four FPU Instructions, which allow direct operations
+on single precision (32-bit) floating point numbers. The number format used is
+the IEEE 754-1985 'Single', which specifies a number having:
+    1 Sign bit
+    8 Exponent bits
+    24 Fraction bits (23 explicitly stored)
+    
+These numbers are stored in memory as little-endian:
+    
+    Word $00___________     Word $01___________
+    FDEC BA98 7654 3210     FDEC BA98 7654 3210
+    ssss ssss ssss ssss     SEEE EEEE Esss ssss
+    
+    
+3.F.1. FRACTION BITS
+The implicit binary radix decimal is to the left of the fraction, so that the
+value in the fraction is always less than 1 in magnitude. Normalization would
+cause the first bit to the right of the radix point to be 1, such that the
+fractional value is always between 0.5 and 1.0. Therefore this bit need not be
+represented directly, thus achieving an extra 1 bit of fraction.
+
+
+3.F.2. EXPONENT BITS
+The 8-bit Exponent bits (bits 14 to 7 of the high word) allow exponent values
+between -128 and 127.
+
+If the actual value of the exponent is equal to -128, meaning a total value,
+including the fraction, of less than 2^-128, the floating point will be assumed
+to be zero, regardless of the sign or fraction bits. The hardware will generate
+a clean zero value, consisting of a 32-bit word of all zeros.
+
+
+3.F.3. FPU REGISTERS
+There are no pre-assigned registers for Floating Point operations. Two general
+purpose registers (r0-r7) are used as pointers to specify addresses in virtual
+memory. The contents of this register is used to locate the floating point
+operands and result as follows:
+
+    [Rx]    = B operand, low 16-bits
+    [Rx+1]  = B operand, high 16-bits
+    [Ry]    = A operand, low 16-bits
+    [Ry+1]  = A operand, high 16-bits
+
+After the operation, the result is stored on the stack as follows:
+    [SP]    = Result, low 16-bits
+    [SP+1]  = Result, high 16-bits.
+    
+    
+3.F.4. FLOATING POINT ERRORS
+Should an error occur (ex. divide by zero), the processor will raise the
+FPUERROR interrupt. The Flags register will be set as follows:
+    N [Negative] Clear.
+    Z [Zero] Clear.
+    C [Carry] Set if divide by zero, clear otherwise.
+    V [Overflow] Clear.
+    
+    
+3.F.5. FLOATING POINT INSTRUCTIONS
+
+FPA Floating-Point Addition
+The processor adds two 32-bit floating point numbers.
+Syntax:     FPA [Rx], [Ry]
+Operation:  FP.{[Rx],[Rx+1]} + FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
+    N [Negative] Set if result is < 0, clear otherwise.
+    Z [Zero] Set if result is == 0, clear otherwise.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+FPD Floating-Point Division
+The processor divides 32-bit floating point number [Rx] by [Ry].
+Syntax:     FPD [Rx], [Ry]
+Operation:  FP.{[Rx],[Rx+1]} / FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
+    N [Negative] Set if result is < 0, clear otherwise.
+    Z [Zero] Set if result is == 0, clear otherwise.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+FPM Floating-Point Multiplication
+The processor multiplies two 32-bit floating point numbers.
+Syntax:     FPM [Rx], [Ry]
+Operation:  FP.{[Rx],[Rx+1]} * FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
+    N [Negative] Set if result is < 0, clear otherwise.
+    Z [Zero] Set if result is == 0, clear otherwise.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+FPS Floating-Point Subtraction
+The processor subtracts 32-bit floating point number [Ry] from [Rx].
+Syntax:     FPS [Rx], [Ry]
+Operation:  FP.{[Rx],[Rx+1]} - FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
+    N [Negative] Set if result is < 0, clear otherwise.
+    Z [Zero] Set if result is == 0, clear otherwise.
+    C [Carry] Not effected.
+    V [Overflow] Not effected.
+
+
+
+=======================[ 3.G. Interrupt Instructions ]==========================
+
+RTI         Return from Interrupt
+Returns from an interrupt.
+See 2.D.5. for a description of this opcode's function.
+  
+  
+SWI         Call Software Interrupt
+Raises SOFTWARE INTERRUPT.
+See 2.D.4. for a description of this opcode's function.
+    
+    
+======================[ 3.H. Jump & Call Instructions ]=========================
+
+JCX         Unconditional Jump and change Context
+    1. A pointer to a 32-word array of MMU data is popped from the stack.
+    2. The MMU is loaded with the data in the 32-word array.
+    3. The following registers are popped from the stack in this order:
+       SP, R6, R5, R4, R3, R2, R1, R0, FL, PC
+    5. PS is popped from the stack.
+    6. Execution continues.
+    
+    This intended usage of this instruction is to (1) Begin a new process, or
+    (2) Restore an interrupted process, particularly when the MMU is enabled.
+    The following operations are the equivalent of 'save context', when an 
+    interrupt has been called. Note that upon entering the interrupt, the stack
+    looks like this:
+                            [ ... ]
+                            [ PS  ]
+                    SP -->  [ PC  ]
+        
+        PSH PSH R7, R6, R5, R4, R3, R2, R1, R0, FL
+        LOD R0, {Address of 32-word MMU cache store location}
+        MML R0
+        PSH R0
+        
+    Following these instructions, the stack will be laid out in such a way that
+    executing JCX will restore the context which was interrupted. Note that the
+    RTI instruction merely pops PC and PS (in that order). Thus, JCX can be used
+    as, among other things, a RTI opcode that restores more of the processor
+    state.
+    
+
+JMP         Unconditional Jump to new address.
+    1. PC is set to the value of M.
+    2. Execution continues.
+
+
+JMU         Unconditional Jump and enter User mode
+    1. Supervisor status bit is cleared.
+    2. PC is set to the value of M.
+    3. Execution continues.
+
+JSR         Unconditional Jump, saving return address.
+    1. PC is pushed to the stack. [PC is the address of the NEXT operation]
+    2. PC is set to the value of M.
+    3. Execution continues.
+
+
+RTS         Return from Subroutine
+NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
+    1. M is popped from the stack. PC is set to M.
+    2. Execution continues.
+    
+    
+=========================[ 3.I. Stack Instructions ]============================
+Note that the following registers can be specified for Stack Instructions:
+R0 - R7, A-C, I-J, X-Y, SP, FL, PC. Specifying a register twice (R0 and A, R7 
+and SP) will result in only one value popped to or pushed from that register.
+
+POP         Pop values from the Stack into registers
+Syntax: Pop Rx[,Rx,Rx...]
+The following registers can be specified: 
+Regardless of the order of the registers specified in the instruction, the
+values registers are always loaded in the following order:
+    R7/SP, R6, R5, R4, R3, R2, R1, R0, FL, PC
+
+    
+PSH         Push values from registers to the Stack
+Syntax: Pop Rx[,Rx,Rx...]
+The processor sequentially saves a number of values from the stack equal to
+the number of registers specified.
+Regardless of the order of the registers specified in the instruction, the
+values registers are always saved in the following order:
+    PC, FL, R0, R1, R2, R3, R4, R5, R6, R7/SP
+
+    
+===================[ 3.J. Processor Function Instructions ]=====================
+
+CLF         Clears bit(s) in the FL register.
+Syntax: CLF [N][,C][,Z][,V]
+The specified bits are cleared in the FL register. Any combination of the
+possible bits may be specified in a single instruction.
+
+
+HWQ         Sends a message to the Hardware Bus.
+Syntax HWQ $00
+Sends a message with the specified identified to the Hardware Bus. This may
+query the bus directly, or send a message to a hardware device.
+
+
+MML         Loads the MMU cache data into memory.
+Syntax: MML Ra
+Reads the 32-word MMU cache and saves it to a memory location specified by Ra.
+
+
+MMR         Reads a word from the Memory Management Cache.
+Syntax: MMR Ra, Rv
+Retrieves a value from Memory Management Cache at address [Ra] and loads it into
+register Rv.
+
+
+MMS         Restores the MMU cache from memory.
+Syntax: MMS Ra
+Reads 32-words from memory starting at address Ra, and stores that data in the
+MMU cache. Note that if the M processor status bit is set when this operation
+runs, the instructions the processor is operating on will almost certainly be
+changed.
+
+
+MMW         Writes a word to the Memmory Managment Cache.
+Syntax: MMR Ra, Rv
+Loads a value from Rv into the Memory Management Cache at address [Ra].
+
+
+
+SEF         Sets bit(s) in the FL register.
+Syntax: SEF [N][,C][,Z][,V]
+The specified bits are set in the FL register. Any combination of the
+possible bits may be specified in a single instruction.
+
+
+TRS         Loads a special register from a general purpose register.
+Syntax: TRS Rx,SR
+The value in special register SR is loaded into general purpose register Rx.
+
+
+TSR         Loads a special register into a general purpose register.
+Syntax: TSR Rx,SR
+The value in general purpose register Rx is loaded into special register SR.
+
+
+SLP         Halts the processor until it receives an interrupt.
+Syntax: SLP
+Places the processor into a halted state. No further instructions will be
+executed until a hardware interrupt is received, at which point the processor
+will exit the halted state and continue execution after the interrupt is
+handled.
+
+
+SWO         Switch Octet
+Syntax SWO Rs[.L/.H],Rd[.L,.H],[flags]
+Takes an octet from Rs and places it in Rd. Flags determine which operation
+takes place:
+    SWO R0,R1,LL    ; R0 low octet -> R1 low octet, R1 upper 8 bits cleared.
+    SWO R0,R1,HL    ; R0 high octect -> R1 low octet, R1 upper 8 bits cleared.
+    SWO R0,R1,LW    ; R0 low octet -> R1 low octet, R1 upper 8 bits preserved.
+    SWO R0,R1,HW    ; R0 low octet -> R1 high octet, R1 lower 8 bits preserved.
+
+    
+================================[ 4. History ]==================================
+0.1a 03/07/2014
+    Initial specification
+0.1b 03/08/2014
+    Renamed to YCPU.
+    R0 is the hi 16-bits of MUL/MLI result.
+    Renamed 'Maskable Interrupts' bit of FL from Q to I.
+    Added 'Absolute Offset' address mode - same as indirect offset.
+    Moved SWI Instruction
+    Clarified pop/push order of registers when multiple registers are specified.
+    Added descriptions of JMP/JSR/RTS, RTI/SWI.
+    Added descriptions to all ALU instructions, flags not fully fleshed out yet.
+0.1c 03/09/2014
+    Added II Register.
+    Added second stack. SP is now SSP/USP depending on flag bit S.
+    Added N bit for 'Interrupt i[N] progress'
+    Added 0x02 and 0x03 indexes to TRS bit pattern for USP/II access.
+    Made some TRS functions privileged.
+    Clarified SWI/RTI, JMP/JSR/RTS functions.
+    Added information on how interrupts are processed.
+0.1d 03/09/2014
+    Added hardware message opcode.
+    Clarified how hardware is accessed.
+0.1e 03/10/2014
+    Added PS register, which now contains supervisor mode, memory paging,
+        interrupts, and interrupt in process flag.
+    Added shift-without-carry opcodes, both left and right.
+    Added specification for all shift modes.
+    Added JMU (Jump, enter user mode) opcode.
+    Added ability to use Rx as an index for the bit to test.
+    TRS bit pattern now reads from any specified register, instead of always R0.
+    Noted the result of bad division operations:
+      * Dividing or Modulus by 0 always results in Rx being unchanged, and
+        raises the 'divide by zero' interrupt.
+      * Overflow flag set when attempting $8000 / $ffff, Rx is unchanged.
+    Clarified sign output of modulus instructions.
+    Added specification for bit testing operations.
+    Added preliminary memory management specification.
+0.2a 03/11/2014
+    Version 0.2! All instructions in the current set are specified.
+    Interrupts:
+      * Rewrote the Interrupts section to be more clear.
+      * Specified size of interrupt vector table as 16 words (previously 256).
+      * SWI now calls a single 'software interrupt' interrupt.
+    Memory Management:
+      * Complete rewrite of the memory manager concept: re-specced MMU to use
+        the concept of virtual address translation.
+      * Renamed all instances of 'Page' to 'Bank'.
+    Added new INC/ADI and DEC/SBI instructions.
+    Renamed TSW to TSR.
+    Specified result of bit-shifting when number of bits shifted is zero.
+    LSR: N flag is only clear if bit 15 of the result is set.
+    Added stubs for 'Stack Instructions' and 'Processor Function Instructions'.
+0.2b 03/12/2014
+    Added introduction.
+    Dedication to the Public Domain.
+    Specified boot sequence.
+    Moved Supervisor Mode bit to bit 15 in PS.
+0.2c 03/13/2014
+    Added page fault error bits to PS.
+    Reorganized opcodes to keep similar operations in contiguous opcodes.
+    Added floating point operations: FPA, FPD, FPM, FPS.
+    Added SWO operation.
+    Clarified when a branch occurs.
+    Added processor microcode description of interrupt instructions.
+0.2d 03/13/2014
+    Clarified which flags are effected on bit shifts of zero bits.
+    Minor spelling errors.
+0.2e 03/13/2014
+    Complete rewrite of 'Interrupts' section.
+    Added new 'P2' register which is used by the BankFault interrupt.
+    Added new 'R' status bit in PS which defines if ROM or RAM should be
+    switched to bank 0 on interrupt.
+    Clarified what banks are loaded when the MMU is enabled/disabled.
+    Clarified bootstrap sequence.
+    Made MMR/MMW privileged instructions.
+    Added Real Time Clock stub.
+    Changed bit pattern of ALU to match FPU.
+    Noted that Immediate addressing is not available with the STO opcode.
+    Minor spelling errors.
+0.2f 03/19/2014
+    Clarified use of RTI.
+    Clarified state of PC at Reset.
+    Moved around bit patterns of opcodes to make them better organized.
+    Added RTC spec in HWQ Bit Pattern information.
+    Changed state of N flag after CMP opcode to allow for signed compares.
+    Changed state of N and V flags following MDI instruction.
+    Changed state of V flag following MLI instruction.
+    Changed state of C and V flags following NEG instruction.
+    Removed unnecessary Branch opcodes.
+0.2g 03/20/2014
+    Reordered plenty of opcodes. Swear I'm done with this!
+    Reordered BIT, JMP, INC, and TSR bit patterns to match the ALU pattern.
+    the ALU Bit pattern.
+    Changed order of Rx and Ry in FPU Bit Pattern.
+    Changed some Registers in the HWQ Bit pattern results.
+    Removed ability to update RTC data.
+    C flag is not effected by BIT.
+    Clarified that C is clear when not set by BIT, BTX, BTC, BTS.
+    V flag is CLEARED by FPU operation errors.
+    Added JCX instruction.
+    Changed order of register popping when multiples are popped.
+0.2h 03/20/2014
+    Clarified that the I status bit only disables/enables Hardware Interrupts.
+    Removed an unneeded line describing User Mode privilege to edit FL bits.
+    Changed the Interrupt sequence.
+    Noted that after Reset, the processor follows the boot sequence.
+    Added an 'access' bit in the memory banking registers.
+    Added RTC 'desired tick rate' to the HWQ instruction.
+0.2i 03/20/2014
+    Bits QUW are cleared from PS on RTI.
+    Added Present bit to MMU cache registers.
+    Added information on Bank Faults.
+    TRS can now write to P2.
+0.2j 03/21/2014
+    R7 can now be referenced by three names: R7, SP, and Z.
+    Clarified that the processor raises and executes RESET interrupt on boot.
+    Added specification for RTC.
+    Clarified that the RTC is disabled on RESET.
+    Added MML/MMS instructions.
+    JCX no longer has a bit pattern: the addressing mode is Implied.
+    Changed the syntax for 'HWQ Set RTC Data'.
+    Changed precision of RTC Tick data from 8 bits to 16 bits.
+    Changed JCX instruction, and provided code that is the equivalent of
+        'Save context'.
+0.3a 03/23/2014
+    RTC is fully specified.
+    Added MML/MMS opcodes.
+    Cycle count specified for all instructions.
+    Register R7 can now be referenced by R7, Z, and SP.
+    Slight change to JCX to make it compatible with interrupt stack usage.
+    Slight clarification of RTC tick rate.
+    PC is rewound by one or two on an error interrupt.
+    
