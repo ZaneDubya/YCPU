@@ -1,3 +1,18 @@
+License for the YCPU Specification
+========
+The YCPU Specification is dedicated to the public domain under the terms of
+the Creative Commons Zero (CC0) waiver. All rights have been waived with
+regard to copyright law, including all related and neighboring rights, to the
+extent allowed by law.
+
+You can copy, modify, and distribute this document, and use it to create
+derivative works, even for commercial purposes, all without asking permission.
+
+More information about CC0 waiver is available online at: 
+http://creativecommons.org/about/cc0
+
+License for code implementing the YCPU Specification
+========
 The MIT License (MIT)
 
 Copyright (c) 2014 ZaneDubya
