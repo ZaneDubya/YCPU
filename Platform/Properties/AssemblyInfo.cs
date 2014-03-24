@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("YCPU")]
+[assembly: AssemblyTitle("YCPUFramework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("YCPU")]
+[assembly: AssemblyProduct("YCPUFramework")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c61feb5f-9b5a-4a56-b85d-939450a3e9f1")]
+[assembly: Guid("e110274e-0bb7-4eac-80d9-f2a4b4da2030")]
 
 // Version information for an assembly consists of the following four values:
 //
