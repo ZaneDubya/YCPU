@@ -100,22 +100,39 @@ namespace YCPU.Simware
 
         public void Benchmark(bool mmu_enabled)
         {
-            string[] benchmark = new string[0x100];
-            System.Diagnostics.Stopwatch m_Timer = new System.Diagnostics.Stopwatch();
+            string[] benchmark = new string[0x101];
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+            System.Diagnostics.Stopwatch total = new System.Diagnostics.Stopwatch();
+            total.Reset();
+            total.Start();
+            int count = 0;
+            int cycles = 0;
             for (int i = 0; i < 0x100; i++)
             {
-                m_Timer.Reset();
-                m_Timer.Start();
+                timer.Reset();
+                timer.Start();
                 PS_M = mmu_enabled;
-                for (int j = 0; j < 0x100000; j++)
+                if (m_Opcodes[i].Name == "---")
                 {
-                    ushort word = (ushort)(i & ((j & 0xFF) << 8));
-                    m_Opcodes[i].Opcode(word, 0x0000, m_Opcodes[i].BitPattern);
+
                 }
-                m_Timer.Stop();
-                benchmark[i] = string.Format("{0}     {1}", m_Opcodes[i].Name, m_Timer.ElapsedMilliseconds);
+                else
+                {
+                    for (int j = 0; j < 0x80000; j++)
+                    {
+                        ushort word = (ushort)(i & ((j & 0xFF) << 8));
+                        m_Opcodes[i].Opcode(word, 0x0000, m_Opcodes[i].BitPattern);
+                        count++;
+                        cycles += m_Opcodes[i].Cycles;
+                    }
+                }
+                timer.Stop();
+                benchmark[i] = string.Format("{0}     {1}", m_Opcodes[i].Name, timer.ElapsedMilliseconds);
             }
+            total.Stop();
+            benchmark[0x100] = string.Format("{0} opcodes, {1} cycles in {2} ms.", count, cycles, total.ElapsedMilliseconds);
             System.IO.File.WriteAllLines(string.Format("Benchmark{0}.txt", PS_M ? "M" : ""), benchmark);
+
         }
 
         #region General Purpose Registers
