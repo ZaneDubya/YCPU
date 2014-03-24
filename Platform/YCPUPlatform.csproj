@@ -41,13 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Simware\YBUS.cs" />
-    <Compile Include="Simware\YCPU.cs" />
-    <Compile Include="Simware\YCPU_BitPatterns.cs" />
-    <Compile Include="Simware\YCPU_Disassemble.cs" />
-    <Compile Include="Simware\YCPU_Extras.cs" />
-    <Compile Include="Simware\YCPU_Instructions.cs" />
-    <Compile Include="Simware\YRTC.cs" />
+    <Compile Include="Platform\YBUS.cs" />
+    <Compile Include="Platform\YCPU.cs" />
+    <Compile Include="Platform\YCPU_BitPatterns.cs" />
+    <Compile Include="Platform\YCPU_Disassemble.cs" />
+    <Compile Include="Platform\YCPU_Extras.cs" />
+    <Compile Include="Platform\YCPU_Instructions.cs" />
+    <Compile Include="Platform\YRTC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

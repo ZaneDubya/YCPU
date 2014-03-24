@@ -43,10 +43,10 @@ namespace YCPU.Assembler.DCPU16ASM
     {
         private readonly List<ushort> machineCode;
         private readonly Dictionary<ushort, string> labelReferences;
-        private readonly Dictionary<string, dcpuOpCode> opcodeDictionary;
+        private Dictionary<string, ushort> opcodeDictionary;
         private readonly Dictionary<string, ushort> labelAddressDitionary;
         private readonly Dictionary<ushort, string> labelDataFieldReferences;
-        private readonly Dictionary<string, dcpuRegisterCodes> registerDictionary;
+        private Dictionary<string, dcpuRegisterCodes> registerDictionary;
         private bool dataNextLine = false;
 
         public Parser()
@@ -56,63 +56,72 @@ namespace YCPU.Assembler.DCPU16ASM
             this.machineCode = new List<ushort>();
             this.labelDataFieldReferences = new Dictionary<ushort, string>();
 
-            this.opcodeDictionary = new Dictionary<string, dcpuOpCode>
-                {
-                    // non basic instructions
-                    { "jsr", dcpuOpCode.JSR_OP },
+            InitOpcodeDictionary();
+            InitRegisterDictionary();
+        }
 
-                    // basic instructions
-                    { "set", dcpuOpCode.SET_OP },
-                    { "add", dcpuOpCode.ADD_OP },
-                    { "sub", dcpuOpCode.SUB_OP },
-                    { "mul", dcpuOpCode.MUL_OP },
-                    { "div", dcpuOpCode.DIV_OP },
-                    { "mod", dcpuOpCode.MOD_OP },
-                    { "shl", dcpuOpCode.SHL_OP },
-                    { "shr", dcpuOpCode.SHR_OP },
-                    { "and", dcpuOpCode.AND_OP },
-                    { "bor", dcpuOpCode.BOR_OP },
-                    { "xor", dcpuOpCode.XOR_OP },
-                    { "ife", dcpuOpCode.IFE_OP },
-                    { "ifn", dcpuOpCode.IFN_OP },
-                    { "ifg", dcpuOpCode.IFG_OP },
-                    { "ifb", dcpuOpCode.IFB_OP },
-                };
+        protected virtual void InitOpcodeDictionary()
+        {
+            this.opcodeDictionary = new Dictionary<string, ushort>
+            {
+                // non basic instructions
+                { "jsr", (ushort)dcpuOpCode.JSR_OP },
 
+                // basic instructions
+                { "set", (ushort)dcpuOpCode.SET_OP },
+                { "add", (ushort)dcpuOpCode.ADD_OP },
+                { "sub", (ushort)dcpuOpCode.SUB_OP },
+                { "mul", (ushort)dcpuOpCode.MUL_OP },
+                { "div", (ushort)dcpuOpCode.DIV_OP },
+                { "mod", (ushort)dcpuOpCode.MOD_OP },
+                { "shl", (ushort)dcpuOpCode.SHL_OP },
+                { "shr", (ushort)dcpuOpCode.SHR_OP },
+                { "and", (ushort)dcpuOpCode.AND_OP },
+                { "bor", (ushort)dcpuOpCode.BOR_OP },
+                { "xor", (ushort)dcpuOpCode.XOR_OP },
+                { "ife", (ushort)dcpuOpCode.IFE_OP },
+                { "ifn", (ushort)dcpuOpCode.IFN_OP },
+                { "ifg", (ushort)dcpuOpCode.IFG_OP },
+                { "ifb", (ushort)dcpuOpCode.IFB_OP },
+            };
+        }
+
+        protected virtual void InitRegisterDictionary()
+        {
             // Register dictionary, We'll only include the most common ones in here, others have to be constructred. 
             this.registerDictionary = new Dictionary<string, dcpuRegisterCodes>
-                {
-                    { "a", dcpuRegisterCodes.A },
-                    { "b", dcpuRegisterCodes.B },
-                    { "c", dcpuRegisterCodes.C },
-                    { "x", dcpuRegisterCodes.X },
-                    { "y", dcpuRegisterCodes.Y },
-                    { "z", dcpuRegisterCodes.Z },
-                    { "i", dcpuRegisterCodes.I },
-                    { "j", dcpuRegisterCodes.J },
-                    { "[a]", dcpuRegisterCodes.A_Mem },
-                    { "[b]", dcpuRegisterCodes.B_Mem },
-                    { "[c]", dcpuRegisterCodes.C_Mem },
-                    { "[x]", dcpuRegisterCodes.X_Mem },
-                    { "[y]", dcpuRegisterCodes.Y_Mem },
-                    { "[z]", dcpuRegisterCodes.Z_Mem },
-                    { "[i]", dcpuRegisterCodes.I_Mem },
-                    { "[j]", dcpuRegisterCodes.J_Mem },
-                    { "pop", dcpuRegisterCodes.POP },
-                    { "peek", dcpuRegisterCodes.PEEK },
-                    { "push", dcpuRegisterCodes.PUSH },
-                    { "sp", dcpuRegisterCodes.SP },
-                    { "pc", dcpuRegisterCodes.PC },
-                    { "o", dcpuRegisterCodes.O },
-                    { "[+a]", dcpuRegisterCodes.A_NextWord },
-                    { "[+b]", dcpuRegisterCodes.B_NextWord },
-                    { "[+c]", dcpuRegisterCodes.C_NextWord },
-                    { "[+x]", dcpuRegisterCodes.X_NextWord },
-                    { "[+y]", dcpuRegisterCodes.Y_NextWord },
-                    { "[+z]", dcpuRegisterCodes.Z_NextWord },
-                    { "[+i]", dcpuRegisterCodes.I_NextWord },
-                    { "[+j]", dcpuRegisterCodes.J_NextWord }
-                };
+            {
+                { "a", dcpuRegisterCodes.A },
+                { "b", dcpuRegisterCodes.B },
+                { "c", dcpuRegisterCodes.C },
+                { "x", dcpuRegisterCodes.X },
+                { "y", dcpuRegisterCodes.Y },
+                { "z", dcpuRegisterCodes.Z },
+                { "i", dcpuRegisterCodes.I },
+                { "j", dcpuRegisterCodes.J },
+                { "[a]", dcpuRegisterCodes.A_Mem },
+                { "[b]", dcpuRegisterCodes.B_Mem },
+                { "[c]", dcpuRegisterCodes.C_Mem },
+                { "[x]", dcpuRegisterCodes.X_Mem },
+                { "[y]", dcpuRegisterCodes.Y_Mem },
+                { "[z]", dcpuRegisterCodes.Z_Mem },
+                { "[i]", dcpuRegisterCodes.I_Mem },
+                { "[j]", dcpuRegisterCodes.J_Mem },
+                { "pop", dcpuRegisterCodes.POP },
+                { "peek", dcpuRegisterCodes.PEEK },
+                { "push", dcpuRegisterCodes.PUSH },
+                { "sp", dcpuRegisterCodes.SP },
+                { "pc", dcpuRegisterCodes.PC },
+                { "o", dcpuRegisterCodes.O },
+                { "[+a]", dcpuRegisterCodes.A_NextWord },
+                { "[+b]", dcpuRegisterCodes.B_NextWord },
+                { "[+c]", dcpuRegisterCodes.C_NextWord },
+                { "[+x]", dcpuRegisterCodes.X_NextWord },
+                { "[+y]", dcpuRegisterCodes.Y_NextWord },
+                { "[+z]", dcpuRegisterCodes.Z_NextWord },
+                { "[+i]", dcpuRegisterCodes.I_NextWord },
+                { "[+j]", dcpuRegisterCodes.J_NextWord }
+            };
         }
 
         public string MessageOuput { get; private set; }

@@ -8,7 +8,7 @@ namespace YCPU
 {
     class Emulator
     {
-        private Simware.YCPU m_CPU;
+        private Platform.YCPU m_CPU;
         private bool m_Running = false;
         private bool m_YCPU_Running = false;
 

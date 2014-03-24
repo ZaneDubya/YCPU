@@ -46,13 +46,14 @@ namespace YCPU
             if (document.Trim() == string.Empty)
                 return AssemblerResult.EmptyDocument;
 
-            var parser = new YCPU.Assembler.Parser();
-            var lines = document.Split('\n');
+            Assembler.Parser parser = new Assembler.Parser();
+            string[] lines = document.Split('\n');
             ushort[] machineCode = parser.Parse(lines);
             if (machineCode == null)
                 return AssemblerResult.ParseError;
 
-            var output = parser.Generate(machineCode, out_path);
+            Assembler.Generator generator = new Assembler.Generator();
+            string output = generator.Generate(machineCode, out_path);
             if (output == string.Empty)
                 return AssemblerResult.GenerateError;
 

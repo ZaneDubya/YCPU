@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Simware
+namespace YCPU.Platform
 {
     public partial class YCPU
     {

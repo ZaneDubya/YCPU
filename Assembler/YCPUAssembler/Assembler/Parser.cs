@@ -5,25 +5,26 @@ using System.Text;
 
 namespace YCPU.Assembler
 {
-    class Parser
+    class Parser : DCPU16ASM.Parser
     {
-        private DCPU16ASM.Parser m_Parser;
-        private DCPU16ASM.Generator m_Generator;
+        private Platform.YCPU m_YCPU;
 
-        public Parser()
+        public Parser() : base()
         {
-            m_Parser = new DCPU16ASM.Parser();
-            m_Generator = new DCPU16ASM.Generator();
+            m_YCPU = new Platform.YCPU();
         }
 
-        public ushort[] Parse(string[] lines)
+        protected override void InitOpcodeDictionary()
         {
-            return m_Parser.Parse(lines);
+            for (int i = 0; i < 0x100; i++)
+            {
+                
+            }
         }
 
-        public string Generate(ushort[] machinecode, string out_path)
+        protected override void InitRegisterDictionary()
         {
-            return m_Generator.Generate(machinecode, out_path);
+
         }
     }
 }
