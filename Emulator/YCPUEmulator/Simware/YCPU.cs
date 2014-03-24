@@ -50,20 +50,37 @@ namespace YCPU.Simware
 
         public void Run(int cyclecount = -1)
         {
-            m_Stopwatch.Reset();
-            m_Stopwatch.Start();
+            // Count Cycles:
             long cycles_start = m_Cycles;
             long cycles_target = (cyclecount == -1) ? long.MaxValue : cyclecount + m_Cycles;
+
+            // To measure the speed of the processor:
+            m_Stopwatch.Reset();
+            m_Stopwatch.Start();
+
+            // Run the processor for cyclecount Cycles:
             m_Running = true;
             while (m_Running)
             {
                 ushort word = GetMemory(PC++, true);
                 if (word != c_GetMemory_ExecuteFail)
                 {
+                    // Check for hardware interrupt:
+                    if (PS_I && !PS_Q && m_Bus.IRQ)
+                    {
+                        Interrupt_HWI();
+                    }
+                    // Check for RTC interrupt:
+                    if (m_RTC.IRQ(m_Cycles))
+                    {
+                        Interrupt_Clock();
+                    }
+                    // Execute Memory[PC]
                     ushort nextword = GetMemory(PC);
                     YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                     opcode.Opcode(word, nextword, opcode.BitPattern);
-
+                    // Increment the Cycle counter. Check to see if the
+                    // processor has run the desired number of Cycles.
                     m_Cycles += opcode.Cycles;
                     if (m_Cycles >= cycles_target)
                         m_Pausing = true;
@@ -72,16 +89,9 @@ namespace YCPU.Simware
                         m_Running = false;
                         m_Pausing = false;
                     }
-                    if (!PS_Q && m_Bus.IRQ)
-                    {
-                        Interrupt_HWI();
-                    }
-                    if (m_RTC.IRQ(m_Cycles))
-                    {
-                        Interrupt_Clock();
-                    }
                 }
             }
+            // Get the speed of the processor:
             m_Stopwatch.Stop();
             m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
             m_LastRunCycles = (int)(m_Cycles - cycles_start);
