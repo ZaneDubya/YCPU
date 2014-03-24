@@ -11,60 +11,166 @@ namespace YCPU.Simware
         private YCPUInstruction[] m_Opcodes = new YCPUInstruction[0x100];
         private void InitializeOpcodes()
         {
-            for (int i = 0x00; i < 0x08; i++)
-                m_Opcodes[i] = new YCPUInstruction("LOD", LOD, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x00] = new YCPUInstruction("LOD", LOD, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x01] = new YCPUInstruction("LOD", LOD, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x02] = new YCPUInstruction("LOD", LOD, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x03] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x04] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x05] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x06] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x07] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
             // No STO Immediate (0x08) or STO Register (0x09)
-            for (int i = 0x0A; i < 0x10; i++)
-                m_Opcodes[i] = new YCPUInstruction("STO", STO, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x0A] = new YCPUInstruction("STO", STO, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x0B] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x0C] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x0D] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x0E] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x0F] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x10; i < 0x18; i++)
-                m_Opcodes[i] = new YCPUInstruction("ADD", ADD, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x10] = new YCPUInstruction("ADD", ADD, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x11] = new YCPUInstruction("ADD", ADD, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x12] = new YCPUInstruction("ADD", ADD, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x13] = new YCPUInstruction("ADD", ADD, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x14] = new YCPUInstruction("ADD", ADD, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x15] = new YCPUInstruction("ADD", ADD, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x16] = new YCPUInstruction("ADD", ADD, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x17] = new YCPUInstruction("ADD", ADD, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x18; i < 0x20; i++)
-                m_Opcodes[i] = new YCPUInstruction("SUB", SUB, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x18] = new YCPUInstruction("SUB", SUB, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x19] = new YCPUInstruction("SUB", SUB, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x1A] = new YCPUInstruction("SUB", SUB, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x1B] = new YCPUInstruction("SUB", SUB, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x1C] = new YCPUInstruction("SUB", SUB, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x1D] = new YCPUInstruction("SUB", SUB, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x1E] = new YCPUInstruction("SUB", SUB, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x1F] = new YCPUInstruction("SUB", SUB, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x20; i < 0x28; i++)
-                m_Opcodes[i] = new YCPUInstruction("ADC", ADC, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x20] = new YCPUInstruction("ADC", ADC, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x21] = new YCPUInstruction("ADC", ADC, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x22] = new YCPUInstruction("ADC", ADC, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x23] = new YCPUInstruction("ADC", ADC, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x24] = new YCPUInstruction("ADC", ADC, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x25] = new YCPUInstruction("ADC", ADC, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x26] = new YCPUInstruction("ADC", ADC, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x27] = new YCPUInstruction("ADC", ADC, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x28; i < 0x30; i++)
-                m_Opcodes[i] = new YCPUInstruction("SBC", SBC, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x28] = new YCPUInstruction("SBC", SBC, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x29] = new YCPUInstruction("SBC", SBC, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x2A] = new YCPUInstruction("SBC", SBC, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x2B] = new YCPUInstruction("SBC", SBC, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x2C] = new YCPUInstruction("SBC", SBC, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x2D] = new YCPUInstruction("SBC", SBC, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x2E] = new YCPUInstruction("SBC", SBC, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x2F] = new YCPUInstruction("SBC", SBC, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x30; i < 0x38; i++)
-                m_Opcodes[i] = new YCPUInstruction("MUL", MUL, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x30] = new YCPUInstruction("MUL", MUL, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x31] = new YCPUInstruction("MUL", MUL, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x32] = new YCPUInstruction("MUL", MUL, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x33] = new YCPUInstruction("MUL", MUL, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x34] = new YCPUInstruction("MUL", MUL, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x35] = new YCPUInstruction("MUL", MUL, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x36] = new YCPUInstruction("MUL", MUL, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x37] = new YCPUInstruction("MUL", MUL, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x38; i < 0x40; i++)
-                m_Opcodes[i] = new YCPUInstruction("DIV", DIV, BitPatternALU, DisassembleALU, 32);
+            m_Opcodes[0x38] = new YCPUInstruction("DIV", DIV, BitPatternALU_Immediate, DisassembleALU, 33);
+            m_Opcodes[0x39] = new YCPUInstruction("DIV", DIV, BitPatternALU_Register, DisassembleALU, 32);
+            m_Opcodes[0x3A] = new YCPUInstruction("DIV", DIV, BitPatternALU_Indirect, DisassembleALU, 32);
+            m_Opcodes[0x3B] = new YCPUInstruction("DIV", DIV, BitPatternALU_IndirectOffset, DisassembleALU, 33);
+            m_Opcodes[0x3C] = new YCPUInstruction("DIV", DIV, BitPatternALU_IndirectPostInc, DisassembleALU, 32);
+            m_Opcodes[0x3D] = new YCPUInstruction("DIV", DIV, BitPatternALU_IndirectPreDec, DisassembleALU, 32);
+            m_Opcodes[0x3E] = new YCPUInstruction("DIV", DIV, BitPatternALU_IndirectIndexed, DisassembleALU, 32);
+            m_Opcodes[0x3F] = new YCPUInstruction("DIV", DIV, BitPatternALU_IndirectIndexedHi, DisassembleALU, 32);
 
-            for (int i = 0x40; i < 0x48; i++)
-                m_Opcodes[i] = new YCPUInstruction("MLI", MLI, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x40] = new YCPUInstruction("MLI", MLI, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x41] = new YCPUInstruction("MLI", MLI, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x42] = new YCPUInstruction("MLI", MLI, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x43] = new YCPUInstruction("MLI", MLI, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x44] = new YCPUInstruction("MLI", MLI, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x45] = new YCPUInstruction("MLI", MLI, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x46] = new YCPUInstruction("MLI", MLI, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x47] = new YCPUInstruction("MLI", MLI, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x48; i < 0x50; i++)
-                m_Opcodes[i] = new YCPUInstruction("DVI", DVI, BitPatternALU, DisassembleALU, 32);
+            m_Opcodes[0x48] = new YCPUInstruction("DVI", DVI, BitPatternALU_Immediate, DisassembleALU, 33);
+            m_Opcodes[0x49] = new YCPUInstruction("DVI", DVI, BitPatternALU_Register, DisassembleALU, 32);
+            m_Opcodes[0x4A] = new YCPUInstruction("DVI", DVI, BitPatternALU_Indirect, DisassembleALU, 32);
+            m_Opcodes[0x4B] = new YCPUInstruction("DVI", DVI, BitPatternALU_IndirectOffset, DisassembleALU, 33);
+            m_Opcodes[0x4C] = new YCPUInstruction("DVI", DVI, BitPatternALU_IndirectPostInc, DisassembleALU, 32);
+            m_Opcodes[0x4D] = new YCPUInstruction("DVI", DVI, BitPatternALU_IndirectPreDec, DisassembleALU, 32);
+            m_Opcodes[0x4E] = new YCPUInstruction("DVI", DVI, BitPatternALU_IndirectIndexed, DisassembleALU, 32);
+            m_Opcodes[0x4F] = new YCPUInstruction("DVI", DVI, BitPatternALU_IndirectIndexedHi, DisassembleALU, 32);
 
-            for (int i = 0x50; i < 0x58; i++)
-                m_Opcodes[i] = new YCPUInstruction("MOD", MOD, BitPatternALU, DisassembleALU, 32);
+            m_Opcodes[0x50] = new YCPUInstruction("MOD", MOD, BitPatternALU_Immediate, DisassembleALU, 33);
+            m_Opcodes[0x51] = new YCPUInstruction("MOD", MOD, BitPatternALU_Register, DisassembleALU, 32);
+            m_Opcodes[0x52] = new YCPUInstruction("MOD", MOD, BitPatternALU_Indirect, DisassembleALU, 32);
+            m_Opcodes[0x53] = new YCPUInstruction("MOD", MOD, BitPatternALU_IndirectOffset, DisassembleALU, 33);
+            m_Opcodes[0x54] = new YCPUInstruction("MOD", MOD, BitPatternALU_IndirectPostInc, DisassembleALU, 32);
+            m_Opcodes[0x55] = new YCPUInstruction("MOD", MOD, BitPatternALU_IndirectPreDec, DisassembleALU, 32);
+            m_Opcodes[0x56] = new YCPUInstruction("MOD", MOD, BitPatternALU_IndirectIndexed, DisassembleALU, 32);
+            m_Opcodes[0x57] = new YCPUInstruction("MOD", MOD, BitPatternALU_IndirectIndexedHi, DisassembleALU, 32);
 
-            for (int i = 0x58; i < 0x60; i++)
-                m_Opcodes[i] = new YCPUInstruction("MDI", MDI, BitPatternALU, DisassembleALU, 32);
+            m_Opcodes[0x58] = new YCPUInstruction("MDI", MDI, BitPatternALU_Immediate, DisassembleALU, 33);
+            m_Opcodes[0x59] = new YCPUInstruction("MDI", MDI, BitPatternALU_Register, DisassembleALU, 32);
+            m_Opcodes[0x5A] = new YCPUInstruction("MDI", MDI, BitPatternALU_Indirect, DisassembleALU, 32);
+            m_Opcodes[0x5B] = new YCPUInstruction("MDI", MDI, BitPatternALU_IndirectOffset, DisassembleALU, 33);
+            m_Opcodes[0x5C] = new YCPUInstruction("MDI", MDI, BitPatternALU_IndirectPostInc, DisassembleALU, 32);
+            m_Opcodes[0x5D] = new YCPUInstruction("MDI", MDI, BitPatternALU_IndirectPreDec, DisassembleALU, 32);
+            m_Opcodes[0x5E] = new YCPUInstruction("MDI", MDI, BitPatternALU_IndirectIndexed, DisassembleALU, 32);
+            m_Opcodes[0x5F] = new YCPUInstruction("MDI", MDI, BitPatternALU_IndirectIndexedHi, DisassembleALU, 32);
 
-            for (int i = 0x60; i < 0x68; i++)
-                m_Opcodes[i] = new YCPUInstruction("AND", AND, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x60] = new YCPUInstruction("AND", AND, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x61] = new YCPUInstruction("AND", AND, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x62] = new YCPUInstruction("AND", AND, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x63] = new YCPUInstruction("AND", AND, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x64] = new YCPUInstruction("AND", AND, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x65] = new YCPUInstruction("AND", AND, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x66] = new YCPUInstruction("AND", AND, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x67] = new YCPUInstruction("AND", AND, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x68; i < 0x70; i++)
-                m_Opcodes[i] = new YCPUInstruction("ORR", ORR, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x68] = new YCPUInstruction("ORR", ORR, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x69] = new YCPUInstruction("ORR", ORR, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x6A] = new YCPUInstruction("ORR", ORR, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x6B] = new YCPUInstruction("ORR", ORR, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x6C] = new YCPUInstruction("ORR", ORR, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x6D] = new YCPUInstruction("ORR", ORR, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x6E] = new YCPUInstruction("ORR", ORR, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x6F] = new YCPUInstruction("ORR", ORR, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x70; i < 0x78; i++)
-                m_Opcodes[i] = new YCPUInstruction("EOR", EOR, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x70] = new YCPUInstruction("EOR", EOR, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x71] = new YCPUInstruction("EOR", EOR, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x72] = new YCPUInstruction("EOR", EOR, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x73] = new YCPUInstruction("EOR", EOR, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x74] = new YCPUInstruction("EOR", EOR, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x75] = new YCPUInstruction("EOR", EOR, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x76] = new YCPUInstruction("EOR", EOR, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x77] = new YCPUInstruction("EOR", EOR, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x78; i < 0x80; i++)
-                m_Opcodes[i] = new YCPUInstruction("NOT", NOT, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x78] = new YCPUInstruction("NOT", NOT, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x79] = new YCPUInstruction("NOT", NOT, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x7A] = new YCPUInstruction("NOT", NOT, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x7B] = new YCPUInstruction("NOT", NOT, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x7C] = new YCPUInstruction("NOT", NOT, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x7D] = new YCPUInstruction("NOT", NOT, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x7E] = new YCPUInstruction("NOT", NOT, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x7F] = new YCPUInstruction("NOT", NOT, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x80; i < 0x88; i++)
-                m_Opcodes[i] = new YCPUInstruction("CMP", CMP, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x80] = new YCPUInstruction("CMP", CMP, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x81] = new YCPUInstruction("CMP", CMP, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x82] = new YCPUInstruction("CMP", CMP, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x83] = new YCPUInstruction("CMP", CMP, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x84] = new YCPUInstruction("CMP", CMP, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x85] = new YCPUInstruction("CMP", CMP, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x86] = new YCPUInstruction("CMP", CMP, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x87] = new YCPUInstruction("CMP", CMP, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0x88; i < 0x90; i++)
-                m_Opcodes[i] = new YCPUInstruction("NEG", NEG, BitPatternALU, DisassembleALU, 1);
+            m_Opcodes[0x88] = new YCPUInstruction("NEG", NEG, BitPatternALU_Immediate, DisassembleALU, 2);
+            m_Opcodes[0x89] = new YCPUInstruction("NEG", NEG, BitPatternALU_Register, DisassembleALU, 1);
+            m_Opcodes[0x8A] = new YCPUInstruction("NEG", NEG, BitPatternALU_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x8B] = new YCPUInstruction("NEG", NEG, BitPatternALU_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x8C] = new YCPUInstruction("NEG", NEG, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x8D] = new YCPUInstruction("NEG", NEG, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x8E] = new YCPUInstruction("NEG", NEG, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x8F] = new YCPUInstruction("NEG", NEG, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
             m_Opcodes[0x90] = new YCPUInstruction("BCC", BCC, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x91] = new YCPUInstruction("BCS", BCS, BitPatternBRA, DisassembleBRA, 1);

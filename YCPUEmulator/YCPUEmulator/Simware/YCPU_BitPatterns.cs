@@ -7,47 +7,80 @@ namespace YCPU.Simware
 {
     partial class YCPU
     {
-        private void BitPatternALU(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        private void BitPatternALU_Immediate(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
         {
-            int AddressMode = (operand & 0x0007);
+            // int AddressMode = (operand & 0x0007);
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
             int index_bits = ((operand & 0x0300) >> 8);
+            value = nextword;
+            PC++;
+        }
 
-            switch (AddressMode)
-            {
-                case 0: // Immediate
-                    value = nextword;
-                    PC++;
-                    break;
-                case 1: // Register
-                    value = R[(int)source];
-                    break;
-                case 2: // Indirect
-                    value = GetMemory(R[(int)source]);
-                    break;
-                case 3: // Indirect Offset (also Absolute Offset)
-                    value = GetMemory((ushort)(R[(int)source] + nextword));
-                    PC++;
-                    break;
-                case 4: // Indirect PostInc
-                    value = GetMemory(R[(int)source]);
-                    R[(int)source]++;
-                    break;
-                case 5: // Indirect PreDec
-                    R[(int)source]--;
-                    value = GetMemory(R[(int)source]);
-                    break;
-                case 6: // Indirect Indexed
-                    value = GetMemory((ushort)(R[(int)source] + R[index_bits]));
-                    break;
-                case 7:
-                    value = GetMemory((ushort)(R[(int)source] + R[index_bits + 4]));
-                    break;
-                default:
-                    value = 0xDEAD;
-                    break;
-            }
+        private void BitPatternALU_Register(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = R[(int)source];
+        }
+
+        private void BitPatternALU_Indirect(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = GetMemory(R[(int)source]);
+        }
+
+        private void BitPatternALU_IndirectOffset(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = GetMemory((ushort)(R[(int)source] + nextword));
+            PC++;
+        }
+
+        private void BitPatternALU_IndirectPostInc(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = GetMemory(R[(int)source]);
+            R[(int)source]++;
+        }
+
+        private void BitPatternALU_IndirectPreDec(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            R[(int)source]--;
+            value = GetMemory(R[(int)source]);
+        }
+
+        private void BitPatternALU_IndirectIndexed(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = GetMemory((ushort)(R[(int)source] + R[index_bits]));
+        }
+
+        private void BitPatternALU_IndirectIndexedHi(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = GetMemory((ushort)(R[(int)source] + R[index_bits + 4]));
         }
 
         private void BitPatternBIT(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
