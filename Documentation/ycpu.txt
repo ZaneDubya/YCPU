@@ -48,14 +48,21 @@ http://creativecommons.org/about/cc0
 
 
 ==========================[ 2. Hardware Information ]===========================
-The YCPU is a 16-bit imaginary processor. Internally, all registers and cache
-words are 16-bit, and the only addressable unit of memory is a 16-bit word.
-Although the processor does have a 32-bit external bus, all logical addresses
-are 16-bit, and thus an instruction can only address 64 kilowords of memory at
-any time. Any multi-word values are stored in little-endian format.
+The YCPU is a 16-bit imaginary processor. The processor includes features
+intended to ease the development of software, including a comprehensive
+instruction set, support for 32-bit floating point operations, a MMU that allows
+switching 4 kiloword banks within the 16-bit logical address space, a real time
+clock, a hardware bus that supports up to 256 devices, and Supervisor/User modes
+with separate stack pointers.
 
-The processor connects to devices via a universal hardware bus, which can host
-up to 256 devices.
+
+2.1. MEMORY MODEL
+
+Internally, all registers and cache words are 16-bit, and the only addressable
+unit of memory is a 16-bit word. Although the processor does have a 32-bit
+external bus, all logical addresses are 16-bit, and thus an instruction can only
+address 64 kilowords of memory at any time. Any multi-word values are stored in
+little-endian format.
 
 
 ===============================[ 2.A. Registers ]===============================
