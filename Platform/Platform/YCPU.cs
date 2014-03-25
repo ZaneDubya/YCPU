@@ -108,7 +108,7 @@ namespace YCPU.Platform
             }
         }
 
-        public void Benchmark(bool mmu_enabled)
+        public void Benchmark(bool mmu_enabled, int count_runs)
         {
             string[] benchmark = new string[0x101];
             System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
@@ -122,13 +122,13 @@ namespace YCPU.Platform
                 timer.Reset();
                 timer.Start();
                 PS_M = mmu_enabled;
-                if (m_Opcodes[i].Name == NOPCode)
+                if (m_Opcodes[i].IsNOP)
                 {
-
+                    // Ignore NOPs for benchmarking.
                 }
                 else
                 {
-                    for (int j = 0; j < 0x80000; j++)
+                    for (int j = 0; j < count_runs; j++)
                     {
                         ushort word = (ushort)(i & ((j & 0xFF) << 8));
                         m_Opcodes[i].Opcode(word, 0x0000, m_Opcodes[i].BitPattern);
@@ -146,7 +146,7 @@ namespace YCPU.Platform
         }
 
         #region General Purpose Registers
-        enum RegGPIndex
+        public enum RegGPIndex
         {
             R0, R1, R2, R3, R4, R5, R6, R7,
             Count

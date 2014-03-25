@@ -7,10 +7,13 @@ namespace YCPU.Platform
 {
     partial class YCPU
     {
-        public const string NOPCode = "NOP";
+        private YCPUInstruction[] m_Opcodes = new YCPUInstruction[0x100];
+        public YCPUInstruction[] Opcodes
+        {
+            get { return m_Opcodes; }
+        }
 
         #region OpCode Initialization
-        private YCPUInstruction[] m_Opcodes = new YCPUInstruction[0x100];
         private void InitializeOpcodes()
         {
             m_Opcodes[0x00] = new YCPUInstruction("LOD", LOD, BitPatternALU_Immediate, DisassembleALU, 2);
@@ -182,8 +185,8 @@ namespace YCPU.Platform
             m_Opcodes[0x95] = new YCPUInstruction("BMI", BMI, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x96] = new YCPUInstruction("BVC", BVC, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x97] = new YCPUInstruction("BVS", BVS, BitPatternBRA, DisassembleBRA, 1);
-            m_Opcodes[0x98] = new YCPUInstruction("BGU", BGU, BitPatternBRA, DisassembleBRA, 1);
-            m_Opcodes[0x99] = new YCPUInstruction("BGS", BGS, BitPatternBRA, DisassembleBRA, 1);
+            m_Opcodes[0x98] = new YCPUInstruction("BUG", BUG, BitPatternBRA, DisassembleBRA, 1);
+            m_Opcodes[0x99] = new YCPUInstruction("BSG", BSG, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x9A] = new YCPUInstruction("BAW", BAW, BitPatternBRA, DisassembleBRA, 1);
             // 0x9B - 0x9F are Undefined
 
@@ -228,7 +231,7 @@ namespace YCPU.Platform
 
             for (int i = 0; i < 0x100; i++)
                 if (m_Opcodes[i].Opcode == null)
-                    m_Opcodes[i] = new YCPUInstruction(NOPCode, NOP, null, DisassembleNoBits, 1);
+                    m_Opcodes[i] = new YCPUInstruction("NOP", NOP, null, DisassembleNoBits, 1, true);
         }
         #endregion
 
@@ -738,7 +741,7 @@ namespace YCPU.Platform
             }
         }
 
-        private void BGU(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BUG(ushort operand, ushort nextword, YCPUBitPattern bits)
         {
             if (!FL_Z && FL_C)
             {
@@ -749,7 +752,7 @@ namespace YCPU.Platform
             }
         }
 
-        private void BGS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BSG(ushort operand, ushort nextword, YCPUBitPattern bits)
         {
             if (!FL_Z && FL_N)
             {

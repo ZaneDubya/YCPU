@@ -7,27 +7,27 @@ namespace YCPU.Platform
 {
     partial class YCPU
     {
-        #region Delegates, etc.
-        delegate void YCPUOpcode(ushort opcode, ushort nextword, YCPUBitPattern bits);
-        delegate void YCPUBitPattern(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination);
-        delegate string YCPUDisassembler(string name, ushort opcode, ushort nextword, ushort address, out bool uses_next_word);
-        #endregion
+        public delegate void YCPUOpcode(ushort opcode, ushort nextword, YCPUBitPattern bits);
+        public delegate void YCPUBitPattern(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination);
+        public delegate string YCPUDisassembler(string name, ushort opcode, ushort nextword, ushort address, out bool uses_next_word);
 
-        struct YCPUInstruction
+        public struct YCPUInstruction
         {
             public string Name;
             public YCPUOpcode Opcode;
             public YCPUBitPattern BitPattern;
             public YCPUDisassembler Disassembler;
             public int Cycles;
+            public bool IsNOP;
 
-            public YCPUInstruction(string name, YCPUOpcode opcode, YCPUBitPattern bitpattern, YCPUDisassembler disassembler, int cycles)
+            public YCPUInstruction(string name, YCPUOpcode opcode, YCPUBitPattern bitpattern, YCPUDisassembler disassembler, int cycles, bool isNOP = false)
             {
                 Name = name;
                 Opcode = opcode;
                 BitPattern = bitpattern;
                 Disassembler = disassembler;
                 Cycles = cycles;
+                IsNOP = isNOP;
             }
 
             public bool UsesNextWord(ushort opcode)
