@@ -1,25 +1,7 @@
 ﻿/*
  * DCPU-16 ASM.NET
  * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * This code is licensed under the MIT License
 */
 
 /**
@@ -39,14 +21,14 @@ namespace YCPU.Assembler.DCPU16ASM
     using System.Collections.Generic;
     using System.Linq;
 
-    public class Parser
+    public partial class Parser
     {
         private readonly List<ushort> machineCode;
         private readonly Dictionary<ushort, string> labelReferences;
-        private Dictionary<string, ushort> opcodeDictionary;
+        protected Dictionary<string, OpcodeAssembler> m_OpcodeAssemblers;
         private readonly Dictionary<string, ushort> labelAddressDitionary;
         private readonly Dictionary<ushort, string> labelDataFieldReferences;
-        private Dictionary<string, dcpuRegisterCodes> registerDictionary;
+        protected Dictionary<string, ushort> m_RegisterDictionary;
         private bool dataNextLine = false;
 
         public Parser()
@@ -56,72 +38,71 @@ namespace YCPU.Assembler.DCPU16ASM
             this.machineCode = new List<ushort>();
             this.labelDataFieldReferences = new Dictionary<ushort, string>();
 
+            m_OpcodeAssemblers = new Dictionary<string, OpcodeAssembler>();
+            m_RegisterDictionary = new Dictionary<string, ushort>();
+
             InitOpcodeDictionary();
             InitRegisterDictionary();
         }
 
         protected virtual void InitOpcodeDictionary()
         {
-            this.opcodeDictionary = new Dictionary<string, ushort>
+            // Initialize the DCPU opcodes
             {
                 // non basic instructions
-                { "jsr", (ushort)dcpuOpCode.JSR_OP },
-
+                m_OpcodeAssemblers.Add("jsr", AssembleJSR);
                 // basic instructions
-                { "set", (ushort)dcpuOpCode.SET_OP },
-                { "add", (ushort)dcpuOpCode.ADD_OP },
-                { "sub", (ushort)dcpuOpCode.SUB_OP },
-                { "mul", (ushort)dcpuOpCode.MUL_OP },
-                { "div", (ushort)dcpuOpCode.DIV_OP },
-                { "mod", (ushort)dcpuOpCode.MOD_OP },
-                { "shl", (ushort)dcpuOpCode.SHL_OP },
-                { "shr", (ushort)dcpuOpCode.SHR_OP },
-                { "and", (ushort)dcpuOpCode.AND_OP },
-                { "bor", (ushort)dcpuOpCode.BOR_OP },
-                { "xor", (ushort)dcpuOpCode.XOR_OP },
-                { "ife", (ushort)dcpuOpCode.IFE_OP },
-                { "ifn", (ushort)dcpuOpCode.IFN_OP },
-                { "ifg", (ushort)dcpuOpCode.IFG_OP },
-                { "ifb", (ushort)dcpuOpCode.IFB_OP },
+                m_OpcodeAssemblers.Add("set", AssembleSET);
+                m_OpcodeAssemblers.Add("add", AssembleADD);
+                m_OpcodeAssemblers.Add("sub", AssembleSUB);
+                m_OpcodeAssemblers.Add("mul", AssembleMUL);
+                m_OpcodeAssemblers.Add("div", AssembleDIV);
+                m_OpcodeAssemblers.Add("mod", AssembleMOD);
+                m_OpcodeAssemblers.Add("shl", AssembleSHL);
+                m_OpcodeAssemblers.Add("shr", AssembleSHR);
+                m_OpcodeAssemblers.Add("and", AssembleAND);
+                m_OpcodeAssemblers.Add("bor", AssembleBOR);
+                m_OpcodeAssemblers.Add("xor", AssembleXOR);
+                m_OpcodeAssemblers.Add("ife", AssembleIFE);
+                m_OpcodeAssemblers.Add("ifn", AssembleIFN);
+                m_OpcodeAssemblers.Add("ifg", AssembleIFG);
+                m_OpcodeAssemblers.Add("ifb", AssembleIFB);
             };
         }
 
         protected virtual void InitRegisterDictionary()
         {
-            // Register dictionary, We'll only include the most common ones in here, others have to be constructred. 
-            this.registerDictionary = new Dictionary<string, dcpuRegisterCodes>
-            {
-                { "a", dcpuRegisterCodes.A },
-                { "b", dcpuRegisterCodes.B },
-                { "c", dcpuRegisterCodes.C },
-                { "x", dcpuRegisterCodes.X },
-                { "y", dcpuRegisterCodes.Y },
-                { "z", dcpuRegisterCodes.Z },
-                { "i", dcpuRegisterCodes.I },
-                { "j", dcpuRegisterCodes.J },
-                { "[a]", dcpuRegisterCodes.A_Mem },
-                { "[b]", dcpuRegisterCodes.B_Mem },
-                { "[c]", dcpuRegisterCodes.C_Mem },
-                { "[x]", dcpuRegisterCodes.X_Mem },
-                { "[y]", dcpuRegisterCodes.Y_Mem },
-                { "[z]", dcpuRegisterCodes.Z_Mem },
-                { "[i]", dcpuRegisterCodes.I_Mem },
-                { "[j]", dcpuRegisterCodes.J_Mem },
-                { "pop", dcpuRegisterCodes.POP },
-                { "peek", dcpuRegisterCodes.PEEK },
-                { "push", dcpuRegisterCodes.PUSH },
-                { "sp", dcpuRegisterCodes.SP },
-                { "pc", dcpuRegisterCodes.PC },
-                { "o", dcpuRegisterCodes.O },
-                { "[+a]", dcpuRegisterCodes.A_NextWord },
-                { "[+b]", dcpuRegisterCodes.B_NextWord },
-                { "[+c]", dcpuRegisterCodes.C_NextWord },
-                { "[+x]", dcpuRegisterCodes.X_NextWord },
-                { "[+y]", dcpuRegisterCodes.Y_NextWord },
-                { "[+z]", dcpuRegisterCodes.Z_NextWord },
-                { "[+i]", dcpuRegisterCodes.I_NextWord },
-                { "[+j]", dcpuRegisterCodes.J_NextWord }
-            };
+            // Register dictionary, We'll only include the most common ones in here, others have to be constructed.
+            m_RegisterDictionary.Add("a", (ushort)dcpuRegisterCodes.A);
+            m_RegisterDictionary.Add("b", (ushort)dcpuRegisterCodes.B);
+            m_RegisterDictionary.Add("c", (ushort)dcpuRegisterCodes.C);
+            m_RegisterDictionary.Add("x", (ushort)dcpuRegisterCodes.X);
+            m_RegisterDictionary.Add("y", (ushort)dcpuRegisterCodes.Y);
+            m_RegisterDictionary.Add("z", (ushort)dcpuRegisterCodes.Z);
+            m_RegisterDictionary.Add("i", (ushort)dcpuRegisterCodes.I);
+            m_RegisterDictionary.Add("j", (ushort)dcpuRegisterCodes.J);
+            m_RegisterDictionary.Add("[a]", (ushort)dcpuRegisterCodes.A_Mem);
+            m_RegisterDictionary.Add("[b]", (ushort)dcpuRegisterCodes.B_Mem);
+            m_RegisterDictionary.Add("[c]", (ushort)dcpuRegisterCodes.C_Mem);
+            m_RegisterDictionary.Add("[x]", (ushort)dcpuRegisterCodes.X_Mem);
+            m_RegisterDictionary.Add("[y]", (ushort)dcpuRegisterCodes.Y_Mem);
+            m_RegisterDictionary.Add("[z]", (ushort)dcpuRegisterCodes.Z_Mem);
+            m_RegisterDictionary.Add("[i]", (ushort)dcpuRegisterCodes.I_Mem);
+            m_RegisterDictionary.Add("[j]", (ushort)dcpuRegisterCodes.J_Mem);
+            m_RegisterDictionary.Add("pop", (ushort)dcpuRegisterCodes.POP);
+            m_RegisterDictionary.Add("peek", (ushort)dcpuRegisterCodes.PEEK);
+            m_RegisterDictionary.Add("push", (ushort)dcpuRegisterCodes.PUSH);
+            m_RegisterDictionary.Add("sp", (ushort)dcpuRegisterCodes.SP);
+            m_RegisterDictionary.Add("pc", (ushort)dcpuRegisterCodes.PC);
+            m_RegisterDictionary.Add("o", (ushort)dcpuRegisterCodes.O);
+            m_RegisterDictionary.Add("[+a]", (ushort)dcpuRegisterCodes.A_NextWord);
+            m_RegisterDictionary.Add("[+b]", (ushort)dcpuRegisterCodes.B_NextWord);
+            m_RegisterDictionary.Add("[+c]", (ushort)dcpuRegisterCodes.C_NextWord);
+            m_RegisterDictionary.Add("[+x]", (ushort)dcpuRegisterCodes.X_NextWord);
+            m_RegisterDictionary.Add("[+y]", (ushort)dcpuRegisterCodes.Y_NextWord);
+            m_RegisterDictionary.Add("[+z]", (ushort)dcpuRegisterCodes.Z_NextWord);
+            m_RegisterDictionary.Add("[+i]", (ushort)dcpuRegisterCodes.I_NextWord);
+            m_RegisterDictionary.Add("[+j]", (ushort)dcpuRegisterCodes.J_NextWord);
         }
 
         public string MessageOuput { get; private set; }
@@ -219,8 +200,8 @@ namespace YCPU.Assembler.DCPU16ASM
                 }
             }
 
-            var tokens = this.Tokenize(line);
-            var token = tokens[0].Trim();
+            string[] tokens = this.Tokenize(line);
+            string token = tokens[0].Trim();
 
             if (token.ToLower() == "dat")
             {
@@ -228,24 +209,17 @@ namespace YCPU.Assembler.DCPU16ASM
                 return;
             }
 
-            if (!this.opcodeDictionary.ContainsKey(token))
+            if (!this.m_OpcodeAssemblers.ContainsKey(token))
             {
                 throw new Exception(string.Format("Illegal cpu opcode --> {0}", tokens[0]));
             }
 
-            var opcode = (uint)this.opcodeDictionary[token];
-            var param = tokens[1].Trim();
-
-            if ((opcode & 0xF) > 0x0)
-            {
-                opcode &= 0xF;
-                var param1 = tokens[2];
-                GenerateInstruction(opcode, param, param1);
-            }
-            else
-            {
-                GenerateInstruction(opcode, param);
-            }
+            OpcodeAssembler assembler = this.m_OpcodeAssemblers[token];
+            string param = tokens[1].Trim();
+            string param1 = (tokens.Length > 2) ? tokens[2].Trim() : string.Empty;
+            ushort[] code = assembler(param, param1);
+            for (int i = 0; i < code.Length; i++)
+                this.machineCode.Add(code[i]);
         }
 
         private int ParseLabel(string line)
@@ -273,7 +247,13 @@ namespace YCPU.Assembler.DCPU16ASM
 
         private string[] Tokenize(string data)
         {
-            var tokens = data.Split(new[] { ' ', '\t', ',' });
+            string[] tokens = data.Split(new[] { ' ', '\t', ',' });
+            for (int i = 0; i < tokens.Length - 1; i++)
+                if (((tokens[i].Length > 0) && (tokens[i + 1].Length > 0)) && (tokens[i][0] == '[') && (tokens[i + 1][tokens[i + 1].Length - 1] == ']'))
+                {
+                    tokens[i] = tokens[i] + ',' + tokens[i + 1];
+                    tokens[i + 1] = string.Empty;
+                }
             return tokens.Where(t => t.Trim() != string.Empty).ToArray();
         }
 
@@ -351,200 +331,6 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        void GenerateInstruction(uint opcode, string param1, string param2)
-        {
-            var p1 = this.ParseParam(param1);
-            var p2 = this.ParseParam(param2);
-
-            opcode |= ((uint)p1.Word << 4) & 0x3F0;
-            opcode |= ((uint)p2.Word << 10) & 0xFC00;
-
-            this.machineCode.Add((ushort)opcode);
-
-            if (p1.UsesNextWord)
-            {
-                if (p1.LabelName.Length > 0)
-                {
-                    this.labelReferences.Add((ushort)this.machineCode.Count, p1.LabelName);
-                }
-
-                this.machineCode.Add(p1.NextWord);
-            }
-
-            if (p2.UsesNextWord)
-            {
-                if (p2.LabelName.Length > 0)
-                {
-                    this.labelReferences.Add((ushort)this.machineCode.Count, p2.LabelName);
-                }
-
-                this.machineCode.Add(p2.NextWord);
-            }
-        }
-
-        void GenerateInstruction(uint opcode, string param)
-        {
-            ParsedOpcode p1 = this.ParseParam(param);
-            opcode |= ((uint)p1.Word << 10) & 0xFC00;
-
-            this.machineCode.Add((ushort)opcode);
-
-            if (p1.UsesNextWord)
-            {
-                if (p1.LabelName.Length > 0)
-                {
-                    this.labelReferences.Add((ushort)this.machineCode.Count, p1.LabelName);
-                }
-
-                this.machineCode.Add(p1.NextWord);
-            }
-        }
-
-        private ParsedOpcode ParseParam(string param)
-        {
-            var ParsedOpcode = new ParsedOpcode();
-
-            var clearedParameter = param.Replace(" ", string.Empty).Trim();
-
-            if (this.registerDictionary.ContainsKey(clearedParameter))
-            {
-                ParsedOpcode.Word = (ushort)this.registerDictionary[clearedParameter];
-            }
-            else
-            {
-                if ((clearedParameter.StartsWith("[") || clearedParameter.StartsWith("(")) && (clearedParameter.EndsWith("]") || clearedParameter.EndsWith(")")))
-                {
-                    clearedParameter = clearedParameter.Substring(1, clearedParameter.Length - 2).Replace(" ", string.Empty);
-
-                    if (clearedParameter.Contains("+"))
-                    {
-                        ParsedOpcode = ParseMemoryAddressPlusRegisterParameter(ParsedOpcode, clearedParameter);
-                    }
-                    else
-                    {
-                        ParsedOpcode = ParseMemoryAddressParameter(ParsedOpcode, clearedParameter);
-                    }
-                }
-                else
-                {
-                    ParseLiteralParameter(ParsedOpcode, clearedParameter);
-                }
-            }
-
-            return ParsedOpcode;
-        }
-
-        public ParsedOpcode ParseMemoryAddressPlusRegisterParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
-        {
-            var psplit = clearedParameter.Split('+');
-            if (psplit.Length < 2)
-            {
-                throw new Exception(string.Format("malformated memory reference '{0}'", clearedParameter));
-            }
-
-            var addressValue = "[+" + psplit[1] + "]";
-            if (!this.registerDictionary.ContainsKey(addressValue))
-            {
-                throw new Exception(string.Format("Invalid register reference in '{0}'", clearedParameter));
-            }
-
-            ParsedOpcode.Word = (ushort)this.registerDictionary[addressValue];
-            ParsedOpcode.UsesNextWord = true;
-
-            if (psplit[0].StartsWith("\'") && psplit[0].EndsWith("\'") && psplit[0].Length == 3)
-            {
-                var val = (ushort)psplit[0][1];
-                ParsedOpcode.NextWord = val;
-            }
-            else if (psplit[0].Contains("0x"))
-            {
-                ushort val = Convert.ToUInt16(psplit[0].Trim(), 16);
-                ParsedOpcode.NextWord = val;
-            }
-            else if (psplit[0].Trim().All(x => char.IsDigit(x)))
-            {
-                var val = Convert.ToUInt16(psplit[0].Trim(), 10);
-                ParsedOpcode.NextWord = val;
-            }
-            else
-            {
-                ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.LabelName = psplit[0].Trim();
-            }
-
-            return ParsedOpcode;
-        }
-
-        public ParsedOpcode ParseMemoryAddressParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
-        {
-            ParsedOpcode.Word = (ushort)dcpuRegisterCodes.NextWord_Literal_Mem;
-            ParsedOpcode.UsesNextWord = true;
-
-            if (clearedParameter.StartsWith("\'") && clearedParameter.EndsWith("\'") && clearedParameter.Length == 5)
-            {
-                ushort val = clearedParameter[1];
-                ParsedOpcode.NextWord = val;
-            }
-            else if (clearedParameter.Contains("0x"))
-            {
-                ushort val = Convert.ToUInt16(clearedParameter.Trim(), 16);
-                ParsedOpcode.NextWord = val;
-            }
-            else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
-            {
-                ushort val = Convert.ToUInt16(clearedParameter.Trim(), 10);
-                ParsedOpcode.NextWord = val;
-            }
-            else
-            {
-                ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.LabelName = clearedParameter.Trim();
-            }
-
-            return ParsedOpcode;
-        }
-
-        public ParsedOpcode ParseLiteralParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
-        {
-            ushort literalValue;
-
-            if (clearedParameter.StartsWith("\'") && clearedParameter.EndsWith("\'") && clearedParameter.Length == 3)
-            {
-                literalValue = clearedParameter[1];
-            }
-            else if (clearedParameter.Contains("0x"))
-            {
-                literalValue = Convert.ToUInt16(clearedParameter, 16);
-            }
-            else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
-            {
-                literalValue = Convert.ToUInt16(clearedParameter, 10);
-            }
-            else
-            {
-                ParsedOpcode.Word = (ushort)dcpuRegisterCodes.NextWord_Literal_Value;
-                ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.LabelName = clearedParameter;
-                return ParsedOpcode;
-            }
-
-            ushort maxValue = 0x1F;
-
-            if (literalValue < maxValue)
-            {
-                ParsedOpcode.Word = 0x20;
-                ParsedOpcode.Word += literalValue;
-            }
-            else
-            {
-                ParsedOpcode.Word = (ushort)dcpuRegisterCodes.NextWord_Literal_Value;
-                ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.NextWord = literalValue;
-            }
-
-            return ParsedOpcode;
-        }
-
         private void SetLabelAddressReferences()
         {
             foreach (ushort key in this.labelReferences.Keys)
@@ -556,7 +342,7 @@ namespace YCPU.Assembler.DCPU16ASM
                     throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
                 }
 
-                this.machineCode[key] = this.labelAddressDitionary[labelName];
+                machineCode[key] = labelAddressDitionary[labelName];
             }
         }
 
