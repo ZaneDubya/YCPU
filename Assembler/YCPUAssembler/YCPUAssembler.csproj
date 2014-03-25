@@ -43,10 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assembler\Assemblers.cs" />
+    <Compile Include="Assembler\DCPU16ASM\Assemblers.cs" />
     <Compile Include="Assembler\DCPU16ASM\Generator.cs" />
     <Compile Include="Assembler\DCPU16ASM\ParsedOpcode.cs" />
+    <Compile Include="Assembler\DCPU16ASM\ParserParams.cs" />
     <Compile Include="Assembler\Generator.cs" />
+    <Compile Include="Assembler\Opcodes.cs" />
+    <Compile Include="Assembler\ParsedOpcode.cs" />
     <Compile Include="Assembler\Parser.cs" />
+    <Compile Include="Assembler\ParserParams.cs" />
     <Compile Include="Assembler\Regex.cs" />
     <Compile Include="Assembler\DCPU16ASM\Opcodes.cs" />
     <Compile Include="Assembler\DCPU16ASM\Parser.cs" />
