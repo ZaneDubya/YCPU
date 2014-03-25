@@ -108,7 +108,7 @@ namespace YCPU.Assembler.DCPU16ASM
             {
                 if (p1.LabelName.Length > 0)
                 {
-                    this.labelReferences.Add((ushort)(machineCode.Count + code.Count),
+                    this.m_LabelReferences.Add((ushort)(m_MachineCode.Count + code.Count),
                         p1.LabelName);
                 }
 
@@ -134,7 +134,7 @@ namespace YCPU.Assembler.DCPU16ASM
             {
                 if (p1.LabelName.Length > 0)
                 {
-                    this.labelReferences.Add((ushort)(this.machineCode.Count + code.Count),
+                    this.m_LabelReferences.Add((ushort)(this.m_MachineCode.Count + code.Count),
                         p1.LabelName);
                 }
 
@@ -145,7 +145,7 @@ namespace YCPU.Assembler.DCPU16ASM
             {
                 if (p2.LabelName.Length > 0)
                 {
-                    this.labelReferences.Add((ushort)(this.machineCode.Count + code.Count),
+                    this.m_LabelReferences.Add((ushort)(this.m_MachineCode.Count + code.Count),
                         p2.LabelName);
                 }
 

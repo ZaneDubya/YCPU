@@ -10,7 +10,7 @@ namespace YCPU
     {
         static void Main(string[] args)
         {
-            string in_path = "../../rain.dasm16";
+            string in_path = "../../../../Tests/rain.yasm";
             string out_path = "rain.bin";
             string in_code = GetFileContents(in_path);
             

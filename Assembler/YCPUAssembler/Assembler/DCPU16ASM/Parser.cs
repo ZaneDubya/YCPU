@@ -23,19 +23,19 @@ namespace YCPU.Assembler.DCPU16ASM
 
     public partial class Parser
     {
-        private readonly List<ushort> machineCode;
-        private readonly Dictionary<ushort, string> labelReferences;
+        protected List<ushort> m_MachineCode;
+        protected Dictionary<ushort, string> m_LabelReferences;
         protected Dictionary<string, OpcodeAssembler> m_OpcodeAssemblers;
-        private readonly Dictionary<string, ushort> labelAddressDitionary;
+        protected Dictionary<string, ushort> m_LbelAddressDictionary;
         private readonly Dictionary<ushort, string> labelDataFieldReferences;
         protected Dictionary<string, ushort> m_RegisterDictionary;
         private bool dataNextLine = false;
 
         public Parser()
         {
-            this.labelAddressDitionary = new Dictionary<string, ushort>();
-            this.labelReferences = new Dictionary<ushort, string>();
-            this.machineCode = new List<ushort>();
+            this.m_LbelAddressDictionary = new Dictionary<string, ushort>();
+            this.m_LabelReferences = new Dictionary<ushort, string>();
+            this.m_MachineCode = new List<ushort>();
             this.labelDataFieldReferences = new Dictionary<ushort, string>();
 
             m_OpcodeAssemblers = new Dictionary<string, OpcodeAssembler>();
@@ -112,8 +112,8 @@ namespace YCPU.Assembler.DCPU16ASM
         {
             try
             {
-                this.machineCode.Clear();
-                this.labelReferences.Clear();
+                this.m_MachineCode.Clear();
+                this.m_LabelReferences.Clear();
                 this.MessageOuput = string.Empty;
 
                 foreach (var line in lines)
@@ -142,7 +142,7 @@ namespace YCPU.Assembler.DCPU16ASM
 
                 var count = 1;
 
-                foreach (var code in this.machineCode)
+                foreach (var code in this.m_MachineCode)
                 {
                     this.AddMessage(string.Format("{0:X4} ", code));
                     count++;
@@ -150,7 +150,7 @@ namespace YCPU.Assembler.DCPU16ASM
 
                 this.MessageOuput = this.MessageOuput.Substring(0, this.MessageOuput.Length - 2);
 
-                return this.machineCode.ToArray();
+                return this.m_MachineCode.ToArray();
             }
             catch (Exception ex)
             {
@@ -219,7 +219,7 @@ namespace YCPU.Assembler.DCPU16ASM
             string param1 = (tokens.Length > 2) ? tokens[2].Trim() : string.Empty;
             ushort[] code = assembler(param, param1);
             for (int i = 0; i < code.Length; i++)
-                this.machineCode.Add(code[i]);
+                this.m_MachineCode.Add(code[i]);
         }
 
         private int ParseLabel(string line)
@@ -235,12 +235,12 @@ namespace YCPU.Assembler.DCPU16ASM
             else
                 labelName = line.Substring(0, colon_pos);
                 
-            if (this.labelAddressDitionary.ContainsKey(labelName))
+            if (this.m_LbelAddressDictionary.ContainsKey(labelName))
             {
                 throw new Exception(string.Format("Error! Label '{0}' already exists!", labelName));
             }
 
-            this.labelAddressDitionary.Add(labelName.Trim(), (ushort)this.machineCode.Count);
+            this.m_LbelAddressDictionary.Add(labelName.Trim(), (ushort)this.m_MachineCode.Count);
 
             return index;
         }
@@ -306,7 +306,7 @@ namespace YCPU.Assembler.DCPU16ASM
                     var asciiLine = dat.Replace("\"", string.Empty).Trim();
                     foreach (var t in asciiLine)
                     {
-                        this.machineCode.Add(t);
+                        this.m_MachineCode.Add(t);
                     }
                 }
                 else
@@ -323,26 +323,26 @@ namespace YCPU.Assembler.DCPU16ASM
                     }
                     else
                     {
-                        this.labelDataFieldReferences.Add((ushort)this.machineCode.Count, valStr);
+                        this.labelDataFieldReferences.Add((ushort)this.m_MachineCode.Count, valStr);
                     }
 
-                    this.machineCode.Add(val);
+                    this.m_MachineCode.Add(val);
                 }
             }
         }
 
         private void SetLabelAddressReferences()
         {
-            foreach (ushort key in this.labelReferences.Keys)
+            foreach (ushort key in this.m_LabelReferences.Keys)
             {
-                var labelName = this.labelReferences[key];
+                var labelName = this.m_LabelReferences[key];
 
-                if (!this.labelAddressDitionary.ContainsKey(labelName))
+                if (!this.m_LbelAddressDictionary.ContainsKey(labelName))
                 {
                     throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
                 }
 
-                machineCode[key] = labelAddressDitionary[labelName];
+                m_MachineCode[key] = m_LbelAddressDictionary[labelName];
             }
         }
 
@@ -352,12 +352,12 @@ namespace YCPU.Assembler.DCPU16ASM
             {
                 string labelName = labelDataFieldReferences[key];
 
-                if (labelAddressDitionary.ContainsKey(labelName) != true)
+                if (m_LbelAddressDictionary.ContainsKey(labelName) != true)
                 {
                     throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
                 }
 
-                machineCode[key] = labelAddressDitionary[labelName];
+                m_MachineCode[key] = m_LbelAddressDictionary[labelName];
             }
         }
 

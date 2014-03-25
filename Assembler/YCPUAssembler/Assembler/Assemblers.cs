@@ -101,6 +101,24 @@ namespace YCPU.Assembler
             return AssembleALU((ushort)0x0088, param1, param2);
         }
 
+
+
+
+
+
+
+
+
+
+        ushort[] AssembleJMP(string param1, string param2)
+        {
+            return AssembleJMP((ushort)0x00C0, param1);
+        }
+
+
+
+
+
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {
             ParsedOpcode p1 = ParseParam(param1);
@@ -142,8 +160,56 @@ namespace YCPU.Assembler
             List<ushort> code = new List<ushort>();
             code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
             if (p2.UsesNextWord)
+            {
+                if (p2.LabelName.Length > 0)
+                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + code.Count), p2.LabelName);
                 code.Add(p2.NextWord);
+            }
+            return code.ToArray();
+        }
 
+        ushort[] AssembleJMP(ushort opcode, string param1)
+        {
+            ParsedOpcode p1 = ParseParam(param1);
+
+            if (p1.Illegal)
+                return null;
+            ushort addressingmode = 0x0000;
+            switch (p1.AddressingMode)
+            {
+                case AddressingMode.None:
+                    return null;
+                case AddressingMode.Immediate:
+                    addressingmode = 0x0000;
+                    break;
+                case AddressingMode.Register:
+                    addressingmode = 0x2000;
+                    break;
+                case AddressingMode.Indirect:
+                    addressingmode = 0x4000;
+                    break;
+                case AddressingMode.IndirectOffset:
+                    addressingmode = 0x6000;
+                    break;
+                case AddressingMode.IndirectPostInc:
+                    addressingmode = 0x8000;
+                    break;
+                case AddressingMode.IndirectPreDec:
+                    addressingmode = 0xA000;
+                    break;
+                case AddressingMode.IndirectIndexed:
+                    int r3 = (p1.Word & 0x0700);
+                    addressingmode = (ushort)(0xC000 + (r3 & 0x0300) + ((r3 & 0x0400) << 3));
+                    break;
+            }
+            List<ushort> code = new List<ushort>();
+            code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13)));
+            if (p1.UsesNextWord)
+            {
+                if (p1.LabelName.Length > 0)
+                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + code.Count), p1.LabelName);
+                code.Add(p1.NextWord);
+            }
             return code.ToArray();
         }
     }

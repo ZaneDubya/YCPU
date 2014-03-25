@@ -92,7 +92,7 @@ namespace YCPU.Assembler
             m_OpcodeAssemblers.Add("mml", null);
             m_OpcodeAssemblers.Add("mms", null);
             // jump operations
-            m_OpcodeAssemblers.Add("jmp", null);
+            m_OpcodeAssemblers.Add("jmp", AssembleJMP);
             m_OpcodeAssemblers.Add("jsr", null);
             m_OpcodeAssemblers.Add("jum", null);
             m_OpcodeAssemblers.Add("jcx", null);

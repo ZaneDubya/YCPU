@@ -11,7 +11,6 @@ namespace YCPU.Assembler
         public new ParsedOpcode ParseParam(string param)
         {
             var ParsedOpcode = new ParsedOpcode();
-
             var clearedParameter = param.Replace(" ", string.Empty).Trim();
 
             if (this.m_RegisterDictionary.ContainsKey(clearedParameter))
@@ -188,17 +187,21 @@ namespace YCPU.Assembler
                 else
                     literalValue = Convert.ToUInt16(param, 16);
             }
-            else
+            else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
             {
                 // format 1234 or -1234
-                string param = clearedParameter;
-                if (param[0] == '-')
-                    literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 10));
-                else
-                    literalValue = Convert.ToUInt16(clearedParameter, 10);
-                ParsedOpcode.AddressingMode = AddressingMode.Immediate;
+                literalValue = Convert.ToUInt16(clearedParameter, 10);
+            }
+            else if ((clearedParameter[0] == '-') && (clearedParameter.Substring(1).Trim().All(x => char.IsDigit(x))))
+            {
+                literalValue = (ushort)(0 - Convert.ToInt16(clearedParameter.Substring(1, clearedParameter.Length - 1), 10));
+            }
+            else
+            {
+                ParsedOpcode.Word = 0x0000;
                 ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.NextWord = literalValue;
+                ParsedOpcode.LabelName = clearedParameter;
+                ParsedOpcode.AddressingMode = AddressingMode.Immediate;
                 return ParsedOpcode;
             }
 
