@@ -108,14 +108,35 @@ namespace YCPU.Assembler
 
 
 
+        ushort[] AssembleMML(string param1, string param2)
+        {
+            return AssembleJMP((ushort)0x00BE, param1);
+        }
 
+        ushort[] AssembleMMS(string param1, string param2)
+        {
+            return AssembleJMP((ushort)0x00BF, param1);
+        }
 
         ushort[] AssembleJMP(string param1, string param2)
         {
             return AssembleJMP((ushort)0x00C0, param1);
         }
 
+        ushort[] AssembleJSR(string param1, string param2)
+        {
+            return AssembleJMP((ushort)0x00C1, param1);
+        }
 
+        ushort[] AssembleJUM(string param1, string param2)
+        {
+            return AssembleJMP((ushort)0x00C2, param1);
+        }
+
+        ushort[] AssembleJCX(string param1, string param2)
+        {
+            return new ushort[1] { (ushort)0x00C3 };
+        }
 
 
 

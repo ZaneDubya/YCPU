@@ -89,13 +89,13 @@ namespace YCPU.Assembler
             // MMU operations
             m_OpcodeAssemblers.Add("mmr", null);
             m_OpcodeAssemblers.Add("mmw", null);
-            m_OpcodeAssemblers.Add("mml", null);
-            m_OpcodeAssemblers.Add("mms", null);
+            m_OpcodeAssemblers.Add("mml", AssembleMML);
+            m_OpcodeAssemblers.Add("mms", AssembleMMS);
             // jump operations
             m_OpcodeAssemblers.Add("jmp", AssembleJMP);
-            m_OpcodeAssemblers.Add("jsr", null);
-            m_OpcodeAssemblers.Add("jum", null);
-            m_OpcodeAssemblers.Add("jcx", null);
+            m_OpcodeAssemblers.Add("jsr", AssembleJSR);
+            m_OpcodeAssemblers.Add("jum", AssembleJUM);
+            m_OpcodeAssemblers.Add("jcx", AssembleJCX);
             // other instructions
             m_OpcodeAssemblers.Add("slp", null);
             m_OpcodeAssemblers.Add("swi", null);
