@@ -36,59 +36,59 @@ namespace YCPU.Assembler
             m_OpcodeAssemblers.Add("cmp", AssembleCMP);
             m_OpcodeAssemblers.Add("neg", AssembleNEG);
             // branch instructions
-            m_OpcodeAssemblers.Add("bcc", null);
-            m_OpcodeAssemblers.Add("buf", null);
-            m_OpcodeAssemblers.Add("bcs", null);
-            m_OpcodeAssemblers.Add("buh", null);
-            m_OpcodeAssemblers.Add("bne", null);
-            m_OpcodeAssemblers.Add("beq", null);
-            m_OpcodeAssemblers.Add("bpl", null);
-            m_OpcodeAssemblers.Add("bsf", null);
-            m_OpcodeAssemblers.Add("bmi", null);
-            m_OpcodeAssemblers.Add("bsh", null);
-            m_OpcodeAssemblers.Add("bvc", null);
-            m_OpcodeAssemblers.Add("bvs", null);
-            m_OpcodeAssemblers.Add("bug", null);
-            m_OpcodeAssemblers.Add("bsg", null);
-            m_OpcodeAssemblers.Add("baw", null);
+            m_OpcodeAssemblers.Add("bcc", AssembleBCC);
+            m_OpcodeAssemblers.Add("buf", AssembleBCC);
+            m_OpcodeAssemblers.Add("bcs", AssembleBCS);
+            m_OpcodeAssemblers.Add("buh", AssembleBCS);
+            m_OpcodeAssemblers.Add("bne", AssembleBNE);
+            m_OpcodeAssemblers.Add("beq", AssembleBEQ);
+            m_OpcodeAssemblers.Add("bpl", AssembleBPL);
+            m_OpcodeAssemblers.Add("bsf", AssembleBPL);
+            m_OpcodeAssemblers.Add("bmi", AssembleBMI);
+            m_OpcodeAssemblers.Add("bsh", AssembleBMI);
+            m_OpcodeAssemblers.Add("bvc", AssembleBVC);
+            m_OpcodeAssemblers.Add("bvs", AssembleBVS);
+            m_OpcodeAssemblers.Add("bug", AssembleBUG);
+            m_OpcodeAssemblers.Add("bsg", AssembleBSG);
+            m_OpcodeAssemblers.Add("baw", AssembleBAW);
             // shift instructions
-            m_OpcodeAssemblers.Add("asl", null);
-            m_OpcodeAssemblers.Add("lsl", null);
-            m_OpcodeAssemblers.Add("rol", null);
-            m_OpcodeAssemblers.Add("rnl", null);
-            m_OpcodeAssemblers.Add("asr", null);
-            m_OpcodeAssemblers.Add("lsr", null);
-            m_OpcodeAssemblers.Add("ror", null);
-            m_OpcodeAssemblers.Add("rnr", null);
+            m_OpcodeAssemblers.Add("asl", AssembleASL);
+            m_OpcodeAssemblers.Add("lsl", AssembleLSL);
+            m_OpcodeAssemblers.Add("rol", AssembleROL);
+            m_OpcodeAssemblers.Add("rnl", AssembleRNL);
+            m_OpcodeAssemblers.Add("asr", AssembleASR);
+            m_OpcodeAssemblers.Add("lsr", AssembleLSR);
+            m_OpcodeAssemblers.Add("ror", AssembleROR);
+            m_OpcodeAssemblers.Add("rnr", AssembleRNR);
             // bit testing operations
-            m_OpcodeAssemblers.Add("bit", null);
-            m_OpcodeAssemblers.Add("btx", null);
-            m_OpcodeAssemblers.Add("btc", null);
-            m_OpcodeAssemblers.Add("bts", null);
+            m_OpcodeAssemblers.Add("bit", AssembleBIT);
+            m_OpcodeAssemblers.Add("btx", AssembleBTX);
+            m_OpcodeAssemblers.Add("btc", AssembleBTC);
+            m_OpcodeAssemblers.Add("bts", AssembleBTS);
             // switch octet
-            m_OpcodeAssemblers.Add("swo", null);
+            m_OpcodeAssemblers.Add("swo", AssembleSWO);
             // fpu testing operations
             m_OpcodeAssemblers.Add("fpa", null);
             m_OpcodeAssemblers.Add("fps", null);
             m_OpcodeAssemblers.Add("fpm", null);
             m_OpcodeAssemblers.Add("fpd", null);
             // flag operations
-            m_OpcodeAssemblers.Add("sef", null);
-            m_OpcodeAssemblers.Add("clf", null);
+            m_OpcodeAssemblers.Add("sef", AssembleSEF);
+            m_OpcodeAssemblers.Add("clf", AssembleCLF);
             // stack operations
-            m_OpcodeAssemblers.Add("psh", null);
-            m_OpcodeAssemblers.Add("pop", null);
+            m_OpcodeAssemblers.Add("psh", AssemblePSH);
+            m_OpcodeAssemblers.Add("pop", AssemblePOP);
             // increment / decrement
-            m_OpcodeAssemblers.Add("inc", null);
-            m_OpcodeAssemblers.Add("adi", null);
-            m_OpcodeAssemblers.Add("dec", null);
-            m_OpcodeAssemblers.Add("sbi", null);
+            m_OpcodeAssemblers.Add("inc", AssembleINC);
+            m_OpcodeAssemblers.Add("adi", AssembleADI);
+            m_OpcodeAssemblers.Add("dec", AssembleDEC);
+            m_OpcodeAssemblers.Add("sbi", AssembleSBI);
             // transfer special
-            m_OpcodeAssemblers.Add("tsr", null);
-            m_OpcodeAssemblers.Add("trs", null);
+            m_OpcodeAssemblers.Add("tsr", AssembleTSR);
+            m_OpcodeAssemblers.Add("trs", AssembleTRS);
             // MMU operations
-            m_OpcodeAssemblers.Add("mmr", null);
-            m_OpcodeAssemblers.Add("mmw", null);
+            m_OpcodeAssemblers.Add("mmr", AssembleMMR);
+            m_OpcodeAssemblers.Add("mmw", AssembleMMW);
             m_OpcodeAssemblers.Add("mml", AssembleMML);
             m_OpcodeAssemblers.Add("mms", AssembleMMS);
             // jump operations
@@ -97,9 +97,10 @@ namespace YCPU.Assembler
             m_OpcodeAssemblers.Add("jum", AssembleJUM);
             m_OpcodeAssemblers.Add("jcx", AssembleJCX);
             // other instructions
-            m_OpcodeAssemblers.Add("slp", null);
-            m_OpcodeAssemblers.Add("swi", null);
-            m_OpcodeAssemblers.Add("rti", null);
+            m_OpcodeAssemblers.Add("hwq", AssembleHWQ);
+            m_OpcodeAssemblers.Add("slp", AssembleSLP);
+            m_OpcodeAssemblers.Add("swi", AssembleSWI);
+            m_OpcodeAssemblers.Add("rti", AssembleRTI);
         }
 
         protected override void InitRegisterDictionary()

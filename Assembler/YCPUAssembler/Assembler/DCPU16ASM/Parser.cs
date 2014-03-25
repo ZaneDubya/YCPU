@@ -201,25 +201,31 @@ namespace YCPU.Assembler.DCPU16ASM
             }
 
             string[] tokens = this.Tokenize(line);
-            string token = tokens[0].Trim();
+            string opcode = tokens[0].Trim();
 
-            if (token.ToLower() == "dat")
+            if (opcode.ToLower() == "dat")
             {
                 dataNextLine = this.ParseDat(line);
                 return;
             }
 
-            if (!this.m_OpcodeAssemblers.ContainsKey(token))
+            if (!this.m_OpcodeAssemblers.ContainsKey(opcode))
             {
-                throw new Exception(string.Format("Illegal cpu opcode --> {0}", tokens[0]));
+                throw new Exception(string.Format("Undefined cpu opcode in line {0}", line));
             }
 
-            OpcodeAssembler assembler = this.m_OpcodeAssemblers[token];
-            string param = tokens[1].Trim();
-            string param1 = (tokens.Length > 2) ? tokens[2].Trim() : string.Empty;
-            ushort[] code = assembler(param, param1);
+            // get the parameters
+            List<string> param = new List<string>();
+            for (int i = 1; i < tokens.Length; i++)
+                param.Add(tokens[i].Trim());
+            // get the assembler for this opcode
+            OpcodeAssembler assembler = m_OpcodeAssemblers[opcode];
+            // pass the params to the opcode's assembler
+            ushort[] code = assembler(param.ToArray());
+            if (code == null)
+                throw new Exception(string.Format("Error assembling line {0}", line));
             for (int i = 0; i < code.Length; i++)
-                this.m_MachineCode.Add(code[i]);
+                m_MachineCode.Add(code[i]);
         }
 
         private int ParseLabel(string line)

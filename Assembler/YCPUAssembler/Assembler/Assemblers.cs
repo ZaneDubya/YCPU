@@ -7,138 +7,365 @@ namespace YCPU.Assembler
 {
     public partial class Parser : DCPU16ASM.Parser
     {
-        ushort[] AssembleLOD(string param1, string param2)
+        private const ushort c_NOP = 0x0001;
+
+        #region ALU
+        ushort[] AssembleLOD(string[] param)
         {
-            return AssembleALU((ushort)0x0000, param1, param2);
+            return AssembleALU((ushort)0x0000, param[0], param[1]);
         }
 
-        ushort[] AssembleSTO(string param1, string param2)
+        ushort[] AssembleSTO(string[] param)
         {
-            ushort[] code = AssembleALU((ushort)0x0008, param1, param2);
+            ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1]);
             int addressing = (code[0] & 0x0007);
             if ((addressing == 0) && (addressing == 1)) // no sto reg or sto immediate.
                 return null;
-            return AssembleALU((ushort)0x0000, param1, param2);
+            return AssembleALU((ushort)0x0000, param[0], param[1]);
         }
 
-        ushort[] AssembleADD(string param1, string param2)
+        ushort[] AssembleADD(string[] param)
         {
-            return AssembleALU((ushort)0x0010, param1, param2);
+            return AssembleALU((ushort)0x0010, param[0], param[1]);
         }
 
-        ushort[] AssembleSUB(string param1, string param2)
+        ushort[] AssembleSUB(string[] param)
         {
-            return AssembleALU((ushort)0x0018, param1, param2);
+            return AssembleALU((ushort)0x0018, param[0], param[1]);
         }
 
-        ushort[] AssembleADC(string param1, string param2)
+        ushort[] AssembleADC(string[] param)
         {
-            return AssembleALU((ushort)0x0020, param1, param2);
+            return AssembleALU((ushort)0x0020, param[0], param[1]);
         }
 
-        ushort[] AssembleSBC(string param1, string param2)
+        ushort[] AssembleSBC(string[] param)
         {
-            return AssembleALU((ushort)0x0028, param1, param2);
+            return AssembleALU((ushort)0x0028, param[0], param[1]);
         }
 
-        ushort[] AssembleMUL(string param1, string param2)
+        ushort[] AssembleMUL(string[] param)
         {
-            return AssembleALU((ushort)0x0030, param1, param2);
+            return AssembleALU((ushort)0x0030, param[0], param[1]);
         }
 
-        ushort[] AssembleDIV(string param1, string param2)
+        ushort[] AssembleDIV(string[] param)
         {
-            return AssembleALU((ushort)0x0038, param1, param2);
+            return AssembleALU((ushort)0x0038, param[0], param[1]);
         }
 
-        ushort[] AssembleMLI(string param1, string param2)
+        ushort[] AssembleMLI(string[] param)
         {
-            return AssembleALU((ushort)0x0040, param1, param2);
+            return AssembleALU((ushort)0x0040, param[0], param[1]);
         }
 
-        ushort[] AssembleDVI(string param1, string param2)
+        ushort[] AssembleDVI(string[] param)
         {
-            return AssembleALU((ushort)0x0048, param1, param2);
+            return AssembleALU((ushort)0x0048, param[0], param[1]);
         }
 
-        ushort[] AssembleMOD(string param1, string param2)
+        ushort[] AssembleMOD(string[] param)
         {
-            return AssembleALU((ushort)0x0050, param1, param2);
+            return AssembleALU((ushort)0x0050, param[0], param[1]);
         }
 
-        ushort[] AssembleMDI(string param1, string param2)
+        ushort[] AssembleMDI(string[] param)
         {
-            return AssembleALU((ushort)0x0058, param1, param2);
+            return AssembleALU((ushort)0x0058, param[0], param[1]);
         }
 
-        ushort[] AssembleAND(string param1, string param2)
+        ushort[] AssembleAND(string[] param)
         {
-            return AssembleALU((ushort)0x0060, param1, param2);
+            return AssembleALU((ushort)0x0060, param[0], param[1]);
         }
 
-        ushort[] AssembleORR(string param1, string param2)
+        ushort[] AssembleORR(string[] param)
         {
-            return AssembleALU((ushort)0x0068, param1, param2);
+            return AssembleALU((ushort)0x0068, param[0], param[1]);
         }
 
-        ushort[] AssembleEOR(string param1, string param2)
+        ushort[] AssembleEOR(string[] param)
         {
-            return AssembleALU((ushort)0x0070, param1, param2);
+            return AssembleALU((ushort)0x0070, param[0], param[1]);
         }
 
-        ushort[] AssembleNOT(string param1, string param2)
+        ushort[] AssembleNOT(string[] param)
         {
-            return AssembleALU((ushort)0x0078, param1, param2);
+            return AssembleALU((ushort)0x0078, param[0], param[1]);
         }
 
-        ushort[] AssembleCMP(string param1, string param2)
+        ushort[] AssembleCMP(string[] param)
         {
-            return AssembleALU((ushort)0x0080, param1, param2);
+            return AssembleALU((ushort)0x0080, param[0], param[1]);
         }
 
-        ushort[] AssembleNEG(string param1, string param2)
+        ushort[] AssembleNEG(string[] param)
         {
-            return AssembleALU((ushort)0x0088, param1, param2);
+            return AssembleALU((ushort)0x0088, param[0], param[1]);
         }
+        #endregion
 
-
-
-
-
-
-
-
-        ushort[] AssembleMML(string param1, string param2)
+        #region Branch operations
+        ushort[] AssembleBCC(string[] param)
         {
-            return AssembleJMP((ushort)0x00BE, param1);
+            return new ushort[1] { (ushort)c_NOP };
         }
 
-        ushort[] AssembleMMS(string param1, string param2)
+        ushort[] AssembleBCS(string[] param)
         {
-            return AssembleJMP((ushort)0x00BF, param1);
+            return new ushort[1] { (ushort)c_NOP };
         }
 
-        ushort[] AssembleJMP(string param1, string param2)
+        ushort[] AssembleBNE(string[] param)
         {
-            return AssembleJMP((ushort)0x00C0, param1);
+            return new ushort[1] { (ushort)c_NOP };
         }
 
-        ushort[] AssembleJSR(string param1, string param2)
+        ushort[] AssembleBEQ(string[] param)
         {
-            return AssembleJMP((ushort)0x00C1, param1);
+            return new ushort[1] { (ushort)c_NOP };
         }
 
-        ushort[] AssembleJUM(string param1, string param2)
+        ushort[] AssembleBPL(string[] param)
         {
-            return AssembleJMP((ushort)0x00C2, param1);
+            return new ushort[1] { (ushort)c_NOP };
         }
 
-        ushort[] AssembleJCX(string param1, string param2)
+        ushort[] AssembleBMI(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBVC(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBVS(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBUG(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBSG(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBAW(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region shift operations
+        ushort[] AssembleASL(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleLSL(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleROL(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleRNL(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleASR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleLSR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleROR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleRNR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Bit testing operations
+        ushort[] AssembleBIT(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBTX(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBTC(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleBTS(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Switch Octet
+        ushort[] AssembleSWO(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Set flags
+        ushort[] AssembleSEF(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleCLF(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Stack Push/Pop
+        ushort[] AssemblePSH(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssemblePOP(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Inc/Dec
+        ushort[] AssembleINC(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleADI(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleDEC(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleSBI(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region Transfer registers
+        ushort[] AssembleTSR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleTRS(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
+
+        #region MMU
+        ushort[] AssembleMMR(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleMMW(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleMML(string[] param)
+        {
+            if (param.Length != 1)
+                throw new Exception("Bad param length, expected 1");
+            return AssembleJMP((ushort)0x00BE, param[0]);
+        }
+
+        ushort[] AssembleMMS(string[] param)
+        {
+            if (param.Length != 1)
+                throw new Exception("Bad param length, expected 1");
+            return AssembleJMP((ushort)0x00BF, param[0]);
+        }
+        #endregion
+
+        #region Jump
+        ushort[] AssembleJMP(string[] param)
+        {
+            if (param.Length != 1)
+                throw new Exception("Bad param length, expected 1");
+            return AssembleJMP((ushort)0x00C0, param[0]);
+        }
+
+        ushort[] AssembleJSR(string[] param)
+        {
+            if (param.Length != 1)
+                throw new Exception("Bad param length, expected 1");
+            return AssembleJMP((ushort)0x00C1, param[0]);
+        }
+
+        ushort[] AssembleJUM(string[] param)
+        {
+            if (param.Length != 1)
+                throw new Exception("Bad param length, expected 1");
+            return AssembleJMP((ushort)0x00C2, param[0]);
+        }
+
+        ushort[] AssembleJCX(string[] param)
         {
             return new ushort[1] { (ushort)0x00C3 };
         }
+        #endregion
 
+        #region Processor Functions
+        ushort[] AssembleHWQ(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
 
+        ushort[] AssembleSLP(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleSWI(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+
+        ushort[] AssembleRTI(string[] param)
+        {
+            return new ushort[1] { (ushort)c_NOP };
+        }
+        #endregion
 
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {
