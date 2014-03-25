@@ -105,9 +105,10 @@ namespace YCPU.Assembler.DCPU16ASM
             m_RegisterDictionary.Add("[+j]", (ushort)dcpuRegisterCodes.J_NextWord);
         }
 
-        public string MessageOuput { get; private set; }
-        public int LineCounter { get; private set; }
+        public string MessageOuput { get; protected set; }
+        public int LineCounter { get; protected set; }
 
+        // Note - this is no longer used by YCPUAssembler
         public ushort[] Parse(string[] lines)
         {
             try
@@ -159,21 +160,20 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        private string RemoveLineComments(string line)
+        protected string RemoveLineComments(string line)
         {
-            var clearedLine = line;
+            string clearedLine = line;
+            int commentIndex = line.IndexOf(";");
 
-            var commentIndex = line.IndexOf(";");
-
-            if (commentIndex > 0)
-            {
+            if (commentIndex == 0)
+                return string.Empty;
+            else if (commentIndex > 0)
                 clearedLine = line.Substring(0, commentIndex).Trim();
-            }
 
             return clearedLine;
         }
 
-        private void AssembleLine(string line)
+        protected void AssembleLine(string line)
         {
             line = line.ToLower().Trim();
 
@@ -337,7 +337,7 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        private void SetLabelAddressReferences()
+        protected void SetLabelAddressReferences()
         {
             foreach (ushort key in this.m_LabelReferences.Keys)
             {
@@ -352,7 +352,7 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        private void SetDataFieldLabelAddressReferences()
+        protected void SetDataFieldLabelAddressReferences()
         {
             foreach (ushort key in labelDataFieldReferences.Keys)
             {
@@ -367,12 +367,12 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        private void AddMessageLine(string input)
+        protected void AddMessageLine(string input)
         {
             this.MessageOuput += string.Format("{0}\r\n", input);
         }
 
-        private void AddMessage(string input)
+        protected void AddMessage(string input)
         {
             this.MessageOuput += input;
         }

@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+ * YCPUAssembler
+ * Copyright (c) 2014 ZaneDubya
+ * Based on DCPU-16 ASM.NET
+ * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
+ * This code is licensed under the MIT License
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -189,15 +197,17 @@ namespace YCPU.Assembler
             }
             else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
             {
-                // format 1234 or -1234
+                // format 1234
                 literalValue = Convert.ToUInt16(clearedParameter, 10);
             }
             else if ((clearedParameter[0] == '-') && (clearedParameter.Substring(1).Trim().All(x => char.IsDigit(x))))
             {
+                // format -1234
                 literalValue = (ushort)(0 - Convert.ToInt16(clearedParameter.Substring(1, clearedParameter.Length - 1), 10));
             }
             else
             {
+                // format LABEL
                 ParsedOpcode.Word = 0x0000;
                 ParsedOpcode.UsesNextWord = true;
                 ParsedOpcode.LabelName = clearedParameter;
@@ -205,6 +215,7 @@ namespace YCPU.Assembler
                 return ParsedOpcode;
             }
 
+            // unless the parameter is a LABEL, parameter parsing ends here.
             ParsedOpcode.AddressingMode = AddressingMode.Immediate;
             ParsedOpcode.UsesNextWord = true;
             ParsedOpcode.NextWord = literalValue;

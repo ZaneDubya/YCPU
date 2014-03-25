@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+ * YCPUAssembler
+ * Copyright (c) 2014 ZaneDubya
+ * Based on DCPU-16 ASM.NET
+ * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
+ * This code is licensed under the MIT License
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +20,52 @@ namespace YCPU.Assembler
         public Parser() : base()
         {
 
+        }
+
+        public new ushort[] Parse(string[] lines)
+        {
+            // Note - Hides the same function in the DCPU16ASM code.
+            m_MachineCode.Clear();
+            m_LabelReferences.Clear();
+            MessageOuput = string.Empty;
+
+            try
+            {
+                foreach (var line in lines)
+                {
+                    LineCounter++;
+
+                    string currentLine = line.Trim();
+                    if (currentLine.Length < 1 || line[0] == ';')
+                        continue;
+
+                    currentLine = RemoveLineComments(currentLine);
+                    if (currentLine.Trim().Length < 1)
+                        continue;
+
+                    AssembleLine(currentLine);
+                }
+
+                SetLabelAddressReferences();
+                SetDataFieldLabelAddressReferences();
+
+                var count = 1;
+
+                foreach (ushort code in m_MachineCode)
+                {
+                    AddMessage(string.Format("{0:X4} ", code));
+                    count++;
+                }
+
+                MessageOuput = this.MessageOuput.Substring(0, this.MessageOuput.Length - 2);
+
+                return m_MachineCode.ToArray();
+            }
+            catch (Exception ex)
+            {
+                AddMessageLine(string.Format("Line {0}: {1}", LineCounter, ex.Message));
+                return null;
+            }
         }
 
         protected override void InitOpcodeDictionary()
@@ -101,6 +155,8 @@ namespace YCPU.Assembler
             m_OpcodeAssemblers.Add("slp", AssembleSLP);
             m_OpcodeAssemblers.Add("swi", AssembleSWI);
             m_OpcodeAssemblers.Add("rti", AssembleRTI);
+            // macros
+            m_OpcodeAssemblers.Add("rts", AssembleRTS);
         }
 
         protected override void InitRegisterDictionary()

@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+ * YCPUAssembler
+ * Copyright (c) 2014 ZaneDubya
+ * Based on DCPU-16 ASM.NET
+ * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
+ * This code is licensed under the MIT License
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -366,6 +374,11 @@ namespace YCPU.Assembler
             return new ushort[1] { (ushort)c_NOP };
         }
         #endregion
+
+        ushort[] AssembleRTS(string[] param)
+        {
+            return AssemblePOP(new string[1] { "PC" });
+        }
 
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {

@@ -111,7 +111,8 @@ no_set:
   lod x, y
   and x, 0x003f
   lod b, [code,x]       ; bor [a], [code+x]
-  orr [a]
+  orr b, [a]
+  sto b, [a]
   jmp skip3
 
   empty_char2:
