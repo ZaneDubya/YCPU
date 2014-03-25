@@ -508,8 +508,8 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
-1011 00xx   PSH                 PSH             Push to stack               1
-1011 01xx   POP                 PSH             Pop from stack              1
+1011 00xx   PSH                 PSH             Push to stack               1*
+1011 01xx   POP                 PSH             Pop from stack              1*
 1011 1000   INC/ADI             INC             Inc / Add immediate         1
 1011 1001   DEC/SBI             INC             Dec / Subtract immediate    1
 1011 1010   TSR         X       TSR             Special Purpose Reg -> Rx   1
@@ -1031,21 +1031,19 @@ Operation:  !Rx{B} -> Rx{B}, Z, C
     
   
 =========================[ 3.E. Branch Instructions ]===========================
-ccc0 0011   BXX
-    000 = BCC / BLU, Branch on carry clear AKA Less Than Unsigned
-    001 = BCS / BHU, Branch on carry set AKA Higher Than or Same Unsigned  
-    010 = BNE, Branch on zero clear
-    011 = BEQ, Branch on zero set
-    100 = BPL / BLS, Branch on negative clear AKA Less Than Signed
-    101 = BMI / BHS, Branch on negative set AKA Higher Than Or Same Signed
-    110 = BVC, Branch on overflow clear
-    111 = BVS, Branch on overflow set
-    
-    
+ccc0 0011   BXX                                                             NZCV
+    000 = BCC / BUF, Branch if carry clear AKA Unsigned Fewer Than          ..0.
+    001 = BCS / BUH, Branch if carry set AKA Unsigned Higher Than or Same   ..1.
+    010 = BNE, Branch if zero clear                                         .0..
+    011 = BEQ, Branch if zero set                                           .1..
+    100 = BPL / BSF, Branch if negative clear AKA Signed Fewer Than         0...
+    101 = BMI / BSH, Branch if negative set AKA Signed Higher Than Or Same  1...
+    110 = BVC, Branch if overflow clear                                     ...0
+    111 = BVS, Branch if overflow set                                       ...1
 ccc1 0011   BXX
-    000 = BGU, Branch on greater than Unsigned
-    001 = BGS, Branch on greater than Signed
-    010 = BAW, Branch on less than or equal [signed]
+    000 = BUG, Branch if Unsigned Greater than                              .11.
+    001 = BSG, Branch if Signed Greater than                                11..
+    010 = BAW, Branch always                                                ....
     011 = Undefined
     100 = Undefined
     101 = Undefined
