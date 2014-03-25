@@ -7,4 +7,4 @@ A toolchain is planned to support development for the YCPU. At present, a model 
 
 **Thanks to:**  
 Tim "DensitY" Hancock ([DCPU-16 ASM.NET](https://github.com/densitynz/DCPU-16-ASM.NET))  
-The NESDEV Community (help developing the specification)
+The [NESDEV Community](http://www.nesdev.com) (help developing the specification)
