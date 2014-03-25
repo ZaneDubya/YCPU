@@ -12,6 +12,95 @@ namespace YCPU.Assembler
             return AssembleALU((ushort)0x0000, param1, param2);
         }
 
+        ushort[] AssembleSTO(string param1, string param2)
+        {
+            ushort[] code = AssembleALU((ushort)0x0008, param1, param2);
+            int addressing = (code[0] & 0x0007);
+            if ((addressing == 0) && (addressing == 1)) // no sto reg or sto immediate.
+                return null;
+            return AssembleALU((ushort)0x0000, param1, param2);
+        }
+
+        ushort[] AssembleADD(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0010, param1, param2);
+        }
+
+        ushort[] AssembleSUB(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0018, param1, param2);
+        }
+
+        ushort[] AssembleADC(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0020, param1, param2);
+        }
+
+        ushort[] AssembleSBC(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0028, param1, param2);
+        }
+
+        ushort[] AssembleMUL(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0030, param1, param2);
+        }
+
+        ushort[] AssembleDIV(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0038, param1, param2);
+        }
+
+        ushort[] AssembleMLI(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0040, param1, param2);
+        }
+
+        ushort[] AssembleDVI(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0048, param1, param2);
+        }
+
+        ushort[] AssembleMOD(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0050, param1, param2);
+        }
+
+        ushort[] AssembleMDI(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0058, param1, param2);
+        }
+
+        ushort[] AssembleAND(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0060, param1, param2);
+        }
+
+        ushort[] AssembleORR(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0068, param1, param2);
+        }
+
+        ushort[] AssembleEOR(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0070, param1, param2);
+        }
+
+        ushort[] AssembleNOT(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0078, param1, param2);
+        }
+
+        ushort[] AssembleCMP(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0080, param1, param2);
+        }
+
+        ushort[] AssembleNEG(string param1, string param2)
+        {
+            return AssembleALU((ushort)0x0088, param1, param2);
+        }
+
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {
             ParsedOpcode p1 = ParseParam(param1);

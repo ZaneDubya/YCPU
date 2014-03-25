@@ -18,23 +18,23 @@ namespace YCPU.Assembler
         {
             // alu instructions
             m_OpcodeAssemblers.Add("lod", AssembleLOD);
-            m_OpcodeAssemblers.Add("sto", null);
-            m_OpcodeAssemblers.Add("add", null);
-            m_OpcodeAssemblers.Add("sub", null);
-            m_OpcodeAssemblers.Add("adc", null);
-            m_OpcodeAssemblers.Add("sbc", null);
-            m_OpcodeAssemblers.Add("mul", null);
-            m_OpcodeAssemblers.Add("div", null);
-            m_OpcodeAssemblers.Add("mli", null);
-            m_OpcodeAssemblers.Add("dvi", null);
-            m_OpcodeAssemblers.Add("mod", null);
-            m_OpcodeAssemblers.Add("mdi", null);
-            m_OpcodeAssemblers.Add("and", null);
-            m_OpcodeAssemblers.Add("orr", null);
-            m_OpcodeAssemblers.Add("eor", null);
-            m_OpcodeAssemblers.Add("not", null);
-            m_OpcodeAssemblers.Add("cmp", null);
-            m_OpcodeAssemblers.Add("neg", null);
+            m_OpcodeAssemblers.Add("sto", AssembleSTO);
+            m_OpcodeAssemblers.Add("add", AssembleADD);
+            m_OpcodeAssemblers.Add("sub", AssembleSUB);
+            m_OpcodeAssemblers.Add("adc", AssembleADC);
+            m_OpcodeAssemblers.Add("sbc", AssembleSBC);
+            m_OpcodeAssemblers.Add("mul", AssembleMUL);
+            m_OpcodeAssemblers.Add("div", AssembleDIV);
+            m_OpcodeAssemblers.Add("mli", AssembleMLI);
+            m_OpcodeAssemblers.Add("dvi", AssembleDVI);
+            m_OpcodeAssemblers.Add("mod", AssembleMOD);
+            m_OpcodeAssemblers.Add("mdi", AssembleMDI);
+            m_OpcodeAssemblers.Add("and", AssembleAND);
+            m_OpcodeAssemblers.Add("orr", AssembleORR);
+            m_OpcodeAssemblers.Add("eor", AssembleEOR);
+            m_OpcodeAssemblers.Add("not", AssembleNOT);
+            m_OpcodeAssemblers.Add("cmp", AssembleCMP);
+            m_OpcodeAssemblers.Add("neg", AssembleNEG);
             // branch instructions
             m_OpcodeAssemblers.Add("bcc", null);
             m_OpcodeAssemblers.Add("buf", null);
