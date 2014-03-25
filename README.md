@@ -6,5 +6,5 @@ The YCPU Specification describes an imaginary 16-bit processor with a comprehens
 A toolchain is planned to support development for the YCPU. At present, a model emulator implemented in C# has been implemented, and released under the MIT license.
 
 **Thanks to:**  
-Tim "DensitY" Hancock (DCPU-16 ASM.NET)  
+Tim "DensitY" Hancock ([DCPU-16 ASM.NET](https://github.com/densitynz/DCPU-16-ASM.NET))  
 The NESDEV Community (help developing the specification)
