@@ -1,3 +1,5 @@
+lod r0, [r7,-34]
+
 set z, 0x1234 ; rand_seed
 set y, z ; cur_rand
 set pc, main_loop
