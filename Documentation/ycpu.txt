@@ -526,12 +526,12 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 
 1100 0000   JMP                 JMP             Jump                        1
 1100 0001   JSR                 JMP             Jump to Subroutine          2
-1100 0010   JUM         X       JMP             Jump and enter User Mode    32
-1100 0011   JCX         X       ---             Jump and Switch Context     64
+1100 0010   JUM         X       JMP             Jump and enter User Mode    2
+1100 0011   JCX         X       ---             Jump and Switch Context     48
 1100 0100   HWQ         X       HWQ             Hardware Bus Query          1
 1100 0101   SLP         X       ---             Sleep until Interrupt       1
 1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
-1100 0111   RTI         X       ---             Return from Interrupt       48
+1100 0111   RTI         X       ---             Return from Interrupt       12
 1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)
 1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)
 111x xxxx   ---                 ---             UNDEFINED (32 opcodes)

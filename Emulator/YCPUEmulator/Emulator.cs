@@ -14,7 +14,7 @@ namespace YCPU
 
         public void Start()
         {
-            m_CPU = new Simware.YCPU();
+            m_CPU = new Platform.YCPU();
             m_CPU.Interrupt_Reset();
             UpdateConsole();
 
@@ -37,10 +37,10 @@ namespace YCPU
                             UpdateConsole();
                             break;
                         case 'w':
-                            m_CPU.Benchmark(false);
+                            m_CPU.Benchmark(false, 0x800);
                             break;
                         case 'e':
-                            m_CPU.Benchmark(true);
+                            m_CPU.Benchmark(true, 0x800);
                             break;
                         case 'r':
                             m_YCPU_Running = true;
@@ -50,7 +50,7 @@ namespace YCPU
                             UpdateConsole();
                             break;
                         case 'q':
-                            m_CPU = new Simware.YCPU();
+                            m_CPU = new Platform.YCPU();
                             m_CPU.Interrupt_Reset();
                             UpdateConsole();
                             break;

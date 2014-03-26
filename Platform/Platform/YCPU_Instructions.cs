@@ -221,12 +221,12 @@ namespace YCPU.Platform
 
             m_Opcodes[0xC0] = new YCPUInstruction("JMP", JMP, BitPatternJMP, DisassembleJMP, 1);
             m_Opcodes[0xC1] = new YCPUInstruction("JSR", JSR, BitPatternJMP, DisassembleJMP, 2);
-            m_Opcodes[0xC2] = new YCPUInstruction("JUM", JUM, BitPatternJMP, DisassembleJMP, 32);
-            m_Opcodes[0xC3] = new YCPUInstruction("JCX", JCX, null, DisassembleNoBits, 64);
+            m_Opcodes[0xC2] = new YCPUInstruction("JUM", JUM, BitPatternJMP, DisassembleJMP, 2);
+            m_Opcodes[0xC3] = new YCPUInstruction("JCX", JCX, null, DisassembleNoBits, 48);
             m_Opcodes[0xC4] = new YCPUInstruction("HWQ", HWQ, BitPatternHWQ, DisassembleHWQ, 1);
             m_Opcodes[0xC5] = new YCPUInstruction("SLP", SLP, null, DisassembleNoBits, 1);
-            m_Opcodes[0xC6] = new YCPUInstruction("SWI", SWI, null, DisassembleNoBits, 32);
-            m_Opcodes[0xC7] = new YCPUInstruction("RTI", RTI, null, DisassembleNoBits, 48);
+            m_Opcodes[0xC6] = new YCPUInstruction("SWI", SWI, null, DisassembleNoBits, 1);
+            m_Opcodes[0xC7] = new YCPUInstruction("RTI", RTI, null, DisassembleNoBits, 12);
 
 
             for (int i = 0; i < 0x100; i++)
