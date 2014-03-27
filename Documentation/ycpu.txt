@@ -507,16 +507,16 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 0101   LSR                 SHF             Logical Shift Right         4
 1010 0110   ROR                 SHF             Rotate Through-Carry Right  1
 1010 0111   RNR                 SHF             Rotate No-Carry Right       1
-1010 1000   BIT                 BIT             Test a bit                  2
-1010 1001   BTX                 BIT             Test a bit and change it    2
-1010 1010   BTC                 BIT             Test a bit and clear it     2
-1010 1011   BTS                 BIT             Test a bit and set it       2    
+1010 1000   BIT                 BTT             Test a bit                  2
+1010 1001   BTX                 BTT             Test a bit and change it    2
+1010 1010   BTC                 BTT             Test a bit and clear it     2
+1010 1011   BTS                 BTT             Test a bit and set it       2    
 1010 1100   SWO                 SWO             Switch Octet                1
 1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
-1011 00xx   PSH                 PSH             Push to stack               1*
-1011 01xx   POP                 PSH             Pop from stack              1*
+1011 00xx   PSH                 STK             Push to stack               1*
+1011 01xx   POP                 STK             Pop from stack              1*
 1011 1000   INC/ADI             INC             Inc / Add immediate         1
 1011 1001   DEC/SBI             INC             Dec / Subtract immediate    1
 1011 1010   TSR         X       TSR             Special Purpose Reg -> Rx   1
@@ -563,7 +563,7 @@ ALU Bit Pattern
     RRRr rrII       110     Indirect Indexed    ADD R0, [R1,R2]         
     RRRr rrII       111     Indirect Indexed    ADD R0, [R1,R2]         
     
-BIT Bit Pattern
+BTT Bit Pattern
     FEDC BA98 7654 3210
     rrrR ssss OOOO OOOO
         O = Opcode
@@ -648,7 +648,7 @@ MMU Bit Pattern
         r = register containing value to write/destination for value read
         R = register containing index of MMU word to read from/write to (0-31)
             
-PSH Bit Pattern
+STK Bit Pattern
     FEDC BA98 7654 3210                        
     rrrr rrrr OOOO OPfp
         O = Opcode

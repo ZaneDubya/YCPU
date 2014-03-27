@@ -253,25 +253,25 @@ namespace YCPU.Assembler
         ushort[] AssembleBIT(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleBIT((ushort)0x00A8, param[0], param[1]);
+            return AssembleBTT((ushort)0x00A8, param[0], param[1]);
         }
 
         ushort[] AssembleBTX(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleBIT((ushort)0x00A9, param[0], param[1]);
+            return AssembleBTT((ushort)0x00A9, param[0], param[1]);
         }
 
         ushort[] AssembleBTC(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleBIT((ushort)0x00AA, param[0], param[1]);
+            return AssembleBTT((ushort)0x00AA, param[0], param[1]);
         }
 
         ushort[] AssembleBTS(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleBIT((ushort)0x00AB, param[0], param[1]);
+            return AssembleBTT((ushort)0x00AB, param[0], param[1]);
         }
         #endregion
 
@@ -300,12 +300,14 @@ namespace YCPU.Assembler
         #region Stack Push/Pop
         ushort[] AssemblePSH(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountMinMax(param, 1, 10);
+            return AssembleSTK(0xB0, param);
         }
 
         ushort[] AssemblePOP(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountMinMax(param, 1, 10);
+            return AssembleSTK(0xB1, param);
         }
         #endregion
 
@@ -474,7 +476,7 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
-        ushort[] AssembleBIT(ushort opcode, string param1, string param2)
+        ushort[] AssembleBTT(ushort opcode, string param1, string param2)
         {
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
@@ -663,6 +665,65 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
+        ushort[] AssembleSTK(ushort opcode, string[] param)
+        {
+            ushort flags = 0x0000;
+            // there MUST be 1 - 10 params.
+            // params MUST be one of:   R0, R1, R2, R3, R4, R5, R6, R7, SP
+            //                          A, B, C, I, J, X, Y, Z, FL, PC
+            foreach (string p in param)
+            {
+                switch (p.ToLower())
+                {
+                    case "pc":
+                        flags |= 0x0001;
+                        break;
+                    case "fl":
+                        flags |= 0x0002;
+                        break;
+                    case "r0":
+                    case "a":
+                        flags |= 0x0100;
+                        break;
+                    case "r1":
+                    case "b":
+                        flags |= 0x0200;
+                        break;
+                    case "r2":
+                    case "c":
+                        flags |= 0x0400;
+                        break;
+                    case "r3":
+                    case "i":
+                        flags |= 0x0800;
+                        break;
+                    case "r4":
+                    case "j":
+                        flags |= 0x1000;
+                        break;
+                    case "r5":
+                    case "x":
+                        flags |= 0x2000;
+                        break;
+                    case "r6":
+                    case "y":
+                        flags |= 0x4000;
+                        break;
+                    case "r7":
+                    case "z":
+                    case "sp":
+                        flags |= 0x8000;
+                        break;
+                    default:
+                        throw new Exception("STK instruction with non-existing register.");
+                }
+            }
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | flags));
+            return m_Code.ToArray();
+        }
+
         ushort[] AssembleSWO(ushort opcode, string param1, string param2, string param3)
         {
             // param1 = source register, MUST be register
@@ -703,6 +764,7 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
+        #region Sanity
         private void Sanity_RequireParamCountExact(string[] param, int count)
         {
             if (param.Length != count)
@@ -714,5 +776,6 @@ namespace YCPU.Assembler
             if ((param.Length < min) || (param.Length > max))
                 throw new Exception(string.Format("Bad param count, expected {0}-{1}.", min, max));
         }
+        #endregion
     }
 }
