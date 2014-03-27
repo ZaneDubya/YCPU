@@ -665,14 +665,16 @@ PSH Bit Pattern
 
 SHF Bit Pattern
     FEDC BA98 7654 3210 
-    rrr. ssss OOOO ODoo
+    rrrR ssss OOOO ODoo
         O = Opcode
         o = Sub-Opcode
             00 = ASx, 01 = LSx, 10 = ROx, 11 = RNx
         D = direction
             0 = L, 1 = R
         r = register to shift
-        s = bits to shift (0-15)
+		R = shift value select, see s
+        s = if R = 0, bits to shift (0-15)
+			if R = 1, register to use as shift value (r = .sss)
         
 SWO Bit Pattern
     FEDC BA98 7654 3210
@@ -919,6 +921,9 @@ Shifts all the bits of Rx X bits to the left. The leftmost X bits are set to 0.
 The carry flag is set if any bits shifted out were 1, otherwise clear. The
 result is that Rx is multiplied by 2^X, treating Rx as an unsigned word, and
 setting the carry flag if the result does not fit in 16 bits.
+Syntax:
+	ASL R0, 8		; Arithmetic Shift Left of R0 by 8 bits.
+	ASL R0, R1		; Arithmetic Shift Left of R0 by (R1 & 0x000F) bits.
 Operation:  
     N [Negative]    Set if bit 15 of the result is set.
     Z [Zero]        Set if Rx == 0.

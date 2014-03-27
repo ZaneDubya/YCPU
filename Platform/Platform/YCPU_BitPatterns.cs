@@ -182,7 +182,10 @@ namespace YCPU.Platform
         private void BitPatternSHF(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            value = (ushort)(((operand & 0x0F00) >> 8));
+            if ((operand & 0x1000) == 0)
+                value = (ushort)(((operand & 0x0F00) >> 8));
+            else
+                value = R[(operand & 0x0700) >> 8];
         }
 
         private void BitPatternSWO(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)

@@ -15,16 +15,18 @@ namespace YCPU.Assembler
 {
     public partial class Parser : DCPU16ASM.Parser
     {
-        private const ushort c_NOP = 0x0001;
+        private const ushort c_NOP = 0x0001; // LOD R0, R0
 
         #region ALU
         ushort[] AssembleLOD(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0000, param[0], param[1]);
         }
 
         ushort[] AssembleSTO(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1]);
             int addressing = (code[0] & 0x0007);
             if ((addressing == 0) && (addressing == 1)) // no sto reg or sto immediate.
@@ -34,81 +36,97 @@ namespace YCPU.Assembler
 
         ushort[] AssembleADD(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0010, param[0], param[1]);
         }
 
         ushort[] AssembleSUB(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0018, param[0], param[1]);
         }
 
         ushort[] AssembleADC(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0020, param[0], param[1]);
         }
 
         ushort[] AssembleSBC(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0028, param[0], param[1]);
         }
 
         ushort[] AssembleMUL(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0030, param[0], param[1]);
         }
 
         ushort[] AssembleDIV(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0038, param[0], param[1]);
         }
 
         ushort[] AssembleMLI(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0040, param[0], param[1]);
         }
 
         ushort[] AssembleDVI(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0048, param[0], param[1]);
         }
 
         ushort[] AssembleMOD(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0050, param[0], param[1]);
         }
 
         ushort[] AssembleMDI(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0058, param[0], param[1]);
         }
 
         ushort[] AssembleAND(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0060, param[0], param[1]);
         }
 
         ushort[] AssembleORR(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0068, param[0], param[1]);
         }
 
         ushort[] AssembleEOR(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0070, param[0], param[1]);
         }
 
         ushort[] AssembleNOT(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0078, param[0], param[1]);
         }
 
         ushort[] AssembleCMP(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0080, param[0], param[1]);
         }
 
         ushort[] AssembleNEG(string[] param)
         {
+            Sanity_RequireParamLength(param, 2);
             return AssembleALU((ushort)0x0088, param[0], param[1]);
         }
         #endregion
@@ -390,6 +408,8 @@ namespace YCPU.Assembler
         }
         #endregion
 
+        private List<ushort> m_Code = new List<ushort>();
+
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {
             ParsedOpcode p1 = ParseParam(param1);
@@ -428,15 +448,15 @@ namespace YCPU.Assembler
                     addressingmode = (ushort)(0x0006 + (r3 & 0x0300) + ((r3 & 0x0400) >> 10));
                     break;
             }
-            List<ushort> code = new List<ushort>();
-            code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
             if (p2.UsesNextWord)
             {
                 if (p2.LabelName.Length > 0)
-                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + code.Count), p2.LabelName);
-                code.Add(p2.NextWord);
+                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + m_Code.Count), p2.LabelName);
+                m_Code.Add(p2.NextWord);
             }
-            return code.ToArray();
+            return m_Code.ToArray();
         }
 
         ushort[] AssembleBRA(ushort opcode, string param1)
@@ -448,10 +468,10 @@ namespace YCPU.Assembler
             if (p1.LabelName == string.Empty)
                 return null;
 
-            List<ushort> code = new List<ushort>();
-            code.Add((ushort)opcode);
+            m_Code.Clear();
+            m_Code.Add((ushort)opcode);
             m_BranchReferences.Add((ushort)m_MachineCode.Count, p1.LabelName);
-            return code.ToArray();
+            return m_Code.ToArray();
         }
 
         ushort[] AssembleJMP(ushort opcode, string param1)
@@ -488,15 +508,63 @@ namespace YCPU.Assembler
                     addressingmode = (ushort)(0xC000 + (r3 & 0x0300) + ((r3 & 0x0400) << 3));
                     break;
             }
-            List<ushort> code = new List<ushort>();
-            code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13)));
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13)));
             if (p1.UsesNextWord)
             {
                 if (p1.LabelName.Length > 0)
-                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + code.Count), p1.LabelName);
-                code.Add(p1.NextWord);
+                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + m_Code.Count), p1.LabelName);
+                m_Code.Add(p1.NextWord);
             }
-            return code.ToArray();
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleSHF(ushort opcode, string param1, string param2)
+        {
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+
+            if (p1.Illegal || p2.Illegal)
+                return null;
+
+            // p1 MUST be a register.
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // p2 MUST be EITHER an immediate value, OR a register.
+            // if p2 is immediate, it MUST be 0 - 15.
+            // if p2 is a register, it MUST be 0 - 7.
+            switch (p2.AddressingMode)
+            {
+                case AddressingMode.Immediate:
+                    if (p2.Word >= 16)
+                        return null;
+                    break;
+                case AddressingMode.Register:
+                    if (p2.Word >= 8)
+                        return null;
+                    break;
+                default:
+                    return null;
+            }
+            //  Bit pattern is:
+            //  FEDC BA98 7654 3210 
+            //  rrrR ssss OOOO ODoo
+            //      r = p1
+            //      R = select use of s.
+            //      s = p2
+
+            ushort r_bits = (ushort)((p1.Word & 0x0007) << 13);
+
+            ushort s_bits = 0x0000;
+            if (p2.AddressingMode == AddressingMode.Immediate)
+                s_bits = (ushort)(p2.Word << 8);
+            if (p2.AddressingMode == AddressingMode.Register)
+                s_bits = (ushort)((0x1000) | (p2.Word << 8));
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | r_bits | s_bits));
+            return m_Code.ToArray();
         }
 
         private void Sanity_RequireParamLength(string[] param, int length)

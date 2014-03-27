@@ -294,9 +294,13 @@ namespace YCPU.Platform
         private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
         {
             uses_next_word = false;
-            RegGPIndex destination = (RegGPIndex)((operand & 0xE00) >> 13);
-            ushort value = (ushort)(((operand & 0x0F00) >> 8));
-            return string.Format("{0} {1}, ${2:X2}", name, NameOfRegGP(destination), value);
+            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            string value = string.Empty;
+            if ((operand & 0x1000) == 0)
+                value = string.Format("${2:X2}", (ushort)(((operand & 0x0F00) >> 8)));
+            else
+                value = NameOfRegGP((RegGPIndex)((operand & 0x0700) >> 8));
+            return string.Format("{0} {1}, {2}", name, NameOfRegGP(destination), value);
         }
 
         private string DisassembleSWO(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)

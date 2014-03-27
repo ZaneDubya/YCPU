@@ -59,7 +59,7 @@ namespace YCPU.Assembler
                     count++;
                 }
 
-                MessageOuput = this.MessageOuput.Substring(0, this.MessageOuput.Length - 2);
+                MessageOuput = this.MessageOuput.Substring(0, MessageOuput.Length - 2);
 
                 return m_MachineCode.ToArray();
             }
@@ -76,7 +76,7 @@ namespace YCPU.Assembler
             {
                 string labelName = m_BranchReferences[index];
 
-                if (!this.m_LabelAddressDictionary.ContainsKey(labelName))
+                if (!m_LabelAddressDictionary.ContainsKey(labelName))
                 {
                     throw new Exception(string.Format("Unknown label reference '{0}'.", labelName));
                 }
