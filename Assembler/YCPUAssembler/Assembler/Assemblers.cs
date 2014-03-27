@@ -20,13 +20,13 @@ namespace YCPU.Assembler
         #region ALU
         ushort[] AssembleLOD(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0000, param[0], param[1]);
         }
 
         ushort[] AssembleSTO(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1]);
             int addressing = (code[0] & 0x0007);
             if ((addressing == 0) && (addressing == 1)) // no sto reg or sto immediate.
@@ -36,97 +36,97 @@ namespace YCPU.Assembler
 
         ushort[] AssembleADD(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0010, param[0], param[1]);
         }
 
         ushort[] AssembleSUB(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0018, param[0], param[1]);
         }
 
         ushort[] AssembleADC(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0020, param[0], param[1]);
         }
 
         ushort[] AssembleSBC(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0028, param[0], param[1]);
         }
 
         ushort[] AssembleMUL(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0030, param[0], param[1]);
         }
 
         ushort[] AssembleDIV(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0038, param[0], param[1]);
         }
 
         ushort[] AssembleMLI(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0040, param[0], param[1]);
         }
 
         ushort[] AssembleDVI(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0048, param[0], param[1]);
         }
 
         ushort[] AssembleMOD(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0050, param[0], param[1]);
         }
 
         ushort[] AssembleMDI(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0058, param[0], param[1]);
         }
 
         ushort[] AssembleAND(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0060, param[0], param[1]);
         }
 
         ushort[] AssembleORR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0068, param[0], param[1]);
         }
 
         ushort[] AssembleEOR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0070, param[0], param[1]);
         }
 
         ushort[] AssembleNOT(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0078, param[0], param[1]);
         }
 
         ushort[] AssembleCMP(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0080, param[0], param[1]);
         }
 
         ushort[] AssembleNEG(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleALU((ushort)0x0088, param[0], param[1]);
         }
         #endregion
@@ -134,67 +134,67 @@ namespace YCPU.Assembler
         #region Branch operations
         ushort[] AssembleBCC(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0090, param[0]);
         }
 
         ushort[] AssembleBCS(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0091, param[0]);
         }
 
         ushort[] AssembleBNE(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0092, param[0]);
         }
 
         ushort[] AssembleBEQ(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0093, param[0]);
         }
 
         ushort[] AssembleBPL(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0094, param[0]);
         }
 
         ushort[] AssembleBMI(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0095, param[0]);
         }
 
         ushort[] AssembleBVC(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0096, param[0]);
         }
 
         ushort[] AssembleBVS(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0097, param[0]);
         }
 
         ushort[] AssembleBUG(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0098, param[0]);
         }
 
         ushort[] AssembleBSG(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x0099, param[0]);
         }
 
         ushort[] AssembleBAW(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleBRA((ushort)0x009F, param[0]);
         }
         #endregion
@@ -202,49 +202,49 @@ namespace YCPU.Assembler
         #region Shift operations
         ushort[] AssembleASL(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A0, param[0], param[1]);
         }
 
         ushort[] AssembleLSL(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A1, param[0], param[1]);
         }
 
         ushort[] AssembleROL(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A2, param[0], param[1]);
         }
 
         ushort[] AssembleRNL(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A3, param[0], param[1]);
         }
 
         ushort[] AssembleASR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A4, param[0], param[1]);
         }
 
         ushort[] AssembleLSR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A5, param[0], param[1]);
         }
 
         ushort[] AssembleROR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A6, param[0], param[1]);
         }
 
         ushort[] AssembleRNR(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleSHF((ushort)0x00A7, param[0], param[1]);
         }
         #endregion
@@ -252,25 +252,25 @@ namespace YCPU.Assembler
         #region Bit testing operations
         ushort[] AssembleBIT(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleBIT((ushort)0x00A8, param[0], param[1]);
         }
 
         ushort[] AssembleBTX(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleBIT((ushort)0x00A9, param[0], param[1]);
         }
 
         ushort[] AssembleBTC(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleBIT((ushort)0x00AA, param[0], param[1]);
         }
 
         ushort[] AssembleBTS(string[] param)
         {
-            Sanity_RequireParamLength(param, 2);
+            Sanity_RequireParamCountExact(param, 2);
             return AssembleBIT((ushort)0x00AB, param[0], param[1]);
         }
         #endregion
@@ -278,7 +278,7 @@ namespace YCPU.Assembler
         #region Switch Octet
         ushort[] AssembleSWO(string[] param)
         {
-            Sanity_RequireParamLength(param, 3);
+            Sanity_RequireParamCountExact(param, 3);
             return AssembleSWO((ushort)0x00AC, param[0], param[1], param[2]);
         }
         #endregion
@@ -286,12 +286,14 @@ namespace YCPU.Assembler
         #region Set flags
         ushort[] AssembleSEF(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountMinMax(param, 1, 4);
+            return AssembleFLG((ushort)0x00AE, param);
         }
 
         ushort[] AssembleCLF(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountMinMax(param, 1, 4);
+            return AssembleFLG((ushort)0x00AF, param);
         }
         #endregion
 
@@ -370,19 +372,19 @@ namespace YCPU.Assembler
         #region Jump
         ushort[] AssembleJMP(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleJMP((ushort)0x00C0, param[0]);
         }
 
         ushort[] AssembleJSR(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleJMP((ushort)0x00C1, param[0]);
         }
 
         ushort[] AssembleJUM(string[] param)
         {
-            Sanity_RequireParamLength(param, 1);
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleJMP((ushort)0x00C2, param[0]);
         }
 
@@ -535,6 +537,39 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
+        ushort[] AssembleFLG(ushort opcode, string[] param)
+        {
+            bool n = false, z = false, c = false, v = false;
+            // there MUST be 1 - 4 params.
+            // params MUST be one of: N, Z, C, V (case invariant)
+            foreach (string p in param)
+            {
+                switch (p.ToLower())
+                {
+                    case "n":
+                        n = true;
+                        break;
+                    case "z":
+                        z = true;
+                        break;
+                    case "c":
+                        c = true;
+                        break;
+                    case "v":
+                        v = true;
+                        break;
+                    default:
+                        throw new Exception("FLG instruction with non-existing flag.");
+                }
+            }
+
+            ushort flags = (ushort)((n ? 0x8000 : 0x0000) | (z ? 0x4000 : 0x0000) | (c ? 0x2000 : 0x0000) | (v ? 0x1000 : 0x0000));
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | flags));
+            return m_Code.ToArray();
+        }
+
         ushort[] AssembleJMP(ushort opcode, string param1)
         {
             ParsedOpcode p1 = ParseParam(param1);
@@ -668,10 +703,16 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
-        private void Sanity_RequireParamLength(string[] param, int length)
+        private void Sanity_RequireParamCountExact(string[] param, int count)
         {
-            if (param.Length != length)
-                throw new Exception(string.Format("Bad param length, expected {0}.", length));
+            if (param.Length != count)
+                throw new Exception(string.Format("Bad param count, expected {0}.", count));
+        }
+
+        private void Sanity_RequireParamCountMinMax(string[] param, int min, int max)
+        {
+            if ((param.Length < min) || (param.Length > max))
+                throw new Exception(string.Format("Bad param count, expected {0}-{1}.", min, max));
         }
     }
 }
