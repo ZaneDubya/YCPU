@@ -64,7 +64,7 @@ external bus, all logical addresses are 16-bit, and thus an instruction can only
 address 64 kilowords of memory at any time. Any multi-word values are stored in
 little-endian format.
 
-The Switch Octet (SWO) instruction allows easy and fast access to individual
+A Switch Octet (SWO) instruction allows easy and fast access to individual
 octets (8-bit bytes) from a currently loaded register. However, there is no
 support for 8-bit math: all instructions operate on 16-bit values at all times
 (with the exception of MUL and FPU, which are extended to 32-bits).
@@ -181,6 +181,8 @@ This Hardware Bus can host up to 256 Devices. The processor can directly address
 memory banks exposed by the Devices, and can also directly communicate with a
 Device by executing a Hardware Query instruction. Devices can request the
 processor's attention by raising an interrupt.
+
+#to be determined.
 
 
 =============================[ 2.D. Interrupts ]================================
