@@ -187,8 +187,8 @@ namespace YCPU.Platform
             m_Opcodes[0x97] = new YCPUInstruction("BVS", BVS, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x98] = new YCPUInstruction("BUG", BUG, BitPatternBRA, DisassembleBRA, 1);
             m_Opcodes[0x99] = new YCPUInstruction("BSG", BSG, BitPatternBRA, DisassembleBRA, 1);
-            m_Opcodes[0x9A] = new YCPUInstruction("BAW", BAW, BitPatternBRA, DisassembleBRA, 1);
-            // 0x9B - 0x9F are Undefined
+            // 0x9A - 0x9E are Undefined
+            m_Opcodes[0x9F] = new YCPUInstruction("BAW", BAW, BitPatternBRA, DisassembleBRA, 1);
 
             m_Opcodes[0xA0] = new YCPUInstruction("ASL", ASL, BitPatternSHF, DisassembleSHF, 1);
             m_Opcodes[0xA1] = new YCPUInstruction("LSL", ASL, BitPatternSHF, DisassembleSHF, 1); // ASL == LSL, per spec.

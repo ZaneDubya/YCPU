@@ -26,17 +26,18 @@ namespace YCPU.Assembler.DCPU16ASM
         protected List<ushort> m_MachineCode;
         protected Dictionary<ushort, string> m_LabelReferences;
         protected Dictionary<string, OpcodeAssembler> m_OpcodeAssemblers;
-        protected Dictionary<string, ushort> m_LbelAddressDictionary;
+        protected Dictionary<string, ushort> m_LabelAddressDictionary;
         private readonly Dictionary<ushort, string> labelDataFieldReferences;
         protected Dictionary<string, ushort> m_RegisterDictionary;
         private bool dataNextLine = false;
 
         public Parser()
         {
-            this.m_LbelAddressDictionary = new Dictionary<string, ushort>();
-            this.m_LabelReferences = new Dictionary<ushort, string>();
-            this.m_MachineCode = new List<ushort>();
-            this.labelDataFieldReferences = new Dictionary<ushort, string>();
+            m_LabelAddressDictionary = new Dictionary<string, ushort>();
+            m_LabelReferences = new Dictionary<ushort, string>();
+
+            m_MachineCode = new List<ushort>();
+            labelDataFieldReferences = new Dictionary<ushort, string>();
 
             m_OpcodeAssemblers = new Dictionary<string, OpcodeAssembler>();
             m_RegisterDictionary = new Dictionary<string, ushort>();
@@ -241,12 +242,12 @@ namespace YCPU.Assembler.DCPU16ASM
             else
                 labelName = line.Substring(0, colon_pos);
                 
-            if (this.m_LbelAddressDictionary.ContainsKey(labelName))
+            if (this.m_LabelAddressDictionary.ContainsKey(labelName))
             {
                 throw new Exception(string.Format("Error! Label '{0}' already exists!", labelName));
             }
 
-            this.m_LbelAddressDictionary.Add(labelName.Trim(), (ushort)this.m_MachineCode.Count);
+            this.m_LabelAddressDictionary.Add(labelName.Trim(), (ushort)this.m_MachineCode.Count);
 
             return index;
         }
@@ -339,16 +340,16 @@ namespace YCPU.Assembler.DCPU16ASM
 
         protected void SetLabelAddressReferences()
         {
-            foreach (ushort key in this.m_LabelReferences.Keys)
+            foreach (ushort index in m_LabelReferences.Keys)
             {
-                var labelName = this.m_LabelReferences[key];
+                string labelName = this.m_LabelReferences[index];
 
-                if (!this.m_LbelAddressDictionary.ContainsKey(labelName))
+                if (!this.m_LabelAddressDictionary.ContainsKey(labelName))
                 {
                     throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
                 }
 
-                m_MachineCode[key] = m_LbelAddressDictionary[labelName];
+                m_MachineCode[index] = m_LabelAddressDictionary[labelName];
             }
         }
 
@@ -358,12 +359,12 @@ namespace YCPU.Assembler.DCPU16ASM
             {
                 string labelName = labelDataFieldReferences[key];
 
-                if (m_LbelAddressDictionary.ContainsKey(labelName) != true)
+                if (m_LabelAddressDictionary.ContainsKey(labelName) != true)
                 {
                     throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
                 }
 
-                m_MachineCode[key] = m_LbelAddressDictionary[labelName];
+                m_MachineCode[key] = m_LabelAddressDictionary[labelName];
             }
         }
 

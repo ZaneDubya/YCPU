@@ -1037,8 +1037,8 @@ Operation:  !Rx{B} -> Rx{B}, Z, C
     V [Overflow] Not effected.
     
   
-=========================[ 3.E. Branch Instructions ]===========================
-ccc0 0011   BXX                                                             NZCV
+==========================[ 3.E. Branch Operations ]============================
+1001 0ccc BXX                                                               NZCV
     000 = BCC / BUF, Branch if carry clear AKA Unsigned Fewer Than          ..0.
     001 = BCS / BUH, Branch if carry set AKA Unsigned Higher Than or Same   ..1.
     010 = BNE, Branch if zero clear                                         .0..
@@ -1047,15 +1047,15 @@ ccc0 0011   BXX                                                             NZCV
     101 = BMI / BSH, Branch if negative set AKA Signed Higher Than Or Same  1...
     110 = BVC, Branch if overflow clear                                     ...0
     111 = BVS, Branch if overflow set                                       ...1
-ccc1 0011   BXX
+1001 1ccc BXX 
     000 = BUG, Branch if Unsigned Greater than                              .11.
     001 = BSG, Branch if Signed Greater than                                11..
-    010 = BAW, Branch always                                                ....
-    011 = Undefined
-    100 = Undefined
-    101 = Undefined
-    110 = Undefined
-    111 = Undefined
+    010 = Undefined			                                                ....
+    011 = Undefined			                                                ....
+    100 = Undefined			                                                ....
+    101 = Undefined			                                                ....
+    110 = Undefined			                                                ....
+    111 = BAW, Branch always			                                    ....
 
     
 ===========================[ 3.F. FPU Instructions ]============================

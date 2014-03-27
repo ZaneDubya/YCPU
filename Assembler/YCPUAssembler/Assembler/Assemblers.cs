@@ -116,57 +116,68 @@ namespace YCPU.Assembler
         #region Branch operations
         ushort[] AssembleBCC(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0090, param[0]);
         }
 
         ushort[] AssembleBCS(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0091, param[0]);
         }
 
         ushort[] AssembleBNE(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0092, param[0]);
         }
 
         ushort[] AssembleBEQ(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0093, param[0]);
         }
 
         ushort[] AssembleBPL(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0094, param[0]);
         }
 
         ushort[] AssembleBMI(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0095, param[0]);
         }
 
         ushort[] AssembleBVC(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0096, param[0]);
         }
 
         ushort[] AssembleBVS(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0097, param[0]);
         }
 
         ushort[] AssembleBUG(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0098, param[0]);
         }
 
         ushort[] AssembleBSG(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x0099, param[0]);
         }
 
         ushort[] AssembleBAW(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 1);
+            return AssembleBRA((ushort)0x009F, param[0]);
         }
         #endregion
 
@@ -328,22 +339,19 @@ namespace YCPU.Assembler
         #region Jump
         ushort[] AssembleJMP(string[] param)
         {
-            if (param.Length != 1)
-                throw new Exception("Bad param length, expected 1");
+            Sanity_RequireParamLength(param, 1);
             return AssembleJMP((ushort)0x00C0, param[0]);
         }
 
         ushort[] AssembleJSR(string[] param)
         {
-            if (param.Length != 1)
-                throw new Exception("Bad param length, expected 1");
+            Sanity_RequireParamLength(param, 1);
             return AssembleJMP((ushort)0x00C1, param[0]);
         }
 
         ushort[] AssembleJUM(string[] param)
         {
-            if (param.Length != 1)
-                throw new Exception("Bad param length, expected 1");
+            Sanity_RequireParamLength(param, 1);
             return AssembleJMP((ushort)0x00C2, param[0]);
         }
 
@@ -375,10 +383,12 @@ namespace YCPU.Assembler
         }
         #endregion
 
+        #region Macros
         ushort[] AssembleRTS(string[] param)
         {
             return AssemblePOP(new string[1] { "PC" });
         }
+        #endregion
 
         ushort[] AssembleALU(ushort opcode, string param1, string param2)
         {
@@ -429,6 +439,21 @@ namespace YCPU.Assembler
             return code.ToArray();
         }
 
+        ushort[] AssembleBRA(ushort opcode, string param1)
+        {
+            ParsedOpcode p1 = ParseParam(param1);
+            if (p1.Illegal)
+                return null;
+            // must be branching to a label
+            if (p1.LabelName == string.Empty)
+                return null;
+
+            List<ushort> code = new List<ushort>();
+            code.Add((ushort)opcode);
+            m_BranchReferences.Add((ushort)m_MachineCode.Count, p1.LabelName);
+            return code.ToArray();
+        }
+
         ushort[] AssembleJMP(ushort opcode, string param1)
         {
             ParsedOpcode p1 = ParseParam(param1);
@@ -472,6 +497,12 @@ namespace YCPU.Assembler
                 code.Add(p1.NextWord);
             }
             return code.ToArray();
+        }
+
+        private void Sanity_RequireParamLength(string[] param, int length)
+        {
+            if (param.Length != length)
+                throw new Exception(string.Format("Bad param length, expected {0}.", length));
         }
     }
 }

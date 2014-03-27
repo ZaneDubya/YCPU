@@ -15,17 +15,18 @@ namespace YCPU.Assembler
 {
     public partial class Parser : DCPU16ASM.Parser
     {
-        private Platform.YCPU m_YCPU = new Platform.YCPU();
+        protected Dictionary<ushort, string> m_BranchReferences;
 
         public Parser() : base()
         {
-
+            m_BranchReferences = new Dictionary<ushort, string>();
         }
 
         public new ushort[] Parse(string[] lines)
         {
             // Note - Hides the same function in the DCPU16ASM code.
             m_MachineCode.Clear();
+            m_BranchReferences.Clear();
             m_LabelReferences.Clear();
             MessageOuput = string.Empty;
 
@@ -47,6 +48,7 @@ namespace YCPU.Assembler
                 }
 
                 SetLabelAddressReferences();
+                SetBranchAddressReferences();
                 SetDataFieldLabelAddressReferences();
 
                 var count = 1;
@@ -68,6 +70,26 @@ namespace YCPU.Assembler
             }
         }
 
+        protected void SetBranchAddressReferences()
+        {
+            foreach (ushort index in m_BranchReferences.Keys)
+            {
+                string labelName = m_BranchReferences[index];
+
+                if (!this.m_LabelAddressDictionary.ContainsKey(labelName))
+                {
+                    throw new Exception(string.Format("Unknown label reference '{0}'.", labelName));
+                }
+
+                ushort label_address = m_LabelAddressDictionary[labelName];
+                int delta = label_address - index;
+                if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
+                    throw new Exception("Branch operation out of range.");
+                m_MachineCode[index] = (ushort)((m_MachineCode[index] & 0x00FF) | (((sbyte)delta) << 8));
+            }
+        }
+
+        #region Initialization of opcode and register names
         protected override void InitOpcodeDictionary()
         {
             // alu instructions
@@ -181,5 +203,6 @@ namespace YCPU.Assembler
 
             m_RegisterDictionary.Add("sp", (ushort)YCPUReg.R7);
         }
+        #endregion
     }
 }
