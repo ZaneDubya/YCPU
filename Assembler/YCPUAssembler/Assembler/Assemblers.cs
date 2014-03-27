@@ -252,22 +252,26 @@ namespace YCPU.Assembler
         #region Bit testing operations
         ushort[] AssembleBIT(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleBIT((ushort)0x00A8, param[0], param[1]);
         }
 
         ushort[] AssembleBTX(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleBIT((ushort)0x00A9, param[0], param[1]);
         }
 
         ushort[] AssembleBTC(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleBIT((ushort)0x00AA, param[0], param[1]);
         }
 
         ushort[] AssembleBTS(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleBIT((ushort)0x00AB, param[0], param[1]);
         }
         #endregion
 
@@ -464,6 +468,54 @@ namespace YCPU.Assembler
                     m_LabelReferences.Add((ushort)(m_MachineCode.Count + m_Code.Count), p2.LabelName);
                 m_Code.Add(p2.NextWord);
             }
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleBIT(ushort opcode, string param1, string param2)
+        {
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+
+            if (p1.Illegal || p2.Illegal)
+                return null;
+
+            // p1 MUST be a register.
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // p2 MUST be EITHER an immediate value, OR a register.
+            // if p2 is immediate, it MUST be 0 - 15.
+            // if p2 is a register, it MUST be 0 - 7.
+            switch (p2.AddressingMode)
+            {
+                case AddressingMode.Immediate:
+                    if (p2.Word >= 16)
+                        return null;
+                    break;
+                case AddressingMode.Register:
+                    if (p2.Word >= 8)
+                        return null;
+                    break;
+                default:
+                    return null;
+            }
+            //  Bit pattern is:
+            //  FEDC BA98 7654 3210 
+            //  rrrR ssss OOOO OOOO
+            //      r = p1
+            //      R = select use of s.
+            //      s = p2
+
+            ushort r_bits = (ushort)((p1.Word & 0x0007) << 13);
+
+            ushort s_bits = 0x0000;
+            if (p2.AddressingMode == AddressingMode.Immediate)
+                s_bits = (ushort)(p2.Word << 8);
+            if (p2.AddressingMode == AddressingMode.Register)
+                s_bits = (ushort)((0x1000) | (p2.Word << 8));
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | r_bits | s_bits));
             return m_Code.ToArray();
         }
 

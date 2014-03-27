@@ -565,16 +565,11 @@ ALU Bit Pattern
     
 BIT Bit Pattern
     FEDC BA98 7654 3210
-    RRRb bbbT OOOO OOcc
+    rrrR ssss OOOO OOOO
         O = Opcode
-        c = Condition
-            00 = test a bit
-            01 = test a bit and change
-            10 = test a bit and clear
-            11 = test a bit and set
         r = register to test
-        T = 0: test bit with value = b ($0 - $f)
-            1: test bit with value = (Rx & $0F) - (bbbb used as rrr.o00i)
+        R = 0: test bit with value = s ($0 - $f)
+            1: test bit with value = (Rx & $0F), (ssss used as .rrr)
 
 BRA Bit Pattern
     FEDC BA98 7654 3210                        
