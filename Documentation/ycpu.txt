@@ -517,8 +517,8 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit              1
 1011 00xx   PSH                 STK             Push to stack               1*
 1011 01xx   POP                 STK             Pop from stack              1*
-1011 1000   INC/ADI             INC             Inc / Add immediate         1
-1011 1001   DEC/SBI             INC             Dec / Subtract immediate    1
+1011 1000   INC/ADI             IMM             Inc / Add immediate         1
+1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         X       TSR             Special Purpose Reg -> Rx   1
 1011 1011   TRS         X       TSR             Rx -> Special Purpose Reg   1
 1100 1100   MMR         X       MMU             Read from MMU               1
@@ -634,7 +634,7 @@ JMP Bit Pattern
     110r rrii               Indirect Indexed    JMP [R1,R2]         
     111r rrii               Indirect Indexed    JMP [R1,R2]         
     
-INC Bit Pattern
+IMM Bit Pattern
     FEDC BA98 7654 3210
     RRRv vvvv OOOO OOOO
         O = Opcode

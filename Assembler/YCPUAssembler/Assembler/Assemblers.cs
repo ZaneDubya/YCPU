@@ -314,22 +314,26 @@ namespace YCPU.Assembler
         #region Inc/Dec
         ushort[] AssembleINC(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 1);
+            return AssembleIMM((ushort)0x00B8, param[0], 1.ToString());
         }
 
         ushort[] AssembleADI(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleIMM((ushort)0x00B8, param[0], param[1]);
         }
 
         ushort[] AssembleDEC(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 1);
+            return AssembleIMM((ushort)0x00B9, param[0], 1.ToString());
         }
 
         ushort[] AssembleSBI(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleIMM((ushort)0x00B9, param[0], param[1]);
         }
         #endregion
 
@@ -569,6 +573,29 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | flags));
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleIMM(ushort opcode, string param1, string param2)
+        {
+            // param1 = source/dest register, MUST be register
+            // param2 = immediate value, MUST be number, MUST be 1 - 32
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+            if (p2.AddressingMode != AddressingMode.Immediate)
+                return null;
+            if ((p2.Word < 1) || (p2.Word > 32))
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // RRRv vvvv OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x001F) << 8)));
             return m_Code.ToArray();
         }
 
