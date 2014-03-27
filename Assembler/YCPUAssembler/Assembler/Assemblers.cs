@@ -199,45 +199,53 @@ namespace YCPU.Assembler
         }
         #endregion
 
-        #region shift operations
+        #region Shift operations
         ushort[] AssembleASL(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A0, param[0], param[1]);
         }
 
         ushort[] AssembleLSL(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A1, param[0], param[1]);
         }
 
         ushort[] AssembleROL(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A2, param[0], param[1]);
         }
 
         ushort[] AssembleRNL(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A3, param[0], param[1]);
         }
 
         ushort[] AssembleASR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A4, param[0], param[1]);
         }
 
         ushort[] AssembleLSR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A5, param[0], param[1]);
         }
 
         ushort[] AssembleROR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A6, param[0], param[1]);
         }
 
         ushort[] AssembleRNR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 2);
+            return AssembleSHF((ushort)0x00A7, param[0], param[1]);
         }
         #endregion
 
