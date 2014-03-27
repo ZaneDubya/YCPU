@@ -1307,11 +1307,11 @@ handled.
 
 
 SWO         Switch Octet
-Syntax SWO Rs[.L/.H],Rd[.L,.H],[flags]
+Syntax SWO Rs,Rd,[flags]
 Takes an octet from Rs and places it in Rd. Flags determine which operation
 takes place:
-    SWO R0,R1,LL    ; R0 low octet -> R1 low octet, R1 upper 8 bits cleared.
-    SWO R0,R1,HL    ; R0 high octect -> R1 low octet, R1 upper 8 bits cleared.
+    SWO R0,R1,LR    ; R0 low octet -> R1 low octet, R1 upper 8 bits cleared.
+    SWO R0,R1,HR    ; R0 high octect -> R1 low octet, R1 upper 8 bits cleared.
     SWO R0,R1,LW    ; R0 low octet -> R1 low octet, R1 upper 8 bits preserved.
     SWO R0,R1,HW    ; R0 low octet -> R1 high octet, R1 lower 8 bits preserved.
 

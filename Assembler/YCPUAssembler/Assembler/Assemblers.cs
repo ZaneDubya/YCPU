@@ -278,7 +278,8 @@ namespace YCPU.Assembler
         #region Switch Octet
         ushort[] AssembleSWO(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamLength(param, 3);
+            return AssembleSWO((ushort)0x00AC, param[0], param[1], param[2]);
         }
         #endregion
 
@@ -624,6 +625,46 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | r_bits | s_bits));
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleSWO(ushort opcode, string param1, string param2, string param3)
+        {
+            // param1 = source register, MUST be register
+            // param2 = dest register, MUST be register
+            // param3 = flags, MUST be LR, HR, LW, HW
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+            ushort flag_type = 0x0000;
+            switch (param3)
+            {
+                case "LR":
+                    flag_type = 0x0000;
+                    break;
+                case "HR":
+                    flag_type = 0x0001;
+                    break;
+                case "LW":
+                    flag_type = 0x0002;
+                    break;
+                case "HW":
+                    flag_type = 0x0003;
+                    break;
+                default:
+                    throw new Exception("Bad SWO flag.");
+            }
+
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+            if (p2.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // RRRr rroo OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10) | (flag_type << 8)));
             return m_Code.ToArray();
         }
 
