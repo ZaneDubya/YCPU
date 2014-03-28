@@ -297,7 +297,7 @@ namespace YCPU.Platform
             RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
             string value = string.Empty;
             if ((operand & 0x1000) == 0)
-                value = string.Format("${2:X2}", (ushort)(((operand & 0x0F00) >> 8)));
+                value = string.Format("${0:X2}", (ushort)(((operand & 0x0F00) >> 8)));
             else
                 value = NameOfRegGP((RegGPIndex)((operand & 0x0700) >> 8));
             return string.Format("{0} {1}, {2}", name, NameOfRegGP(destination), value);

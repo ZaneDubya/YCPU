@@ -35,8 +35,8 @@ namespace YCPU.Assembler.DCPU16ASM
                     var b = (byte)(word >> 8);
                     var a = (byte)(word & 0xFF);
 
-                    outfile.WriteByte(b);
                     outfile.WriteByte(a);
+                    outfile.WriteByte(b);
                 }
 
                 File.WriteAllBytes(directory + filename, outfile.ToArray());

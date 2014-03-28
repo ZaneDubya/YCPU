@@ -307,7 +307,7 @@ namespace YCPU.Assembler
         ushort[] AssemblePOP(string[] param)
         {
             Sanity_RequireParamCountMinMax(param, 1, 10);
-            return AssembleSTK(0xB1, param);
+            return AssembleSTK(0xB4, param);
         }
         #endregion
 

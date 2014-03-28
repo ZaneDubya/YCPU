@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace YCPU.Platform
 {
@@ -387,7 +388,7 @@ namespace YCPU.Platform
             {
                 return ((m_PS & c_PS_R) != 0);
             }
-            private set
+            set
             {
                 if (value == false)
                 {
@@ -817,5 +818,21 @@ namespace YCPU.Platform
             return value;
         }
         #endregion
+
+        public void LoadBinaryToMemory(string path, ushort address)
+        {
+            try
+            {
+                byte[] data = File.ReadAllBytes(path);
+                ushort[] sdata = new ushort[data.Length / 2];
+                Buffer.BlockCopy(data, 0, sdata, 0, data.Length);
+                for (int i = 0; i < data.Length; i++)
+                    SetMemory((ushort)(address + i), sdata[i]);
+            }
+            catch
+            {
+                // throw exception?
+            }
+        }
     }
 }

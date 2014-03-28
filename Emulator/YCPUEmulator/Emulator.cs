@@ -57,6 +57,12 @@ namespace YCPU
                         case 'u':
                             UpdateConsole();
                             break;
+                        case 'l':
+                            m_CPU.PS_R = true;
+                            m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                            m_CPU.PC = 0x0000;
+                            UpdateConsole();
+                            break;
                     }
                 }
                 

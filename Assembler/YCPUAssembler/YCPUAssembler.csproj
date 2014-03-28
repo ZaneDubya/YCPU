@@ -56,6 +56,7 @@
     <Compile Include="Assembler\Regex.cs" />
     <Compile Include="Assembler\DCPU16ASM\Opcodes.cs" />
     <Compile Include="Assembler\DCPU16ASM\Parser.cs" />
+    <Compile Include="Disassembler\Generator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Assembler\DCPU16ASM\RegisterCodes.cs" />
