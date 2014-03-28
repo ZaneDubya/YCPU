@@ -3,7 +3,9 @@ lod y, c ; cur_rand
 jmp main_loop
 
 next_rand:
+psh a
 mul y, 10061
+pop a
 add y, 1
 rts
 

@@ -660,7 +660,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -671,7 +671,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -682,7 +682,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -693,7 +693,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -704,7 +704,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -715,7 +715,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -726,7 +726,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -737,7 +737,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -748,7 +748,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -759,7 +759,7 @@ namespace YCPU.Platform
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, nextword, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value);
+                PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
@@ -768,7 +768,7 @@ namespace YCPU.Platform
             ushort value;
             RegGPIndex destination;
             bits(operand, nextword, out value, out destination);
-            PC = (ushort)(PC + (sbyte)value);
+            PC = (ushort)(PC + (sbyte)value - 1);
         }
         #endregion
 

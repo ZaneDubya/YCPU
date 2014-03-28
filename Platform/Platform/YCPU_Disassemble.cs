@@ -288,6 +288,8 @@ namespace YCPU.Platform
                 ((operand & 0x0001) != 0) ? "PC " : string.Empty);
             if (flags == string.Empty)
                 flags = "<NONE>";
+            if (name.ToLower() == "pop" && (flags.Trim() == "PC"))
+                return "RTS";
             return string.Format("{0} {1}", name, flags);
         }
 

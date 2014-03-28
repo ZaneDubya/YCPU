@@ -38,10 +38,6 @@ namespace YCPU.Platform
             MMU_Disable();
             PS = 0x0000;
 
-            Random r = new Random();
-            for (int i = 0; i < 0x10000; i++)
-                SetMemory((ushort)i, (ushort)r.Next(0, 0x10000));
-
             m_Rom_CPU[0x00][0x0000] = 0x0000;
             m_Rom_CPU[0x00][0x0001] = 0xFFFF;
             m_Rom_CPU[0x00][0x0002] = 0x2000;
