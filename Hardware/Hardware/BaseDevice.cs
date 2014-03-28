@@ -5,12 +5,12 @@ using System.Text;
 
 namespace YCPU.Hardware
 {
-    class BaseDevice
+    abstract class BaseDevice
     {
-        protected ushort m_DeviceType = 0x0000;
-        protected ushort m_DeviceID = 0x0000;
-        protected ushort m_ManufacturerID = 0x0000;
-        protected ushort m_HardwareRevision = 0x0000;
+        protected abstract ushort DeviceType { get; }
+        protected abstract ushort ManufacturerID { get; }
+        protected abstract ushort DeviceID { get; }
+        protected abstract ushort DeviceRevision { get; }
 
         private Platform.YBUS m_BUS;
         private bool m_IRQ = false;
@@ -46,10 +46,10 @@ namespace YCPU.Hardware
         public ushort[] DeviceQuery()
         {
             ushort[] info = new ushort[0x04];
-            info[0] = m_DeviceType;
-            info[1] = m_DeviceID;
-            info[2] = m_ManufacturerID;
-            info[3] = m_HardwareRevision;
+            info[0] = DeviceType;
+            info[1] = ManufacturerID;
+            info[2] = DeviceID;
+            info[3] = DeviceRevision;
             return info;
         }
 
