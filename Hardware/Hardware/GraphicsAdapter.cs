@@ -5,7 +5,8 @@ using System.Text;
 
 namespace YCPU.Hardware
 {
-    class GraphicsAdapter
+    class GraphicsAdapter : BaseDevice
     {
+        
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace YCPU.Platform
 {
-    class YBUS
+    public class YBUS
     {
         public void Update()
         {
