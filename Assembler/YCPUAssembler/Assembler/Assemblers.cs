@@ -377,7 +377,7 @@ namespace YCPU.Assembler
         }
         #endregion
 
-        #region Jump
+        #region Jump operations
         ushort[] AssembleJMP(string[] param)
         {
             Sanity_RequireParamCountExact(param, 1);
@@ -405,22 +405,26 @@ namespace YCPU.Assembler
         #region Processor Functions
         ushort[] AssembleHWQ(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 1);
+            return AssembleHWQ((ushort)0x00C4, param[0]);
         }
 
         ushort[] AssembleSLP(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 0);
+            return new ushort[1] { (ushort)0x00C5 };
         }
 
         ushort[] AssembleSWI(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 0);
+            return new ushort[1] { (ushort)0x00C6 };
         }
 
         ushort[] AssembleRTI(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 0);
+            return new ushort[1] { (ushort)0x00C7 };
         }
         #endregion
 
@@ -575,6 +579,25 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | flags));
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleHWQ(ushort opcode, string param1)
+        {
+            // param1 = index of operations, must be integer from 0-255
+            ParsedOpcode p1 = ParseParam(param1);
+
+            if (p1.AddressingMode != AddressingMode.Immediate)
+                return null;
+            if ((p1.Word < 0) || (p1.Word > 255))
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // iiii iiii OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x00FF) << 8)));
             return m_Code.ToArray();
         }
 

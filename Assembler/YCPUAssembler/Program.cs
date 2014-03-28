@@ -11,7 +11,7 @@ namespace YCPU
         static void Main(string[] args)
         {
             string in_path = "../../../../Tests/rain.yasm";
-            string out_path = "rain.bin";
+            string out_path = "rain.yasm.bin";
             string in_code = GetFileContents(in_path);
             
             if (in_code == null)
@@ -20,11 +20,10 @@ namespace YCPU
             }
             else
             {
-                AssemblerResult result = Assemble(in_code, out_path);
+                AssemblerResult result = Assemble(in_code, Path.GetDirectoryName(in_path), out_path);
                 if (result == AssemblerResult.Success)
                 {
-                    File.Delete("../../" + out_path);
-                    File.Move(out_path, "../../" + out_path);
+
                 }
                 Console.WriteLine(AssemblerResultMessages[(int)result]);
                 Console.ReadKey();
@@ -41,7 +40,7 @@ namespace YCPU
             return in_code;
         }
 
-        static AssemblerResult Assemble(string document, string out_path)
+        static AssemblerResult Assemble(string document, string out_dir, string out_filename)
         {
             if (document.Trim() == string.Empty)
                 return AssemblerResult.EmptyDocument;
@@ -53,7 +52,7 @@ namespace YCPU
                 return AssemblerResult.ParseError;
 
             Assembler.Generator generator = new Assembler.Generator();
-            string output = generator.Generate(machineCode, out_path);
+            string output = generator.Generate(machineCode, out_dir, out_filename);
             if (output == string.Empty)
                 return AssemblerResult.GenerateError;
 

@@ -13,20 +13,23 @@ namespace YCPU.Assembler.DCPU16ASM
     {
         public string MessageOuput { get; private set; }
 
-        public string Generate(ushort[] machineCode, string filename)
+        public string Generate(ushort[] machineCode, string directory, string filename)
         {
             if (filename.Trim() == string.Empty)
             {
-                filename = "Default.bin";
+                filename = "out.bin";
             }
             else
             {
-                filename = filename.Split('.')[0] + ".bin";
+                filename = Path.GetFileNameWithoutExtension(filename) + ".bin";
             }
+
+            if ((directory[directory.Length - 1] != '/') && (directory[directory.Length - 1] != '\\'))
+                directory += '\\';
 
             try
             {
-                var outfile = new MemoryStream();
+                MemoryStream outfile = new MemoryStream();
                 foreach (var word in machineCode)
                 {
                     var b = (byte)(word >> 8);
@@ -36,7 +39,7 @@ namespace YCPU.Assembler.DCPU16ASM
                     outfile.WriteByte(a);
                 }
 
-                File.WriteAllBytes(filename, outfile.ToArray());
+                File.WriteAllBytes(directory + filename, outfile.ToArray());
             }
             catch (Exception e)
             {
