@@ -11,9 +11,8 @@ namespace YCPU
         {
             // Declare the emulator
             Emulator e = new Emulator();
-            // Load the intitial RAM.
             // Lauch the emulator.
-            e.Start();
+            e.Run();
         }
     }
 }

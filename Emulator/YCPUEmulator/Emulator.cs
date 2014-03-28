@@ -1,88 +1,90 @@
 ﻿using System;
-using System.Threading;
+using Microsoft.Xna.Framework;
 
 namespace YCPU
 {
-    class Emulator
+    class Emulator : Library.Host
     {
         private Platform.YCPU m_CPU;
-        private bool m_Running = false;
-        private bool m_YCPU_Running = false;
-
-        private Library.Display m_Display;
 
         public Emulator()
+            : base()
         {
-            Library.ParallelTasks.Parallel.StartBackground(
-                new Action(StartDisplay));
+            Run();
         }
 
-        private void StartDisplay()
+        private double m_LastConsoleUpdate = 0;
+
+        protected override void Update(GameTime gameTime)
         {
-            using (m_Display = new Library.Display())
+            base.Update(gameTime);
+            if (m_CPU == null)
             {
-                m_Display.Run();
+                m_CPU = new Platform.YCPU();
+                m_CPU.Interrupt_Reset();
+            }
+
+            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 100))
+            {
+                m_LastConsoleUpdate += 150;
+                UpdateConsole();
+            }
+
+            if (Console.KeyAvailable)
+            {
+                switch (Console.ReadKey().KeyChar)
+                {
+                    case 'b':
+                        StopCPU();
+                        break;
+                    case 'w':
+                        StopCPU();
+                        m_CPU.Benchmark(false, 0x800);
+                        break;
+                    case 'e':
+                        StopCPU();
+                        m_CPU.Benchmark(true, 0x800);
+                        break;
+                    case 'r':
+                        StartCPU();
+                        break;
+                    case 'n':
+                        StopCPU();
+                        m_CPU.Run(1);
+                        break;
+                    case 'q':
+                        StopCPU();
+                        m_CPU = null;
+                        break;
+                    case 'l':
+                        StopCPU();
+                        m_CPU.PS_R = true;
+                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.PC = 0x0000;
+                        break;
+                }
             }
         }
 
-        public void Start()
+        private void StartCPU()
         {
-            m_CPU = new Platform.YCPU();
-            m_CPU.Interrupt_Reset();
-            UpdateConsole();
+            Library.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
+        }
 
-            m_Running = true;
-            m_YCPU_Running = false;
-            while (m_Running)
+        private void StopCPU()
+        {
+            if (m_CPU.Running)
             {
-                if (m_YCPU_Running)
-                {
-                    m_CPU.Run(0x800000);
-                    m_YCPU_Running = false;
-                    UpdateConsole();
-                }
-                if (Console.KeyAvailable)
-                {
-                    switch (Console.ReadKey().KeyChar)
-                    {
-                        case 'b':
-                            m_YCPU_Running = false;
-                            UpdateConsole();
-                            break;
-                        case 'w':
-                            m_CPU.Benchmark(false, 0x800);
-                            break;
-                        case 'e':
-                            m_CPU.Benchmark(true, 0x800);
-                            break;
-                        case 'r':
-                            m_YCPU_Running = true;
-                            break;
-                        case 'n':
-                            m_CPU.Run(1);
-                            UpdateConsole();
-                            break;
-                        case 'q':
-                            m_CPU = new Platform.YCPU();
-                            m_CPU.Interrupt_Reset();
-                            UpdateConsole();
-                            break;
-                        case 'u':
-                            UpdateConsole();
-                            break;
-                        case 'l':
-                            m_CPU.PS_R = true;
-                            m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
-                            m_CPU.PC = 0x0000;
-                            UpdateConsole();
-                            break;
-                    }
-                }
-                
-                Thread.Sleep(10);
+                m_CPU.Pause();
             }
         }
 
+        private void Task_StartCPU()
+        {
+            m_CPU.Run();
+        }
+
+        #region Console
         public void UpdateConsole()
         {
             Console.Title = "YCPU Emulator";
@@ -132,5 +134,6 @@ namespace YCPU
             Console.SetCursorPosition(x, y);
             Console.Write(s);
         }
+        #endregion
     }
 }

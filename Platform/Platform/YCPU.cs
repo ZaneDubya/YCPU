@@ -12,6 +12,10 @@ namespace YCPU.Platform
         private YRTC m_RTC;
         private long m_Cycles;
         private bool m_Running = false, m_Pausing = false;
+        public bool Running
+        {
+            get { return m_Running; }
+        }
 
         private System.Diagnostics.Stopwatch m_Stopwatch;
         private int m_LastRunCycles = 0;
@@ -103,6 +107,8 @@ namespace YCPU.Platform
             while (m_Pausing == true)
             {
                 // wait until the cpu has stopped running, then return.
+                // we wait 1ms between each try so we don't lock this variable.
+                System.Threading.Thread.Sleep(1);
             }
         }
 

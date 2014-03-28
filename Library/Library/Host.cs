@@ -4,14 +4,15 @@ using Microsoft.Xna.Framework.Content;
 
 namespace YCPU.Library
 {
-    public class Display : Game
+    public class Host : Game
     {
         GraphicsDeviceManager m_Graphics;
         Support.Settings m_Settings;
         Support.InputState m_Input;
+        Support.FPS m_FPS;
         Graphics.SpriteBatchExtended m_SBX;
 
-        public Display()
+        public Host()
         {
             m_Graphics = new GraphicsDeviceManager(this);
             m_Graphics.IsFullScreen = false;
@@ -20,6 +21,8 @@ namespace YCPU.Library
 
             m_Input = new Support.InputState();
             m_Input.Initialize(this.Window.Handle);
+
+            m_FPS = new Support.FPS();
 
             m_SBX = new Graphics.SpriteBatchExtended(this);
             this.Components.Add(m_SBX);
@@ -31,7 +34,8 @@ namespace YCPU.Library
         {
             Support.Common.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
             base.Initialize();
-            m_Settings.Resolution = new Point(800, 600);
+
+            m_Settings.Resolution = new Point(640, 480);
         }
 
         protected override void LoadContent()
@@ -60,6 +64,8 @@ namespace YCPU.Library
 
         protected override void Draw(GameTime gameTime)
         {
+            if (m_FPS.Update(gameTime))
+                this.Window.Title = string.Format("YCPU Host [{0} fps]", m_FPS.CurrentFPS);
             base.Draw(gameTime);
         }
 

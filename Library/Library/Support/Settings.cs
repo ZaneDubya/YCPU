@@ -63,7 +63,5 @@ namespace YCPU.Library.Support
         }
 
         public static float SecondsForDoubleClick = 0.5f;
-
-        
     }
 }
