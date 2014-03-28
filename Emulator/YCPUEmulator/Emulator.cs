@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace YCPU
@@ -11,6 +8,22 @@ namespace YCPU
         private Platform.YCPU m_CPU;
         private bool m_Running = false;
         private bool m_YCPU_Running = false;
+
+        private Library.Display m_Display;
+
+        public Emulator()
+        {
+            Library.ParallelTasks.Parallel.StartBackground(
+                new Action(StartDisplay));
+        }
+
+        private void StartDisplay()
+        {
+            using (m_Display = new Library.Display())
+            {
+                m_Display.Run();
+            }
+        }
 
         public void Start()
         {

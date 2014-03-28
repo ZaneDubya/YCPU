@@ -34,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,6 +49,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Library\YCPULibrary.csproj">
+      <Project>{AE851318-8E37-43C0-B65F-236BBA5AEC98}</Project>
+      <Name>YCPULibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Platform\YCPUPlatform.csproj">
       <Project>{AACF1738-A2F8-4783-BBFF-2163B5187830}</Project>
       <Name>YCPUPlatform</Name>

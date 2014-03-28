@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AE851318-8E37-43C0-B65F-236BBA5AEC98}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>YCPU</RootNamespace>
+    <AssemblyName>YCPULibrary</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Library\Display.cs" />
+    <Compile Include="Library\Graphics\ExtendedSpriteBatch.cs" />
+    <Compile Include="Library\Graphics\PreTransformedQuad.cs" />
+    <Compile Include="Library\Graphics\TextRenderer.cs" />
+    <Compile Include="Library\Graphics\TextureBaker.cs" />
+    <Compile Include="Library\Graphics\VertexPositionTextureExtra.cs" />
+    <Compile Include="Library\Support\InputState.cs" />
+    <Compile Include="Library\Input\Enums.cs" />
+    <Compile Include="Library\Input\InputEventC.cs" />
+    <Compile Include="Library\Input\InputEventCKB.cs" />
+    <Compile Include="Library\Input\InputEventCM.cs" />
+    <Compile Include="Library\Input\Message.cs" />
+    <Compile Include="Library\Input\MessageHook.cs" />
+    <Compile Include="Library\Input\NativeMethods.cs" />
+    <Compile Include="Library\Input\WndProc.cs" />
+    <Compile Include="Library\Support\Common.cs" />
+    <Compile Include="Library\ParallelTasks\BackgroundWorker.cs" />
+    <Compile Include="Library\ParallelTasks\DelegateWork.cs" />
+    <Compile Include="Library\ParallelTasks\Deque.cs" />
+    <Compile Include="Library\ParallelTasks\Future.cs" />
+    <Compile Include="Library\ParallelTasks\Hashtable.cs" />
+    <Compile Include="Library\ParallelTasks\IWork.cs" />
+    <Compile Include="Library\ParallelTasks\IWorkScheduler.cs" />
+    <Compile Include="Library\ParallelTasks\LoopWork.cs" />
+    <Compile Include="Library\ParallelTasks\Parallel.cs" />
+    <Compile Include="Library\ParallelTasks\Pool.cs" />
+    <Compile Include="Library\ParallelTasks\Semaphore.cs" />
+    <Compile Include="Library\ParallelTasks\SimpleScheduler.cs" />
+    <Compile Include="Library\ParallelTasks\Singleton.cs" />
+    <Compile Include="Library\ParallelTasks\SpinLock.cs" />
+    <Compile Include="Library\ParallelTasks\Task.cs" />
+    <Compile Include="Library\ParallelTasks\TaskException.cs" />
+    <Compile Include="Library\ParallelTasks\Worker.cs" />
+    <Compile Include="Library\ParallelTasks\WorkItem.cs" />
+    <Compile Include="Library\ParallelTasks\WorkOptions.cs" />
+    <Compile Include="Library\ParallelTasks\WorkStealingScheduler.cs" />
+    <Compile Include="Library\Serialize.cs" />
+    <Compile Include="Library\Support\Settings.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResContent.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResContent.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Library\Content\Arial12.xnb" />
+    <None Include="Library\Content\Shaders\NES_PTHE.xnb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ResContent.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>ResContent.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
