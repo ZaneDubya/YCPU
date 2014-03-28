@@ -167,10 +167,10 @@ namespace YCPU.Platform
             }
         }
 
-        private void BitPatternMMU(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)
+        private void BitPatternMMU(ushort operand, ushort nextword, out ushort mmuIndex, out RegGPIndex regValue)
         {
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            value = (ushort)((operand & 0x1C) >> 10);
+            regValue = (RegGPIndex)((operand & 0xE000) >> 13);
+            mmuIndex = (ushort)((operand & 0x1C) >> 10);
         }
 
         private void BitPatternPSH(ushort operand, ushort nextword, out ushort value, out RegGPIndex destination)

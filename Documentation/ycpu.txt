@@ -515,12 +515,12 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
-1011 00xx   PSH                 STK             Push to stack               1*
-1011 01xx   POP                 STK             Pop from stack              1*
+1011 00xx   PSH                 STK             Push to stack               1+
+1011 01xx   POP                 STK             Pop from stack              1+
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
-1011 1010   TSR         X       TSR             Special Purpose Reg -> Rx   1
-1011 1011   TRS         X       TSR             Rx -> Special Purpose Reg   1
+1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
+1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg   1
 1100 1100   MMR         X       MMU             Read from MMU               1
 1100 1101   MMW         X       MMU             Write to MMU                1
 1100 1110   MML         X       JMP             MMU State Load (MMU->Mem)   16
@@ -645,8 +645,8 @@ MMU Bit Pattern
     FEDC BA98 7654 3210 
     RRRr rr.. OOOO OOOO
         O = Opcode
-        r = register containing value to write/destination for value read
-        R = register containing index of MMU word to read from/write to (0-31)
+        r = register containing index of MMU word to read from/write to 
+        R = register containing value to write/destination for value read
             
 STK Bit Pattern
     FEDC BA98 7654 3210                        
@@ -683,13 +683,13 @@ SWO Bit Pattern
             10: src low octect -> dest low octet, preserves dest upper 8 bits.
             11: src low octect -> dest high octect, preserves dest lower 8 bits.
         
-TSR Bit Pattern
+XSR Bit Pattern
     FEDC BA98 7654 3210                        
-    RRRi iiii OOOO OOOO
+    RRRv vvvv OOOO OOOO
         O = opcode
         w = 0: Read, 1: Write
         R = register index to read to or write from.
-        i = Index of special register
+        v = Index of special register
             Index   R/W Result          Supervisor only?
             0x00    R   Rx = PC         
                     W   PC = Rx         

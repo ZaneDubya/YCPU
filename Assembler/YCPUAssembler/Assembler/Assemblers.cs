@@ -340,37 +340,39 @@ namespace YCPU.Assembler
         #region Transfer registers
         ushort[] AssembleTSR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleIMM((ushort)0x00BA, param[0], param[1]);
         }
 
         ushort[] AssembleTRS(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleIMM((ushort)0x00BB, param[0], param[1]);
         }
         #endregion
 
         #region MMU
         ushort[] AssembleMMR(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleMMU((ushort)0x00BC, param[0], param[1]);
         }
 
         ushort[] AssembleMMW(string[] param)
         {
-            return new ushort[1] { (ushort)c_NOP };
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleMMU((ushort)0x00BD, param[0], param[1]);
         }
 
         ushort[] AssembleMML(string[] param)
         {
-            if (param.Length != 1)
-                throw new Exception("Bad param length, expected 1");
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleJMP((ushort)0x00BE, param[0]);
         }
 
         ushort[] AssembleMMS(string[] param)
         {
-            if (param.Length != 1)
-                throw new Exception("Bad param length, expected 1");
+            Sanity_RequireParamCountExact(param, 1);
             return AssembleJMP((ushort)0x00BF, param[0]);
         }
         #endregion
@@ -644,6 +646,27 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
+        ushort[] AssembleMMU(ushort opcode, string param1, string param2)
+        {
+            // param1 = source register, MUST be register
+            // param2 = dest register, MUST be register
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+            if (p2.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // RRRr rr.. OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
+            return m_Code.ToArray();
+        }
+
         ushort[] AssembleSHF(ushort opcode, string param1, string param2)
         {
             ParsedOpcode p1 = ParseParam(param1);
@@ -788,6 +811,51 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10) | (flag_type << 8)));
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleXSR(ushort opcode, string param1, string param2)
+        {
+            // param1 = source/dest register, MUST be register
+            // param2 = special register, MUST be one of:
+            //          
+            // param3 = flags, MUST be LR, HR, LW, HW
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+            ushort special_index = 0x0000;
+            switch (param2)
+            {
+                case "PC":
+                    special_index = 0x0000;
+                    break;
+                case "IA":
+                    special_index = 0x0001;
+                    break;
+                case "USP":
+                    special_index = 0x0002;
+                    break;
+                case "II":
+                    special_index = 0x0003;
+                    break;
+                case "PS":
+                    special_index = 0x0004;
+                    break;
+                case "P2":
+                    special_index = 0x0005;
+                    break;
+                default:
+                    throw new Exception("Bad SWO flag.");
+            }
+
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // RRRv vvvv OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | (special_index << 8)));
             return m_Code.ToArray();
         }
 

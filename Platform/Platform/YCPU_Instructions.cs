@@ -1006,10 +1006,10 @@ namespace YCPU.Platform
                 return;
             }
 
-            ushort value;
+            ushort mmuIndex;
             RegGPIndex regIndex, regValue;
-            bits(operand, nextword, out value, out regIndex);
-            regValue = (RegGPIndex)value;
+            bits(operand, nextword, out mmuIndex, out regValue);
+            regIndex = (RegGPIndex)mmuIndex;
             MMU_Write(R[(int)regIndex], R[(int)regValue]);
         }
 
@@ -1035,10 +1035,10 @@ namespace YCPU.Platform
                 return;
             }
 
-            ushort value;
+            ushort mmuIndex;
             RegGPIndex regIndex, regValue;
-            bits(operand, nextword, out value, out regIndex);
-            regValue = (RegGPIndex)value;
+            bits(operand, nextword, out mmuIndex, out regValue);
+            regIndex = (RegGPIndex)mmuIndex;
             R[(int)regValue] = MMU_Read(R[(int)regIndex]);
         }
         #endregion
