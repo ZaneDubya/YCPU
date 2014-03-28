@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUEmulator", "YCPUEmulato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUPlatform", "..\Platform\YCPUPlatform.csproj", "{AACF1738-A2F8-4783-BBFF-2163B5187830}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUHardware", "..\Hardware\YCPUHardware.csproj", "{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,16 @@ Global
 		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Release|x86.ActiveCfg = Release|Any CPU
 		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Release|x86.Build.0 = Release|Any CPU
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Debug|x86.ActiveCfg = Debug|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Debug|x86.Build.0 = Debug|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Release|Any CPU.ActiveCfg = Release|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Release|x86.ActiveCfg = Release|x86
+		{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
