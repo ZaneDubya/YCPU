@@ -236,7 +236,7 @@ namespace YCPU.Hardware
         #endregion
 
         #region NOP
-        private void NOP(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void NOP(ushort operand, YCPUBitPattern bits)
         {
             // InterruptReset();
             // raise an error
@@ -244,11 +244,11 @@ namespace YCPU.Hardware
         #endregion
 
         #region ALU Instructions
-        private void ADC(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ADC(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value + Carry;
             int s_result = (short)R[(int)destination] + (short)value + Carry;
@@ -259,11 +259,11 @@ namespace YCPU.Hardware
             FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
         }
 
-        private void ADD(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ADD(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value;
             int s_result = (short)R[(int)destination] + (short)value;
@@ -274,11 +274,11 @@ namespace YCPU.Hardware
             FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
         }
 
-        private void ADI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ADI(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value;
             int s_result = (short)R[(int)destination] + value;
@@ -289,11 +289,11 @@ namespace YCPU.Hardware
             FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
         }
 
-        private void AND(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void AND(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int result = R[(int)destination] & value;
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
@@ -303,11 +303,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void CMP(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void CMP(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int register = R[(int)destination];
             FL_N = ((short)register >= (short)value);
@@ -316,11 +316,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void DIV(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void DIV(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if (value == 0)
             {
                 Interrupt_DivideByZero();
@@ -335,11 +335,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void DVI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void DVI(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if (value == 0)
             {
                 Interrupt_DivideByZero();
@@ -366,11 +366,11 @@ namespace YCPU.Hardware
             }
         }
 
-        private void EOR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void EOR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int result = R[(int)destination] ^ value;
             FL_N = ((value & 0x8000) != 0);
@@ -379,11 +379,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void LOD(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void LOD(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             R[(int)destination] = value;
             FL_N = ((value & 0x8000) != 0);
@@ -392,11 +392,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void MDI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MDI(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if (value == 0)
             {
                 Interrupt_DivideByZero();
@@ -412,11 +412,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void MLI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MLI(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             R[(int)destination] = 0xFFFE;
             value = 0x8000;
@@ -430,11 +430,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void MOD(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MOD(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if (value == 0)
             {
                 Interrupt_DivideByZero();
@@ -449,11 +449,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void MUL(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MUL(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int result = R[(int)destination] * value;
             R[(int)RegGPIndex.R0] = (ushort)(result >> 16);
@@ -464,11 +464,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void NEG(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void NEG(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if (value == 0x8000)
             {
@@ -490,11 +490,11 @@ namespace YCPU.Hardware
             }
         }
 
-        private void NOT(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void NOT(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int result = ~value;
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
@@ -504,11 +504,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void ORR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ORR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int result = R[(int)destination] | value;
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
@@ -518,11 +518,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void SBC(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SBC(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value - (1 - Carry);
             int s_result = (short)R[(int)destination] - (short)value - (1 - Carry);
@@ -533,11 +533,11 @@ namespace YCPU.Hardware
             FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
         }
 
-        private void SBI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SBI(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value;
             int s_result = (short)R[(int)destination] - value;
@@ -548,11 +548,11 @@ namespace YCPU.Hardware
             FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
         }
 
-        private void STO(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void STO(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex source;
-            bits(operand, nextword, out value, out source);
+            bits(operand, out value, out source);
 
             SetMemory(value, R[(int)source]);
             // N [Negative] Not effected.
@@ -561,11 +561,11 @@ namespace YCPU.Hardware
             // V [Overflow] Not effected.
         }
 
-        private void SUB(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SUB(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value;
             int s_result = (short)R[(int)destination] - (short)value;
@@ -578,11 +578,11 @@ namespace YCPU.Hardware
         #endregion
 
         #region Bit Testing Instructions
-        private void BIT(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BIT(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -594,11 +594,11 @@ namespace YCPU.Hardware
             }
         }
 
-        private void BTX(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BTX(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -613,11 +613,11 @@ namespace YCPU.Hardware
             R[(int)destination] ^= bit;
         }
 
-        private void BTC(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BTC(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -632,11 +632,11 @@ namespace YCPU.Hardware
             R[(int)destination] &= (ushort)~bit;
         }
 
-        private void BTS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BTS(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -653,131 +653,131 @@ namespace YCPU.Hardware
         #endregion
 
         #region Branch Instructions
-        private void BCC(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BCC(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_C)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BCS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BCS(ushort operand, YCPUBitPattern bits)
         {
             if (FL_C)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BNE(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BNE(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_Z)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BEQ(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BEQ(ushort operand, YCPUBitPattern bits)
         {
             if (FL_Z)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BPL(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BPL(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_N)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BMI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BMI(ushort operand, YCPUBitPattern bits)
         {
             if (FL_N)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BVC(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BVC(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_V)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BVS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BVS(ushort operand, YCPUBitPattern bits)
         {
             if (FL_V)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BUG(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BUG(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_Z && FL_C)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BSG(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BSG(ushort operand, YCPUBitPattern bits)
         {
             if (!FL_Z && FL_N)
             {
                 ushort value;
                 RegGPIndex destination;
-                bits(operand, nextword, out value, out destination);
+                bits(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 1);
             }
         }
 
-        private void BAW(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void BAW(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             PC = (ushort)(PC + (sbyte)value - 1);
         }
         #endregion
 
         #region FLG Instructions
-        private void SEF(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SEF(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if ((operand & 0x8000) != 0)
                 FL_N = true;
@@ -788,11 +788,11 @@ namespace YCPU.Hardware
             if ((operand & 0x1000) != 0)
                 FL_V = true;
         }
-        private void CLF(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void CLF(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if ((operand & 0x8000) != 0)
                 FL_N = false;
@@ -806,11 +806,11 @@ namespace YCPU.Hardware
         #endregion
 
         #region FPU Instructions
-        private void FPU(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void FPU(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination, source;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             source = (RegGPIndex)value;
             int operation = (operand & 0x0300) >> 8;
             float[] operands = FPU_GetOperands(destination, source);
@@ -870,7 +870,7 @@ namespace YCPU.Hardware
         #endregion
 
         #region HWQ & SLP
-        private void HWQ(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void HWQ(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -880,7 +880,7 @@ namespace YCPU.Hardware
 
             ushort query_type;
             RegGPIndex unused;
-            bits(operand, nextword, out query_type, out unused);
+            bits(operand, out query_type, out unused);
 
             switch (query_type)
             {
@@ -912,7 +912,7 @@ namespace YCPU.Hardware
             }
         }
 
-        private void SLP(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SLP(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -925,24 +925,24 @@ namespace YCPU.Hardware
         #endregion
 
         #region JMP Instructions
-        private void JMP(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void JMP(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex unused;
-            bits(operand, nextword, out value, out unused);
+            bits(operand, out value, out unused);
             PC = value;
         }
 
-        private void JSR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void JSR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex unused;
-            bits(operand, nextword, out value, out unused);
+            bits(operand, out value, out unused);
             StackPush(PC);
             PC = value;
         }
 
-        private void JUM(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void JUM(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -952,12 +952,12 @@ namespace YCPU.Hardware
 
             ushort value;
             RegGPIndex unused;
-            bits(operand, nextword, out value, out unused);
+            bits(operand, out value, out unused);
             PS_S = false;
             PC = value;
         }
 
-        private void JCX(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void JCX(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -984,7 +984,7 @@ namespace YCPU.Hardware
         #endregion
 
         #region MMU Instructions
-        private void MML(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MML(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -994,11 +994,11 @@ namespace YCPU.Hardware
 
             ushort address;
             RegGPIndex unused;
-            bits(operand, nextword, out address, out unused);
+            bits(operand, out address, out unused);
             MMU_LoadMemoryWithCacheData(address);
         }
 
-        private void MMR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MMR(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1008,12 +1008,12 @@ namespace YCPU.Hardware
 
             ushort mmuIndex;
             RegGPIndex regIndex, regValue;
-            bits(operand, nextword, out mmuIndex, out regValue);
+            bits(operand, out mmuIndex, out regValue);
             regIndex = (RegGPIndex)mmuIndex;
             MMU_Write(R[(int)regIndex], R[(int)regValue]);
         }
 
-        private void MMS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MMS(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1023,11 +1023,11 @@ namespace YCPU.Hardware
 
             ushort address;
             RegGPIndex unused;
-            bits(operand, nextword, out address, out unused);
+            bits(operand, out address, out unused);
             MMU_StoreCacheDataFromMemory(address);
         }
 
-        private void MMW(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void MMW(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1037,18 +1037,18 @@ namespace YCPU.Hardware
 
             ushort mmuIndex;
             RegGPIndex regIndex, regValue;
-            bits(operand, nextword, out mmuIndex, out regValue);
+            bits(operand, out mmuIndex, out regValue);
             regIndex = (RegGPIndex)mmuIndex;
             R[(int)regValue] = MMU_Read(R[(int)regIndex]);
         }
         #endregion
 
         #region Shift Instructions
-        private void ASL(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ASL(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int register = (short)R[(int)destination] << value;
             R[(int)destination] = (ushort)(register & 0x0000FFFF);
@@ -1059,11 +1059,11 @@ namespace YCPU.Hardware
             // V [Overflow]    Not effected.
         }
 
-        private void ASR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ASR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             int register = (short)R[(int)destination] >> value;
             int mask = (int)Math.Pow(2, value) - 1;
@@ -1075,11 +1075,11 @@ namespace YCPU.Hardware
             // V [Overflow]    Not effected.
         }
 
-        private void LSR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void LSR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             R[(int)destination] = 0x8000;
             value = 1;
@@ -1094,11 +1094,11 @@ namespace YCPU.Hardware
             // V [Overflow]    Not effected.
         }
 
-        private void RNL(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void RNL(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if (value != 0)
             {
@@ -1112,11 +1112,11 @@ namespace YCPU.Hardware
             FL_Z = (R[(int)destination] == 0x0000);
         }
 
-        private void RNR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void RNR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if (value != 0)
             {
@@ -1131,11 +1131,11 @@ namespace YCPU.Hardware
             FL_Z = (R[(int)destination] == 0x0000);
         }
 
-        private void ROL(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ROL(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if (value != 0)
             {
@@ -1153,11 +1153,11 @@ namespace YCPU.Hardware
             FL_Z = (R[(int)destination] == 0x0000);
         }
 
-        private void ROR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void ROR(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             if (value != 0)
             {
@@ -1181,12 +1181,12 @@ namespace YCPU.Hardware
         #endregion
 
         #region SWI / RTI
-        private void SWI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SWI(ushort operand, YCPUBitPattern bits)
         {
             Interrupt_SWI();
         }
 
-        private void RTI(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void RTI(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1199,11 +1199,11 @@ namespace YCPU.Hardware
         #endregion
 
         #region Stack Instructions
-        private void PSH(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void PSH(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if ((value & 0x0001) != 0)
                 StackPush(PC);
             if ((value & 0x0002) != 0)
@@ -1225,11 +1225,11 @@ namespace YCPU.Hardware
             if ((value & 0x8000) != 0)
                 StackPush(R[(int)RegGPIndex.R7]);
         }
-        private void POP(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void POP(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
             if ((value & 0x8000) != 0)
                 R[(int)RegGPIndex.R7] = StackPop();
             if ((value & 0x4000) != 0)
@@ -1254,11 +1254,11 @@ namespace YCPU.Hardware
         #endregion
         
         #region SWO Instructions
-        private void SWO(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void SWO(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
-            bits(operand, nextword, out value, out destination);
+            bits(operand, out value, out destination);
 
             R[(int)destination] = value;
             FL_N = ((value & 0x8000) != 0);
@@ -1269,7 +1269,7 @@ namespace YCPU.Hardware
         #endregion
 
         #region Transfer To/From Special Instructions
-        private void TRS(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void TRS(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1279,7 +1279,7 @@ namespace YCPU.Hardware
 
             ushort index;
             RegGPIndex source;
-            bits(operand, nextword, out index, out source);
+            bits(operand, out index, out source);
 
             switch (index)
             {
@@ -1309,7 +1309,7 @@ namespace YCPU.Hardware
             // C [Carry] Not effected.
             // V [Overflow] Not effected.
         }
-        private void TSR(ushort operand, ushort nextword, YCPUBitPattern bits)
+        private void TSR(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1319,7 +1319,7 @@ namespace YCPU.Hardware
 
             ushort index, value;
             RegGPIndex destination;
-            bits(operand, nextword, out index, out destination);
+            bits(operand, out index, out destination);
 
             switch (index)
             {

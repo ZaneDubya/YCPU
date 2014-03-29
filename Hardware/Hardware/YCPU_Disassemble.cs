@@ -154,7 +154,7 @@ namespace YCPU.Hardware
             uses_next_word = false;
             RegGPIndex destination;
             ushort source;
-            BitPatternFPU(operand, nextword, out source, out destination);
+            BitPatternFPU(operand, out source, out destination);
             int operation = (operand & 0x0300) >> 8;
             string op_name = string.Empty;
 
@@ -186,7 +186,7 @@ namespace YCPU.Hardware
             uses_next_word = false;
             RegGPIndex unused;
             ushort value;
-            BitPatternHWQ(operand, nextword, out value, out unused);
+            BitPatternHWQ(operand, out value, out unused);
 
             return string.Format("{0} ${1:X2}", name, value);
         }
@@ -196,7 +196,7 @@ namespace YCPU.Hardware
             uses_next_word = false;
             RegGPIndex destination;
             ushort value;
-            BitPatternINC(operand, nextword, out value, out destination);
+            BitPatternINC(operand, out value, out destination);
 
             return string.Format("{0} {1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
@@ -262,7 +262,7 @@ namespace YCPU.Hardware
             uses_next_word = false;
             RegGPIndex RegMmuIndex;
             ushort RegMmuValue;
-            BitPatternMMU(operand, nextword, out RegMmuValue, out RegMmuIndex);
+            BitPatternMMU(operand, out RegMmuValue, out RegMmuIndex);
             return string.Format("{0} {1}, {2}", name, NameOfRegGP(RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
         }
 
@@ -343,7 +343,7 @@ namespace YCPU.Hardware
             uses_next_word = false;
             RegGPIndex destination;
             ushort value;
-            BitPatternTSR(operand, nextword, out value, out destination);
+            BitPatternTSR(operand, out value, out destination);
             return string.Format("{0} {1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
 

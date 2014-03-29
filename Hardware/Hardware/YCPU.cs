@@ -78,9 +78,8 @@ namespace YCPU.Hardware
                         Interrupt_Clock();
                     }
                     // Execute Memory[PC]
-                    ushort nextword = GetMemory(PC);
                     YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
-                    opcode.Opcode(word, nextword, opcode.BitPattern);
+                    opcode.Opcode(word, opcode.BitPattern);
                     // Increment the Cycle counter. Check to see if the
                     // processor has run the desired number of Cycles.
                     m_Cycles += opcode.Cycles;
@@ -145,7 +144,7 @@ namespace YCPU.Hardware
                     {
                         m_PS = ps;
                         ushort word = (ushort)(i & ((j & 0xFF) << 8));
-                        m_Opcodes[i].Opcode(word, 0x0001, m_Opcodes[i].BitPattern);
+                        m_Opcodes[i].Opcode(word, m_Opcodes[i].BitPattern);
                         count++;
                         cycles += m_Opcodes[i].Cycles;
                     }
