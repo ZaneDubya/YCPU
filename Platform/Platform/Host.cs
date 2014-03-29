@@ -35,7 +35,7 @@ namespace YCPU.Platform
             Support.Common.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
             base.Initialize();
 
-            m_Settings.Resolution = new Point(640, 480);
+            // m_Settings.Resolution = new Point(640, 480);
         }
 
         protected override void LoadContent()

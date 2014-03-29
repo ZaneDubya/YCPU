@@ -667,9 +667,9 @@ SHF Bit Pattern
         D = direction
             0 = L, 1 = R
         r = register to shift
-		R = shift value select, see s
+        R = shift value select, see s
         s = if R = 0, bits to shift (0-15)
-			if R = 1, register to use as shift value (r = .sss)
+            if R = 1, register to use as shift value (r = .sss)
         
 SWO Bit Pattern
     FEDC BA98 7654 3210
@@ -894,8 +894,8 @@ NOTE:   Immediate and Register addressing is not available with STO opcodes.
     Z [Zero] Not effected.
     C [Carry] Not effected.
     V [Overflow] Not effected.
-	
-	
+    
+    
 SUB         Subtract value from register, ignoring carry.
 Operation:  Rx - M -> Rx, C
 For small immediate values, ($01-$20), SUB should be replaced with SBI.
@@ -917,8 +917,8 @@ The carry flag is set if any bits shifted out were 1, otherwise clear. The
 result is that Rx is multiplied by 2^X, treating Rx as an unsigned word, and
 setting the carry flag if the result does not fit in 16 bits.
 Syntax:
-	ASL R0, 8		; Arithmetic Shift Left of R0 by 8 bits.
-	ASL R0, R1		; Arithmetic Shift Left of R0 by (R1 & 0x000F) bits.
+    ASL R0, 8       ; Arithmetic Shift Left of R0 by 8 bits.
+    ASL R0, R1      ; Arithmetic Shift Left of R0 by (R1 & 0x000F) bits.
 Operation:  
     N [Negative]    Set if bit 15 of the result is set.
     Z [Zero]        Set if Rx == 0.
@@ -1050,12 +1050,12 @@ Operation:  !Rx{B} -> Rx{B}, Z, C
 1001 1ccc BXX 
     000 = BUG, Branch if Unsigned Greater than                              .11.
     001 = BSG, Branch if Signed Greater than                                11..
-    010 = Undefined			                                                ....
-    011 = Undefined			                                                ....
-    100 = Undefined			                                                ....
-    101 = Undefined			                                                ....
-    110 = Undefined			                                                ....
-    111 = BAW, Branch always			                                    ....
+    010 = Undefined                                                         ....
+    011 = Undefined                                                         ....
+    100 = Undefined                                                         ....
+    101 = Undefined                                                         ....
+    110 = Undefined                                                         ....
+    111 = BAW, Branch always                                                ....
 
     
 ===========================[ 3.F. FPU Instructions ]============================

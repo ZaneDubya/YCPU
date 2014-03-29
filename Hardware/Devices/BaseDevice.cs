@@ -12,6 +12,9 @@ namespace YCPU.Hardware
         protected abstract ushort DeviceID { get; }
         protected abstract ushort DeviceRevision { get; }
 
+        protected abstract void Initialize();
+        protected abstract void ReceiveMessage(ushort param_0, ushort param_1, ushort param_2);
+
         private Hardware.YBUS m_BUS;
         private bool m_IRQ = false;
         public bool IRQ
@@ -38,12 +41,7 @@ namespace YCPU.Hardware
             Initialize();
         }
 
-        protected virtual void Initialize()
-        {
-
-        }
-
-        public ushort[] DeviceQuery()
+        public ushort[] Bus_DeviceQuery()
         {
             ushort[] info = new ushort[0x04];
             info[0] = DeviceType;
@@ -53,13 +51,9 @@ namespace YCPU.Hardware
             return info;
         }
 
-        
-
-        public void ReceiveMessage(ushort param_0, ushort param_1, ushort param_2)
+        public void Bus_SendMessage(ushort param_0, ushort param_1, ushort param_2)
         {
-
+            ReceiveMessage(param_0, param_1, param_2);
         }
-
-        
     }
 }

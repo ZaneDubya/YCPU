@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using System.Threading;
 
 namespace YCPU
 {
@@ -18,15 +19,16 @@ namespace YCPU
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
             if (m_CPU == null)
             {
                 m_CPU = new Hardware.YCPU();
                 m_CPU.Interrupt_Reset();
             }
 
-            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 100))
+            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 200))
             {
-                m_LastConsoleUpdate += 150;
+                m_LastConsoleUpdate += 200;
                 UpdateConsole();
             }
 

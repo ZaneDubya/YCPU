@@ -29,5 +29,15 @@ namespace YCPU.Hardware
         {
 
         }
+
+        protected override void Initialize()
+        {
+            
+        }
+
+        protected override void ReceiveMessage(ushort param_0, ushort param_1, ushort param_2)
+        {
+            
+        }
     }
 }
