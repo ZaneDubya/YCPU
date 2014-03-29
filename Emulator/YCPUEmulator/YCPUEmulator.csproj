@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>YCPU</RootNamespace>
-    <AssemblyName>YCPU</AssemblyName>
+    <AssemblyName>YCPUEmulator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -49,9 +49,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Library\YCPULibrary.csproj">
-      <Project>{AE851318-8E37-43C0-B65F-236BBA5AEC98}</Project>
-      <Name>YCPULibrary</Name>
+    <ProjectReference Include="..\..\Hardware\YCPUHardware.csproj">
+      <Project>{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}</Project>
+      <Name>YCPUHardware</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Platform\YCPUPlatform.csproj">
       <Project>{AACF1738-A2F8-4783-BBFF-2163B5187830}</Project>

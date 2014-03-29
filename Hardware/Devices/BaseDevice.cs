@@ -12,7 +12,7 @@ namespace YCPU.Hardware
         protected abstract ushort DeviceID { get; }
         protected abstract ushort DeviceRevision { get; }
 
-        private Platform.YBUS m_BUS;
+        private Hardware.YBUS m_BUS;
         private bool m_IRQ = false;
         public bool IRQ
         {
@@ -32,7 +32,7 @@ namespace YCPU.Hardware
             m_IRQ = false;
         }
 
-        public BaseDevice(Platform.YBUS bus)
+        public BaseDevice(Hardware.YBUS bus)
         {
             m_BUS = bus;
             Initialize();

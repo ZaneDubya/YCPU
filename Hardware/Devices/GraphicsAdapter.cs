@@ -24,7 +24,7 @@ namespace YCPU.Hardware
             get { return 0x0000; }
         }
 
-        public GraphicsAdapter(Platform.YBUS bus)
+        public GraphicsAdapter(Hardware.YBUS bus)
             : base(bus)
         {
 

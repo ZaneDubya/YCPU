@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework;
 
 namespace YCPU
 {
-    class Emulator : Library.Host
+    class Emulator : Platform.Host
     {
-        private Platform.YCPU m_CPU;
+        private Hardware.YCPU m_CPU;
 
         public Emulator()
             : base()
@@ -20,7 +20,7 @@ namespace YCPU
             base.Update(gameTime);
             if (m_CPU == null)
             {
-                m_CPU = new Platform.YCPU();
+                m_CPU = new Hardware.YCPU();
                 m_CPU.Interrupt_Reset();
             }
 
@@ -68,7 +68,7 @@ namespace YCPU
 
         private void StartCPU()
         {
-            Library.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
+            Platform.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
         }
 
         private void StopCPU()
