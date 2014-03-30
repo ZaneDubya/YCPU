@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using YCPU.Platform.ParallelTasks;
 
-namespace YCPU.Platform.ParallelTasks
+namespace YCPU.Platform
 {
     /// <summary>
     /// A static class containing factory methods for creating tasks.

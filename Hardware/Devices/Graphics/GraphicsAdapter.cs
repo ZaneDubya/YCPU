@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace YCPU.Devices.Graphics
 {
@@ -89,7 +88,7 @@ namespace YCPU.Devices.Graphics
         GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
         MemoryBankLEM m_BankLEM;
-        Texture2D m_LEM_CHRRAM, m_LEM_PALRAM;
+        Platform.Texture m_LEM_CHRRAM, m_LEM_PALRAM;
 
         // Internal Routines
         private void SetMode(ushort i)
@@ -116,8 +115,8 @@ namespace YCPU.Devices.Graphics
                 m_GraphicsMode = GraphicsMode.LEM1802;
                 m_BankLEM = new MemoryBankLEM();
 
-                m_LEM_CHRRAM = Platform.Support.Library.CreateTexture(128, 32);
-                m_LEM_PALRAM = Platform.Support.Library.CreateTexture(16, 1);
+                m_LEM_CHRRAM = Platform.Texture.Create(128, 32);
+                m_LEM_PALRAM = Platform.Texture.Create(16, 1);
 
                 ushort[] chrram_default = new ushort[256];
                 System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
@@ -174,7 +173,7 @@ namespace YCPU.Devices.Graphics
                     }
                 }
             }
-            m_LEM_CHRRAM.SetData<uint>(data);
+            m_LEM_CHRRAM.SetData(data);
         }
 
         private void Update_LEM_PALRAM()
@@ -187,7 +186,7 @@ namespace YCPU.Devices.Graphics
                 data[i] = (uint)(0xFF000000) | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
 
-            m_LEM_PALRAM.SetData<uint>(data);
+            m_LEM_PALRAM.SetData(data);
         }
 
         private void Draw_LEM(Platform.Graphics.SpriteBatchExtended spritebatch)

@@ -55,11 +55,6 @@ namespace YCPU.Platform.Graphics
             return indices;
         }
 
-        public Texture2D NewTexture(int width, int height)
-        {
-            return new Texture2D(Game.GraphicsDevice, width, height);
-        }
-
         public override void Draw(GameTime gameTime)
         {
             _effect.Parameters["ProjectionMatrix"].SetValue(Support.Library.ProjectionMatrixScreen);
@@ -67,8 +62,9 @@ namespace YCPU.Platform.Graphics
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
             _effect.Parameters["PALETTE"].SetValue(PaletteTexture);
 
-            _effect.GraphicsDevice.Clear(Color.Green);
+            _effect.GraphicsDevice.Clear(Color.Black);
 
+            // Not used here, but a good idea:
             // http://blogs.msdn.com/b/shawnhar/archive/2009/02/18/depth-sorting-alpha-blended-objects.aspx
             // Pass 0: draw the solid part: alpha blending disabled, alpha test set to only accept the 100%
             // opaque areas, and depth buffer enabled
@@ -288,7 +284,7 @@ namespace YCPU.Platform.Graphics
             m_GUIClipRect = new Vector4(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
-        public void GUIDrawSprite(Texture2D texture, Rectangle destinationRectangle, Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, bool Palettized = false, int Palette = 0)
+        public void GUIDrawSprite(Texture texture, Rectangle destinationRectangle, Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, bool Palettized = false, int Palette = 0)
         {
             if (texture == null)
                 return;
@@ -353,12 +349,12 @@ namespace YCPU.Platform.Graphics
                 source.W = y;
             }
 
-            PreTransformedQuad q = new PreTransformedQuad(texture, dest, source, _zOffset.Z++, color == null ? Color.White : color.Value, new Vector2(Palette, Palettized ? 0 : 1));
+            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z++, color == null ? Color.White : color.Value, new Vector2(Palette, Palettized ? 0 : 1));
 
             List<VertexPositionTextureHueExtra> vertexList;
-            if (_drawQueue.ContainsKey(texture))
+            if (_drawQueue.ContainsKey(texture.m_Texture))
             {
-                vertexList = _drawQueue[texture];
+                vertexList = _drawQueue[texture.m_Texture];
             }
             else
             {
@@ -372,7 +368,7 @@ namespace YCPU.Platform.Graphics
                     vertexList = new List<VertexPositionTextureHueExtra>(1024);
                 }
 
-                _drawQueue.Add(texture, vertexList);
+                _drawQueue.Add(texture.m_Texture, vertexList);
             }
 
             for (int i = 0; i < q.Vertices.Length; i++)
@@ -390,7 +386,9 @@ namespace YCPU.Platform.Graphics
             if (texture == null)
                 return;
 
-            GUIDrawSprite(texture, new Rectangle((int)location.X, (int)location.Y, texture.Width, texture.Height), new Rectangle(0, 0, texture.Width, texture.Height), color == null ? Color.White : color.Value);
+            Texture t = Texture.CreateFromTexture(texture);
+
+            GUIDrawSprite(t, new Rectangle((int)location.X, (int)location.Y, texture.Width, texture.Height), new Rectangle(0, 0, texture.Width, texture.Height), color == null ? Color.White : color.Value);
         }
     }
 }

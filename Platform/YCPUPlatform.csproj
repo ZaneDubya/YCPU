@@ -60,7 +60,7 @@
     <Compile Include="Platform\ParallelTasks\IWork.cs" />
     <Compile Include="Platform\ParallelTasks\IWorkScheduler.cs" />
     <Compile Include="Platform\ParallelTasks\LoopWork.cs" />
-    <Compile Include="Platform\ParallelTasks\Parallel.cs" />
+    <Compile Include="Platform\Parallel.cs" />
     <Compile Include="Platform\ParallelTasks\Pool.cs" />
     <Compile Include="Platform\ParallelTasks\Semaphore.cs" />
     <Compile Include="Platform\ParallelTasks\SimpleScheduler.cs" />
@@ -82,9 +82,10 @@
     <Compile Include="Platform\Input\MessageHook.cs" />
     <Compile Include="Platform\Input\NativeMethods.cs" />
     <Compile Include="Platform\Input\WndProc.cs" />
-    <Compile Include="Platform\Support\Common.cs" />
+    <Compile Include="Platform\Support\Library.cs" />
     <Compile Include="Platform\Serialization\Serialization.cs" />
     <Compile Include="Platform\Support\Settings.cs" />
+    <Compile Include="Platform\Texture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResContent.Designer.cs">
       <AutoGen>True</AutoGen>

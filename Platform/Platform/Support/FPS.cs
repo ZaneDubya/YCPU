@@ -2,7 +2,7 @@
 
 namespace YCPU.Platform.Support
 {
-    class FPS
+    internal class FPS
     {
         // Maintain an accurate count of frames per second.
         float m_FPS = 0, m_Frames = 0, m_ElapsedSeconds = 0;

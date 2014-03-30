@@ -104,7 +104,7 @@ namespace YCPU
             m_Threaded = threaded;
             if (m_Threaded)
             {
-                Platform.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
+                Platform.Parallel.StartBackground(Task_StartCPU);
                 Stopwatch_Start();
             }
         }

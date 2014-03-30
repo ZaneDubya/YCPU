@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace YCPU.Platform.Support
 {
-    public static class Library
+    internal static class Library
     {
         private static Settings m_Settings;
         private static GraphicsDevice m_Graphics;
@@ -38,7 +38,7 @@ namespace YCPU.Platform.Support
             get { return m_Input; }
         }
 
-        public static Texture2D CreateTexture(int w, int h)
+        internal static Texture2D CreateTexture(int w, int h)
         {
             return new Texture2D(m_Graphics, w, h);
         }
@@ -51,7 +51,7 @@ namespace YCPU.Platform.Support
             return m_Random.Next(a, b + 1);
         }
 
-        public static uint[] RandomTile()
+        internal static uint[] RandomTile()
         {
             uint[] data = new uint[64];
             for (int i = 0; i < 64; i++)
@@ -59,7 +59,7 @@ namespace YCPU.Platform.Support
             return data;
         }
 
-        public static Matrix ProjectionMatrixScreen
+        internal static Matrix ProjectionMatrixScreen
         {
             get
             {
@@ -72,7 +72,7 @@ namespace YCPU.Platform.Support
 
         private static Encoding m_UTF8, m_UTF8WithEncoding;
 
-        public static Encoding UTF8
+        internal static Encoding UTF8
         {
             get
             {
@@ -83,7 +83,7 @@ namespace YCPU.Platform.Support
             }
         }
 
-        public static Encoding UTF8WithEncoding
+        internal static Encoding UTF8WithEncoding
         {
             get
             {
