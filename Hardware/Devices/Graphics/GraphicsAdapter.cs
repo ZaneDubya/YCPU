@@ -116,8 +116,8 @@ namespace YCPU.Devices.Graphics
                 m_GraphicsMode = GraphicsMode.LEM1802;
                 m_BankLEM = new MemoryBankLEM();
 
-                m_LEM_CHRRAM = Platform.Support.Common.CreateTexture(128, 32);
-                m_LEM_PALRAM = Platform.Support.Common.CreateTexture(16, 1);
+                m_LEM_CHRRAM = Platform.Support.Library.CreateTexture(128, 32);
+                m_LEM_PALRAM = Platform.Support.Library.CreateTexture(16, 1);
 
                 ushort[] chrram_default = new ushort[256];
                 System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);

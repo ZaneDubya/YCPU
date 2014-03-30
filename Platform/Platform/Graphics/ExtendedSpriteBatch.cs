@@ -32,7 +32,7 @@ namespace YCPU.Platform.Graphics
         {
             base.Initialize();
 
-            _effect = Support.Common.Content.Load<Effect>("NES_PTHE");
+            _effect = Support.Library.Content.Load<Effect>("NES_PTHE");
             _drawQueue = new Dictionary<Texture2D, List<VertexPositionTextureHueExtra>>(256);
             _indexBuffer = createIndexBuffer(0x2000);
             _vertexListQueue = new Queue<List<VertexPositionTextureHueExtra>>(256);
@@ -62,7 +62,7 @@ namespace YCPU.Platform.Graphics
 
         public override void Draw(GameTime gameTime)
         {
-            _effect.Parameters["ProjectionMatrix"].SetValue(Support.Common.ProjectionMatrixScreen);
+            _effect.Parameters["ProjectionMatrix"].SetValue(Support.Library.ProjectionMatrixScreen);
             _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
             _effect.Parameters["PALETTE"].SetValue(PaletteTexture);
@@ -384,7 +384,7 @@ namespace YCPU.Platform.Graphics
         public void GUIDrawString(SpriteFont font, string text, Vector2 location, Color? color = null)
         {
             if (_textRenderer == null)
-                _textRenderer = new TextRenderer(Game.GraphicsDevice, Support.Common.Content.Load<SpriteFont>("Arial12"));
+                _textRenderer = new TextRenderer(Game.GraphicsDevice, Support.Library.Content.Load<SpriteFont>("Arial12"));
 
             Texture2D texture = _textRenderer.RenderText(text);
             if (texture == null)

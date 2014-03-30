@@ -39,7 +39,7 @@ namespace YCPU.Platform
 
             this.IsMouseVisible = true;
 
-            Support.Common.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
+            Support.Library.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
         }
 
         protected override void Initialize()
@@ -50,7 +50,7 @@ namespace YCPU.Platform
         protected override void LoadContent()
         {
             m_Settings = new Support.Settings();
-            Support.Common.Initialize(m_Settings, m_Graphics.GraphicsDevice, m_Input);
+            Support.Library.Initialize(m_Settings, m_Graphics.GraphicsDevice, m_Input);
         }
 
         protected override void UnloadContent()
