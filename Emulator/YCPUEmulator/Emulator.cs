@@ -78,8 +78,9 @@ namespace YCPU
 
         protected override void Draw(GameTime gameTime)
         {
-            base.Draw(gameTime);
             m_CPU.Display(SpriteBatch);
+            base.Draw(gameTime);
+            
         }
 
         private void StartCPU()

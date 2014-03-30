@@ -74,7 +74,15 @@ namespace YCPU.Devices.Graphics
 
         public override void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
         {
-            spritebatch.DrawSprite(m_LEM_CHRRAM, new Vector3(0, 0, 0), new Vector2(128, 32)); 
+            switch (m_GraphicsMode)
+            {
+                case GraphicsMode.None:
+                    // do nothing;
+                    return;
+                case GraphicsMode.LEM1802:
+                    spritebatch.DrawSprite(m_LEM_CHRRAM, new Vector3(16, 16, 0), new Vector2(128, 32), Palettized: false); 
+                    return;
+            }
         }
 
         // Internal Variables
@@ -112,7 +120,7 @@ namespace YCPU.Devices.Graphics
                 m_LEM_PALRAM = Platform.Support.Common.CreateTexture(16, 1);
 
                 ushort[] chrram_default = new ushort[256];
-                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 256);
+                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
                 for (int i = 0; i < 256; i++)
                     m_BankLEM[0x0800 + i] = chrram_default[i];
 
@@ -156,7 +164,7 @@ namespace YCPU.Devices.Graphics
                 {
                     ushort binary_data = m_BankLEM[0x0800 + data_index++];
                     int bit_index = 0;
-                    for (int iY = 0; iY < 2; iY++)
+                    for (int iY = 0; iY < 4; iY++)
                     {
                         for (int iX = 0; iX < 4; iX++)
                         {

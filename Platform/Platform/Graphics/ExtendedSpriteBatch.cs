@@ -99,6 +99,9 @@ namespace YCPU.Platform.Graphics
 
             _drawQueue.Clear();
             _zOffset.Z = 0;
+
+            GraphicsDevice.Textures[0] = null;
+            GraphicsDevice.Textures[1] = null;
         }
 
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color? hue = null, bool zInc = true, bool Palettized = false)
