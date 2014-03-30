@@ -10,14 +10,24 @@ namespace YCPU.Platform
         Support.Settings m_Settings;
         Support.InputState m_Input;
         Support.FPS m_FPS;
-        Graphics.SpriteBatchExtended m_SBX;
+        private Graphics.SpriteBatchExtended m_SBX;
+
+        protected Graphics.SpriteBatchExtended SpriteBatch
+        {
+            get { return m_SBX; }
+        }
+
+        protected Support.Settings Settings
+        {
+            get { return m_Settings; }
+        }
 
         public Host()
         {
             m_Graphics = new GraphicsDeviceManager(this);
             m_Graphics.IsFullScreen = false;
-            m_Graphics.PreferredBackBufferWidth = 256;
-            m_Graphics.PreferredBackBufferHeight = 240;
+            m_Graphics.PreferredBackBufferWidth = 640;
+            m_Graphics.PreferredBackBufferHeight = 480;
 
             m_Input = new Support.InputState();
             m_Input.Initialize(this.Window.Handle);
@@ -28,14 +38,13 @@ namespace YCPU.Platform
             this.Components.Add(m_SBX);
 
             this.IsMouseVisible = true;
+
+            Support.Common.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
         }
 
         protected override void Initialize()
         {
-            Support.Common.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
             base.Initialize();
-
-            // m_Settings.Resolution = new Point(640, 480);
         }
 
         protected override void LoadContent()

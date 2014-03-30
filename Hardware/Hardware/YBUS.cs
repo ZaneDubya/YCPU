@@ -12,7 +12,13 @@ namespace YCPU.Hardware
         public YBUS()
         {
             m_Devices = new List<Devices.BaseDevice>();
+        }
+
+        public void SetupDebugDevices()
+        {
+            // DEBUG set up of devices.
             m_Devices.Add(new Devices.Graphics.GraphicsAdapter(this));
+            SendDeviceMessage(0x0000, 0x0000, 0x0001, 0x0000); // set graphics adapter to LEM mode.
         }
 
         public void Update()
@@ -51,7 +57,7 @@ namespace YCPU.Hardware
 
         public void SendDeviceMessage(ushort device_index, ushort param_0, ushort param_1, ushort param_2)
         {
-            if (m_Devices.Count <= device_index)
+            if (device_index < m_Devices.Count)
                 m_Devices[device_index].Bus_SendMessage(param_0, param_1, param_2);
         }
 

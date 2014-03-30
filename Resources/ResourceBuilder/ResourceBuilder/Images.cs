@@ -32,8 +32,8 @@ namespace ResourceBuilder
                                 tile[(iY / 4)] |= (ushort)(1 << ((iY % 4) * 4 + iX));
                         }
                     }
-                    binary[y * 2 + 0] = tile[0];
-                    binary[y * 2 + 1] = tile[1];
+                    binary[y * tiles_w * 2 + x * 2 + 0] = tile[0];
+                    binary[y * tiles_w * 2 + x * 2 + 1] = tile[1];
                 }
             }
 

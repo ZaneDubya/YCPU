@@ -10,10 +10,15 @@ namespace YCPU
         private System.Diagnostics.Stopwatch m_Stopwatch;
         private int m_LastRunMS;
 
-        public Emulator()
-            : base()
+        public Emulator() : base()
         {
             m_Stopwatch = new System.Diagnostics.Stopwatch();
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            Settings.Resolution = new Point(256, 192);
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -64,10 +69,17 @@ namespace YCPU
                         StopCPU();
                         m_CPU.PS_R = true;
                         m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.BUS.SetupDebugDevices();
                         m_CPU.PC = 0x0000;
                         break;
                 }
             }
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            base.Draw(gameTime);
+            m_CPU.Display(SpriteBatch);
         }
 
         private void StartCPU()

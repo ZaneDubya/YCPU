@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 
 namespace YCPU.Devices.Graphics
 {
@@ -44,6 +45,16 @@ namespace YCPU.Devices.Graphics
                 case 0x0000: // SET_MODE
                     SetMode(param_1);
                     break;
+                case 0x0001: // READ CHR RAM
+                    break;
+                case 0x0002: // READ PAL RAM
+                    break;
+                case 0x0003: // SET BORDER COLOR
+                    break;
+                case 0x0004: // DUMP CHR RAM
+                    break; 
+                case 0x0005: // DUMP PAL RAM
+                    break;
             }
             return 0x0000;
         }
@@ -63,7 +74,7 @@ namespace YCPU.Devices.Graphics
 
         public override void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
         {
-
+            spritebatch.DrawSprite(m_LEM_CHRRAM, new Vector3(0, 0, 0), new Vector2(128, 32)); 
         }
 
         // Internal Variables
@@ -101,15 +112,74 @@ namespace YCPU.Devices.Graphics
                 m_LEM_PALRAM = Platform.Support.Common.CreateTexture(16, 1);
 
                 ushort[] chrram_default = new ushort[256];
-                System.Array.Copy(YCPU.ResContent.lem1802_charset, chrram_default, 256);
+                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 256);
                 for (int i = 0; i < 256; i++)
                     m_BankLEM[0x0800 + i] = chrram_default[i];
+
+                ushort[] palram_default = new ushort[16];
+                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_16bitpal, 0, palram_default, 0, 16);
+                for (int i = 0; i < 16; i++)
+                    m_BankLEM[0x0C00 + i] = palram_default[i];
             }
         }
 
         private void Update_LEM()
         {
+            if (m_BankLEM.SCRRAM_Delta)
+            {
 
+            }
+
+            if (m_BankLEM.CHRRAM_Delta)
+            {
+                Update_LEM_CHRRAM();
+                m_BankLEM.CHRRAM_Delta = false;
+            }
+
+            if (m_BankLEM.PALRAM_Delta)
+            {
+                Update_LEM_PALRAM();
+                m_BankLEM.PALRAM_Delta = false;
+            }
+        }
+
+        private void Update_LEM_CHRRAM()
+        {
+            // Assume CHRRAM format is Color (ARGB8888)
+            uint[] data = new uint[128 * 32];
+            int data_index = 0;
+            for (int iTile = 0; iTile < 128; iTile++)
+            {
+                int y = (iTile / 32) * 8;
+                int x = (iTile % 32) * 4;
+                for (int i = 0; i < 2; i++)
+                {
+                    ushort binary_data = m_BankLEM[0x0800 + data_index++];
+                    int bit_index = 0;
+                    for (int iY = 0; iY < 2; iY++)
+                    {
+                        for (int iX = 0; iX < 4; iX++)
+                        {
+                            bool bit = ((binary_data & (1 << bit_index++)) != 0);
+                            data[(y + i * 4 + iY) * 128 + (x + iX)] = (bit) ? 0xFFFFFFFF : 0xFF000000;
+                        }
+                    }
+                }
+            }
+            m_LEM_CHRRAM.SetData<uint>(data);
+        }
+
+        private void Update_LEM_PALRAM()
+        {
+            // Assume PALRAM format is Color (ARGB8888)
+            uint[] data = new uint[0x10];
+            for (int i = 0; i < 0x10; i++)
+            {
+                ushort color = m_BankLEM[0x0C00 + i];
+                data[i] = (uint)(0xFF000000) | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
+            }
+
+            m_LEM_PALRAM.SetData<uint>(data);
         }
 
         enum GraphicsMode

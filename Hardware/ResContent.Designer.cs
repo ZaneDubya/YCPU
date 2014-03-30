@@ -63,6 +63,16 @@ namespace YCPU {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] lem1802_16bitpal {
+            get {
+                object obj = ResourceManager.GetObject("lem1802_16bitpal", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] lem1802_charset {
             get {
                 object obj = ResourceManager.GetObject("lem1802_charset", resourceCulture);

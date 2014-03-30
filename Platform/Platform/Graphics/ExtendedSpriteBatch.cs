@@ -67,7 +67,7 @@ namespace YCPU.Platform.Graphics
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
             _effect.Parameters["PALETTE"].SetValue(PaletteTexture);
 
-            _effect.GraphicsDevice.Clear(Color.DarkGray);
+            _effect.GraphicsDevice.Clear(Color.Green);
 
             // http://blogs.msdn.com/b/shawnhar/archive/2009/02/18/depth-sorting-alpha-blended-objects.aspx
             // Pass 0: draw the solid part: alpha blending disabled, alpha test set to only accept the 100%

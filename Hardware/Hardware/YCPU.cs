@@ -9,6 +9,11 @@ namespace YCPU.Hardware
     public partial class YCPU
     {
         private YBUS m_Bus;
+        public YBUS BUS
+        {
+            get { return m_Bus; }
+        }
+
         private YRTC m_RTC;
 
         private long m_Cycles;
@@ -122,6 +127,11 @@ namespace YCPU.Hardware
                 // we wait 1ms between each try so we don't lock this variable.
                 System.Threading.Thread.Sleep(1);
             }
+        }
+
+        public void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
+        {
+            m_Bus.Display(spritebatch);
         }
 
         #region General Purpose Registers

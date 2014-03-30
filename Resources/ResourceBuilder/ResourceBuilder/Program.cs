@@ -15,6 +15,9 @@ namespace ResourceBuilder
             Images.PNGtoBIN(
                 path_in_base + "lem1802_charset.png",
                 path_out_base + "lem1802_charset.bin");
+            Palettes.Palette_ToRGB444(
+                path_in_base + "16bitpal.txt",
+                path_out_base + "lem1802_16bitpal.bin");
         }
     }
 }

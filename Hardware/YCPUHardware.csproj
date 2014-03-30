@@ -73,6 +73,7 @@
     <EmbeddedResource Include="ResContent.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ResContent.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +83,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\lem1802_16bitpal.bin" />
     <None Include="Resources\lem1802_charset.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
