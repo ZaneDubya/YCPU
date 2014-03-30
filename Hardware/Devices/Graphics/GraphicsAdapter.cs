@@ -48,7 +48,7 @@ namespace YCPU.Devices.Graphics
             return 0x0000;
         }
 
-        protected override void Update()
+        public override void Update()
         {
             switch (m_GraphicsMode)
             {
@@ -61,7 +61,7 @@ namespace YCPU.Devices.Graphics
             }
         }
 
-        protected override void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
+        public override void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
         {
 
         }
@@ -96,8 +96,14 @@ namespace YCPU.Devices.Graphics
             {
                 m_GraphicsMode = GraphicsMode.LEM1802;
                 m_BankLEM = new MemoryBankLEM();
+
                 m_LEM_CHRRAM = Platform.Support.Common.CreateTexture(128, 32);
                 m_LEM_PALRAM = Platform.Support.Common.CreateTexture(16, 1);
+
+                ushort[] chrram_default = new ushort[256];
+                System.Array.Copy(YCPU.ResContent.lem1802_charset, chrram_default, 256);
+                for (int i = 0; i < 256; i++)
+                    m_BankLEM[0x0800 + i] = chrram_default[i];
             }
         }
 

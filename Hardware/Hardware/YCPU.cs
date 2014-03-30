@@ -10,44 +10,33 @@ namespace YCPU.Hardware
     {
         private YBUS m_Bus;
         private YRTC m_RTC;
+
         private long m_Cycles;
+        private long m_Cycles_NextBusUpdate;
+        private int m_BUS_UpdateFrequency = 1024;
+
+        private int m_LastRunCycles = 0;
+        public int LastRunCycles
+        {
+            get { return m_LastRunCycles; }
+        }
+
         private bool m_Running = false, m_Pausing = false;
         public bool Running
         {
             get { return m_Running; }
         }
-
-        private System.Diagnostics.Stopwatch m_Stopwatch;
-        private int m_LastRunCycles = 0;
-        private int m_LastRunMS = 0;
-        public int LastRunCycles
-        {
-            get { return m_LastRunCycles; }
-        }
-        public int LastRunMS
-        {
-            get { return m_LastRunMS; }
-        }
-
         private const ushort c_GetMemory_ExecuteFail = 0xFFFF;
 
         public YCPU()
         {
             m_Bus = new YBUS();
             m_RTC = new YRTC();
-            m_Stopwatch = new System.Diagnostics.Stopwatch();
 
             InitializeOpcodes();
             InitializeMemory();
             MMU_Disable();
             PS = 0x0000;
-
-            m_Rom_CPU[0x00][0x0000] = 0x0000;
-            m_Rom_CPU[0x00][0x0001] = 0xFFFF;
-            m_Rom_CPU[0x00][0x0002] = 0x2000;
-            m_Rom_CPU[0x00][0x0003] = 0x0004;
-            m_Rom_CPU[0x00][0x0004] = 0x2011;
-            m_Rom_CPU[0x00][0x0005] = 0x04C4;
         }
 
         public void Run(int cyclecount = -1)
@@ -56,10 +45,6 @@ namespace YCPU.Hardware
             long cycles_start = m_Cycles;
             long cycles_target = (cyclecount == -1) ? long.MaxValue : cyclecount + m_Cycles;
 
-            // To measure the speed of the processor:
-            m_Stopwatch.Reset();
-            m_Stopwatch.Start();
-
             // Run the processor for cyclecount Cycles:
             m_Running = true;
             while (m_Running)
@@ -67,22 +52,27 @@ namespace YCPU.Hardware
                 ushort word = GetMemory(PC++, true);
                 if (word != c_GetMemory_ExecuteFail)
                 {
+                    // Check for hardware update:
+                    if (m_Cycles >= m_Cycles_NextBusUpdate)
+                    {
+                        m_Bus.Update();
+                        m_Cycles_NextBusUpdate += m_BUS_UpdateFrequency;
+                    }
+
                     // Check for hardware interrupt:
                     if (PS_I && !PS_Q && m_Bus.IRQ)
-                    {
                         Interrupt_HWI();
-                    }
+
                     // Check for RTC interrupt:
                     if (m_RTC.IRQ(m_Cycles))
-                    {
                         Interrupt_Clock();
-                    }
-                    // Execute Memory[PC]
+
+                    // Execute Memory[PC] and increment the cycle counter:
                     YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                     opcode.Opcode(word, opcode.BitPattern);
-                    // Increment the Cycle counter. Check to see if the
-                    // processor has run the desired number of Cycles.
                     m_Cycles += opcode.Cycles;
+
+                    // Check to see if we've exceeded our cycle target:
                     if (m_Cycles >= cycles_target)
                         m_Pausing = true;
                     if (m_Pausing)
@@ -92,10 +82,33 @@ namespace YCPU.Hardware
                     }
                 }
             }
-            // Get the speed of the processor:
-            m_Stopwatch.Stop();
-            m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
+            // Save the executed cycles from this run:
             m_LastRunCycles = (int)(m_Cycles - cycles_start);
+        }
+
+        public void RunOneInstruction()
+        {
+            ushort word = GetMemory(PC++, true);
+            if (word != c_GetMemory_ExecuteFail)
+            {
+                // Check for hardware interrupt:
+                if (PS_I && !PS_Q && m_Bus.IRQ)
+                {
+                    Interrupt_HWI();
+                }
+
+                // Check for RTC interrupt:
+                if (m_RTC.IRQ(m_Cycles))
+                {
+                    Interrupt_Clock();
+                }
+
+                // Execute Memory[PC]
+                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+                opcode.Opcode(word, opcode.BitPattern);
+                // Increment the Cycle counter.
+                m_Cycles += opcode.Cycles;
+            }
         }
 
         public void Pause()
@@ -109,70 +122,6 @@ namespace YCPU.Hardware
                 // we wait 1ms between each try so we don't lock this variable.
                 System.Threading.Thread.Sleep(1);
             }
-        }
-
-        public void Benchmark(bool mmu_enabled, int count_runs)
-        {
-            long[] benchmark = new long[0x100];
-            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-            System.Diagnostics.Stopwatch total = new System.Diagnostics.Stopwatch();
-            total.Reset();
-            total.Start();
-            int count = 0;
-            int cycles = 0;
-
-            PS = 0x8000;
-            PS_M = mmu_enabled;
-            ushort ps = m_PS;
-
-            for (int i = 0; i < 0x100; i++)
-            {
-                if (m_Opcodes[i].IsNOP)
-                {
-                    // Ignore NOPs for benchmarking.
-                }
-                else
-                {
-                    m_PS = ps;
-                    for (int r = 0; r < 0x08; r++)
-                        R[r] = 1;
-                    for (int m = 0; m < 0x10000; m++)
-                        SetMemory((ushort)m, 0x0001);
-                    timer.Reset();
-                    timer.Start();
-                    for (int j = 0; j < count_runs; j++)
-                    {
-                        m_PS = ps;
-                        ushort word = (ushort)(i & ((j & 0xFF) << 8));
-                        m_Opcodes[i].Opcode(word, m_Opcodes[i].BitPattern);
-                        count++;
-                        cycles += m_Opcodes[i].Cycles;
-                    }
-                    timer.Stop();
-                    benchmark[i] = timer.ElapsedTicks;
-                }
-            }
-            total.Stop();
-
-            long min_value = long.MaxValue;
-            for (int i = 0; i < 0x100; i++)
-            {
-                if ((benchmark[i] != 0) && (benchmark[i] < min_value))
-                    min_value = benchmark[i];
-            }
-                
-
-            string[] lines = new string[0x101];
-            for (int i = 0; i < 0x100; i++)
-            {
-                if (m_Opcodes[i].IsNOP)
-                    lines[i] = "---";
-                else
-                    lines[i] = string.Format("{0}     {1:0.00}", m_Opcodes[i].Name, (float)benchmark[i] / (float)min_value);
-            }
-            lines[0x100] = string.Format("{0} opcodes, {1} cycles in {2} ms.", count, cycles, total.ElapsedMilliseconds);
-            System.IO.File.WriteAllLines(string.Format("Benchmark{0}.txt", PS_M ? "M" : ""), lines);
-
         }
 
         #region General Purpose Registers

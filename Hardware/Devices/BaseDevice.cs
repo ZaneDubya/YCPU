@@ -5,7 +5,7 @@ using System.Text;
 
 namespace YCPU.Devices
 {
-    abstract class BaseDevice
+    public abstract class BaseDevice
     {
         protected abstract ushort DeviceType { get; }
         protected abstract ushort ManufacturerID { get; }
@@ -15,8 +15,8 @@ namespace YCPU.Devices
         protected abstract void Initialize();
         protected abstract IMemoryBank GetMemoryBank(ushort bank_index);
         protected abstract ushort ReceiveMessage(ushort param_0, ushort param_1, ushort param_2);
-        protected abstract void Update();
-        protected abstract void Display(Platform.Graphics.SpriteBatchExtended spritebatch);
+        public abstract void Update();
+        public abstract void Display(Platform.Graphics.SpriteBatchExtended spritebatch);
 
         private Hardware.YBUS m_BUS;
         private bool m_IRQ = false;
@@ -31,6 +31,7 @@ namespace YCPU.Devices
         protected void RaiseIRQ()
         {
             m_IRQ = true;
+            m_BUS.Device_RaiseIRQ(this);
         }
 
         public void IRQAcknowledged()

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace YCPU
 {
-    interface IMemoryBank
+    public interface IMemoryBank
     {
         bool ReadOnly
         {

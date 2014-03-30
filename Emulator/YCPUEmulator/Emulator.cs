@@ -7,11 +7,13 @@ namespace YCPU
     class Emulator : Platform.Host
     {
         private Hardware.YCPU m_CPU;
+        private System.Diagnostics.Stopwatch m_Stopwatch;
+        private int m_LastRunMS;
 
         public Emulator()
             : base()
         {
-
+            m_Stopwatch = new System.Diagnostics.Stopwatch();
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -52,7 +54,7 @@ namespace YCPU
                         break;
                     case 'n':
                         StopCPU();
-                        m_CPU.Run(1);
+                        m_CPU.RunOneInstruction();
                         break;
                     case 'q':
                         StopCPU();
@@ -71,12 +73,16 @@ namespace YCPU
         private void StartCPU()
         {
             Platform.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
+            m_Stopwatch.Reset();
+            m_Stopwatch.Start();
         }
 
         private void StopCPU()
         {
             if (m_CPU.Running)
             {
+                m_Stopwatch.Stop();
+                m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
                 m_CPU.Pause();
             }
         }
@@ -126,7 +132,7 @@ namespace YCPU
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 11, ">");
 
-            ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms.            ", m_CPU.LastRunCycles, m_CPU.LastRunMS));
+            ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms.            ", m_CPU.LastRunCycles, m_LastRunMS));
 
             ConsoleWrite(0, 24, "Command: ");
         }

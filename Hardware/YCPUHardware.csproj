@@ -53,6 +53,7 @@
     <Compile Include="Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
+    <Compile Include="Hardware\YCPU_Benchmark.cs" />
     <Compile Include="IMemoryBank.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Hardware\YBUS.cs" />
@@ -75,13 +76,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\charset.png" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Platform\YCPUPlatform.csproj">
       <Project>{AACF1738-A2F8-4783-BBFF-2163B5187830}</Project>
       <Name>YCPUPlatform</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lem1802_charset.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
