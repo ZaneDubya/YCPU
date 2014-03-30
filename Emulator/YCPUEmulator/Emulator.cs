@@ -23,6 +23,7 @@ namespace YCPU
 
         private double m_LastConsoleUpdate = 0;
         private bool m_Running = false;
+        private bool m_Threaded = false;
 
         protected override void Update(GameTime gameTime)
         {
@@ -40,9 +41,11 @@ namespace YCPU
                 UpdateConsole();
             }
 
-            if (m_Running)
+            if (m_Running && !m_Threaded)
             {
+                Stopwatch_Start();
                 m_CPU.Run(100000 / 60);
+                Stopwatch_Stop();
             }
 
             if (Console.KeyAvailable)
@@ -61,7 +64,10 @@ namespace YCPU
                         m_CPU.Benchmark(true, 0x800);
                         break;
                     case 'r':
-                        StartCPU();
+                        StartCPU(false);
+                        break;
+                    case 't':
+                        StartCPU(true);
                         break;
                     case 'n':
                         StopCPU();
@@ -91,19 +97,23 @@ namespace YCPU
             
         }
 
-        private void StartCPU()
+        private void StartCPU(bool threaded)
         {
-            Platform.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
-            m_Stopwatch.Reset();
-            m_Stopwatch.Start();
+            StopCPU();
+            m_Running = true;
+            m_Threaded = threaded;
+            if (m_Threaded)
+            {
+                Platform.ParallelTasks.Parallel.StartBackground(Task_StartCPU);
+                Stopwatch_Start();
+            }
         }
 
         private void StopCPU()
         {
             if (m_CPU.Running)
             {
-                m_Stopwatch.Stop();
-                m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
+                Stopwatch_Stop();
                 m_CPU.Pause();
             }
             m_Running = false;
@@ -111,8 +121,19 @@ namespace YCPU
 
         private void Task_StartCPU()
         {
-            StopCPU();
-            m_Running = true;
+            m_CPU.Run();
+        }
+
+        private void Stopwatch_Start()
+        {
+            m_Stopwatch.Reset();
+            m_Stopwatch.Start();
+        }
+
+        private void Stopwatch_Stop()
+        {
+            m_Stopwatch.Stop();
+            m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
         }
 
         #region Console
