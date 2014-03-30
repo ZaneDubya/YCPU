@@ -82,7 +82,8 @@ namespace YCPU.Platform.Graphics
 
             Texture2D iTexture;
             List<VertexPositionTextureHueExtra> iVertexList;
-            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureHueExtra>>> iTexturesVertexes = _drawQueue.GetEnumerator();
+            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureHueExtra>>> iTexturesVertexes = 
+                _drawQueue.GetEnumerator();
 
             _effect.CurrentTechnique.Passes[0].Apply();
 
@@ -92,7 +93,8 @@ namespace YCPU.Platform.Graphics
                 iVertexList = iTexturesVertexes.Current.Value;
                 GraphicsDevice.Textures[0] = iTexture;
                 GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionTextureHueExtra>(
-                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, _indexBuffer, 0, iVertexList.Count / 2);
+                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, 
+                    iVertexList.Count, _indexBuffer, 0, iVertexList.Count / 2);
                 iVertexList.Clear();
                 _vertexListQueue.Enqueue(iVertexList);
             }
@@ -273,6 +275,17 @@ namespace YCPU.Platform.Graphics
                 return;
             m_GUIClipRect = m_GUIClipRect_Stack[m_GUIClipRect_Stack.Count - 1];
             m_GUIClipRect_Stack.RemoveAt(m_GUIClipRect_Stack.Count - 1);
+        }
+
+        public void ResetGuiClipRect()
+        {
+            if (!(m_GUIClipRect_Stack == null))
+            {
+                while (m_GUIClipRect_Stack.Count > 0)
+                    GUIClipRect_Pop();
+            }
+
+            m_GUIClipRect = new Vector4(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
         public void GUIDrawSprite(Texture2D texture, Rectangle destinationRectangle, Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, bool Palettized = false, int Palette = 0)

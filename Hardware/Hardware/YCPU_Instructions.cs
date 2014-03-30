@@ -26,12 +26,13 @@ namespace YCPU.Hardware
             m_Opcodes[0x07] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
             // No STO Immediate (0x08) or STO Register (0x09)
-            m_Opcodes[0x0A] = new YCPUInstruction("STO", STO, BitPatternALU_Indirect, DisassembleALU, 1);
-            m_Opcodes[0x0B] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectOffset, DisassembleALU, 2);
-            m_Opcodes[0x0C] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectPostInc, DisassembleALU, 1);
-            m_Opcodes[0x0D] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectPreDec, DisassembleALU, 1);
-            m_Opcodes[0x0E] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
-            m_Opcodes[0x0F] = new YCPUInstruction("STO", STO, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
+            // indirect = value in register
+            m_Opcodes[0x0A] = new YCPUInstruction("STO", STO, BitPatternSTO_Indirect, DisassembleALU, 1);
+            m_Opcodes[0x0B] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0x0C] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0x0D] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0x0E] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0x0F] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectIndexedHi, DisassembleALU, 1);
 
             m_Opcodes[0x10] = new YCPUInstruction("ADD", ADD, BitPatternALU_Immediate, DisassembleALU, 2);
             m_Opcodes[0x11] = new YCPUInstruction("ADD", ADD, BitPatternALU_Register, DisassembleALU, 1);
@@ -297,8 +298,8 @@ namespace YCPU.Hardware
 
             int result = R[(int)destination] & value;
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((value & 0x8000) != 0);
-            FL_Z = (value == 0x0000);
+            FL_N = ((result & 0x8000) != 0);
+            FL_Z = (result == 0x0000);
             // C [Carry] Not effected.
             // V [Overflow] Not effected.
         }

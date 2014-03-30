@@ -305,7 +305,7 @@ namespace YCPU.Hardware
             {
                 return ((m_PS & c_PS_M) != 0);
             }
-            private set
+            set
             {
                 if (value != PS_M)
                 {
@@ -584,7 +584,7 @@ namespace YCPU.Hardware
         #endregion
 
         #region Memory (RAM/ROM/MMU)
-        private IMemoryBank[] m_M = new MemoryBank[0x10]; // the loaded memory banks.
+        private IMemoryBank[] m_M = new IMemoryBank[0x10]; // the loaded memory banks.
         // Internal Processor Memory and ROM banks.
         private MemoryBank[] m_Mem_CPU;
         private MemoryBank[] m_Rom_CPU;
@@ -606,7 +606,7 @@ namespace YCPU.Hardware
                 m_Rom_CPU[i] = new MemoryBank();
             m_MMU = new ushort[0x10][];
             for (int i = 0; i < 0x10; i++)
-                m_MMU[i] = new ushort[2] { 0x0000, 0x0000 };
+                m_MMU[i] = new ushort[2] { (ushort)i, 0x0000 };
         }
 
         public ushort GetMemory(ushort address, bool execute = false)
@@ -738,10 +738,10 @@ namespace YCPU.Hardware
                 }
                 else
                 {
-                    // select external bank. not yet implemented.
-                    m_M[i] = null;
+                    ushort device_index = (ushort)(((m_MMU[i][1] & 0x000F) << 4) + ((m_MMU[i][0] & 0xF000) >> 12));
+                    ushort bank_index = (ushort)(m_MMU[i][0] & 0x0FFF);
+                    m_M[i] = (IMemoryBank)m_Bus.GetMemoryBank(device_index, bank_index);
                 }
-                m_M[i] = m_Mem_CPU[i];
             }
         }
 
@@ -750,6 +750,12 @@ namespace YCPU.Hardware
             if (!PS_M)
                 m_M[0x00] = (PS_R) ? m_Mem_CPU[0x00] : m_Rom_CPU[0x00];
             m_M[0x00].ReadOnly = !PS_R;
+        }
+
+        public void MMU_SwitchInHardwareBank(ushort bank_index, ushort device_index, ushort device_bank)
+        {
+            MMU_Write((ushort)(bank_index * 2), 0x0000);
+            MMU_Write((ushort)(bank_index * 2 + 1), 0x1000);
         }
         #endregion
 

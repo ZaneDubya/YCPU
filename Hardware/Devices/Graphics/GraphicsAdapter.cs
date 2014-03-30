@@ -33,7 +33,7 @@ namespace YCPU.Devices.Graphics
             SetMode_None();
         }
 
-        protected override IMemoryBank GetMemoryBank(ushort bank_index)
+        public override IMemoryBank GetMemoryBank(ushort bank_index)
         {
             return m_BankLEM;
         }
@@ -80,7 +80,7 @@ namespace YCPU.Devices.Graphics
                     // do nothing;
                     return;
                 case GraphicsMode.LEM1802:
-                    spritebatch.DrawSprite(m_LEM_CHRRAM, new Vector3(16, 16, 0), new Vector2(128, 32), Palettized: false); 
+                    Draw_LEM(spritebatch);
                     return;
             }
         }
@@ -188,6 +188,22 @@ namespace YCPU.Devices.Graphics
             }
 
             m_LEM_PALRAM.SetData<uint>(data);
+        }
+
+        private void Draw_LEM(Platform.Graphics.SpriteBatchExtended spritebatch)
+        {
+            System.Random rnd = new System.Random();
+
+            int current_word = 0;
+            for (int y = 0; y < 12; y++)
+                for (int x = 0; x < 32; x++)
+                {
+                    ushort word = m_BankLEM[current_word++];
+                    int character = word & 0x007F;
+                    spritebatch.GUIDrawSprite(m_LEM_CHRRAM,
+                        new Rectangle(x * 8, y * 16, 8, 16),
+                        new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8));
+                }
         }
 
         enum GraphicsMode

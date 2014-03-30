@@ -83,6 +83,63 @@ namespace YCPU.Hardware
             value = GetMemory((ushort)(R[(int)source] + R[index_bits + 4]));
         }
 
+        private void BitPatternSTO_Indirect(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = R[(int)source];
+        }
+
+        private void BitPatternSTO_IndirectOffset(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            ushort nextword = GetMemory(PC++, true);
+            value = (ushort)(R[(int)source] + nextword);
+        }
+
+        private void BitPatternSTO_IndirectPostInc(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = R[(int)source];
+            R[(int)source]++;
+        }
+
+        private void BitPatternSTO_IndirectPreDec(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            R[(int)source]--;
+            value =R[(int)source];
+        }
+
+        private void BitPatternSTO_IndirectIndexed(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = (ushort)(R[(int)source] + R[index_bits]);
+        }
+
+        private void BitPatternSTO_IndirectIndexedHi(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            // int AddressMode = (operand & 0x0007);
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
+            int index_bits = ((operand & 0x0300) >> 8);
+            value = (ushort)(R[(int)source] + R[index_bits + 4]);
+        }
+
         private void BitPatternBIT(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);

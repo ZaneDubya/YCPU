@@ -101,5 +101,12 @@ namespace YCPU.Hardware
                 return m_DevicesRaisingIRQ.Min();
             }
         }
+
+        public IMemoryBank GetMemoryBank(ushort device_index, ushort bank_index)
+        {
+            if (device_index >= m_Devices.Count)
+                return null;
+            return m_Devices[device_index].GetMemoryBank((ushort)(bank_index & 0x0FFF));
+        }
     }
 }

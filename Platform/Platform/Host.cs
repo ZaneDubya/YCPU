@@ -69,6 +69,8 @@ namespace YCPU.Platform
                 handleUpdates();
 
             base.Update(gameTime);
+
+            m_SBX.ResetGuiClipRect();
         }
 
         protected override void Draw(GameTime gameTime)

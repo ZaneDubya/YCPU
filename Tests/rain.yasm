@@ -98,10 +98,10 @@ next_char3:
   jsr next_rand
   lod b, y
   and b, 0x0700         ; ifb y, 0x0700
-  beq skip3             ; jmp skip3
+  bne skip3             ; jmp skip3
   
   lod b, [a]            ; ifb [a], 0xffff
-  beq empty_char2       ; jmp empty_char2
+  bne empty_char2       ; jmp empty_char2
   
   lod b, 0x2000         ; set [a], 0x2000
   sto b, [a]

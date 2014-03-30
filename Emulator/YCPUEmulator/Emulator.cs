@@ -22,6 +22,7 @@ namespace YCPU
         }
 
         private double m_LastConsoleUpdate = 0;
+        private bool m_Running = false;
 
         protected override void Update(GameTime gameTime)
         {
@@ -37,6 +38,11 @@ namespace YCPU
             {
                 m_LastConsoleUpdate += 150;
                 UpdateConsole();
+            }
+
+            if (m_Running)
+            {
+                m_CPU.Run(100000 / 60);
             }
 
             if (Console.KeyAvailable)
@@ -71,6 +77,8 @@ namespace YCPU
                         m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
                         m_CPU.BUS.SetupDebugDevices();
                         m_CPU.PC = 0x0000;
+                        m_CPU.MMU_SwitchInHardwareBank(0x08, 0x00, 0x00);
+                        m_CPU.PS_M = true;
                         break;
                 }
             }
@@ -98,11 +106,13 @@ namespace YCPU
                 m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
                 m_CPU.Pause();
             }
+            m_Running = false;
         }
 
         private void Task_StartCPU()
         {
-            m_CPU.Run();
+            StopCPU();
+            m_Running = true;
         }
 
         #region Console

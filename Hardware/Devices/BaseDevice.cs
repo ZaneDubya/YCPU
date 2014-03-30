@@ -13,7 +13,7 @@ namespace YCPU.Devices
         protected abstract ushort DeviceRevision { get; }
 
         protected abstract void Initialize();
-        protected abstract IMemoryBank GetMemoryBank(ushort bank_index);
+        public abstract IMemoryBank GetMemoryBank(ushort bank_index);
         protected abstract ushort ReceiveMessage(ushort param_0, ushort param_1, ushort param_2);
         public abstract void Update();
         public abstract void Display(Platform.Graphics.SpriteBatchExtended spritebatch);

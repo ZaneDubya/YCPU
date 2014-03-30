@@ -38,6 +38,7 @@ namespace YCPU.Devices.Graphics
         {
             get
             {
+                i &= 0x0FFF;
                 if (i < 0x0800)
                     return m_SCRRAM[i % 0x0200];
                 else if (i < 0x0C00)
@@ -47,6 +48,7 @@ namespace YCPU.Devices.Graphics
             }
             set
             {
+                i &= 0x0FFF;
                 if (i < 0x0800)
                 {
                     SCRRAM_Delta = true;

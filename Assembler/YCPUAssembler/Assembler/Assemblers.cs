@@ -31,7 +31,7 @@ namespace YCPU.Assembler
             int addressing = (code[0] & 0x0007);
             if ((addressing == 0) && (addressing == 1)) // no sto reg or sto immediate.
                 return null;
-            return AssembleALU((ushort)0x0000, param[0], param[1]);
+            return AssembleALU((ushort)0x0008, param[0], param[1]);
         }
 
         ushort[] AssembleADD(string[] param)
