@@ -625,11 +625,10 @@ namespace YCPU.Hardware
         #endregion
 
         #region Memory (RAM/ROM/MMU)
-        private ushort[][] m_M = new ushort[0x10][]; // the loaded memory banks.
-        private bool[] m_M_ROM = new bool[0x10]; // setting these values to true will cause writes to fail silently.
+        private IMemoryBank[] m_M = new MemoryBank[0x10]; // the loaded memory banks.
         // Internal Processor Memory and ROM banks.
-        private ushort[][] m_Mem_CPU;
-        private ushort[][] m_Rom_CPU;
+        private MemoryBank[] m_Mem_CPU;
+        private MemoryBank[] m_Rom_CPU;
         private ushort m_Mem_CPU_Count = 0x0010;
         private ushort m_Rom_CPU_Count = 0x0001;
         // MMU Tables
@@ -640,12 +639,12 @@ namespace YCPU.Hardware
 
         public void InitializeMemory()
         {
-            m_Mem_CPU = new ushort[m_Mem_CPU_Count][];
+            m_Mem_CPU = new MemoryBank[m_Mem_CPU_Count];
             for (int i = 0; i < m_Mem_CPU_Count; i++)
-                m_Mem_CPU[i] = new ushort[0x1000];
-            m_Rom_CPU = new ushort[m_Rom_CPU_Count][];
+                m_Mem_CPU[i] = new MemoryBank();
+            m_Rom_CPU = new MemoryBank[m_Rom_CPU_Count];
             for (int i = 0; i < m_Rom_CPU_Count; i++)
-                m_Rom_CPU[i] = new ushort[0x1000];
+                m_Rom_CPU[i] = new MemoryBank();
             m_MMU = new ushort[0x10][];
             for (int i = 0; i < 0x10; i++)
                 m_MMU[i] = new ushort[2] { 0x0000, 0x0000 };
@@ -687,7 +686,7 @@ namespace YCPU.Hardware
                     return c_GetMemory_ExecuteFail; // this value will cause the instruction not to execute
                 }
             }
-            return m_M[bank][(address & 0x0FFF)];
+            return m_M[bank][(address)];
         }
 
         private void SetMemory(ushort address, ushort value)
@@ -717,8 +716,8 @@ namespace YCPU.Hardware
                 }
                 m_MMU[bank][1] |= c_MMUCache_A;
             }
-            if (!m_M_ROM[bank])
-                m_M[bank][(address & 0x0FFF)] = value;
+            if (!m_M[bank].ReadOnly)
+                m_M[bank][(address)] = value;
         }
 
         private ushort MMU_Read(ushort index)
@@ -759,7 +758,7 @@ namespace YCPU.Hardware
             for (int i = 0x01; i < 0x10; i++)
             {
                 m_M[i] = m_Mem_CPU[i];
-                m_M_ROM[i] = false;
+                m_M[i].ReadOnly = false;
             }
         }
 
@@ -791,7 +790,7 @@ namespace YCPU.Hardware
         {
             if (!PS_M)
                 m_M[0x00] = (PS_R) ? m_Mem_CPU[0x00] : m_Rom_CPU[0x00];
-            m_M_ROM[0x00] = !PS_R;
+            m_M[0x00].ReadOnly = !PS_R;
         }
         #endregion
 

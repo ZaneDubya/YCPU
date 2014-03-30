@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace YCPU.Platform.Support
 {
-    class Settings
+    public class Settings
     {
         private List<Setting> m_Updates = new List<Setting>();
         private bool m_Squelch = false;

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace YCPU.Platform.Support
 {
-    static class Common
+    public static class Common
     {
         private static Settings m_Settings;
         private static GraphicsDevice m_Graphics;

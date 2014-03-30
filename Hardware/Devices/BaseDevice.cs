@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Hardware
+namespace YCPU.Devices
 {
     abstract class BaseDevice
     {
@@ -13,7 +13,10 @@ namespace YCPU.Hardware
         protected abstract ushort DeviceRevision { get; }
 
         protected abstract void Initialize();
-        protected abstract void ReceiveMessage(ushort param_0, ushort param_1, ushort param_2);
+        protected abstract IMemoryBank GetMemoryBank(ushort bank_index);
+        protected abstract ushort ReceiveMessage(ushort param_0, ushort param_1, ushort param_2);
+        protected abstract void Update();
+        protected abstract void Display(Platform.Graphics.SpriteBatchExtended spritebatch);
 
         private Hardware.YBUS m_BUS;
         private bool m_IRQ = false;
@@ -51,9 +54,9 @@ namespace YCPU.Hardware
             return info;
         }
 
-        public void Bus_SendMessage(ushort param_0, ushort param_1, ushort param_2)
+        public ushort Bus_SendMessage(ushort param_0, ushort param_1, ushort param_2)
         {
-            ReceiveMessage(param_0, param_1, param_2);
+            return ReceiveMessage(param_0, param_1, param_2);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace YCPU
         public Emulator()
             : base()
         {
-            Run();
+
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -26,9 +26,9 @@ namespace YCPU
                 m_CPU.Interrupt_Reset();
             }
 
-            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 200))
+            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 150))
             {
-                m_LastConsoleUpdate += 200;
+                m_LastConsoleUpdate += 150;
                 UpdateConsole();
             }
 
