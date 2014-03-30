@@ -105,8 +105,9 @@ next_char3:
   
   lod b, 0x2000         ; set [a], 0x2000
   sto b, [a]
-  cmp y, 0x0800         ; ifb y, 0x0800
-  beq no_set
+  lod b, y              ; ifb y, 0x0800
+  and b, 0x0800       
+  bne no_set
   lod b, 0xA000         ; set [a], 0xa000
   sto b, [a]
 no_set:

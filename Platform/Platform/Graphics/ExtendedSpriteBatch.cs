@@ -11,14 +11,14 @@ namespace YCPU.Platform.Graphics
     {
         private Effect _effect;
 
-        private Dictionary<Texture2D, List<VertexPositionTextureHueExtra>> _drawQueue;
+        private Dictionary<TextureShader, List<VertexPositionTextureHueExtra>> _drawQueue;
         private Queue<List<VertexPositionTextureHueExtra>> _vertexListQueue;
         private short[] _indexBuffer;
 
         private Vector3 _zOffset = new Vector3();
         public float ZOffset { set { _zOffset = new Vector3(0, 0, value); } }
 
-        public Texture2D PaletteTexture = null;
+        public Texture Palette_NES = null, Palette_LEM = null;
 
         public SpriteBatchExtended(Game game)
             : base(game)
@@ -33,7 +33,7 @@ namespace YCPU.Platform.Graphics
             base.Initialize();
 
             _effect = Support.Library.Content.Load<Effect>("NES_PTHE");
-            _drawQueue = new Dictionary<Texture2D, List<VertexPositionTextureHueExtra>>(256);
+            _drawQueue = new Dictionary<TextureShader, List<VertexPositionTextureHueExtra>>(256);
             _indexBuffer = createIndexBuffer(0x2000);
             _vertexListQueue = new Queue<List<VertexPositionTextureHueExtra>>(256);
         }
@@ -60,7 +60,6 @@ namespace YCPU.Platform.Graphics
             _effect.Parameters["ProjectionMatrix"].SetValue(Support.Library.ProjectionMatrixScreen);
             _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
-            _effect.Parameters["PALETTE"].SetValue(PaletteTexture);
 
             _effect.GraphicsDevice.Clear(Color.Black);
 
@@ -76,23 +75,35 @@ namespace YCPU.Platform.Graphics
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            Texture2D iTexture;
+            TextureShader iKey;
             List<VertexPositionTextureHueExtra> iVertexList;
-            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureHueExtra>>> iTexturesVertexes = 
-                _drawQueue.GetEnumerator();
 
-            _effect.CurrentTechnique.Passes[0].Apply();
-
-            while (iTexturesVertexes.MoveNext())
+            foreach (Shader shader in (Shader[]) Enum.GetValues(typeof(Shader)))
             {
-                iTexture = iTexturesVertexes.Current.Key;
-                iVertexList = iTexturesVertexes.Current.Value;
-                GraphicsDevice.Textures[0] = iTexture;
-                GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionTextureHueExtra>(
-                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, 
-                    iVertexList.Count, _indexBuffer, 0, iVertexList.Count / 2);
-                iVertexList.Clear();
-                _vertexListQueue.Enqueue(iVertexList);
+                if (shader == Shader.NES)
+                    _effect.Parameters["PALETTE"].SetValue(Palette_NES == null ? null : Palette_NES.m_Texture);
+                else if (shader == Shader.LEM1802)
+                    _effect.Parameters["PALETTE"].SetValue(Palette_LEM == null ? null : Palette_LEM.m_Texture);
+
+                _effect.CurrentTechnique.Passes[(int)shader].Apply();
+
+                IEnumerator<KeyValuePair<TextureShader, List<VertexPositionTextureHueExtra>>> iTexturesVertexes =
+                    _drawQueue.GetEnumerator();
+
+                while (iTexturesVertexes.MoveNext())
+                {
+                    iKey = iTexturesVertexes.Current.Key;
+                    if (iKey.Shader == shader)
+                    {
+                        iVertexList = iTexturesVertexes.Current.Value;
+                        GraphicsDevice.Textures[0] = iKey.Texture;
+                        GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionTextureHueExtra>(
+                            PrimitiveType.TriangleList, iVertexList.ToArray(), 0,
+                            iVertexList.Count, _indexBuffer, 0, iVertexList.Count / 2);
+                        iVertexList.Clear();
+                        _vertexListQueue.Enqueue(iVertexList);
+                    }
+                }
             }
 
             _drawQueue.Clear();
@@ -102,13 +113,15 @@ namespace YCPU.Platform.Graphics
             GraphicsDevice.Textures[1] = null;
         }
 
-        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color? hue = null, bool zInc = true, bool Palettized = false)
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color? hue = null, bool zInc = true, bool Palettized = false, Shader shader = Shader.Standard)
         {
             List<VertexPositionTextureHueExtra> vertexList;
 
-            if (_drawQueue.ContainsKey(texture))
+            TextureShader key = new TextureShader(texture, shader);
+
+            if (_drawQueue.ContainsKey(key))
             {
-                vertexList = _drawQueue[texture];
+                vertexList = _drawQueue[key];
             }
             else
             {
@@ -122,7 +135,7 @@ namespace YCPU.Platform.Graphics
                     vertexList = new List<VertexPositionTextureHueExtra>(1024);
                 }
 
-                _drawQueue.Add(texture, vertexList);
+                _drawQueue.Add(key, vertexList);
             }
 
             if (zInc)
@@ -144,10 +157,11 @@ namespace YCPU.Platform.Graphics
         public bool DrawTriangleList(Texture2D texture, Vector3 position, VertexPositionTextureHueExtra[] list)
         {
             List<VertexPositionTextureHueExtra> vertexList;
+            TextureShader key = new TextureShader(texture, Shader.Standard);
 
-            if (_drawQueue.ContainsKey(texture))
+            if (_drawQueue.ContainsKey(key))
             {
-                vertexList = _drawQueue[texture];
+                vertexList = _drawQueue[key];
             }
             else
             {
@@ -161,7 +175,7 @@ namespace YCPU.Platform.Graphics
                     vertexList = new List<VertexPositionTextureHueExtra>(1024);
                 }
 
-                _drawQueue.Add(texture, vertexList);
+                _drawQueue.Add(key, vertexList);
             }
 
             position += _zOffset;
@@ -284,7 +298,9 @@ namespace YCPU.Platform.Graphics
             m_GUIClipRect = new Vector4(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
-        public void GUIDrawSprite(Texture texture, Rectangle destinationRectangle, Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, bool Palettized = false, int Palette = 0)
+        public void GUIDrawSprite(Texture texture, Rectangle destinationRectangle, 
+            Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, 
+            Shader shader = Shader.Standard , int Palette0 = 0, int Palette1 = 0)
         {
             if (texture == null)
                 return;
@@ -349,12 +365,25 @@ namespace YCPU.Platform.Graphics
                 source.W = y;
             }
 
-            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z++, color == null ? Color.White : color.Value, new Vector2(Palette, Palettized ? 0 : 1));
+            Vector2 extra = Vector2.Zero;
+            switch (shader)
+            {
+                case Shader.NES:
+                    extra = new Vector2(Palette0, 0);
+                    break;
+                case Shader.LEM1802:
+                    extra = new Vector2(Palette0, Palette1);
+                    break;
+            }
+            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z++, color == null ? Color.White : color.Value, extra);
 
             List<VertexPositionTextureHueExtra> vertexList;
-            if (_drawQueue.ContainsKey(texture.m_Texture))
+
+            TextureShader key = new TextureShader(texture.m_Texture, shader);
+
+            if (_drawQueue.ContainsKey(key))
             {
-                vertexList = _drawQueue[texture.m_Texture];
+                vertexList = _drawQueue[key];
             }
             else
             {
@@ -368,7 +397,7 @@ namespace YCPU.Platform.Graphics
                     vertexList = new List<VertexPositionTextureHueExtra>(1024);
                 }
 
-                _drawQueue.Add(texture.m_Texture, vertexList);
+                _drawQueue.Add(key, vertexList);
             }
 
             for (int i = 0; i < q.Vertices.Length; i++)
@@ -390,5 +419,24 @@ namespace YCPU.Platform.Graphics
 
             GUIDrawSprite(t, new Rectangle((int)location.X, (int)location.Y, texture.Width, texture.Height), new Rectangle(0, 0, texture.Width, texture.Height), color == null ? Color.White : color.Value);
         }
+
+        struct TextureShader
+        {
+            public Texture2D Texture;
+            public Shader Shader;
+
+            public TextureShader(Texture2D texture, Shader shader)
+            {
+                Texture = texture;
+                Shader = shader;
+            }
+        }
+    }
+
+    public enum Shader
+    {
+        Standard,
+        NES,
+        LEM1802
     }
 }

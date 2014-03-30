@@ -56,31 +56,55 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     return output;
 }
 
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+float4 PixelShaderStandard(VertexShaderOutput input) : COLOR0
 {
 	float4 color = tex2D(VRAMSampler, input.TexUV);
-	if (input.Extra.y == 0)
-	{
-		float2 index;
-		index.x = color.r * 4.0f + input.Extra.x / 16.0f;
-		index.y = 0;
-		color = tex2D(PALETTESampler, index);
-	}
-	else
-	{
-		color = color * input.Hue;
-	}
-
+	color = color * input.Hue;
 	clip(color.a - 0.5);
+	return color * color.a;
 
+}
+
+float4 PixelShaderNES(VertexShaderOutput input) : COLOR0
+{
+	float4 color = tex2D(VRAMSampler, input.TexUV);
+	float2 index;
+	index.x = color.r * 4.0f + input.Extra.x / 16.0f;
+	index.y = 0;
+	color = tex2D(PALETTESampler, index);
 	return color * color.a;
 }
 
-technique Technique1
+float4 PixelShaderLEM1802(VertexShaderOutput input) : COLOR0
+{
+	float4 color = tex2D(VRAMSampler, input.TexUV);
+	float2 index;
+	if (color.r == 0.0f)
+		index.x = input.Extra.x / 16.0f;
+	else
+		index.x = input.Extra.y / 16.0f;
+	index.y = 0;
+	color = tex2D(PALETTESampler, index);
+	return color;
+}
+
+technique Technique0
 {
     pass Pass0
     {
         VertexShader = compile vs_2_0 VertexShaderFunction();
-        PixelShader = compile ps_2_0 PixelShaderFunction();
+        PixelShader = compile ps_2_0 PixelShaderStandard();
+    }
+
+	pass Pass1
+    {
+        VertexShader = compile vs_2_0 VertexShaderFunction();
+        PixelShader = compile ps_2_0 PixelShaderNES();
+    }
+
+	pass Pass2
+    {
+        VertexShader = compile vs_2_0 VertexShaderFunction();
+        PixelShader = compile ps_2_0 PixelShaderLEM1802();
     }
 }

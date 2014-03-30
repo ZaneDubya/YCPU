@@ -124,7 +124,7 @@ namespace YCPU.Devices.Graphics
                     m_BankLEM[0x0800 + i] = chrram_default[i];
 
                 ushort[] palram_default = new ushort[16];
-                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_16bitpal, 0, palram_default, 0, 16);
+                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_16bitpal, 0, palram_default, 0, 32);
                 for (int i = 0; i < 16; i++)
                     m_BankLEM[0x0C00 + i] = palram_default[i];
             }
@@ -191,7 +191,7 @@ namespace YCPU.Devices.Graphics
 
         private void Draw_LEM(Platform.Graphics.SpriteBatchExtended spritebatch)
         {
-            System.Random rnd = new System.Random();
+            spritebatch.Palette_LEM = m_LEM_PALRAM;
 
             int current_word = 0;
             for (int y = 0; y < 12; y++)
@@ -201,7 +201,10 @@ namespace YCPU.Devices.Graphics
                     int character = word & 0x007F;
                     spritebatch.GUIDrawSprite(m_LEM_CHRRAM,
                         new Rectangle(x * 8, y * 16, 8, 16),
-                        new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8));
+                        new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8),
+                        shader: Platform.Graphics.Shader.LEM1802,
+                        Palette0: (word & 0x0F00) >> 8,
+                        Palette1: (word & 0xF000) >> 12);
                 }
         }
 
