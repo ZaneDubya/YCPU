@@ -9,7 +9,8 @@ Source Tree
 **Documentation** - Specifications describing the YCPU and related hardware devices.  
 **Emulator** - Emulates YCPU binaries. Does not yet implement hardware devices or FPU instructions.  
 **Hardware** - Implentation of the YCPU and hardware devices.  
-**Platform** - XNA platform that allows for graphics, input, and (eventually) sound.  
+**Platform** - XNA platform that allows for graphics, input, and (eventually) sound on the Win32/.NET platform.  
+**Resources** - Resource files (images, palettes, shaders) that are included in Platform.  
 **Tests** - Example YASM files that can be assembled by the Assembler.
 
 Thanks To
