@@ -6,33 +6,38 @@ using System.IO;
 
 namespace YCPU.Hardware
 {
+    /// <summary>
+    /// A processor defined by the YCPU Specification.
+    /// </summary>
     public partial class YCPU
     {
-        private YBUS m_Bus;
+        /// <summary>
+        /// The hardware bus, which hosts all hardware devices.
+        /// </summary>
         public YBUS BUS
         {
             get { return m_Bus; }
         }
-
-        private YRTC m_RTC;
-
-        private long m_Cycles;
-        private long m_Cycles_NextBusUpdate;
-        private int m_BUS_UpdateFrequency = 1024;
-
-        private int m_LastRunCycles = 0;
+        
+        /// <summary>
+        /// How many cycles did the YCPU run before it was stopped?
+        /// </summary>
         public int LastRunCycles
         {
             get { return m_LastRunCycles; }
         }
-
-        private bool m_Running = false, m_Pausing = false;
+        
+        /// <summary>
+        /// Is this YCPU currently executing?
+        /// </summary>
         public bool Running
         {
             get { return m_Running; }
         }
-        private const ushort c_GetMemory_ExecuteFail = 0xFFFF;
 
+        /// <summary>
+        /// Initializes a new YCPU.
+        /// </summary>
         public YCPU()
         {
             m_Bus = new YBUS();
@@ -44,6 +49,10 @@ namespace YCPU.Hardware
             PS = 0x0000;
         }
 
+        /// <summary>
+        /// Executes a set number of cycles, or infinite cycles.
+        /// </summary>
+        /// <param name="cyclecount">How many cycles to run before stopping. Default value of -1 will run until Pause() is called.</param>
         public void Run(int cyclecount = -1)
         {
             // Count Cycles:
@@ -91,6 +100,9 @@ namespace YCPU.Hardware
             m_LastRunCycles = (int)(m_Cycles - cycles_start);
         }
 
+        /// <summary>
+        /// Executes one instruction and returns.
+        /// </summary>
         public void RunOneInstruction()
         {
             ushort word = GetMemory(PC++, true);
@@ -116,6 +128,9 @@ namespace YCPU.Hardware
             }
         }
 
+        /// <summary>
+        /// Pauses a currently executing YCPU.
+        /// </summary>
         public void Pause()
         {
             if (!m_Running)
@@ -129,6 +144,10 @@ namespace YCPU.Hardware
             }
         }
 
+        /// <summary>
+        /// All devices with a visual component will display to the spritebatch.
+        /// </summary>
+        /// <param name="spritebatch"></param>
         public void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
         {
             m_Bus.Display(spritebatch);
@@ -799,5 +818,18 @@ namespace YCPU.Hardware
                 // throw exception?
             }
         }
+
+        private YRTC m_RTC;
+
+        private YBUS m_Bus;
+        private int m_BUS_UpdateFrequency = 1024;
+
+        private long m_Cycles;
+        private long m_Cycles_NextBusUpdate;
+        private int m_LastRunCycles = 0;
+
+        private bool m_Running = false, m_Pausing = false;
+
+        private const ushort c_GetMemory_ExecuteFail = 0xFFFF;
     }
 }

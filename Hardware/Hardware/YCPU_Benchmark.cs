@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿//#define BENCHMARK
 
 namespace YCPU.Hardware
 {
     partial class YCPU
     {
+#if BENCHMARK
         public void Benchmark(bool mmu_enabled, int count_runs)
         {
             long[] benchmark = new long[0x100];
@@ -69,5 +67,6 @@ namespace YCPU.Hardware
             lines[0x100] = string.Format("{0} opcodes, {1} cycles in {2} ms.", count, cycles, total.ElapsedMilliseconds);
             System.IO.File.WriteAllLines(string.Format("Benchmark{0}.txt", PS_M ? "M" : ""), lines);
         }
+#endif
     }
 }

@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.Xna.Framework;
-using System.Threading;
+﻿//#define BENCHMARK
+using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace YCPU
 {
@@ -77,6 +77,11 @@ namespace YCPU
                         m_CPU.MMU_SwitchInHardwareBank(0x08, 0x00, 0x00);
                         m_CPU.PS_M = true;
                         break;
+#if BENCHMARK
+                    case 'v':
+                        m_CPU.Benchmark(true, 0x100000);
+                        break;
+#endif
                 }
             }
         }
