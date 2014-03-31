@@ -17,6 +17,11 @@ namespace YCPU.Platform
             get { return m_SBX; }
         }
 
+        protected Support.InputState InputState
+        {
+            get { return m_Input; }
+        }
+
         protected Support.Settings Settings
         {
             get { return m_Settings; }

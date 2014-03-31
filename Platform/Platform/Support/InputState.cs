@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace YCPU.Platform.Support
 {
-    internal class InputState
+    public class InputState
     {
         // Base WndProc
         WndProc m_WndProc;

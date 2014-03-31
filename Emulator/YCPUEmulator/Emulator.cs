@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace YCPU
 {
@@ -19,6 +20,7 @@ namespace YCPU
         {
             base.Initialize();
             Settings.Resolution = new Point(256, 192);
+            Program.ShowConsoleWindow();
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -35,7 +37,7 @@ namespace YCPU
                 m_CPU.Interrupt_Reset();
             }
 
-            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 150))
+            if (gameTime.TotalGameTime.TotalMilliseconds > (m_LastConsoleUpdate + 200))
             {
                 m_LastConsoleUpdate += 150;
                 UpdateConsole();
@@ -48,20 +50,13 @@ namespace YCPU
                 Stopwatch_Stop();
             }
 
-            if (Console.KeyAvailable)
+            List<Platform.Input.InputEventKeyboard> kb = InputState.GetKeyboardEvents();
+            foreach (Platform.Input.InputEventKeyboard e in kb)
             {
-                switch (Console.ReadKey().KeyChar)
+                switch (e.KeyChar)
                 {
                     case 'b':
                         StopCPU();
-                        break;
-                    case 'w':
-                        StopCPU();
-                        m_CPU.Benchmark(false, 0x800);
-                        break;
-                    case 'e':
-                        StopCPU();
-                        m_CPU.Benchmark(true, 0x800);
                         break;
                     case 'r':
                         StartCPU(false);
@@ -72,10 +67,6 @@ namespace YCPU
                     case 'n':
                         StopCPU();
                         m_CPU.RunOneInstruction();
-                        break;
-                    case 'q':
-                        StopCPU();
-                        m_CPU = null;
                         break;
                     case 'l':
                         StopCPU();
@@ -177,8 +168,6 @@ namespace YCPU
             ConsoleWrite(0, 11, ">");
 
             ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms.            ", m_CPU.LastRunCycles, m_LastRunMS));
-
-            ConsoleWrite(0, 24, "Command: ");
         }
 
         private void ConsoleWrite(int x, int y, string s)
