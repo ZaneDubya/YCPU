@@ -360,13 +360,13 @@ namespace YCPU.Platform.Graphics
             source.Z += srcDelta.Z * ((float)sourceRectangle.Value.Width / texture.Width);
             source.W += srcDelta.W * ((float)sourceRectangle.Value.Width / texture.Height);
 
-            if (effects.HasFlag(SpriteEffects.FlipHorizontally))
+            if (effects.HasFlag(YSpriteEffect.FlipHorizontally))
             {
                 float x = source.X;
                 source.X = source.Z;
                 source.Z = x;
             }
-            if (effects.HasFlag(SpriteEffects.FlipVertically))
+            if (effects.HasFlag(YSpriteEffect.FlipVertically))
             {
                 float y = source.Y;
                 source.Y = source.W;

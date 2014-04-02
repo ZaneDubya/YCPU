@@ -40,9 +40,9 @@ namespace ResourceBuilder
             ushort[] pal_16bit = new ushort[0x10];
             for (int i = 0; i < 0x10; i++)
             {
-                int r = palette[i][1] >> 4;
+                int r = palette[i][3] >> 4;
                 int g = palette[i][2] >> 4;
-                int b = palette[i][3] >> 4;
+                int b = palette[i][1] >> 4;
                 pal_16bit[i] = (ushort)((r << 8) | (g << 4) | b);
             }
 

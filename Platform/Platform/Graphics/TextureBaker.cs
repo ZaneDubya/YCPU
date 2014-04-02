@@ -100,7 +100,7 @@ namespace YCPU.Platform.Graphics
         }
 
         public void Mask(Texture2D mask, Rectangle destination, Rectangle source, Color color,
-            float rotation, Vector2 origin, SpriteEffects effects, Single layer)
+            float rotation, Vector2 origin, YSpriteEffect effects, Single layer)
         {
 
             var oldState = GraphicsDevice.BlendState;
@@ -112,7 +112,7 @@ namespace YCPU.Platform.Graphics
                 AlphaSourceBlend = Blend.One
             };
 
-            Draw(mask, destination, source, color, rotation, origin, effects, layer);
+            Draw(mask, destination, source, color, rotation, origin, YSE2SES(effects), layer);
 
             GraphicsDevice.BlendState = oldState;
         }
@@ -152,7 +152,7 @@ namespace YCPU.Platform.Graphics
         }
 
         public void Mask(Texture2D mask, Vector2 position, Rectangle source, Color color,
-            float rotation, Vector2 origin, float scale, SpriteEffects effects, Single layer)
+            float rotation, Vector2 origin, float scale, YSpriteEffect effects, Single layer)
         {
 
             var oldState = GraphicsDevice.BlendState;
@@ -164,12 +164,17 @@ namespace YCPU.Platform.Graphics
                 AlphaSourceBlend = Blend.One
             };
 
-            Draw(mask, position, source, color, rotation, origin, scale, effects, layer);
+            Draw(mask, position, source, color, rotation, origin, scale, YSE2SES(effects), layer);
 
             GraphicsDevice.BlendState = oldState;
         }
 
         # endregion
+
+        private SpriteEffects YSE2SES(YSpriteEffect effects)
+        {
+            return (SpriteEffects)effects;
+        }
 
         #region SpriteFont baking
 
