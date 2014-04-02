@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace YCPU.Platform.Graphics
 {
-    public class SpriteBatchExtended : DrawableGameComponent
+    public class SpriteBatchExtended : DrawableGameComponent, IRenderer
     {
         private Effect _effect;
 
@@ -18,7 +16,17 @@ namespace YCPU.Platform.Graphics
         private Vector3 _zOffset = new Vector3();
         public float ZOffset { set { _zOffset = new Vector3(0, 0, value); } }
 
-        public Texture Palette_NES = null, Palette_LEM = null;
+        private YTexture m_Palette_NES = null, m_Palette_LEM = null;
+        public YTexture Palette_NES
+        {
+            get { return m_Palette_NES; }
+            set { m_Palette_NES = value; }
+        }
+        public YTexture Palette_LEM
+        {
+            get { return m_Palette_LEM; }
+            set { m_Palette_LEM = value; }
+        }
 
         public SpriteBatchExtended(Game game)
             : base(game)
@@ -298,8 +306,8 @@ namespace YCPU.Platform.Graphics
             m_GUIClipRect = new Vector4(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
-        public void GUIDrawSprite(Texture texture, Rectangle destinationRectangle, 
-            Rectangle? sourceRectangle = null, Color? color = null, SpriteEffects effects = SpriteEffects.None, 
+        public void GUIDrawSprite(YTexture texture, Rectangle destinationRectangle, 
+            Rectangle? sourceRectangle = null, Color? color = null, YSpriteEffect effects = YSpriteEffect.None, 
             Shader shader = Shader.Standard , int Palette0 = 0, int Palette1 = 0)
         {
             if (texture == null)
@@ -415,7 +423,7 @@ namespace YCPU.Platform.Graphics
             if (texture == null)
                 return;
 
-            Texture t = Texture.CreateFromTexture(texture);
+            YTexture t = YTexture.CreateFromTexture(texture);
 
             GUIDrawSprite(t, new Rectangle((int)location.X, (int)location.Y, texture.Width, texture.Height), new Rectangle(0, 0, texture.Width, texture.Height), color == null ? Color.White : color.Value);
         }

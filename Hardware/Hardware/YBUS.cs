@@ -27,10 +27,10 @@ namespace YCPU.Hardware
                 m_Devices[i].Update();
         }
 
-        public void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
+        public void Display(IRenderer renderer)
         {
             for (int i = 0; i < m_Devices.Count; i++)
-                m_Devices[i].Display(spritebatch);
+                m_Devices[i].Display(renderer);
         }
 
         public ushort DevicesConnected

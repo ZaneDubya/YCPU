@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace YCPU.Devices.Graphics
+﻿namespace YCPU.Devices.Graphics
 {
     class GraphicsAdapter : BaseDevice
     {
@@ -71,7 +69,7 @@ namespace YCPU.Devices.Graphics
             }
         }
 
-        public override void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
+        public override void Display(IRenderer spritebatch)
         {
             switch (m_GraphicsMode)
             {
@@ -88,7 +86,7 @@ namespace YCPU.Devices.Graphics
         GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
         MemoryBankLEM m_BankLEM;
-        Platform.Texture m_LEM_CHRRAM, m_LEM_PALRAM;
+        Platform.YTexture m_LEM_CHRRAM, m_LEM_PALRAM;
 
         // Internal Routines
         private void SetMode(ushort i)
@@ -115,8 +113,8 @@ namespace YCPU.Devices.Graphics
                 m_GraphicsMode = GraphicsMode.LEM1802;
                 m_BankLEM = new MemoryBankLEM();
 
-                m_LEM_CHRRAM = Platform.Texture.Create(128, 32);
-                m_LEM_PALRAM = Platform.Texture.Create(16, 1);
+                m_LEM_CHRRAM = Platform.YTexture.Create(128, 32);
+                m_LEM_PALRAM = Platform.YTexture.Create(16, 1);
 
                 ushort[] chrram_default = new ushort[256];
                 System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
@@ -189,23 +187,13 @@ namespace YCPU.Devices.Graphics
             m_LEM_PALRAM.SetData(data);
         }
 
-        private void Draw_LEM(Platform.Graphics.SpriteBatchExtended spritebatch)
+        private void Draw_LEM(IRenderer renderer)
         {
-            spritebatch.Palette_LEM = m_LEM_PALRAM;
-
+            renderer.Palette_LEM = m_LEM_PALRAM;
             int current_word = 0;
             for (int y = 0; y < 12; y++)
                 for (int x = 0; x < 32; x++)
-                {
-                    ushort word = m_BankLEM[current_word++];
-                    int character = word & 0x007F;
-                    spritebatch.GUIDrawSprite(m_LEM_CHRRAM,
-                        new Rectangle(x * 8, y * 16, 8, 16),
-                        new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8),
-                        shader: Platform.Graphics.Shader.LEM1802,
-                        Palette0: (word & 0x0F00) >> 8,
-                        Palette1: (word & 0xF000) >> 12);
-                }
+                    m_LEM_CHRRAM.DrawLEM(renderer, x, y, m_BankLEM[current_word++]);
         }
 
         enum GraphicsMode

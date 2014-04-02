@@ -148,9 +148,9 @@ namespace YCPU.Hardware
         /// All devices with a visual component will display to the spritebatch.
         /// </summary>
         /// <param name="spritebatch"></param>
-        public void Display(Platform.Graphics.SpriteBatchExtended spritebatch)
+        public void Display(IRenderer renderer)
         {
-            m_Bus.Display(spritebatch);
+            m_Bus.Display(renderer);
         }
 
         #region General Purpose Registers
