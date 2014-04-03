@@ -244,6 +244,15 @@ namespace YCPU.Assembler.DCPU16ASM
                     case ".scend":
 
                         break;
+                    case ".bss"
+                        
+                        break;
+                    case ".code"
+                        
+                        break;
+                    case ".data"
+                        
+                        break;
                     default:
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }
