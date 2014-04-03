@@ -24,8 +24,11 @@ namespace YCPU.Assembler.DCPU16ASM
                 filename = Path.GetFileNameWithoutExtension(filename) + ".bin";
             }
 
-            if ((directory[directory.Length - 1] != '/') && (directory[directory.Length - 1] != '\\'))
-                directory += '\\';
+            if (directory != string.Empty)
+            {
+                if ((directory[directory.Length - 1] != '/') && (directory[directory.Length - 1] != '\\'))
+                    directory += '\\';
+            }
 
             try
             {

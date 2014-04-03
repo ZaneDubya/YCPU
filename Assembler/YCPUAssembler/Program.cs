@@ -10,13 +10,33 @@ namespace YCPU
     {
         static void Main(string[] args)
         {
-            string in_path = "../../../../Tests/rain.yasm";
-            string out_path = "rain.yasm.bin";
+            string in_path, out_path;
+            args = new string[1] { "rain.yasm" };
+
+            if (args.Length == 1)
+            {
+                in_path = args[0];
+                out_path = args[0] + ".bin";
+            }
+            else if (args.Length == 2)
+            {
+                in_path = args[0];
+                out_path = args[1];
+            }
+            else
+            {
+                Console.WriteLine("Usage: ycpuassember in_path [out_path]");
+                return;
+            }
+
+            // string in_path = "../../../../Tests/rain.yasm";
+            // string out_path = "rain.yasm.bin";
+
             string in_code = GetFileContents(in_path);
-            
             if (in_code == null)
             {
-                Console.WriteLine("No in file.");
+                Console.WriteLine("In file does not exist.");
+                return;
             }
             else
             {
@@ -26,12 +46,16 @@ namespace YCPU
 
                 }
                 Console.WriteLine(AssemblerResultMessages[(int)result]);
-                Console.ReadKey();
             }
         }
 
         static string GetFileContents(string in_path)
         {
+            if (!File.Exists(in_path))
+            {
+                return null;
+            }
+
             string in_code = null;
             using (StreamReader sr = new StreamReader(in_path))
             {

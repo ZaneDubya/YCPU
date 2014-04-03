@@ -71,7 +71,7 @@ namespace YCPU
                     case 'l':
                         StopCPU();
                         m_CPU.PS_R = true;
-                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.LoadBinaryToMemory("../Tests/rain.yasm.bin", 0x0000);
                         m_CPU.BUS.SetupDebugDevices();
                         m_CPU.PC = 0x0000;
                         m_CPU.MMU_SwitchInHardwareBank(0x08, 0x00, 0x00);
