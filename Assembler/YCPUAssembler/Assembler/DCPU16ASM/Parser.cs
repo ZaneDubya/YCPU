@@ -204,6 +204,51 @@ namespace YCPU.Assembler.DCPU16ASM
             string[] tokens = this.Tokenize(line);
             string opcode = tokens[0].Trim();
 
+            if (RegEx.MatchPragma(opcode.ToLower()))
+            {
+                switch (opcode.ToLower())
+                {
+                    case ".advance":
+
+                        break;
+                    case ".alias":
+
+                        break;
+                    case ".checkpc":
+
+                        break;
+                    case ".dat":
+
+                        break;
+                    case ".incbin":
+
+                        break;
+                    case ".include":
+
+                        break;
+                    case ".macro":
+
+                        break;
+                    case ".macend":
+
+                        break;
+                    case ".org":
+
+                        break;
+                    case ".require":
+
+                        break;
+                    case ".scope":
+
+                        break;
+                    case ".scend":
+
+                        break;
+                    default:
+                        throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
+                }
+            }
+
             if (opcode.ToLower() == "dat")
             {
                 dataNextLine = this.ParseDat(line);

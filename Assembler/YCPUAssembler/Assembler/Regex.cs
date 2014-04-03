@@ -28,5 +28,12 @@ namespace YCPU.Assembler
         {
             return (m_Regex_Label_local.IsMatch(line));
         }
+
+        private static Regex m_Regex_Pragmas = new Regex(@"(^\.\b(advance|alias|checkpc|dat|incbin|include|macro|macend|org|require|scope|scend)\b)");
+
+        public static bool MatchPragma(string line)
+        {
+            return (m_Regex_Pragmas.IsMatch(line));
+        }
     }
 }
