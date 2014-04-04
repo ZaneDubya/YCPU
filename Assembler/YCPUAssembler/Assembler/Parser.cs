@@ -24,7 +24,6 @@ namespace YCPU.Assembler
 
         public override ushort[] Parse(string[] lines)
         {
-            // Note - Hides the same function in the DCPU16ASM code.
             m_MachineCode.Clear();
             m_BranchReferences.Clear();
             m_LabelReferences.Clear();
@@ -159,7 +158,7 @@ namespace YCPU.Assembler
                         m_DataNextLine = ParseData(line);
                         return true;
                     case ".incbin":
-
+                        return IncludeBinary(tokens);
                         break;
                     case ".include":
 
@@ -194,6 +193,11 @@ namespace YCPU.Assembler
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }
             }
+            return false;
+        }
+
+        protected bool IncludeBinary(string[] tokens)
+        {
             return false;
         }
 

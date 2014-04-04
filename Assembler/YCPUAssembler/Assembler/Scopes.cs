@@ -159,7 +159,7 @@ namespace YCPU.Assembler
 
             public override string ToString()
             {
-                return string.Format("{0}-{1}, {2} labels", Begin, End, m_LabelAddressDictionary.Count);
+                return string.Format("{0}~{1}, {2} labels", Begin, End, m_LabelAddressDictionary.Count);
             }
         }
     }

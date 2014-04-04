@@ -31,21 +31,12 @@ namespace YCPU
                 return;
             }
 
-            string in_code = GetFileContents(in_path);
-            if (in_code == null)
-            {
-                Console.WriteLine("In file does not exist.");
-                return;
-            }
-            else
-            {
-                AssemblerResult result = Assemble(in_code, Path.GetDirectoryName(in_path), out_path);
-                Console.WriteLine(AssemblerResultMessages[(int)result]);
-                Console.ReadKey();
-            }
+            AssemblerResult result = Assemble(in_path, Path.GetDirectoryName(in_path), out_path);
+            Console.WriteLine(AssemblerResultMessages[(int)result]);
+            Console.ReadKey();
         }
 
-        static string GetFileContents(string in_path)
+        public static string[] GetFileContents(string in_path)
         {
             if (!File.Exists(in_path))
             {
@@ -55,19 +46,26 @@ namespace YCPU
             string in_code = null;
             using (StreamReader sr = new StreamReader(in_path))
             {
-                in_code = sr.ReadToEnd();
+                in_code = sr.ReadToEnd().Trim();
             }
-            return in_code;
+
+            if (in_code == string.Empty)
+                return null;
+
+            string[] lines = in_code.Split('\n');
+
+            return lines;
         }
 
-        static AssemblerResult Assemble(string document, string out_dir, string out_filename)
+        static AssemblerResult Assemble(string in_path, string out_dir, string out_filename)
         {
-            if (document.Trim() == string.Empty)
+            string[] lines = GetFileContents(in_path);
+            if (lines == null)
                 return AssemblerResult.EmptyDocument;
 
             Assembler.Parser parser = new Assembler.Parser();
-            string[] lines = document.Split('\n');
             ushort[] machineCode = parser.Parse(lines);
+
             if (machineCode == null)
             {
                 Console.WriteLine(parser.MessageOuput);
