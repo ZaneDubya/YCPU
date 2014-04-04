@@ -188,6 +188,9 @@ namespace YCPU.Assembler.DCPU16ASM
                     case ".require":
 
                         break;
+                    case ".reserve":
+
+                        break;
                     case ".scope":
 
                         break;

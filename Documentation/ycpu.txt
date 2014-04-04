@@ -555,7 +555,7 @@ ALU Bit Pattern
     
     RRRr rrii OOOO OAAA     Addressing Mode     Example Syntax          Cycles
     RRR. ...0       000     Immediate           ADD R0, $1234           +1
-	RRR. ...1		000		Absolute			ADD R0, [$1234]			+1
+    RRR. ...1       000     Absolute            ADD R0, [$1234]         +1
     RRRr rr..       001     Register            ADD R0, R1              
     RRRr rr..       010     Indirect            ADD R0, [R1]            
     RRRr rr..       011     Indirect Offset     ADD R0, [R1,$1234]      +1
@@ -628,7 +628,7 @@ JMP Bit Pattern
         
     AAAr rrii OOOO OOOO     Addressing Mode     Syntax              Cycles
     000. ...0               Immediate           JMP $1234           +1
-	000. ...1               Absolute            JMP [$1234]         +1
+    000. ...1               Absolute            JMP [$1234]         +1
     001r rr..               Register            JMP R1              
     010r rr..               Indirect            JMP [R1]            
     011r rr..               Indirect Offset     JMP [R1,$1234]      +1
