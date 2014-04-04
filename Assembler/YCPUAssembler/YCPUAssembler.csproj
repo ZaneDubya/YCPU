@@ -8,7 +8,7 @@
     <ProjectGuid>{1BC3B61E-B269-42E6-9C9F-BC9762A96E6F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>YCPUAssembler</RootNamespace>
+    <RootNamespace>YCPU</RootNamespace>
     <AssemblyName>YCPUAssembler</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -48,6 +48,7 @@
     <Compile Include="Assembler\DCPU16ASM\Generator.cs" />
     <Compile Include="Assembler\DCPU16ASM\ParsedOpcode.cs" />
     <Compile Include="Assembler\DCPU16ASM\ParserParams.cs" />
+    <Compile Include="Assembler\Scopes.cs" />
     <Compile Include="Assembler\Generator.cs" />
     <Compile Include="Assembler\Opcodes.cs" />
     <Compile Include="Assembler\ParsedOpcode.cs" />

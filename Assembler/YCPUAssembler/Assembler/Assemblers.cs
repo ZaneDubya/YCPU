@@ -615,7 +615,7 @@ namespace YCPU.Assembler
                 return null;
             if (p2.AddressingMode != AddressingMode.Immediate)
                 return null;
-            if ((p2.Word < 1) || (p2.Word > 32))
+            if ((p2.NextWord < 1) || (p2.NextWord > 32))
                 return null;
 
             // Bit pattern is:
@@ -623,7 +623,7 @@ namespace YCPU.Assembler
             // RRRv vvvv OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x001F) << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.NextWord & 0x001F) << 8)));
             return m_Code.ToArray();
         }
 

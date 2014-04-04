@@ -12,7 +12,7 @@ namespace YCPU
         {
             string in_path, out_path;
 #if DEBUG
-            args = new string[1] { "../../../../Tests/rain.yasm" };
+            args = new string[1] { "../../../../Tests/console.yasm" };
 #endif
 
             if (args.Length == 1)
@@ -31,9 +31,6 @@ namespace YCPU
                 return;
             }
 
-            // string in_path = "../../../../Tests/rain.yasm";
-            // string out_path = "rain.yasm.bin";
-
             string in_code = GetFileContents(in_path);
             if (in_code == null)
             {
@@ -43,11 +40,8 @@ namespace YCPU
             else
             {
                 AssemblerResult result = Assemble(in_code, Path.GetDirectoryName(in_path), out_path);
-                if (result == AssemblerResult.Success)
-                {
-
-                }
                 Console.WriteLine(AssemblerResultMessages[(int)result]);
+                Console.ReadKey();
             }
         }
 
@@ -75,7 +69,10 @@ namespace YCPU
             string[] lines = document.Split('\n');
             ushort[] machineCode = parser.Parse(lines);
             if (machineCode == null)
+            {
+                Console.WriteLine(parser.MessageOuput);
                 return AssemblerResult.ParseError;
+            }
 
             Assembler.Generator generator = new Assembler.Generator();
             string output = generator.Generate(machineCode, out_dir, out_filename);

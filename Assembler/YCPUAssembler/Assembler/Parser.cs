@@ -8,21 +8,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace YCPU.Assembler
 {
     public partial class Parser : DCPU16ASM.Parser
     {
         protected Dictionary<ushort, string> m_BranchReferences;
+        protected Scopes m_Scopes;
 
         public Parser() : base()
         {
             m_BranchReferences = new Dictionary<ushort, string>();
+            m_Scopes = new Scopes();
         }
 
-        public new ushort[] Parse(string[] lines)
+        public override ushort[] Parse(string[] lines)
         {
             // Note - Hides the same function in the DCPU16ASM code.
             m_MachineCode.Clear();
@@ -47,6 +47,9 @@ namespace YCPU.Assembler
                     AssembleLine(currentLine);
                 }
 
+                if (m_Scopes.OpenScopes())
+                    throw new Exception("Unclosed scope.");
+
                 SetLabelAddressReferences();
                 SetBranchAddressReferences();
                 SetDataFieldLabelAddressReferences();
@@ -70,24 +73,131 @@ namespace YCPU.Assembler
             }
         }
 
+        protected override int ParseLabel(string line, bool local)
+        {
+            int index1 = line.IndexOf(' ');
+            int index2 = line.IndexOf('\t');
+            int index = index1 < index2 || index2 == -1 ? index1 : index2 < index1 || index1 != -1 ? index2 : -1;
+
+            int colon_pos = line.IndexOf(':');
+            string labelName;
+            if (colon_pos == 0)
+                labelName = index > 1 ? line.Substring(1, index - 1) : line.Substring(1, line.Length - 1);
+            else
+                labelName = line.Substring(0, colon_pos);
+
+            if (!m_Scopes.AddLabel(labelName.Trim(), m_MachineCode.Count, local))
+                throw new Exception(string.Format("Error adding label '{0}'.", labelName));
+            return index;
+        }
+
         protected void SetBranchAddressReferences()
         {
             foreach (ushort index in m_BranchReferences.Keys)
             {
                 string labelName = m_BranchReferences[index];
 
-                if (!m_LabelAddressDictionary.ContainsKey(labelName))
+                if (!m_Scopes.ContainsLabel(labelName, index))
                 {
                     throw new Exception(string.Format("Unknown label reference '{0}'.", labelName));
                 }
 
-                ushort label_address = m_LabelAddressDictionary[labelName];
+                ushort label_address = (ushort)m_Scopes.LabelAddress(labelName, index);
                 int delta = label_address - index;
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
                     throw new Exception("Branch operation out of range.");
                 m_MachineCode[index] = (ushort)((m_MachineCode[index] & 0x00FF) | (((sbyte)delta) << 8));
             }
         }
+
+        protected override void SetLabelAddressReferences()
+        {
+            foreach (ushort index in m_LabelReferences.Keys)
+            {
+                string labelName = this.m_LabelReferences[index];
+
+                if (!m_Scopes.ContainsLabel(labelName, index))
+                {
+                    throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
+                }
+
+                m_MachineCode[index] = (ushort)m_Scopes.LabelAddress(labelName, index);
+            }
+        }
+
+        protected override void SetDataFieldLabelAddressReferences()
+        {
+            foreach (ushort key in m_LabelDataFieldReferences.Keys)
+            {
+                string labelName = m_LabelDataFieldReferences[key];
+
+                if (m_Scopes.ContainsLabel(labelName, key) != true)
+                {
+                    throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
+                }
+
+                m_MachineCode[key] = (ushort)m_Scopes.LabelAddress(labelName, key);
+            }
+        }
+
+        protected override bool ParsePragma(string line, string opcode, string[] tokens)
+        {
+            if (RegEx.MatchPragma(opcode.ToLower()))
+            {
+                switch (opcode.ToLower())
+                {
+                    case ".advance":
+
+                        break;
+                    case ".alias":
+
+                        break;
+                    case ".checkpc":
+
+                        break;
+                    case ".dat":
+                        m_DataNextLine = ParseData(line);
+                        return true;
+                    case ".incbin":
+
+                        break;
+                    case ".include":
+
+                        break;
+                    case ".macro":
+
+                        break;
+                    case ".macend":
+
+                        break;
+                    case ".org":
+
+                        break;
+                    case ".require":
+
+                        break;
+                    case ".reserve":
+
+                        break;
+                    case ".scope":
+                        m_Scopes.ScopeOpen(m_MachineCode.Count);
+                        return true;
+                    case ".scend":
+                        return m_Scopes.ScopeClose(m_MachineCode.Count);
+                    case ".data":
+
+                        break;
+                    case ".text":
+
+                        break;
+                    default:
+                        throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
+                }
+            }
+            return false;
+        }
+
+        
 
         #region Initialization of opcode and register names
         protected override void InitOpcodeDictionary()

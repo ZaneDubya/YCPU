@@ -26,18 +26,16 @@ namespace YCPU.Assembler.DCPU16ASM
         protected List<ushort> m_MachineCode;
         protected Dictionary<ushort, string> m_LabelReferences;
         protected Dictionary<string, OpcodeAssembler> m_OpcodeAssemblers;
-        protected Dictionary<string, ushort> m_LabelAddressDictionary;
-        private readonly Dictionary<ushort, string> labelDataFieldReferences;
+        protected readonly Dictionary<ushort, string> m_LabelDataFieldReferences;
         protected Dictionary<string, ushort> m_RegisterDictionary;
-        private bool dataNextLine = false;
+        protected bool m_DataNextLine = false;
 
         public Parser()
         {
-            m_LabelAddressDictionary = new Dictionary<string, ushort>();
             m_LabelReferences = new Dictionary<ushort, string>();
 
             m_MachineCode = new List<ushort>();
-            labelDataFieldReferences = new Dictionary<ushort, string>();
+            m_LabelDataFieldReferences = new Dictionary<ushort, string>();
 
             m_OpcodeAssemblers = new Dictionary<string, OpcodeAssembler>();
             m_RegisterDictionary = new Dictionary<string, ushort>();
@@ -59,56 +57,9 @@ namespace YCPU.Assembler.DCPU16ASM
         public string MessageOuput { get; protected set; }
         public int LineCounter { get; protected set; }
 
-        // Note - this is no longer used by YCPUAssembler
-        public ushort[] Parse(string[] lines)
+        public virtual ushort[] Parse(string[] lines)
         {
-            try
-            {
-                this.m_MachineCode.Clear();
-                this.m_LabelReferences.Clear();
-                this.MessageOuput = string.Empty;
-
-                foreach (var line in lines)
-                {
-                    LineCounter++;
-
-                    var currentLine = line.Trim();
-
-                    if (currentLine.Length < 1 || line[0] == ';')
-                    {
-                        continue;
-                    }
-
-                    currentLine = this.RemoveLineComments(line);
-
-                    if (currentLine.Trim().Length < 1)
-                    {
-                        continue;
-                    }
-
-                    this.AssembleLine(currentLine);
-                }
-
-                this.SetLabelAddressReferences();
-                SetDataFieldLabelAddressReferences();
-
-                var count = 1;
-
-                foreach (var code in this.m_MachineCode)
-                {
-                    this.AddMessage(string.Format("{0:X4} ", code));
-                    count++;
-                }
-
-                this.MessageOuput = this.MessageOuput.Substring(0, this.MessageOuput.Length - 2);
-
-                return this.m_MachineCode.ToArray();
-            }
-            catch (Exception ex)
-            {
-                this.AddMessageLine(string.Format("Line {0}: {1}", LineCounter, ex.Message));
-                return null;
-            }
+            return null;
         }
 
         protected string RemoveLineComments(string line)
@@ -128,84 +79,32 @@ namespace YCPU.Assembler.DCPU16ASM
         {
             line = line.ToLower().Trim();
 
-            if (dataNextLine != false)
+            if (m_DataNextLine != false)
             {
-                dataNextLine = this.ParseDat(line);
+                m_DataNextLine = this.ParseData(line);
                 return;
             }
 
-            if (RegEx.MatchLabel(line))
+            if (RegEx.MatchLabel(line) || RegEx.MatchLabelLocal(line))
             {
-                var remaiderLineContentIndex = this.ParseLabel(line);
-
+                bool local = RegEx.MatchLabelLocal(line);
+                // parse label and determine if there is anything else to parse on this line.
+                int remaiderLineContentIndex = ParseLabel(line, local);
                 if (remaiderLineContentIndex <= 0)
-                {
                     return;
-                }
-
+                // if there is something left to parse, trim it and then interpret it as its own line.
                 line = line.Remove(0, remaiderLineContentIndex).Trim();
-
                 if (line.Length < 1)
-                {
                     return;
-                }
             }
 
             string[] tokens = this.Tokenize(line);
             string opcode = tokens[0].Trim();
 
-            if (RegEx.MatchPragma(opcode.ToLower()))
+            if (ParsePragma(line, opcode, tokens))
             {
-                switch (opcode.ToLower())
-                {
-                    case ".advance":
-
-                        break;
-                    case ".alias":
-
-                        break;
-                    case ".checkpc":
-
-                        break;
-                    case ".dat":
-                        dataNextLine = this.ParseDat(line);
-                        return;
-                    case ".incbin":
-
-                        break;
-                    case ".include":
-
-                        break;
-                    case ".macro":
-
-                        break;
-                    case ".macend":
-
-                        break;
-                    case ".org":
-
-                        break;
-                    case ".require":
-
-                        break;
-                    case ".reserve":
-
-                        break;
-                    case ".scope":
-
-                        break;
-                    case ".scend":
-
-                        break;
-                    case ".data":
-                        
-                        break;
-                    case ".text":
-
-                        break;
-                    default:
-                        throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
-                }
+                // Successfully parsed a pragma, no need to continue with this line.
+                return;
             }
 
             if (!this.m_OpcodeAssemblers.ContainsKey(opcode))
@@ -227,27 +126,14 @@ namespace YCPU.Assembler.DCPU16ASM
                 m_MachineCode.Add(code[i]);
         }
 
-        private int ParseLabel(string line)
+        protected virtual bool ParsePragma(string line, string opcode, string[] tokens)
         {
-            int index1 = line.IndexOf(' ');
-            int index2 = line.IndexOf('\t');
-            int index = index1 < index2 || index2 == -1 ? index1 : index2 < index1 || index1 != -1 ? index2 : -1;
+            return false;
+        }
 
-            int colon_pos = line.IndexOf(':');
-            string labelName;
-            if (colon_pos == 0)
-                labelName = index > 1 ? line.Substring(1, index - 1) : line.Substring(1, line.Length - 1);
-            else
-                labelName = line.Substring(0, colon_pos);
-                
-            if (this.m_LabelAddressDictionary.ContainsKey(labelName))
-            {
-                throw new Exception(string.Format("Error! Label '{0}' already exists!", labelName));
-            }
-
-            this.m_LabelAddressDictionary.Add(labelName.Trim(), (ushort)this.m_MachineCode.Count);
-
-            return index;
+        protected virtual int ParseLabel(string line, bool local)
+        {
+            return -1;
         }
 
         private string[] Tokenize(string data)
@@ -262,11 +148,11 @@ namespace YCPU.Assembler.DCPU16ASM
             return tokens.Where(t => t.Trim() != string.Empty).ToArray();
         }
 
-        private bool ParseDat(string line)
+        protected bool ParseData(string line)
         {
-            var dataFields = new List<string>();
+            List<string> dataFields = new List<string>();
 
-            string lineData = dataNextLine != true ? line.Substring(4, line.Length - 4).Trim() : line.Trim();
+            string lineData = m_DataNextLine != true ? line.Substring(4, line.Length - 4).Trim() : line.Trim();
             foreach (var field in lineData.Split(','))
             {
                 if (field.Trim() == string.Empty) continue;
@@ -328,7 +214,7 @@ namespace YCPU.Assembler.DCPU16ASM
                     }
                     else
                     {
-                        this.labelDataFieldReferences.Add((ushort)this.m_MachineCode.Count, valStr);
+                        this.m_LabelDataFieldReferences.Add((ushort)this.m_MachineCode.Count, valStr);
                     }
 
                     this.m_MachineCode.Add(val);
@@ -336,34 +222,14 @@ namespace YCPU.Assembler.DCPU16ASM
             }
         }
 
-        protected void SetLabelAddressReferences()
+        protected virtual void SetLabelAddressReferences()
         {
-            foreach (ushort index in m_LabelReferences.Keys)
-            {
-                string labelName = this.m_LabelReferences[index];
 
-                if (!this.m_LabelAddressDictionary.ContainsKey(labelName))
-                {
-                    throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
-                }
-
-                m_MachineCode[index] = m_LabelAddressDictionary[labelName];
-            }
         }
 
-        protected void SetDataFieldLabelAddressReferences()
+        protected virtual void SetDataFieldLabelAddressReferences()
         {
-            foreach (ushort key in labelDataFieldReferences.Keys)
-            {
-                string labelName = labelDataFieldReferences[key];
 
-                if (m_LabelAddressDictionary.ContainsKey(labelName) != true)
-                {
-                    throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
-                }
-
-                m_MachineCode[key] = m_LabelAddressDictionary[labelName];
-            }
         }
 
         protected void AddMessageLine(string input)
