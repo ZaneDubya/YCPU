@@ -14,6 +14,8 @@ namespace YCPU.Hardware
             RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
             int index_bits = ((operand & 0x0300) >> 8);
             ushort nextword = GetMemory(PC++, true);
+            if ((operand & 0x0100) != 0x0000)
+                nextword = GetMemory(nextword, false);
             value = nextword;
         }
 
@@ -192,6 +194,8 @@ namespace YCPU.Hardware
             {
                 case 0: // Immediate
                     nextword = GetMemory(PC++, true);
+                    if ((operand & 0x0100) != 0x0000)
+                        nextword = GetMemory(nextword, false);
                     value = nextword;
                     break;
                 case 1: // Register

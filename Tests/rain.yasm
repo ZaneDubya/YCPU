@@ -1,3 +1,13 @@
+; interrupt table
+.dat start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+.dat 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+
+start:
+lod a, [$1000] ;
+jmp [0x800];
+jmp [start]
+
+
 lod c, 0x1234 ; rand_seed
 lod y, c ; cur_rand
 jmp main_loop
@@ -131,4 +141,4 @@ no_set:
 jmp main_loop
 
 code:
-dat "00112334567889&||!!@==::**##<>>__TYYUDQZJJIX- ~~oiwlrkm//\\'[]^)`"
+.dat "00112334567889&||!!@==::**##<>>__TYYUDQZJJIX- ~~oiwlrkm//\\'[]^)`"

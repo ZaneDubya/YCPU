@@ -69,8 +69,9 @@ namespace YCPU.Hardware
             {
                 case 0: // Immediate
                     uses_next_word = true;
-                    return string.Format("{0} {1}, ${2:X4}", name, NameOfRegGP(r_dest),
-                        nextword);
+                    bool absolute = (operand & 0x0100) != 0;
+                    return string.Format("{0} {1}, {3}${2:X4}{4}", name, NameOfRegGP(r_dest),
+                        nextword, absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
                 case 1: // Register
                     uses_next_word = false;
                     return string.Format("{0} {1}, {2}          (${3:X4})", name, NameOfRegGP(r_dest),
@@ -211,7 +212,10 @@ namespace YCPU.Hardware
             {
                 case 0: // Immediate
                     uses_next_word = true;
-                    return string.Format("{0} ${1:X4}", name, nextword);
+                    bool absolute = (operand & 0x0100) != 0;
+                    return string.Format("{0} {2}${1:X4}{3}{4}", name, nextword, 
+                        absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
+                        absolute ? string.Format("         (${0:X4})", GetMemory(nextword)) : string.Empty);
                 case 1: // Register
                     uses_next_word = false;
                     return string.Format("{0} {1}              (${2:X4})", name, 

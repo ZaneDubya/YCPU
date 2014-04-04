@@ -49,61 +49,11 @@ namespace YCPU.Assembler.DCPU16ASM
         protected virtual void InitOpcodeDictionary()
         {
             // Initialize the DCPU opcodes
-            {
-                // non basic instructions
-                m_OpcodeAssemblers.Add("jsr", AssembleJSR);
-                // basic instructions
-                m_OpcodeAssemblers.Add("set", AssembleSET);
-                m_OpcodeAssemblers.Add("add", AssembleADD);
-                m_OpcodeAssemblers.Add("sub", AssembleSUB);
-                m_OpcodeAssemblers.Add("mul", AssembleMUL);
-                m_OpcodeAssemblers.Add("div", AssembleDIV);
-                m_OpcodeAssemblers.Add("mod", AssembleMOD);
-                m_OpcodeAssemblers.Add("shl", AssembleSHL);
-                m_OpcodeAssemblers.Add("shr", AssembleSHR);
-                m_OpcodeAssemblers.Add("and", AssembleAND);
-                m_OpcodeAssemblers.Add("bor", AssembleBOR);
-                m_OpcodeAssemblers.Add("xor", AssembleXOR);
-                m_OpcodeAssemblers.Add("ife", AssembleIFE);
-                m_OpcodeAssemblers.Add("ifn", AssembleIFN);
-                m_OpcodeAssemblers.Add("ifg", AssembleIFG);
-                m_OpcodeAssemblers.Add("ifb", AssembleIFB);
-            };
         }
 
         protected virtual void InitRegisterDictionary()
         {
             // Register dictionary, We'll only include the most common ones in here, others have to be constructed.
-            m_RegisterDictionary.Add("a", (ushort)dcpuRegisterCodes.A);
-            m_RegisterDictionary.Add("b", (ushort)dcpuRegisterCodes.B);
-            m_RegisterDictionary.Add("c", (ushort)dcpuRegisterCodes.C);
-            m_RegisterDictionary.Add("x", (ushort)dcpuRegisterCodes.X);
-            m_RegisterDictionary.Add("y", (ushort)dcpuRegisterCodes.Y);
-            m_RegisterDictionary.Add("z", (ushort)dcpuRegisterCodes.Z);
-            m_RegisterDictionary.Add("i", (ushort)dcpuRegisterCodes.I);
-            m_RegisterDictionary.Add("j", (ushort)dcpuRegisterCodes.J);
-            m_RegisterDictionary.Add("[a]", (ushort)dcpuRegisterCodes.A_Mem);
-            m_RegisterDictionary.Add("[b]", (ushort)dcpuRegisterCodes.B_Mem);
-            m_RegisterDictionary.Add("[c]", (ushort)dcpuRegisterCodes.C_Mem);
-            m_RegisterDictionary.Add("[x]", (ushort)dcpuRegisterCodes.X_Mem);
-            m_RegisterDictionary.Add("[y]", (ushort)dcpuRegisterCodes.Y_Mem);
-            m_RegisterDictionary.Add("[z]", (ushort)dcpuRegisterCodes.Z_Mem);
-            m_RegisterDictionary.Add("[i]", (ushort)dcpuRegisterCodes.I_Mem);
-            m_RegisterDictionary.Add("[j]", (ushort)dcpuRegisterCodes.J_Mem);
-            m_RegisterDictionary.Add("pop", (ushort)dcpuRegisterCodes.POP);
-            m_RegisterDictionary.Add("peek", (ushort)dcpuRegisterCodes.PEEK);
-            m_RegisterDictionary.Add("push", (ushort)dcpuRegisterCodes.PUSH);
-            m_RegisterDictionary.Add("sp", (ushort)dcpuRegisterCodes.SP);
-            m_RegisterDictionary.Add("pc", (ushort)dcpuRegisterCodes.PC);
-            m_RegisterDictionary.Add("o", (ushort)dcpuRegisterCodes.O);
-            m_RegisterDictionary.Add("[+a]", (ushort)dcpuRegisterCodes.A_NextWord);
-            m_RegisterDictionary.Add("[+b]", (ushort)dcpuRegisterCodes.B_NextWord);
-            m_RegisterDictionary.Add("[+c]", (ushort)dcpuRegisterCodes.C_NextWord);
-            m_RegisterDictionary.Add("[+x]", (ushort)dcpuRegisterCodes.X_NextWord);
-            m_RegisterDictionary.Add("[+y]", (ushort)dcpuRegisterCodes.Y_NextWord);
-            m_RegisterDictionary.Add("[+z]", (ushort)dcpuRegisterCodes.Z_NextWord);
-            m_RegisterDictionary.Add("[+i]", (ushort)dcpuRegisterCodes.I_NextWord);
-            m_RegisterDictionary.Add("[+j]", (ushort)dcpuRegisterCodes.J_NextWord);
         }
 
         public string MessageOuput { get; protected set; }
@@ -218,8 +168,8 @@ namespace YCPU.Assembler.DCPU16ASM
 
                         break;
                     case ".dat":
-
-                        break;
+                        dataNextLine = this.ParseDat(line);
+                        return;
                     case ".incbin":
 
                         break;
@@ -244,24 +194,15 @@ namespace YCPU.Assembler.DCPU16ASM
                     case ".scend":
 
                         break;
-                    case ".bss"
+                    case ".data":
                         
                         break;
-                    case ".code"
-                        
-                        break;
-                    case ".data"
-                        
+                    case ".text":
+
                         break;
                     default:
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }
-            }
-
-            if (opcode.ToLower() == "dat")
-            {
-                dataNextLine = this.ParseDat(line);
-                return;
             }
 
             if (!this.m_OpcodeAssemblers.ContainsKey(opcode))
@@ -322,7 +263,7 @@ namespace YCPU.Assembler.DCPU16ASM
         {
             var dataFields = new List<string>();
 
-            var lineData = dataNextLine != true ? line.Substring(3, line.Length - 3).Trim() : line.Trim();
+            string lineData = dataNextLine != true ? line.Substring(4, line.Length - 4).Trim() : line.Trim();
             foreach (var field in lineData.Split(','))
             {
                 if (field.Trim() == string.Empty) continue;

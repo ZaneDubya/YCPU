@@ -27,6 +27,7 @@ namespace YCPU.Assembler
     {
         None,
         Immediate,
+        Absolute,
         Register,
         Indirect,
         IndirectOffset,

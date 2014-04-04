@@ -455,6 +455,9 @@ namespace YCPU.Assembler
                 case AddressingMode.Immediate:
                     addressingmode = 0x0000;
                     break;
+                case AddressingMode.Absolute:
+                    addressingmode = 0x0100;
+                    break;
                 case AddressingMode.Register:
                     addressingmode = 0x0001;
                     break;
@@ -637,6 +640,9 @@ namespace YCPU.Assembler
                     return null;
                 case AddressingMode.Immediate:
                     addressingmode = 0x0000;
+                    break;
+                case AddressingMode.Absolute:
+                    addressingmode = 0x0100;
                     break;
                 case AddressingMode.Register:
                     addressingmode = 0x2000;

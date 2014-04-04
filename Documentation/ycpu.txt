@@ -310,7 +310,8 @@ Any instruction which requires source data can can access that data using one
 of eight addressing modes. 
 
 Addressing Mode     Syntax      Value is...
-Immediate           $1234       Value of Next Word
+Immediate           $1234       Mem[Next Word]
+Absolute            [$1234]     Value of Next Word
 Register            R           Value of Register
 Indirect            [R]         Mem[R]
 Indirect Offset     [R,$1234]   Mem[R + Next Word]
@@ -553,7 +554,8 @@ ALU Bit Pattern
         i = Index Register (lower 2 bits, high bit in bit 7)
     
     RRRr rrii OOOO OAAA     Addressing Mode     Example Syntax          Cycles
-    RRR. ....       000     Immediate           ADD R0, $1234           +1
+    RRR. ...0       000     Immediate           ADD R0, $1234           +1
+	RRR. ...1		000		Absolute			ADD R0, [$1234]			+1
     RRRr rr..       001     Register            ADD R0, R1              
     RRRr rr..       010     Indirect            ADD R0, [R1]            
     RRRr rr..       011     Indirect Offset     ADD R0, [R1,$1234]      +1
@@ -625,7 +627,8 @@ JMP Bit Pattern
         i = Index Register (lower 2 bits, high bit in bit 7)
         
     AAAr rrii OOOO OOOO     Addressing Mode     Syntax              Cycles
-    000. ....               Immediate           JMP $1234           +1
+    000. ...0               Immediate           JMP $1234           +1
+	000. ...1               Absolute            JMP [$1234]         +1
     001r rr..               Register            JMP R1              
     010r rr..               Indirect            JMP [R1]            
     011r rr..               Indirect Offset     JMP [R1,$1234]      +1

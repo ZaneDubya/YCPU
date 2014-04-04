@@ -524,7 +524,9 @@ namespace YCPU.Hardware
         public void Interrupt_Reset()
         {
             m_RTC.DisableInterrupt();
+            bool r = PS_R;
             PS = 0x8000;
+            if (r) PS_R = true;
             IA = 0x0000;
             Interrupt(0x00);
         }

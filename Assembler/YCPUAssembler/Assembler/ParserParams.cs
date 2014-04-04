@@ -83,6 +83,11 @@ namespace YCPU.Assembler
                             return ParsedOpcode;
                         }
                     }
+                    else if (CanDecodeLiteral(clearedParameter))
+                    {
+                        ParsedOpcode = ParseLiteralParameter(ParsedOpcode, clearedParameter);
+                        ParsedOpcode.AddressingMode = AddressingMode.Absolute;
+                    }
                     else
                     {
                         ParsedOpcode.Illegal = true;
@@ -215,7 +220,7 @@ namespace YCPU.Assembler
                 return ParsedOpcode;
             }
 
-            // unless the parameter is a LABEL, parameter parsing ends here.
+            // unless the parameter is a LABEL, parameter parsing will end with this code:
             ParsedOpcode.AddressingMode = AddressingMode.Immediate;
             ParsedOpcode.UsesNextWord = true;
             ParsedOpcode.NextWord = literalValue;

@@ -11,7 +11,9 @@ namespace YCPU
         static void Main(string[] args)
         {
             string in_path, out_path;
-            args = new string[1] { "rain.yasm" };
+#if DEBUG
+            args = new string[1] { "../../../../Tests/rain.yasm" };
+#endif
 
             if (args.Length == 1)
             {

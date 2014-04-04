@@ -1,1 +1,2 @@
-..\Bin\YCPUAssembler rain.yasm
+..\Binaries\YCPUAssembler rain.yasm
+pause
