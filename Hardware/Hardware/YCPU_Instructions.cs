@@ -207,10 +207,12 @@ namespace YCPU.Hardware
             m_Opcodes[0xAD] = new YCPUInstruction("FPU", FPU, BitPatternFPU, DisassembleFPU, 10);
             m_Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, BitPatternFLG, DisassembleFLG, 1);
             m_Opcodes[0xAF] = new YCPUInstruction("CLF", CLF, BitPatternFLG, DisassembleFLG, 1);
-            for (int i = 0xB0; i < 0xB4; i++)
-                m_Opcodes[i] = new YCPUInstruction("PSH", PSH, BitPatternPSH, DisassemblePSH, 1);
-            for (int i = 0xB4; i < 0xB8; i++)
-                m_Opcodes[i] = new YCPUInstruction("POP", POP, BitPatternPSH, DisassemblePSH, 1);
+
+            m_Opcodes[0xB0] = new YCPUInstruction("PSH", PSH, BitPatternPSH, DisassemblePSH, 1);
+            m_Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, BitPatternPSH, DisassemblePSH, 1);
+            m_Opcodes[0xB2] = new YCPUInstruction("POP", POP, BitPatternPSH, DisassemblePSH, 1);
+            m_Opcodes[0xB3] = new YCPUInstruction("POP", POP, BitPatternPSH, DisassemblePSH, 1);
+            // B4 - B7 are undefined.
             m_Opcodes[0xB8] = new YCPUInstruction("ADI", ADI, BitPatternINC, DisassembleINC, 1);
             m_Opcodes[0xB9] = new YCPUInstruction("SBI", SBI, BitPatternINC, DisassembleINC, 1);
             m_Opcodes[0xBA] = new YCPUInstruction("TSR", TSR, BitPatternTSR, DisassembleTSR, 1);
@@ -968,8 +970,7 @@ namespace YCPU.Hardware
 
             // bit pattern not used for this instruction.
             ushort mmu_ptr = StackPop();
-            MMU_StoreCacheDataFromMemory(mmu_ptr);
-            ushort iPS = StackPop();
+            
             R[(int)RegGPIndex.R7] = StackPop();
             R[(int)RegGPIndex.R6] = StackPop();
             R[(int)RegGPIndex.R5] = StackPop();
@@ -980,6 +981,8 @@ namespace YCPU.Hardware
             R[(int)RegGPIndex.R0] = StackPop();
             FL = StackPop();
             PC = StackPop();
+            ushort iPS = StackPop();
+            MMU_StoreCacheDataFromMemory(mmu_ptr);
             PS = iPS;
         }
         #endregion
@@ -1205,52 +1208,77 @@ namespace YCPU.Hardware
             ushort value;
             RegGPIndex destination;
             bits(operand, out value, out destination);
-            if ((value & 0x0001) != 0)
-                StackPush(PC);
-            if ((value & 0x0002) != 0)
-                StackPush(FL);
-            if ((value & 0x0100) != 0)
-                StackPush(R[(int)RegGPIndex.R0]);
-            if ((value & 0x0200) != 0)
-                StackPush(R[(int)RegGPIndex.R1]);
-            if ((value & 0x0400) != 0)
-                StackPush(R[(int)RegGPIndex.R2]);
-            if ((value & 0x0800) != 0)
-                StackPush(R[(int)RegGPIndex.R3]);
-            if ((value & 0x1000) != 0)
-                StackPush(R[(int)RegGPIndex.R4]);
-            if ((value & 0x2000) != 0)
-                StackPush(R[(int)RegGPIndex.R5]);
-            if ((value & 0x4000) != 0)
-                StackPush(R[(int)RegGPIndex.R6]);
-            if ((value & 0x8000) != 0)
-                StackPush(R[(int)RegGPIndex.R7]);
+            if ((value & 0x0001) == 0)
+            {
+                if ((value & 0x0100) != 0)
+                    StackPush(R[(int)RegGPIndex.R0]);
+                if ((value & 0x0200) != 0)
+                    StackPush(R[(int)RegGPIndex.R1]);
+                if ((value & 0x0400) != 0)
+                    StackPush(R[(int)RegGPIndex.R2]);
+                if ((value & 0x0800) != 0)
+                    StackPush(R[(int)RegGPIndex.R3]);
+                if ((value & 0x1000) != 0)
+                    StackPush(R[(int)RegGPIndex.R4]);
+                if ((value & 0x2000) != 0)
+                    StackPush(R[(int)RegGPIndex.R5]);
+                if ((value & 0x4000) != 0)
+                    StackPush(R[(int)RegGPIndex.R6]);
+                if ((value & 0x8000) != 0)
+                    StackPush(R[(int)RegGPIndex.R7]);
+            }
+            else
+            {
+                if ((value & 0x0100) != 0)
+                    StackPush(SP);
+                if ((value & 0x0200) != 0)
+                    StackPush(USP);
+                if ((value & 0x0400) != 0)
+                    StackPush(PS);
+                if ((value & 0x0800) != 0)
+                    StackPush(PC);
+                if ((value & 0x1000) != 0)
+                    StackPush(FL);
+            }
         }
         private void POP(ushort operand, YCPUBitPattern bits)
         {
             ushort value;
             RegGPIndex destination;
             bits(operand, out value, out destination);
-            if ((value & 0x8000) != 0)
-                R[(int)RegGPIndex.R7] = StackPop();
-            if ((value & 0x4000) != 0)
-                R[(int)RegGPIndex.R6] = StackPop();
-            if ((value & 0x2000) != 0)
-                R[(int)RegGPIndex.R5] = StackPop();
-            if ((value & 0x1000) != 0)
-                R[(int)RegGPIndex.R4] = StackPop();
-            if ((value & 0x0800) != 0)
-                R[(int)RegGPIndex.R3] = StackPop();
-            if ((value & 0x0400) != 0)
-                R[(int)RegGPIndex.R2] = StackPop();
-            if ((value & 0x0200) != 0)
-                R[(int)RegGPIndex.R1] = StackPop();
-            if ((value & 0x0100) != 0)
-                R[(int)RegGPIndex.R0] = StackPop();
-            if ((value & 0x0002) != 0)
-                FL = StackPop();
-            if ((value & 0x0001) != 0)
-                PC = StackPop();
+            if ((value & 0x0001) == 0)
+            {
+                if ((value & 0x8000) != 0)
+                    R[(int)RegGPIndex.R7] = StackPop();
+                if ((value & 0x4000) != 0)
+                    R[(int)RegGPIndex.R6] = StackPop();
+                if ((value & 0x2000) != 0)
+                    R[(int)RegGPIndex.R5] = StackPop();
+                if ((value & 0x1000) != 0)
+                    R[(int)RegGPIndex.R4] = StackPop();
+                if ((value & 0x0800) != 0)
+                    R[(int)RegGPIndex.R3] = StackPop();
+                if ((value & 0x0400) != 0)
+                    R[(int)RegGPIndex.R2] = StackPop();
+                if ((value & 0x0200) != 0)
+                    R[(int)RegGPIndex.R1] = StackPop();
+                if ((value & 0x0100) != 0)
+                    R[(int)RegGPIndex.R0] = StackPop();
+            }
+            else
+            {
+
+                if ((value & 0x1000) != 0)
+                    FL = StackPop();
+                if ((value & 0x0800) != 0)
+                    PC = StackPop();
+                if ((value & 0x0400) != 0)
+                    PS = StackPop();
+                if ((value & 0x0200) != 0)
+                    USP = StackPop();
+                if ((value & 0x0100) != 0)
+                    SP = StackPop();
+            }
         }
         #endregion
         
@@ -1288,10 +1316,10 @@ namespace YCPU.Hardware
                     PC = R[(int)source];
                     break;
                 case 0x01:
-                    IA = R[(int)source];
+                    SP = R[(int)source];
                     break;
                 case 0x02:
-                    USP = R[(int)source];
+                    IA = R[(int)source];
                     break;
                 case 0x03:
                     II = R[(int)source];
@@ -1301,6 +1329,12 @@ namespace YCPU.Hardware
                     break;
                 case 0x05:
                     P2 = R[(int)source];
+                    break;
+                case 0x06:
+                    USP = R[(int)source];
+                    break;
+                case 0x07:
+                    SSP = R[(int)source];
                     break;
                 default:
                     return;
@@ -1328,10 +1362,10 @@ namespace YCPU.Hardware
                     value = PC;
                     break;
                 case 0x01:
-                    value = IA;
+                    value = SP;
                     break;
                 case 0x02:
-                    value = USP;
+                    value = IA;
                     break;
                 case 0x03:
                     value = II;
@@ -1341,6 +1375,12 @@ namespace YCPU.Hardware
                     break;
                 case 0x05:
                     value = P2;
+                    break;
+                case 0x06:
+                    value = USP;
+                    break;
+                case 0x07:
+                    value = SSP;
                     break;
                 default:
                     return;

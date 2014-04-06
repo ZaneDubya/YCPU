@@ -77,7 +77,7 @@ Interrupt Address: IA
 IRQ Index: II
 Program Counter: PC
 Program Status: PS, P2
-Stack Pointer R7/Z/SP, consists of USP or SSP.
+Stack Pointer SP, consists of USP or SSP.
 
 
 2.A.1. GENERAL PURPOSE REGISTERS
@@ -91,16 +91,13 @@ R0 has a special purpose in the following situations:
     * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
       If R0 is also the src/dest register, then the high 16-bits are lost, and
       R0 will contain the low 16-bits after the instruction completes.
-      
-R7 is also used as the stack pointer for all stack operations.
 
 
 2.A.2. PROCESSOR STATUS REGISTERS
 
 The processor also has several specific purpose 16-bit registers. Unlike the
 general purpose registers, these are not generally accessible by most ALU
-addressing modes. The exception is the Stack Pointer (SP), which is also
-accessible as the eighth general purpose register, R7.
+addressing modes.
     FL: The FLag register. This register contains flags that are set by ALU
         operations.
         The flags are as follows:
@@ -226,23 +223,23 @@ below.
 
 When an interrupt is raised, the processor halts the current executing process.
 It then executes the following sequence:
-    1.  Save the current PS value to a temporary value.
+    1.  Save the current PS to a temporary register.
     2.  Set the S status bit. Clear the M status bit.
         The processor is now in Supervisor mode, with the MMU disabled.
     3.  If this is a hardware interrupt, the Q status bit will be set. This
         blocks other hardware interrupts from occuring while the current
         interrupt is being processed.
-    4.  Push the saved value of PS to the Stack.
-    5.  Push PC to the Stack.
-    6.  Set PC to Mem[HWI].
+    4.  Push the saved PS to the Stack.
+    5.  Push PC* to the Stack.
+    6.  Set PC to Mem[II + InterruptIndex].
     7.  Execution continues.  
 
-For the interrupts which are raised by an error condition, the PC is rewound to
-the instruction that *caused* the the interrupt. Interrupts raised by error
-conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
-BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
-interrupts, the PC is unchanged, pointing to the address following the
-instruction the processor was executing immediately prior to the interrupt.
+* For the interrupts which are raised by an error condition, the PC is rewound
+  to the instruction that *caused* the the interrupt. Interrupts raised by error
+  conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
+  BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
+  interrupts, the PC is unchanged, pointing to the address following the
+  instruction the processor was executing immediately prior to the interrupt.
 
 
 2.D.5. RETURNING FROM AN INTERRUPT
@@ -516,8 +513,9 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
-1011 00xx   PSH                 STK             Push to stack               1+
-1011 01xx   POP                 STK             Pop from stack              1+
+1011 000x   PSH                 STK             Push to stack               1+
+1011 001x   POP                 STK             Pop from stack              1+
+1011 01xx   ---                 ---             UNDEFINED (4 opcodes)
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
@@ -651,15 +649,22 @@ MMU Bit Pattern
         r = register containing index of MMU word to read from/write to 
         R = register containing value to write/destination for value read
             
-STK Bit Pattern
+STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
-    rrrr rrrr OOOO OPfp
+    rrrr rrrr OOOO OOO0
         O = Opcode
-        P = 0: push, 1: pop
-        r = push general purpose registers with indexes = (bit# - 8)
-            Current Stack Pointer (USP / SSP) is used as R7
-        f = push FL register
-        p = push PC register
+        r = push/pop general purpose registers with indexes = (bit# - 8)
+            
+STK Bit Pattern < 2 / 2 >
+    FEDC BA98 7654 3210                        
+    ...f cpus OOOO OOO1                                     Supervisor only?
+        O = Opcode
+        f = push/pop FL register                                N
+		c = push/pop PC register                                N
+		p = push/pop PS register                                Y
+		u = push/pop USP                                        N
+		s = push/pop current Stack Pointer (USP / SSP)          N
+        
 
 SHF Bit Pattern
     FEDC BA98 7654 3210 
@@ -690,26 +695,9 @@ XSR Bit Pattern
     FEDC BA98 7654 3210                        
     RRRv vvvv OOOO OOOO
         O = opcode
-        w = 0: Read, 1: Write
         R = register index to read to or write from.
         v = Index of special register
-            Index   R/W Result          Supervisor only?
-            0x00    R   Rx = PC         
-                    W   PC = Rx         
-            0x01    R   Rx = IA         X
-                    W   IA = Rx         X
-            0x02    R   Rx = USP        X
-                    W   USP = Rx        X
-            0x03    R   Rx = II         X
-                    W   II = Rx         X
-            0x04    R   Rx = PS         
-                    W   PS = Rx         X
-            0x05    R   Rx = P2         X
-                    W   P2 = Rx         X
-            Undefined specials have no functionality, but are supervisor only.
-            R0 is unchanged.
-
-            
+        
 ===========================[ 3.B. ALU Instructions ]============================
 
 ADC         Add value to register with carry
@@ -1177,9 +1165,9 @@ JCX         Unconditional Jump and change Context
     1. A pointer to a 32-word array of MMU data is popped from the stack.
     2. The MMU is loaded with the data in the 32-word array.
     3. The following registers are popped from the stack in this order:
-       SP, R6, R5, R4, R3, R2, R1, R0, FL, PC
-    5. PS is popped from the stack.
-    6. Execution continues.
+       R7, R6, R5, R4, R3, R2, R1, R0, FL
+    4. PS and PC are popped from the stack.
+    7. Execution continues.
     
     This intended usage of this instruction is to (1) Begin a new process, or
     (2) Restore an interrupted process, particularly when the MMU is enabled.
@@ -1190,7 +1178,8 @@ JCX         Unconditional Jump and change Context
                             [ PS  ]
                     SP -->  [ PC  ]
         
-        PSH PSH R7, R6, R5, R4, R3, R2, R1, R0, FL
+        PSH FL
+        PSH R7, R6, R5, R4, R3, R2, R1, R0
         LOD R0, {Address of 32-word MMU cache store location}
         MML R0
         PSH R0
@@ -1225,17 +1214,50 @@ NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
     
     
 =========================[ 3.I. Stack Instructions ]============================
-Note that the following registers can be specified for Stack Instructions:
-R0 - R7, A-C, I-J, X-Y, SP, FL, PC. Specifying a register twice (R0 and A, R7 
-and SP) will result in only one value popped to or pushed from that register.
+The following registers can be specified for Stack Instructions:
+R0 - R7, A-C, I-J, X-Z, FL, PC, PS, SP, and USP. Specifying a register twice
+(R0 and A, R7 and SP) will result in only one value popped to or pushed from
+that register.
 
+There are two separate operations for pop and two for pull, each addressing a
+different set of registers. The first operation pops or pulls the eight general
+purpose registers, R0-R7. The second operation pops or pulls specific purpose
+registers SP, Fl, PC, PS, and USP. 
+
+Two notes on pushing and pulling the stack pointers. First, 'SP' and 'USP' is
+the value of these stack pointers BEFORE the operation. Thus if SP is $1000 and
+the operation 'PSH SP' is called, SP will now be $0FFF and the first value on
+the stack will be $1000. Second, 'SP' equates to the current stack pointer, and
+thus could be either USP or SSP depending on the mode of the processor.
+Executing 'PSH USP, SP' in user mode will push USP to the stack twice; the same
+instruction in supervisor mode will push both USP and SSP to the stack.
+
+Note that pushing and pulling 'PS', the processor status register, is a
+privileged operation. Attempting to push or pull this register in user mode
+will result in all other specified registers being pushed or pulled, followed by
+an 'Unprivileged opcode' interrupt.
+
+An assembler should tranform a stack operation that includes registers from 
+these two different register groups should split the operation into two
+separate operations as follows: general purpose registers should always be
+popped first, and pushed last. Thus these two example instructions:
+    PSH R0, R1, SP, PC
+    POP R0, R1, SP, PC              
+Should be transformed into:
+    PSH SP, PC
+    PSH R0, R1
+    POP R0, R1                      
+    POP SP, PC              
+    
+    
 POP         Pop values from the Stack into registers
 Syntax: Pop Rx[,Rx,Rx...]
-The following registers can be specified: 
-Regardless of the order of the registers specified in the instruction, the
-values registers are always loaded in the following order:
-    R7/SP, R6, R5, R4, R3, R2, R1, R0, FL, PC
-
+The processor sequentially loads values from the stack to the registers
+specified. Regardless of the order of the registers specified in the
+instruction, the registers are always loaded in the following order:
+    Bit pattern 0: R7, R6, R5, R4, R3, R2, R1, R0
+    Bit pattern 1: FL, PC, PS, USP, SP
+    
     
 PSH         Push values from registers to the Stack
 Syntax: Pop Rx[,Rx,Rx...]
@@ -1243,7 +1265,8 @@ The processor sequentially saves a number of values from the stack equal to
 the number of registers specified.
 Regardless of the order of the registers specified in the instruction, the
 values registers are always saved in the following order:
-    PC, FL, R0, R1, R2, R3, R4, R5, R6, R7/SP
+    Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
+    Bit pattern 1: SP, USP, PS, PC, FL 
 
     
 ===================[ 3.J. Processor Function Instructions ]=====================
@@ -1292,13 +1315,37 @@ possible bits may be specified in a single instruction.
 
 
 TRS         Loads a special register from a general purpose register.
-Syntax: TRS Rx,SR
+Syntax: TRS Rx, SR
 The value in special register SR is loaded into general purpose register Rx.
-
+    SR      Value       Result      Supervisor only?
+    PC      0x00        Rx = PC
+    SP      0x01        Rx = SP*
+    IA      0x02        Rx = IA     X
+    II      0x03        Rx = II     X
+    PS      0x04        Rx = PS     
+    P2      0x05        Rx = P2     X
+    USP     0x06        Rx = USP    X
+    SSP     0x07        Rx = SSP    X
+            0x08-0x1F   Undefined*  X
+ * SP is the current stack pointer; SSP in supervisor mode and USP in user mode.
+ * Undefined SR codes have no functionality, and are supervisor only.
+    
 
 TSR         Loads a special register into a general purpose register.
 Syntax: TSR Rx,SR
 The value in general purpose register Rx is loaded into special register SR.
+    SR      Value       Result      Supervisor only?
+    PC      0x00        PC = Rx
+    SP      0x01        SP* = Rx
+    IA      0x02        IA = Rx     X
+    II      0x03        II = Rx     X
+    PS      0x04        PS = Rx     X
+    P2      0x05        P2 = Rx     X
+    USP     0x06        USP = Rx    X
+    SSP     0x07        SSP = Rx    X
+            0x08-0x1F   Undefined*  X
+ * SP is the current stack pointer; SSP in supervisor mode and USP in user mode.
+ * Undefined SR codes have no functionality, and are supervisor only.
 
 
 SLP         Halts the processor until it receives an interrupt.

@@ -474,6 +474,22 @@ namespace YCPU.Hardware
             set { m_PC = value; }
         }
         #endregion
+        #region SP
+        public ushort SP
+        {
+            get
+            {
+                return (PS_S) ? SSP : USP;
+            }
+            set
+            {
+                if (PS_S)
+                    SSP = value;
+                else
+                    USP = value;
+            }
+        }
+        #endregion
         #region USP
         private ushort m_USP = 0x0000;
         public ushort USP
@@ -593,14 +609,12 @@ namespace YCPU.Hardware
         #region Supervisor Mode
         private void Mode_SupervisorMode()
         {
-            USP = R[(int)RegGPIndex.R7];
-            R[(int)RegGPIndex.R7] = SSP;
+
         }
 
         private void Mode_UserMode()
         {
-            SSP = R[(int)RegGPIndex.R7];
-            R[(int)RegGPIndex.R7] = USP;
+
         }
         #endregion
 
@@ -793,14 +807,14 @@ namespace YCPU.Hardware
         #region Stack
         private void StackPush(ushort value)
         {
-            R[(int)RegGPIndex.R7]--;
-            SetMemory(R[(int)RegGPIndex.R7], value);
+            SP--;
+            SetMemory(SP, value);
         }
 
         private ushort StackPop()
         {
-            ushort value = GetMemory(R[(int)RegGPIndex.R7]);
-            R[(int)RegGPIndex.R7]++;
+            ushort value = GetMemory(SP);
+            SP++;
             return value;
         }
         #endregion

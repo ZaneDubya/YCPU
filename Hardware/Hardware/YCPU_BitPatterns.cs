@@ -238,7 +238,7 @@ namespace YCPU.Hardware
         private void BitPatternPSH(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.R0; // unused
-            value = (ushort)(operand & 0xFF03);
+            value = (ushort)(operand & 0xFF01);
         }
 
         private void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)

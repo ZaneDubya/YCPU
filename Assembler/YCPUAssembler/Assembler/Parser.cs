@@ -159,7 +159,6 @@ namespace YCPU.Assembler
                         return true;
                     case ".incbin":
                         return IncludeBinary(tokens);
-                        break;
                     case ".include":
 
                         break;

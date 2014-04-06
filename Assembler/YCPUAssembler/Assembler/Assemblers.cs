@@ -300,14 +300,14 @@ namespace YCPU.Assembler
         #region Stack Push/Pop
         ushort[] AssemblePSH(string[] param)
         {
-            Sanity_RequireParamCountMinMax(param, 1, 10);
-            return AssembleSTK(0xB0, param);
+            Sanity_RequireParamCountMinMax(param, 1, 13);
+            return AssembleSTK(0xB0, param, false);
         }
 
         ushort[] AssemblePOP(string[] param)
         {
-            Sanity_RequireParamCountMinMax(param, 1, 10);
-            return AssembleSTK(0xB4, param);
+            Sanity_RequireParamCountMinMax(param, 1, 13);
+            return AssembleSTK(0xB2, param, true);
         }
         #endregion
 
@@ -341,13 +341,13 @@ namespace YCPU.Assembler
         ushort[] AssembleTSR(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleIMM((ushort)0x00BA, param[0], param[1]);
+            return AssembleXSR((ushort)0x00BA, param[0], param[1]);
         }
 
         ushort[] AssembleTRS(string[] param)
         {
             Sanity_RequireParamCountExact(param, 2);
-            return AssembleIMM((ushort)0x00BB, param[0], param[1]);
+            return AssembleXSR((ushort)0x00BB, param[0], param[1]);
         }
         #endregion
 
@@ -744,54 +744,63 @@ namespace YCPU.Assembler
             return m_Code.ToArray();
         }
 
-        ushort[] AssembleSTK(ushort opcode, string[] param)
+        ushort[] AssembleSTK(ushort opcode, string[] param, bool general_first)
         {
-            ushort flags = 0x0000;
+            ushort flags0 = 0x0000, flags1 = 0x0000;
             // there MUST be 1 - 10 params.
-            // params MUST be one of:   R0, R1, R2, R3, R4, R5, R6, R7, SP
-            //                          A, B, C, I, J, X, Y, Z, FL, PC
+            // params MUST be one of:   R0, R1, R2, R3, R4, R5, R6, R7
+            //                          A, B, C, I, J, X, Y, Z
+            //                          FL, PC, PS, SP, and USP
             foreach (string p in param)
             {
                 switch (p.ToLower())
                 {
+                    case "sp":
+                        flags1 |= 0x0101;
+                        break;
+                    case "usp":
+                        flags1 |= 0x0101;
+                        break;
+                    case "ps":
+                        flags1 |= 0x0401;
+                        break;
                     case "pc":
-                        flags |= 0x0001;
+                        flags1 |= 0x0801;
                         break;
                     case "fl":
-                        flags |= 0x0002;
+                        flags1 |= 0x1002;
                         break;
                     case "r0":
                     case "a":
-                        flags |= 0x0100;
+                        flags0 |= 0x0100;
                         break;
                     case "r1":
                     case "b":
-                        flags |= 0x0200;
+                        flags0 |= 0x0200;
                         break;
                     case "r2":
                     case "c":
-                        flags |= 0x0400;
+                        flags0 |= 0x0400;
                         break;
                     case "r3":
                     case "i":
-                        flags |= 0x0800;
+                        flags0 |= 0x0800;
                         break;
                     case "r4":
                     case "j":
-                        flags |= 0x1000;
+                        flags0 |= 0x1000;
                         break;
                     case "r5":
                     case "x":
-                        flags |= 0x2000;
+                        flags0 |= 0x2000;
                         break;
                     case "r6":
                     case "y":
-                        flags |= 0x4000;
+                        flags0 |= 0x4000;
                         break;
                     case "r7":
                     case "z":
-                    case "sp":
-                        flags |= 0x8000;
+                        flags0 |= 0x8000;
                         break;
                     default:
                         throw new Exception("STK instruction with non-existing register.");
@@ -799,7 +808,14 @@ namespace YCPU.Assembler
             }
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | flags));
+
+            if (general_first && (flags0 != 0))
+                m_Code.Add((ushort)(opcode | flags0));
+            if (flags1 != 0)
+                m_Code.Add((ushort)(opcode | flags1));
+            if (!general_first && (flags0 != 0))
+                m_Code.Add((ushort)(opcode | flags0));
+
             return m_Code.ToArray();
         }
 
@@ -847,8 +863,7 @@ namespace YCPU.Assembler
         {
             // param1 = source/dest register, MUST be register
             // param2 = special register, MUST be one of:
-            //          
-            // param3 = flags, MUST be LR, HR, LW, HW
+            //          PC, SP, IA, II, PS, P2, USP, SSP
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
             ushort special_index = 0x0000;
@@ -857,10 +872,10 @@ namespace YCPU.Assembler
                 case "PC":
                     special_index = 0x0000;
                     break;
-                case "IA":
+                case "SP":
                     special_index = 0x0001;
                     break;
-                case "USP":
+                case "IA":
                     special_index = 0x0002;
                     break;
                 case "II":
@@ -872,8 +887,14 @@ namespace YCPU.Assembler
                 case "P2":
                     special_index = 0x0005;
                     break;
+                case "USP":
+                    special_index = 0x0006;
+                    break;
+                case "SSP":
+                    special_index = 0x0007;
+                    break;
                 default:
-                    throw new Exception("Bad SWO flag.");
+                    throw new Exception("Unknown XSR register.");
             }
 
             if (p1.AddressingMode != AddressingMode.Register)

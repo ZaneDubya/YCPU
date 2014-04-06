@@ -279,17 +279,31 @@ namespace YCPU.Hardware
         private string DisassemblePSH(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
         {
             uses_next_word = false;
-            string flags = string.Format("{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}",
-                ((operand & 0x8000) != 0) ? "R7 " : string.Empty,
-                ((operand & 0x4000) != 0) ? "R6 " : string.Empty,
-                ((operand & 0x2000) != 0) ? "R5 " : string.Empty,
-                ((operand & 0x1000) != 0) ? "R4 " : string.Empty,
-                ((operand & 0x0800) != 0) ? "R3 " : string.Empty,
-                ((operand & 0x0400) != 0) ? "R2 " : string.Empty,
-                ((operand & 0x0200) != 0) ? "R1 " : string.Empty,
-                ((operand & 0x0100) != 0) ? "R0 " : string.Empty,
-                ((operand & 0x0002) != 0) ? "FL " : string.Empty,
-                ((operand & 0x0001) != 0) ? "PC " : string.Empty);
+            string flags = "{0}{1}{2}{3}{4}{5}{6}{7}";
+            if ((operand & 0x0001) == 0x0000)
+            {
+                flags = string.Format(flags,
+                    ((operand & 0x8000) != 0) ? "R7 " : string.Empty,
+                    ((operand & 0x4000) != 0) ? "R6 " : string.Empty,
+                    ((operand & 0x2000) != 0) ? "R5 " : string.Empty,
+                    ((operand & 0x1000) != 0) ? "R4 " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "R3 " : string.Empty,
+                    ((operand & 0x0400) != 0) ? "R2 " : string.Empty,
+                    ((operand & 0x0200) != 0) ? "R1 " : string.Empty,
+                    ((operand & 0x0100) != 0) ? "R0 " : string.Empty);
+            }
+            else
+            {
+                flags = string.Format(flags,
+                    ((operand & 0x1000) != 0) ? "FL " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "PC " : string.Empty,
+                    ((operand & 0x0400) != 0) ? "PS " : string.Empty,
+                    ((operand & 0x0200) != 0) ? "USP " : string.Empty,
+                    ((operand & 0x0100) != 0) ? "SP " : string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty);
+            }
             if (flags == string.Empty)
                 flags = "<NONE>";
             if (name.ToLower() == "pop" && (flags.Trim() == "PC"))

@@ -3,14 +3,9 @@
 .dat 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 
 start:
-lod a, [$1000] ;
-jmp [0x800];
-jmp [start]
-
-
 lod c, 0x1234 ; rand_seed
 lod y, c ; cur_rand
-jmp main_loop
+baw main_loop
 
 next_rand:
 psh a
@@ -83,7 +78,7 @@ next_row2:
     sto x, [a,32]
     lod b, [a]
     and b, 0x7fff       ; and [a], 0x7fff
-    jmp skip2
+    baw skip2
     
     empty_char:
     lod b, 0            ; set [32+a], 0
@@ -126,7 +121,7 @@ no_set:
   lod b, [code,x]       ; bor [a], [code+x]
   orr b, [a]
   sto b, [a]
-  jmp skip3
+  baw skip3
 
   empty_char2:
   lod b, 0x0000         ; set [a], 0

@@ -72,7 +72,7 @@ namespace YCPU
                         StopCPU();
                         m_CPU.PS_R = true;
 #if DEBUG
-                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.LoadBinaryToMemory("../../../../Tests/console.yasm.bin", 0x0000);
 #else
                         m_CPU.LoadBinaryToMemory("../Tests/rain.yasm.bin", 0x0000);
 #endif
@@ -150,16 +150,16 @@ namespace YCPU
             ConsoleWrite(70, r_y + 5, string.Format("R4: ${0:X4}", m_CPU.R4));
             ConsoleWrite(70, r_y + 6, string.Format("R5: ${0:X4}", m_CPU.R5));
             ConsoleWrite(70, r_y + 7, string.Format("R6: ${0:X4}", m_CPU.R6));
-            ConsoleWrite(70, r_y + 8, string.Format("SP: ${0:X4}", m_CPU.R7));
+            ConsoleWrite(70, r_y + 8, string.Format("R7: ${0:X4}", m_CPU.R7));
 
             ConsoleWrite(70, r_y + 9, string.Format("FL: ${0:X4}", m_CPU.FL));
             ConsoleWrite(70, r_y + 10, string.Format("IA: ${0:X4}", m_CPU.IA));
-            ConsoleWrite(70, r_y + 11, string.Format("II: ${0:X4}", 0));
+            ConsoleWrite(70, r_y + 11, string.Format("II: ${0:X4}", m_CPU.II));
             ConsoleWrite(70, r_y + 12, string.Format("PC: ${0:X4}", m_CPU.PC));
             ConsoleWrite(70, r_y + 13, string.Format("PS: ${0:X4}", m_CPU.PS));
-            ConsoleWrite(70, r_y + 14, string.Format("P2: ${0:X4}", 0));
-            ConsoleWrite(69, r_y + 15, string.Format("USP: ${0:X4}", 0));
-            ConsoleWrite(69, r_y + 16, string.Format("SSP:*${0:X4}", 0));
+            ConsoleWrite(70, r_y + 14, string.Format("P2: ${0:X4}", m_CPU.P2));
+            ConsoleWrite(69, r_y + 15, string.Format("USP: ${0:X4}", m_CPU.USP));
+            ConsoleWrite(69, r_y + 16, string.Format("SSP:*${0:X4}", m_CPU.SSP));
 
             ConsoleWrite(70, r_y + 18, "PS Bits:");
             ConsoleWrite(70, r_y + 19, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
