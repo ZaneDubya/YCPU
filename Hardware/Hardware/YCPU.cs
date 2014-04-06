@@ -64,7 +64,7 @@ namespace YCPU.Hardware
             while (m_Running)
             {
                 ushort word = GetMemory(PC++, true);
-                if (word != c_GetMemory_ExecuteFail)
+                if (!m_ExecuteFail)
                 {
                     // Check for hardware update:
                     if (m_Cycles >= m_Cycles_NextBusUpdate)
@@ -106,7 +106,7 @@ namespace YCPU.Hardware
         public void RunOneInstruction()
         {
             ushort word = GetMemory(PC++, true);
-            if (word != c_GetMemory_ExecuteFail)
+            if (!m_ExecuteFail)
             {
                 // Check for hardware interrupt:
                 if (PS_I && !PS_Q && m_Bus.IRQ)
@@ -628,7 +628,7 @@ namespace YCPU.Hardware
         // MMU Tables
         private ushort[][] m_MMU;
         private const ushort c_MMUCache_H = 0x1000, c_MMUCache_E = 0x2000, c_MMUCache_W = 0x4000, c_MMUCache_S = 0x8000;
-        private const ushort c_MMUCache_A = 0x0800, c_MMUCache_P = 0x0400;
+        private const ushort c_MMUCache_A = 0x0800, c_MMUCache_P = 0x0400, c_MMUCache_ESP = 0xA400;
         private const ushort c_MMUCache_Rom = 0x0008;
 
         public void InitializeMemory()
@@ -644,72 +644,91 @@ namespace YCPU.Hardware
                 m_MMU[i] = new ushort[2] { (ushort)i, 0x0000 };
         }
 
-        public ushort GetMemory(ushort address, bool execute = false)
+        public delegate ushort GetMem(ushort address, bool execute = false);
+        private delegate void SetMem(ushort address, ushort value);
+
+        public GetMem GetMemory = null;
+        private SetMem SetMemory = null;
+
+        public ushort GetMemory_MMUEnabled(ushort address, bool execute = false)
         {
             int bank = (address & 0xF000) >> 12;
-            if (PS_M)
+
+            // access to not present bank.
+            ushort bits = m_MMU[bank][1];
+            if ((bits & c_MMUCache_P) != 0)
             {
-                // access to not present bank.
-                if ((m_MMU[bank][1] & c_MMUCache_P) != 0)
-                {
-                    PS_U = false;
-                    PS_W = false;
-                    PS_E = false;
-                    P2 = address;
-                    Interrupt_BankFault();
-                    return 0x0000;
-                }
-                // if not in supervisor mode and attempting to access supervisor memory...
-                else if (!PS_S && ((m_MMU[bank][1] & c_MMUCache_S) != 0))
-                {
-                    PS_U = true;
-                    PS_W = false;
-                    PS_E = false;
-                    P2 = address;
-                    Interrupt_BankFault();
-                    return 0x0000;
-                }
-                // if attempting to execute execute-protected memory...
-                else if (execute && ((m_MMU[bank][1] & c_MMUCache_E) != 0))
-                {
-                    PS_U = false;
-                    PS_W = false;
-                    PS_E = true;
-                    P2 = address;
-                    Interrupt_BankFault();
-                    return c_GetMemory_ExecuteFail; // this value will cause the instruction not to execute
-                }
+                PS_U = false;
+                PS_W = false;
+                PS_E = false;
+                P2 = address;
+                Interrupt_BankFault();
+                return 0x0000;
             }
+            // if not in supervisor mode and attempting to access supervisor memory...
+            else if (!PS_S && ((bits & c_MMUCache_S) != 0))
+            {
+                PS_U = true;
+                PS_W = false;
+                PS_E = false;
+                P2 = address;
+                Interrupt_BankFault();
+                return 0x0000;
+            }
+            // if attempting to execute execute-protected memory...
+            else if (execute && ((bits & c_MMUCache_E) != 0))
+            {
+                PS_U = false;
+                PS_W = false;
+                PS_E = true;
+                P2 = address;
+                Interrupt_BankFault();
+                m_ExecuteFail = true; // this will cause the instruction not to execute
+                return 0x0000; 
+            }
+
             return m_M[bank][(address)];
         }
 
-        private void SetMemory(ushort address, ushort value)
+        public ushort GetMemory_MMUDisabled(ushort address, bool execute = false)
         {
             int bank = (address & 0xF000) >> 12;
-            if (PS_M)
+            return m_M[bank][(address)];
+        }
+
+        private void SetMemory_MMUEnabled(ushort address, ushort value)
+        {
+            int bank = (address & 0xF000) >> 12;
+            ushort bits = m_MMU[bank][1];
+            // if not in supervisor mode and attempting to access supervisor memory...
+            if (!PS_S && ((bits & c_MMUCache_S) != 0))
             {
-                // if not in supervisor mode and attempting to access supervisor memory...
-                if (!PS_S && ((m_MMU[bank][1] & c_MMUCache_S) != 0))
-                {
-                    PS_U = true;
-                    PS_W = true;
-                    PS_E = false;
-                    P2 = address;
-                    Interrupt_BankFault();
-                    return;
-                }
-                // if attempting to write to read-only memory...
-                else if (((m_MMU[bank][1] & c_MMUCache_W) != 0))
-                {
-                    PS_U = false;
-                    PS_W = true;
-                    PS_E = false;
-                    P2 = address;
-                    Interrupt_BankFault();
-                    return;
-                }
-                m_MMU[bank][1] |= c_MMUCache_A;
+                PS_U = true;
+                PS_W = true;
+                PS_E = false;
+                P2 = address;
+                Interrupt_BankFault();
+                return;
             }
+            // if attempting to write to read-only memory...
+            else if (((bits & c_MMUCache_W) != 0))
+            {
+                PS_U = false;
+                PS_W = true;
+                PS_E = false;
+                P2 = address;
+                Interrupt_BankFault();
+                return;
+            }
+
+            m_MMU[bank][1] |= c_MMUCache_A;
+            if (!m_M[bank].ReadOnly)
+                m_M[bank][(address)] = value;
+        }
+
+        private void SetMemory_MMUDisabled(ushort address, ushort value)
+        {
+            int bank = (address & 0xF000) >> 12;
             if (!m_M[bank].ReadOnly)
                 m_M[bank][(address)] = value;
         }
@@ -748,6 +767,9 @@ namespace YCPU.Hardware
 
         private void MMU_Disable()
         {
+            GetMemory = GetMemory_MMUDisabled;
+            SetMemory = SetMemory_MMUDisabled;
+
             MMU_PS_R_Updated(); // set the first bank based on the r processor status bit.
             for (int i = 0x01; i < 0x10; i++)
             {
@@ -758,6 +780,9 @@ namespace YCPU.Hardware
 
         private void MMU_Enable()
         {
+            GetMemory = GetMemory_MMUEnabled;
+            SetMemory = SetMemory_MMUEnabled;
+
             for (int i = 0x00; i < 0x10; i++)
             {
                 if ((m_MMU[i][1] & c_MMUCache_H) == 0) // select internal memory space
@@ -844,8 +869,6 @@ namespace YCPU.Hardware
         private long m_Cycles_NextBusUpdate;
         private int m_LastRunCycles = 0;
 
-        private bool m_Running = false, m_Pausing = false;
-
-        private const ushort c_GetMemory_ExecuteFail = 0xFFFF;
+        private bool m_Running = false, m_Pausing = false, m_ExecuteFail = false;
     }
 }

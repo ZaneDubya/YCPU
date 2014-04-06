@@ -175,8 +175,10 @@ namespace YCPU
             for (int i = 0; i < 21; i++)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 11, ">");
-
-            ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms.            ", m_CPU.LastRunCycles, m_LastRunMS));
+            if (m_CPU.LastRunCycles != 0)
+            {
+                ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms. {2:0.00} mhz                  ", m_CPU.LastRunCycles, m_LastRunMS, ((float)m_CPU.LastRunCycles / m_LastRunMS) / 1000));
+            }
         }
 
         private void ConsoleWrite(int x, int y, string s)
