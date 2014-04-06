@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IRenderer.cs" />
+    <Compile Include="Platform\Common.cs" />
     <Compile Include="Platform\Graphics\YSpriteEffect.cs" />
     <Compile Include="Platform\Host.cs" />
     <Compile Include="Platform\Graphics\ExtendedSpriteBatch.cs" />

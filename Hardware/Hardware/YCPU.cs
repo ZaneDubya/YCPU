@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
 
 namespace YCPU.Hardware
 {
@@ -846,17 +845,11 @@ namespace YCPU.Hardware
 
         public void LoadBinaryToMemory(string path, ushort address)
         {
-            try
+            ushort[] data = Platform.Common.GetBinaryWordsFromFile(path);
+            if (data != null)
             {
-                byte[] data = File.ReadAllBytes(path);
-                ushort[] sdata = new ushort[data.Length / 2];
-                Buffer.BlockCopy(data, 0, sdata, 0, data.Length);
                 for (int i = 0; i < data.Length; i++)
-                    SetMemory((ushort)(address + i), sdata[i]);
-            }
-            catch
-            {
-                // throw exception?
+                    SetMemory((ushort)(address + i), data[i]);
             }
         }
 

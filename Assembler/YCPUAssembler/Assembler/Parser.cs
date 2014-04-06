@@ -15,6 +15,7 @@ namespace YCPU.Assembler
     {
         protected Dictionary<ushort, string> m_BranchReferences;
         protected Scopes m_Scopes;
+        protected string m_Directory;
 
         public Parser() : base()
         {
@@ -22,12 +23,14 @@ namespace YCPU.Assembler
             m_Scopes = new Scopes();
         }
 
-        public override ushort[] Parse(string[] lines)
+        public override ushort[] Parse(string[] lines, string working_directory)
         {
             m_MachineCode.Clear();
             m_BranchReferences.Clear();
             m_LabelReferences.Clear();
             MessageOuput = string.Empty;
+
+            m_Directory = working_directory;
 
             try
             {
@@ -197,7 +200,35 @@ namespace YCPU.Assembler
 
         protected bool IncludeBinary(string[] tokens)
         {
-            return false;
+            if (tokens.Length == 1)
+                throw new Exception(string.Format("No file specified for .incbin pragma.", tokens[1]));
+
+            tokens[1] = tokens[1].Replace("\"", string.Empty);
+
+            ushort[] data = YCPU.Platform.Common.GetBinaryWordsFromFile(m_Directory + @"\" + tokens[1]);
+            if (data == null)
+                throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
+
+            int begin = 0, length = data.Length;
+            if (tokens.Length >= 3)
+                if (!Int32.TryParse(tokens[2], out begin))
+                    throw new Exception(string.Format("Third paramter for incbin must be numeric."));
+
+            if (tokens.Length == 3)
+            {
+                length = length - begin;
+            }
+
+            if (tokens.Length == 4)
+                if (!Int32.TryParse(tokens[3], out length))
+                    throw new Exception(string.Format("Fourth paramter for incbin must be numeric."));
+
+            if ((begin >= length) || (begin + length > data.Length))
+                throw new Exception("Out of bounds for incbin.");
+
+            for (int i = 0; i < length; i++)
+                m_MachineCode.Add(data[i + begin]);
+            return true;
         }
 
         

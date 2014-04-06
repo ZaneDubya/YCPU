@@ -64,7 +64,7 @@ namespace YCPU
                 return AssemblerResult.EmptyDocument;
 
             Assembler.Parser parser = new Assembler.Parser();
-            ushort[] machineCode = parser.Parse(lines);
+            ushort[] machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
 
             if (machineCode == null)
             {

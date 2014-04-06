@@ -57,7 +57,7 @@ namespace YCPU.Assembler.DCPU16ASM
         public string MessageOuput { get; protected set; }
         public int LineCounter { get; protected set; }
 
-        public virtual ushort[] Parse(string[] lines)
+        public virtual ushort[] Parse(string[] lines, string working_directory)
         {
             return null;
         }

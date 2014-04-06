@@ -4,10 +4,6 @@
 
 
 main:
-lod r0, $1F
-lod r1, $f1
-PSH R0, R1, SP, PC
-POP R0, R1, SP, PC   
 .scope
 	_local:
 	.scope
@@ -21,4 +17,4 @@ POP R0, R1, SP, PC
 .scend
 
 _local:
-;.incbin "console.yasm"
+.incbin "console.yasm", 10, 100
