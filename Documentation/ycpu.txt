@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.3a
+Version 0.3b
 
 =============================[ Table of Contents ]==============================
 
@@ -601,7 +601,7 @@ HWQ Bit Pattern
         O = Opcode
         i = Index of bus query operation
             Index   Operation
-            $00     Bus Device Count. R0 = # of devices attached to bus.
+            $00     Bus Device Count. R0 = number of devices attached to bus.
             $01     Bus Device Query. R0-R3 are set with information about the
                     device at Bus index = R0
                     R0: Manufacturer ID
@@ -653,17 +653,17 @@ STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
     rrrr rrrr OOOO OOO0
         O = Opcode
-        r = push/pop general purpose registers with indexes = (bit# - 8)
+        r = push/pop general purpose registers with indexes = (bit number - 8)
             
 STK Bit Pattern < 2 / 2 >
     FEDC BA98 7654 3210                        
     ...f cpus OOOO OOO1                                     Supervisor only?
         O = Opcode
         f = push/pop FL register                                N
-		c = push/pop PC register                                N
-		p = push/pop PS register                                Y
-		u = push/pop USP                                        N
-		s = push/pop current Stack Pointer (USP / SSP)          N
+        c = push/pop PC register                                N
+        p = push/pop PS register                                Y
+        u = push/pop USP                                        N
+        s = push/pop current Stack Pointer (USP / SSP)          N
         
 
 SHF Bit Pattern
@@ -744,7 +744,7 @@ Operation:  Z,C,N,V = Rx - M
 
 DEC         Decrement register by 1.
 Operation:  Rx + M -> Rx, C
-This operation is an assembler macro for SBI Rx,#$01
+This operation is an assembler macro for SBI Rx, $01
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.
@@ -778,7 +778,7 @@ Operation:  Rx ^ M -> Rx
     
 INC         Increment register by 1.
 Operation:  Rx + M -> Rx, C
-This operation is an assembler macro for ADI Rx,#$01
+This operation is an assembler macro for ADI Rx, $01
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.
@@ -1499,4 +1499,15 @@ takes place:
     Slight change to JCX to make it compatible with interrupt stack usage.
     Slight clarification of RTC tick rate.
     PC is rewound by one or two on an error interrupt.
-    
+0.3b 04/06/2014
+  * R7 and SP are now separate registers: R7 is an eighth general purpose, and
+    SP is a special purpose register only accessible through POP/PSH & TSR/TRS.
+  * Added Absolute addressing mode for ALU and JMP.
+  * Reduced cycles for many instructions.
+  * Slight change to BTT bit pattern (previously BIT)
+  * Renamed INC to IMM.
+  * Renamed PSH to STK, broke up bit pattern into two separate patterns.
+  * Changed SHF to allow for a register to contain the value to shift by.
+  * Renamed TSR to XSR.
+  * Changed order of BXX bit pattern.
+  * BAW is now condition code 111, used to be 010.
