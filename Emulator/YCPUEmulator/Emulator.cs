@@ -72,7 +72,7 @@ namespace YCPU
                         StopCPU();
                         m_CPU.PS_R = true;
 #if DEBUG
-                        m_CPU.LoadBinaryToMemory("../../../../Tests/console.yasm.bin", 0x0000);
+                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
 #else
                         m_CPU.LoadBinaryToMemory("../Tests/rain.yasm.bin", 0x0000);
 #endif
