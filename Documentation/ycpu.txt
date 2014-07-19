@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.3b
+Version 0.4a
 
 =============================[ Table of Contents ]==============================
 
@@ -21,10 +21,11 @@ Version 0.3b
 3.D.        Bit Testing Instructions
 3.E.        Branch Instructions
 3.F.        FPU Operations
-3.G.        Interrupt Instructions
-3.H.        Jump & Call Instructions
-3.I.        Stack Instructions
-3.J.        Processor Function Instructions
+3.G.        Immediate Instructions
+3.H.        Interrupt Instructions
+3.I.        Jump & Call Instructions
+3.J.        Stack Instructions
+3.K.        Processor Function Instructions
 4.      History
 
 
@@ -51,27 +52,45 @@ http://creativecommons.org/about/cc0
 The YCPU is a 16-bit imaginary processor. The processor includes features
 intended to ease the development of software, including a comprehensive
 instruction set, support for 32-bit floating point operations, a MMU that allows
-switching 4 kiloword banks within the 16-bit logical address space, a real time
+switching 4 kilobyte banks within the 16-bit logical address space, a real time
 clock, a hardware bus that supports up to 256 devices, and Supervisor/User modes
 with separate stack pointers.
 
 
 2.1. MEMORY MODEL
 
-Internally, all registers and cache words are 16-bit, and the only addressable
-unit of memory is a 16-bit word. Although the processor does have a 32-bit
-external bus, all logical addresses are 16-bit, and thus an instruction can only
-address 64 kilowords of memory at any time. Any multi-word values are stored in
-little-endian format.
+Internally, all registers and cache words are 16-bit. Although the processor
+does have a 32-bit external bus, all logical addresses are 16-bit, and thus an
+instruction can only address 64 kilobytes of memory at any time. Any multi-byte
+values are stored in little-endian format.
 
-A Switch Octet (SWO) instruction allows easy and fast access to individual
-octets (8-bit bytes) from a currently loaded register. However, there is no
-support for 8-bit math: all instructions operate on 16-bit values at all times
-(with the exception of MUL and FPU, which are extended to 32-bits).
+For most instructions, the only addressable unit of memory is a 16-bit word.
+There are 8-bit operations for Load, Store, Add, and Subtract operations. While
+using 8-bit operations, the upper 8-bits of memory are cleared, and ignored.
+Storing an 8-bit value with the "STO .8" instruction will only store one byte,
+not two.
+
+For all other instructions, there is no support for 8-bit math. All other
+instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
+which has a 32-bit result, spread over two registers, and the FPU instructions,
+which deals with 32-bit data).
+
+2.2. MEMORY ACCESS
+
+For 16-bit memory access, access is quickest when aligned to 2-byte boundaries,
+and slower when accesses are unaligned. Thus, memory accesses from $0000 and
+$0002 are faster than $0001 and $0003. For unaligned memory accesses, the YCPU
+loads the two bytes for a 16-bit word in separate memory access cycles.
+
+For 8-bit access, the YCPU loads only one 8-bit value. A single 8-bit load is
+as fast as a 16-bit load.
+
+For quick retrieval of 8-bit values from 16-bit registers, the Switch Octet
+(SWO) instruction allows easy and fast access to individual 8-bit bytes.
 
 
 ===============================[ 2.A. Registers ]===============================
-General Purpose Registers: R0-R7 (Also referenced as A,B,C,I,J,X,Y, and Z/SP)
+General Purpose Registers: R0-R7 (Also referenced as A,B,C,I,J,X,Y, and Z)
 Flags register: FL
 Interrupt Address: IA
 IRQ Index: II
@@ -106,7 +125,7 @@ addressing modes.
             [N]egative, [Z]ero, [C]arry, o[V]erflow
          
     IA: The Interrupt Address. This is the base address of the interrupt address
-        table, which is comprised of 16 words. IA is initialized to $0000.
+        table, comprised of 16 x 16-bit words. IA is initialized to $0000.
         
     II: The IRQ Index. This is the bus index of the device that raised the last
         hardware interrupt.
@@ -309,18 +328,18 @@ of eight addressing modes.
 Addressing Mode     Syntax      Value is...
 Immediate           $1234       Mem[Next Word]
 Absolute            [$1234]     Value of Next Word
-Register            R           Value of Register
-Indirect            [R]         Mem[R]
-Indirect Offset     [R,$1234]   Mem[R + Next Word]
-Absolute Offset     [$1234,R]   Mem[R + Next Word] /// Same as Indirect Offset
-Indirect Post-inc   [R+]        Mem[R], R is post-incremented.
-Indirect Pre-dec    [-R]        Mem[R], R is pre-decremented.
-Indirect Indexed    [R,R]       Mem[R+R]
+Register            Rx          Value of Register
+Indirect            [Rx]        Mem[R]
+Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
+Absolute Offset     [$1234,Rx]  Mem[R + Next Word] /// Same as Indirect Offset
+Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented.
+Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented.
+Indirect Indexed    [Rx,Rx]     Mem[R+R]
 
 
 =========================[ 2.F. Memory Management ]=============================
 Because the processor has a 16-bit logical address space, it can only address
-$10000 words of linear address space at a time. This limited address space is
+$10000 bytes of linear address space at a time. This limited address space is
 augmented by the processor's integrated memory management unit (MMU) which,
 when enabled, provides virtual address translation.
 
@@ -342,17 +361,17 @@ processor's address space is mapped as follows:
     
 While the 'Memory Banking' status bit is set, the MMU is enabled, and will
 translate memory references to physical addresses. It does so by dividing the
-processor's virtual address space into 16 banks of 4 kilowords each. The high
+processor's virtual address space into 16 banks of 4 kilobytes each. The high
 four bits of the virtual address select the bank of memory that is accessed,
-and the low twelve bits of the virtual address select a word of memory within
+and the low twelve bits of the virtual address select a byte of memory within
 that bank.
 
 
 2.F.3. THE MMU CACHE
 
-The MMU has 32 words of internal cache that describe the 16 banks currently
-loaded into the virtual address space. Each pair of words describes the
-physical address that is mapped to a single MMU bank. 
+The MMU has 32 16-bit words of internal cache that describe the 16 banks
+currently loaded into the virtual address space. Each pair of words describes
+the physical address that is mapped to a single MMU bank. 
 
 Word $00___________     Word $01___________
 FEDC BA98 7654 3210     FEDC BA98 7654 3210
@@ -390,7 +409,7 @@ MMU has access to 33 bits of physical address space. A physical address is thus:
 
 Where 'H' is the 'hardware select' bit (bit $1C in the mmu cache entry for the 
 current bank), the 20 'b' bits are the bank select bits taken from the same mmu
-cache entry, and 'a' is the 12-bit address of a single word within that bank.
+cache entry, and 'a' is the 12-bit address of a byte within that bank.
 
 If the 'H' bit is clear, the 20 'b' bits reference an internal processor bank of
 RAM or ROM. These banks are selected by these indexes:
@@ -403,7 +422,7 @@ device on the hardware bus. The uppermost 8 'b' bits (bits $0C-$13 in the MMU
 cache entry) are the 8 bit hardware bus index, and the lower 12 'b' bits (bits
 $00-$0B) are the bank index within the hardware device. Thus, the maximum number
 of banks which a single hardware device can make available is 2^12 = 4096 banks,
-comprising a total of 16 mega words of memory.
+comprising a total of 16 megabytes of memory.
 
 
 2.F.5. BANK FAULTS
@@ -515,7 +534,7 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit              1
 1011 000x   PSH                 STK             Push to stack               1+
 1011 001x   POP                 STK             Pop from stack              1+
-1011 01xx   ---                 ---             UNDEFINED (4 opcodes)
+1011 01xx   ---                 ---             UNDEFINED (4 opcodes)       -
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
@@ -533,9 +552,13 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1100 0101   SLP         X       ---             Sleep until Interrupt       1
 1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
 1100 0111   RTI         X       ---             Return from Interrupt       12
-1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)
-1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)
-111x xxxx   ---                 ---             UNDEFINED (32 opcodes)
+1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
+1101 0AAA   ---                 AL8             Load (8bit)                 1
+1101 1AAA   ---                 AL8             Store (8bit)                1
+1110 0AAA   ---                 AL8             R = R + M (8bit)            1
+1110 1AAA   ---                 AL8             R = R - M (8bit)            1
+1111 0AAA   ---                 AL8             R = R + M + C (8bit)        1
+1111 1AAA   ---                 AL8             R = R - M - (1 - C) (8bit)  1
 
 There are 63 remaining uspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
@@ -547,9 +570,9 @@ ALU Bit Pattern
     RRRr rrii AAAO OOOO
         O = Opcode
         A = Addressing Mode
-        r = First Operand/Destination Register
-        v = Second Operand Register
-        i = Index Register (lower 2 bits, high bit in bit 7)
+        R = First Operand/Destination Register
+        r = Second Operand Register
+        i = Index Register. See Note 1, below.
     
     RRRr rrii OOOO OAAA     Addressing Mode     Example Syntax          Cycles
     RRR. ...0       000     Immediate           ADD R0, $1234           +1
@@ -560,8 +583,48 @@ ALU Bit Pattern
     RRRr rr..       011     Absolute Offset     ADD R0, [$1234,R1]      +1
     RRRr rr..       100     Indirect PostInc    ADD R0, [R1+]           
     RRRr rr..       101     Indirect PreDec     ADD R0, [-R1]           
-    RRRr rrII       110     Indirect Indexed    ADD R0, [R1,R2]         
-    RRRr rrII       111     Indirect Indexed    ADD R0, [R1,R2]         
+    RRRr rrii       110     Indirect Indexed    ADD R0, [R1,R2]         
+    RRRr rrii       111     Indirect Indexed    ADD R0, [R1,R2]         
+    
+        Note 1: The 'i' bit in the ALU Bit Pattern is used to distinguish
+                Immediate addressing from Absolute addressing, and to determine
+                the index register in the 'Indirect Indexed' addressing mode.
+                The two 'i' bits (bits 8 & 9) and the low 'A' bit (bit 0)
+                designate a 3-bit index for a register. The two 'i' bits are the
+                low bits, and the low 'A' bit is the high bit. Thus, the second
+                index register is designated as follows:
+                    A[0]    i[9]    i[8]    R2 is...
+                    0       0       0           R0
+                    0       0       1           R1
+                    0       1       0           R2
+                    0       1       1           R3
+                    1       0       0           R4
+                    1       0       1           R5
+                    1       1       0           R6
+                    1       1       1           R7
+                    
+AL8 Bit Pattern
+    LOD, STO, ADD, ADC, SUB, and SBC have an alternate 8-bit mode. To use 8-bit
+    mode for these six instructions, follow the normal syntax with a ".8" flag.
+    Example follow:
+        Instruction             Compiled as:
+        LOD R0, $34 .8          LOD R0 = $34, 8-bit operation.
+        LOD R0, $1234 .8        LOD R0 = $34, 8-bit operation.
+        STO R0, [R1,R2] .8      STO R0 = [R1,R2], 8-bit operation.
+        
+    The AL8 Bit Pattern is identical to the ALU Bit Pattern in design and
+    function, except for the following differences:
+        1.  Only the low 8-bits of all input registers are used.
+        2.  Only the low 8-bits of the output register are set. The high 8-bits
+            of the output register are cleared (set to '0').
+        3.  The [N]egative flag bit is set if bit 7 is set (with 16-bit
+            operations, the N flag is set if bit 15 is set).
+        4.  If the [O]verflow flag bit is used, the sign bit used is bit 7 (with
+            16-bit operations, O flag uses bit 15 as the sign bit).
+        5.  Only the low 8 bits of an immediate value are loaded, and the
+            following byte is skipped (the entire 16 bits of offsets and
+            absolute values are still used).
+            
     
 BTT Bit Pattern
     FEDC BA98 7654 3210
@@ -715,15 +778,6 @@ For small immediate values, ($01-$20), ADD should be replaced with ADI.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.
     V [Overflow] Set if sign bit (bit 15) is incorrect.
-
-
-ADI         Add immediate value to register, carry is ignored.
-Operation:  Rx + M -> Rx, C
-M is a 5-bit value + 1, for a range of ($01-$20).
-    N [Negative] Set if bit 15 is set.
-    Z [Zero] Set if Rx == 0.
-    C [Carry] Set if overflow in bit 15.
-    V [Overflow] Set if sign bit (bit 15) is incorrect.
     
     
 AND         Bitwise AND register with value
@@ -740,15 +794,6 @@ Operation:  Z,C,N,V = Rx - M
     Z [Zero] Set if Rx == M.
     C [Carry] Set if Rx >= M (unsigned)
     V [Overflow] Not effected.
-
-
-DEC         Decrement register by 1.
-Operation:  Rx + M -> Rx, C
-This operation is an assembler macro for SBI Rx, $01
-    N [Negative] Set if bit 15 is set.
-    Z [Zero] Set if Rx == 0.
-    C [Carry] Set if overflow in bit 15.
-    V [Overflow] Set if sign bit (bit 15) is incorrect.
     
     
 DIV         Unsigned Divide register by value
@@ -775,15 +820,6 @@ Operation:  Rx ^ M -> Rx
     C [Carry] Not effected.
     V [Overflow] Not effected.
     
-    
-INC         Increment register by 1.
-Operation:  Rx + M -> Rx, C
-This operation is an assembler macro for ADI Rx, $01
-    N [Negative] Set if bit 15 is set.
-    Z [Zero] Set if Rx == 0.
-    C [Carry] Set if overflow in bit 15.
-    V [Overflow] Set if sign bit (bit 15) is incorrect.
-
     
 LOD         Loads a value into a specified register
 Operation:  M -> Rx
@@ -860,15 +896,6 @@ Operation:  Rx | M -> Rx
     
 SBC         Subtract value from register, with carry.
 Operation:  Rx - M - (1-C) -> Rx, C
-    N [Negative] Set if bit 15 is set.
-    Z [Zero] Set if Rx == 0.
-    C [Carry] Set if overflow in bit 15.
-    V [Overflow] Set if sign bit (bit 15) is incorrect.
-    
-    
-SBI         Subtract immediate value from register, carry is ignored.
-Operation:  Rx + M -> Rx, C
-M is a 5-bit value + 1, for a range of ($01-$20).
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.
@@ -1146,8 +1173,45 @@ Operation:  FP.{[Rx],[Rx+1]} - FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
     V [Overflow] Not effected.
 
 
+=======================[ 3.G. Immediate Instructions ]==========================
+    
+ADI         Add immediate value to register, carry is ignored.
+Operation:  Rx + M -> Rx, C
+M is a 5-bit value + 1, for a range of ($01-$20).
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
 
-=======================[ 3.G. Interrupt Instructions ]==========================
+
+DEC         Decrement register by 1.
+Operation:  Rx + M -> Rx, C
+This operation is an assembler macro for SBI Rx, $01
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+INC         Increment register by 1.
+Operation:  Rx + M -> Rx, C
+This operation is an assembler macro for ADI Rx, $01
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+SBI         Subtract immediate value from register, carry is ignored.
+Operation:  Rx + M -> Rx, C
+M is a 5-bit value + 1, for a range of ($01-$20).
+    N [Negative] Set if bit 15 is set.
+    Z [Zero] Set if Rx == 0.
+    C [Carry] Set if overflow in bit 15.
+    V [Overflow] Set if sign bit (bit 15) is incorrect.
+    
+    
+=======================[ 3.H. Interrupt Instructions ]==========================
 
 RTI         Return from Interrupt
 Returns from an interrupt.
@@ -1159,7 +1223,7 @@ Raises SOFTWARE INTERRUPT.
 See 2.D.4. for a description of this opcode's function.
     
     
-======================[ 3.H. Jump & Call Instructions ]=========================
+======================[ 3.I. Jump & Call Instructions ]=========================
 
 JCX         Unconditional Jump and change Context
     1. A pointer to a 32-word array of MMU data is popped from the stack.
@@ -1213,7 +1277,7 @@ NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
     2. Execution continues.
     
     
-=========================[ 3.I. Stack Instructions ]============================
+=========================[ 3.J. Stack Instructions ]============================
 The following registers can be specified for Stack Instructions:
 R0 - R7, A-C, I-J, X-Z, FL, PC, PS, SP, and USP. Specifying a register twice
 (R0 and A, R7 and SP) will result in only one value popped to or pushed from
@@ -1269,7 +1333,7 @@ values registers are always saved in the following order:
     Bit pattern 1: SP, USP, PS, PC, FL 
 
     
-===================[ 3.J. Processor Function Instructions ]=====================
+===================[ 3.K. Processor Function Instructions ]=====================
 
 CLF         Clears bit(s) in the FL register.
 Syntax: CLF [N][,C][,Z][,V]
@@ -1511,3 +1575,8 @@ takes place:
   * Renamed TSR to XSR.
   * Changed order of BXX bit pattern.
   * BAW is now condition code 111, used to be 010.
+0.4a 07/18/14
+  * Memory is now accessed as bytes, not words. Changes throughout to make this
+    change clear.
+  * Added new ".8" 8-bit instructions for LOD, STO, ADD, ADC, SUB, and SBC.
+  
