@@ -13,7 +13,7 @@ namespace YCPU.Assembler.DCPU16ASM
     {
         public string MessageOuput { get; private set; }
 
-        public string Generate(ushort[] machineCode, string directory, string filename)
+        public string Generate(byte[] machineCode, string directory, string filename)
         {
             if (filename.Trim() == string.Empty)
             {
@@ -33,13 +33,9 @@ namespace YCPU.Assembler.DCPU16ASM
             try
             {
                 MemoryStream outfile = new MemoryStream();
-                foreach (var word in machineCode)
+                foreach (byte word in machineCode)
                 {
-                    var b = (byte)(word >> 8);
-                    var a = (byte)(word & 0xFF);
-
-                    outfile.WriteByte(a);
-                    outfile.WriteByte(b);
+                    outfile.WriteByte(word);
                 }
 
                 File.WriteAllBytes(directory + filename, outfile.ToArray());

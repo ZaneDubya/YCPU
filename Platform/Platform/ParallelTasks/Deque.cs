@@ -40,7 +40,7 @@ class Deque<T>
                 if (count >= m_mask)
                 {
                     T[] newArray = new T[m_array.Length << 1];
-                    for (int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i += 1)
                         newArray[i] = m_array[(i + head) & m_mask];
 
                     // Reset the field values, incl. the mask.

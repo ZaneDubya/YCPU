@@ -64,6 +64,11 @@ namespace YCPU
                     case 't':
                         StartCPU(true);
                         break;
+                    case 'y':
+                        Stopwatch_Start();
+                        m_CPU.Run(100000 / 60);
+                        Stopwatch_Stop();
+                        break;
                     case 'n':
                         StopCPU();
                         m_CPU.RunOneInstruction();
@@ -172,7 +177,7 @@ namespace YCPU
 
             ConsoleWrite(2, r_y, "Disassembly");
             string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
-            for (int i = 0; i < 21; i++)
+            for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 11, ">");
             if (m_CPU.LastRunCycles != 0)

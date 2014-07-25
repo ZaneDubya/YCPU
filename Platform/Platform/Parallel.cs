@@ -29,7 +29,7 @@ namespace YCPU.Platform
                 WorkItem.AwaitingCallbacks.Clear();
             }
 
-            for (int i = 0; i < callbackBuffer.Count; i++)
+            for (int i = 0; i < callbackBuffer.Count; i += 1)
             {
                 var item = callbackBuffer[i];
                 item.Callback();
@@ -360,12 +360,12 @@ namespace YCPU.Platform
         {
             List<Task> tasks = taskPool.Get();
 
-            for (int i = 0; i < work.Length; i++)
+            for (int i = 0; i < work.Length; i += 1)
             {
                 tasks.Add(Start(work[i]));
             }
 
-            for (int i = 0; i < tasks.Count; i++)
+            for (int i = 0; i < tasks.Count; i += 1)
             {
                 tasks[i].Wait();
             }
@@ -399,7 +399,7 @@ namespace YCPU.Platform
         {
             List<Task> tasks = taskPool.Get();
 
-            for (int i = 0; i < actions.Length; i++)
+            for (int i = 0; i < actions.Length; i += 1)
             {
                 var work = DelegateWork.GetInstance();
                 work.Action = actions[i];
@@ -407,7 +407,7 @@ namespace YCPU.Platform
                 tasks.Add(Start(work));
             }
 
-            for (int i = 0; i < actions.Length; i++)
+            for (int i = 0; i < actions.Length; i += 1)
             {
                 tasks[i].Wait();
             }

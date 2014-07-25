@@ -67,7 +67,7 @@ values are stored in little-endian format.
 For most instructions, the only addressable unit of memory is a 16-bit word.
 There are 8-bit operations for Load, Store, Add, and Subtract operations. While
 using 8-bit operations, the upper 8-bits of memory are cleared, and ignored.
-Storing an 8-bit value with the "STO .8" instruction will only store one byte,
+Storing an 8-bit value with the "STO.8" instruction will only store one byte,
 not two.
 
 For all other instructions, there is no support for 8-bit math. All other
@@ -95,7 +95,7 @@ Flags register: FL
 Interrupt Address: IA
 IRQ Index: II
 Program Counter: PC
-Program Status: PS, P2
+Processor Status: PS, P2
 Stack Pointer SP, consists of USP or SSP.
 
 
@@ -323,11 +323,11 @@ $F  SWI             Raised by the SWI opcode.
 
 ===========================[ 2.E. Addressing Modes ]============================
 Any instruction which requires source data can can access that data using one
-of eight addressing modes. 
+of eight addressing modes. The addressing modes are detailed below: 
 
 Addressing Mode     Syntax      Value is...
-Immediate           $1234       Mem[Next Word]
-Absolute            [$1234]     Value of Next Word
+Immediate           $1234       Value of Next Word
+Absolute            [$1234]     Mem[Next Word]
 Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
@@ -335,6 +335,34 @@ Absolute Offset     [$1234,Rx]  Mem[R + Next Word] /// Same as Indirect Offset
 Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented.
 Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented.
 Indirect Indexed    [Rx,Rx]     Mem[R+R]
+
+2.E.1. BIT WIDTH OF INSTRCTIONS
+
+ALU instructions are by default 16 bits wide. Thus, all LOD instructions take
+16 bits from memory, and ADD instructions operate on all 16 bits of memory.
+There is an alternate 8-bit mode for LOD and STO instructions, which can be
+accessed by entering a '.8' flag following the instruction, as such:
+
+    LOD.8   [$8000]
+    STO.8   [$8000]
+    
+These alternate instructions will operate on only the low 8 8-bits of a 
+register. 8-bit LOD instructions will load a single byte into memory from a
+register. The high 8 bits of the destination register will be cleared. 8-bit STO
+instructions will store the low 8 bits from the source register. If the target
+of the instruction is memory, only a single byte is stored in memory. If the
+target is another register, the lower 8 bits of memory are stored, and the high
+8 bits of the destination register are cleared.
+
+Note that 
+
+2.E.2. POST-INCREMENT AND PRE-DECREMENT VALUES.
+
+When using post-increment and pre-decrement, the value of the register is
+changed by the byte-size of the data operated on by the instruction. Thus:
+
+    LOD.8   R0, [R1+]           ; will post-decrement R1 by '1'.
+    LOD.16  R0, [R1+]           ; will post-decrement R1 by '2'.
 
 
 =========================[ 2.F. Memory Management ]=============================
@@ -430,10 +458,11 @@ comprising a total of 16 megabytes of memory.
 When a bank fault is raised, the processor status bits U, W, and E will describe
 the operation that caused the bank fault:
         U W E   Bank Fault Type
-        0 0 0   Bank not present
-        0 0 1   Attempted execution of execute-protected memory.
+        0 0 0   Attempted access to bank that is not loaded.
+        0 0 1   Attempted execute in execute-protected memory.
         0 1 0   Attempted supervisor write of write-protected memory.
         1 0 0   Attempted user read of supervisor-only memory.
+        1 0 1   Attempted execute in supervisor-only memory while in user mode.
         1 1 0   Attempted user write of supervisor-only memory.
 
 Note that writes to ROM banks will fail silently unless the MMU is enabled and
@@ -553,14 +582,11 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
 1100 0111   RTI         X       ---             Return from Interrupt       12
 1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
-1101 0AAA   ---                 AL8             Load (8bit)                 1
-1101 1AAA   ---                 AL8             Store (8bit)                1
-1110 0AAA   ---                 AL8             R = R + M (8bit)            1
-1110 1AAA   ---                 AL8             R = R - M (8bit)            1
-1111 0AAA   ---                 AL8             R = R + M + C (8bit)        1
-1111 1AAA   ---                 AL8             R = R - M - (1 - C) (8bit)  1
+1101 0AAA   LOD.8               AL8             Load (8bit)                 1
+1101 1AAA   STO.8               AL8             Store (8bit)                1
+111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
 
-There are 63 remaining uspecified opcodes. These remaining unspecified opcodes
+There are 12 remaining uspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
 
 
@@ -604,24 +630,23 @@ ALU Bit Pattern
                     1       1       1           R7
                     
 AL8 Bit Pattern
-    LOD, STO, ADD, ADC, SUB, and SBC have an alternate 8-bit mode. To use 8-bit
-    mode for these six instructions, follow the normal syntax with a ".8" flag.
-    Example follow:
+    LOD (load from memory) and STO (store to memory) have an alternate 8-bit
+    mode. To use 8-bit mode for these two instructions, follow the normal opcode
+    with a ".8" flag. Examples follow:
         Instruction             Compiled as:
-        LOD R0, $34 .8          LOD R0 = $34, 8-bit operation.
-        LOD R0, $1234 .8        LOD R0 = $34, 8-bit operation.
-        STO R0, [R1,R2] .8      STO R0 = [R1,R2], 8-bit operation.
+        LOD.8   R0, $34         LOD R0 = $34, 8-bit operation.
+        STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
+        LOD.8   R0, $1234       Will raise an wa during assmebly, as
+                                $1234 is greater than an 8-bit value.
         
-    The AL8 Bit Pattern is identical to the ALU Bit Pattern in design and
-    function, except for the following differences:
-        1.  Only the low 8-bits of all input registers are used.
+    The AL8 Bit Pattern is identical to the ALU Bit Pattern in usage of bits.
+    The differences in function are as follows:
+        1.  Only the low 8-bits of the input registers are used.
         2.  Only the low 8-bits of the output register are set. The high 8-bits
             of the output register are cleared (set to '0').
         3.  The [N]egative flag bit is set if bit 7 is set (with 16-bit
             operations, the N flag is set if bit 15 is set).
-        4.  If the [O]verflow flag bit is used, the sign bit used is bit 7 (with
-            16-bit operations, O flag uses bit 15 as the sign bit).
-        5.  Only the low 8 bits of an immediate value are loaded, and the
+        4.  Only the low 8 bits of an immediate value are loaded, and the
             following byte is skipped (the entire 16 bits of offsets and
             absolute values are still used).
             
@@ -636,9 +661,9 @@ BTT Bit Pattern
 
 BRA Bit Pattern
     FEDC BA98 7654 3210                        
-    oooo oooo OOOO Occc                    
+    bbbb bbbb OOOO Occc                    
         O = opcode
-        o = signed 8-bit offset
+        b = signed 8-bit offset
         c = condition (See 3.E. 'Branch Operations')
      
 FLG Bit Pattern
@@ -823,6 +848,7 @@ Operation:  Rx ^ M -> Rx
     
 LOD         Loads a value into a specified register
 Operation:  M -> Rx
+NOTE:   This operation supports the .8 bitflag.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -904,6 +930,7 @@ Operation:  Rx - M - (1-C) -> Rx, C
 
 STO         Stores the value of a register into another register or memory
 Operation:  Rx -> M
+NOTE:   This operation supports the .8 bitflag.
 NOTE:   Immediate and Register addressing is not available with STO opcodes.
         Thus the two opcodes that would code for STO with these addressing
         modes are UNDEFINED.
@@ -1056,24 +1083,40 @@ Operation:  !Rx{B} -> Rx{B}, Z, C
     
   
 ==========================[ 3.E. Branch Operations ]============================
-1001 0ccc BXX                                                               NZCV
-    000 = BCC / BUF, Branch if carry clear AKA Unsigned Fewer Than          ..0.
-    001 = BCS / BUH, Branch if carry set AKA Unsigned Higher Than or Same   ..1.
-    010 = BNE, Branch if zero clear                                         .0..
-    011 = BEQ, Branch if zero set                                           .1..
-    100 = BPL / BSF, Branch if negative clear AKA Signed Fewer Than         0...
-    101 = BMI / BSH, Branch if negative set AKA Signed Higher Than Or Same  1...
-    110 = BVC, Branch if overflow clear                                     ...0
-    111 = BVS, Branch if overflow set                                       ...1
-1001 1ccc BXX 
-    000 = BUG, Branch if Unsigned Greater than                              .11.
-    001 = BSG, Branch if Signed Greater than                                11..
-    010 = Undefined                                                         ....
-    011 = Undefined                                                         ....
-    100 = Undefined                                                         ....
-    101 = Undefined                                                         ....
-    110 = Undefined                                                         ....
-    111 = BAW, Branch always                                                ....
+Branch instructions allow a program to change the PC relative to its current
+value. Each branch instruction includes a signed byte value (the offset) in its
+bit pattern:
+
+    BRA Bit Pattern
+    FEDC BA98 7654 3210                        
+    bbbb bbbb OOOO Occc                    
+        O = opcode
+        b = signed 8-bit offset
+        c = condition
+        
+When a branch opcode is executed and its condition is true, the signed offset is
+added to the PC. Note that because each opcode takes up two bytes (not counting
+any extra 16-bit operands), the range of a branch opcode is effectively only -64
+to +63 opcodes relative to the current PC.
+
+1001 0ccc   BXX                                                             NZCV
+      000 = BCC/BUF, Branch if carry clear AKA Unsigned Fewer Than          ..0.
+      001 = BCS/BUH, Branch if carry set AKA Unsigned Higher Than or Same   ..1.
+      010 = BNE, Branch if zero clear                                       .0..
+      011 = BEQ, Branch if zero set                                         .1..
+      100 = BPL/BSF, Branch if negative clear AKA Signed Fewer Than         0...
+      101 = BMI/BSH, Branch if negative set AKA Signed Higher Than Or Same  1...
+      110 = BVC, Branch if overflow clear                                   ...0
+      111 = BVS, Branch if overflow set                                     ...1
+1001 1ccc   BXX 
+      000 = BUG, Branch if Unsigned Greater than                            .11.
+      001 = BSG, Branch if Signed Greater than                              11..
+      010 = Undefined                                                       ....
+      011 = Undefined                                                       ....
+      100 = Undefined                                                       ....
+      101 = Undefined                                                       ....
+      110 = Undefined                                                       ....
+      111 = BAW, Branch always                                              ....
 
     
 ===========================[ 3.F. FPU Instructions ]============================

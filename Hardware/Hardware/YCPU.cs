@@ -62,9 +62,10 @@ namespace YCPU.Hardware
             m_Running = true;
             while (m_Running)
             {
-                ushort word = GetMemory(PC++, true);
+                ushort word = ReadMemInt16(PC, true);
                 if (!m_ExecuteFail)
                 {
+                    PC += 2;
                     // Check for hardware update:
                     if (m_Cycles >= m_Cycles_NextBusUpdate)
                     {
@@ -104,9 +105,10 @@ namespace YCPU.Hardware
         /// </summary>
         public void RunOneInstruction()
         {
-            ushort word = GetMemory(PC++, true);
+            ushort word = ReadMemInt16(PC, true);
             if (!m_ExecuteFail)
             {
+                PC += 2;
                 // Check for hardware interrupt:
                 if (PS_I && !PS_Q && m_Bus.IRQ)
                 {
@@ -156,7 +158,7 @@ namespace YCPU.Hardware
         public enum RegGPIndex
         {
             R0, R1, R2, R3, R4, R5, R6, R7,
-            Count
+            Count, Error = 0xffff
         }
         private ushort[] R = new ushort[(int)RegGPIndex.Count];
         public ushort R0 { get { return R[0]; } }
@@ -280,6 +282,7 @@ namespace YCPU.Hardware
         private ushort m_PS = 0x0000;
         private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000, c_PS_R = 0x1000;
         private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_E = 0x0100;
+        private bool m_PS_S = false;
         public ushort PS
         {
             private set
@@ -296,6 +299,9 @@ namespace YCPU.Hardware
             }
         }
 
+        /// <summary>
+        /// If PS_S is true, then the processor is in Supervisor mode.
+        /// </summary>
         public bool PS_S
         {
             get
@@ -314,9 +320,13 @@ namespace YCPU.Hardware
                     m_PS |= c_PS_S;
                     Mode_SupervisorMode();
                 }
+                m_PS_S = value;
             }
         }
 
+        /// <summary>
+        /// If PS_M is true, then the MMU is active.
+        /// </summary>
         public bool PS_M
         {
             get
@@ -525,7 +535,7 @@ namespace YCPU.Hardware
                 else
                     StackPush(PC);
             }
-            PC = GetMemory((ushort)(IA + interrupt_number));
+            PC = ReadMemInt16((ushort)(IA + interrupt_number));
             m_Cycles += 32;
         }
 
@@ -566,8 +576,11 @@ namespace YCPU.Hardware
             Interrupt(0x04);
         }
 
-        private void Interrupt_BankFault()
+        private void Interrupt_BankFault(bool execute)
         {
+            if (execute)
+                m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
+                                        // then, it will load the next instruction, with PC = InterruptTable[0x05];
             Interrupt(0x05);
         }
 
@@ -617,239 +630,41 @@ namespace YCPU.Hardware
         }
         #endregion
 
-        #region Memory (RAM/ROM/MMU)
-        private IMemoryBank[] m_M = new IMemoryBank[0x10]; // the loaded memory banks.
-        // Internal Processor Memory and ROM banks.
-        private MemoryBank[] m_Mem_CPU;
-        private MemoryBank[] m_Rom_CPU;
-        private ushort m_Mem_CPU_Count = 0x0010;
-        private ushort m_Rom_CPU_Count = 0x0001;
-        // MMU Tables
-        private ushort[][] m_MMU;
-        private const ushort c_MMUCache_H = 0x1000, c_MMUCache_E = 0x2000, c_MMUCache_W = 0x4000, c_MMUCache_S = 0x8000;
-        private const ushort c_MMUCache_A = 0x0800, c_MMUCache_P = 0x0400, c_MMUCache_ESP = 0xA400;
-        private const ushort c_MMUCache_Rom = 0x0008;
-
-        public void InitializeMemory()
-        {
-            m_Mem_CPU = new MemoryBank[m_Mem_CPU_Count];
-            for (int i = 0; i < m_Mem_CPU_Count; i++)
-                m_Mem_CPU[i] = new MemoryBank();
-            m_Rom_CPU = new MemoryBank[m_Rom_CPU_Count];
-            for (int i = 0; i < m_Rom_CPU_Count; i++)
-                m_Rom_CPU[i] = new MemoryBank();
-            m_MMU = new ushort[0x10][];
-            for (int i = 0; i < 0x10; i++)
-                m_MMU[i] = new ushort[2] { (ushort)i, 0x0000 };
-        }
-
-        public delegate ushort GetMem(ushort address, bool execute = false);
-        private delegate void SetMem(ushort address, ushort value);
-
-        public GetMem GetMemory = null;
-        private SetMem SetMemory = null;
-
-        public ushort GetMemory_MMUEnabled(ushort address, bool execute = false)
-        {
-            int bank = (address & 0xF000) >> 12;
-
-            // access to not present bank.
-            ushort bits = m_MMU[bank][1];
-            if ((bits & c_MMUCache_P) != 0)
-            {
-                PS_U = false;
-                PS_W = false;
-                PS_E = false;
-                P2 = address;
-                Interrupt_BankFault();
-                return 0x0000;
-            }
-            // if not in supervisor mode and attempting to access supervisor memory...
-            else if (!PS_S && ((bits & c_MMUCache_S) != 0))
-            {
-                PS_U = true;
-                PS_W = false;
-                PS_E = false;
-                P2 = address;
-                Interrupt_BankFault();
-                return 0x0000;
-            }
-            // if attempting to execute execute-protected memory...
-            else if (execute && ((bits & c_MMUCache_E) != 0))
-            {
-                PS_U = false;
-                PS_W = false;
-                PS_E = true;
-                P2 = address;
-                Interrupt_BankFault();
-                m_ExecuteFail = true; // this will cause the instruction not to execute
-                return 0x0000; 
-            }
-
-            return m_M[bank][(address)];
-        }
-
-        public ushort GetMemory_MMUDisabled(ushort address, bool execute = false)
-        {
-            int bank = (address & 0xF000) >> 12;
-            return m_M[bank][(address)];
-        }
-
-        private void SetMemory_MMUEnabled(ushort address, ushort value)
-        {
-            int bank = (address & 0xF000) >> 12;
-            ushort bits = m_MMU[bank][1];
-            // if not in supervisor mode and attempting to access supervisor memory...
-            if (!PS_S && ((bits & c_MMUCache_S) != 0))
-            {
-                PS_U = true;
-                PS_W = true;
-                PS_E = false;
-                P2 = address;
-                Interrupt_BankFault();
-                return;
-            }
-            // if attempting to write to read-only memory...
-            else if (((bits & c_MMUCache_W) != 0))
-            {
-                PS_U = false;
-                PS_W = true;
-                PS_E = false;
-                P2 = address;
-                Interrupt_BankFault();
-                return;
-            }
-
-            m_MMU[bank][1] |= c_MMUCache_A;
-            if (!m_M[bank].ReadOnly)
-                m_M[bank][(address)] = value;
-        }
-
-        private void SetMemory_MMUDisabled(ushort address, ushort value)
-        {
-            int bank = (address & 0xF000) >> 12;
-            if (!m_M[bank].ReadOnly)
-                m_M[bank][(address)] = value;
-        }
-
-        private ushort MMU_Read(ushort index)
-        {
-            int bank = (index & 0x001E) >> 1;
-            int hi_lo_select = (index & 0x0001);
-            return m_MMU[bank][hi_lo_select];
-        }
-
-        private void MMU_Write(ushort index, ushort value)
-        {
-            int bank = (index & 0x001E) >> 1;
-            int hi_lo_select = (index & 0x0001);
-            m_MMU[bank][hi_lo_select] = value;
-        }
-
-        private void MMU_LoadMemoryWithCacheData(ushort address)
-        {
-            for (int i = 0; i < 0x10; i++)
-            {
-                SetMemory(address++, m_MMU[i][0]);
-                SetMemory(address++, m_MMU[i][1]);
-            }
-        }
-
-        private void MMU_StoreCacheDataFromMemory(ushort address)
-        {
-            for (int i = 0; i < 0x10; i++)
-            {
-                m_MMU[i][0] = GetMemory(address++);
-                m_MMU[i][1] = GetMemory(address++);
-            }
-        }
-
-        private void MMU_Disable()
-        {
-            GetMemory = GetMemory_MMUDisabled;
-            SetMemory = SetMemory_MMUDisabled;
-
-            MMU_PS_R_Updated(); // set the first bank based on the r processor status bit.
-            for (int i = 0x01; i < 0x10; i++)
-            {
-                m_M[i] = m_Mem_CPU[i];
-                m_M[i].ReadOnly = false;
-            }
-        }
-
-        private void MMU_Enable()
-        {
-            GetMemory = GetMemory_MMUEnabled;
-            SetMemory = SetMemory_MMUEnabled;
-
-            for (int i = 0x00; i < 0x10; i++)
-            {
-                if ((m_MMU[i][1] & c_MMUCache_H) == 0) // select internal memory space
-                {
-                    if ((m_MMU[i][1] & c_MMUCache_Rom) == 0) // select internal ram
-                    {
-                        m_M[i] = m_Mem_CPU[i % m_Mem_CPU_Count];
-                    }
-                    else
-                    {
-                        m_M[i] = m_Rom_CPU[i % m_Rom_CPU_Count];
-                    }
-                }
-                else
-                {
-                    ushort device_index = (ushort)(((m_MMU[i][1] & 0x000F) << 4) + ((m_MMU[i][0] & 0xF000) >> 12));
-                    ushort bank_index = (ushort)(m_MMU[i][0] & 0x0FFF);
-                    m_M[i] = (IMemoryBank)m_Bus.GetMemoryBank(device_index, bank_index);
-                }
-            }
-        }
-
-        private void MMU_PS_R_Updated()
-        {
-            if (!PS_M)
-                m_M[0x00] = (PS_R) ? m_Mem_CPU[0x00] : m_Rom_CPU[0x00];
-            m_M[0x00].ReadOnly = !PS_R;
-        }
-
-        public void MMU_SwitchInHardwareBank(ushort bank_index, ushort device_index, ushort device_bank)
-        {
-            MMU_Write((ushort)(bank_index * 2), 0x0000);
-            MMU_Write((ushort)(bank_index * 2 + 1), 0x1000);
-        }
-        #endregion
-
         private ushort SizeOfLastInstruction(ushort current_address)
         {
-            ushort word = GetMemory((ushort)(current_address - 2));
+            ushort word = ReadMemInt16((ushort)(current_address - 2));
             YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
             if (opcode.UsesNextWord(word))
-                return 2;
+                return 4;
             else
-                return 1;
+                return 2;
         }
 
         #region Stack
         private void StackPush(ushort value)
         {
-            SP--;
-            SetMemory(SP, value);
+            SP -= 2;
+            WriteMemInt16(SP, value);
         }
 
         private ushort StackPop()
         {
-            ushort value = GetMemory(SP);
-            SP++;
+            ushort value = ReadMemInt16(SP);
+            SP += 2;
             return value;
         }
         #endregion
 
         public void LoadBinaryToMemory(string path, ushort address)
         {
-            ushort[] data = Platform.Common.GetBinaryWordsFromFile(path);
+            byte[] data = Platform.Common.GetBytesFromFile(path);
             if (data != null)
             {
-                for (int i = 0; i < data.Length; i++)
-                    SetMemory((ushort)(address + i), data[i]);
+                for (int i = 0; i < data.Length; i += 1)
+                {
+                    WriteMemInt8((ushort)(address), data[i]);
+                    address += 1;
+                }
             }
         }
 

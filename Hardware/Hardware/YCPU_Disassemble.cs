@@ -11,40 +11,40 @@ namespace YCPU.Hardware
         {
             string[] s = new string[count];
             ushort m = memory;
-            ushort w_tmp = GetMemory((ushort)((m - 1)));
+            ushort w_tmp = ReadMemInt16((ushort)((m - 2)));
             bool badOpcodeIgnored = false;
             if (m_Opcodes[w_tmp & 0x00FF].UsesNextWord(w_tmp))
             {
                 // bad opcode immediately prior to this one. ignore it.
-                m -= 2;
+                m -= 4;
                 badOpcodeIgnored = true;
             }
             else
             {
                 // opcode immediately prior is good. use it.
-                m -= 1;
+                m -= 2;
             }
 
-            for (int i = -1; i > begin; i--)
+            for (int i = -1; i > begin; i -= 1)
             {
                 // check the memory word before this one. if it is an opcode that
                 // uses an extra word, then the current word is that extra word.
                 // Otherwise, the current memory position is it's own opcode.
-                ushort word = GetMemory((ushort)(m - 1));
+                ushort word = ReadMemInt16((ushort)(m - 2));
                 YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                 if (opcode.UsesNextWord(word))
-                    m -= 2;
+                    m -= 4;
                 else
-                    m -= 1;
+                    m -= 2;
             }
 
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i += 1)
             {
-                if (badOpcodeIgnored && (m == (ushort)(memory - 1)))
-                    m++;
-                ushort word = GetMemory(m);
-                ushort nextword = GetMemory((ushort)(m + 1));
+                if (badOpcodeIgnored && (m == (ushort)(memory - 2)))
+                    m += 2;
+                ushort word = ReadMemInt16(m);
+                ushort nextword = ReadMemInt16((ushort)(m + 2));
                 bool uses_next_word = false;
 
                 YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
@@ -53,7 +53,7 @@ namespace YCPU.Hardware
                     m, word, (opcode.Disassembler != null) ?
                     opcode.Disassembler(opcode.Name, word, nextword, m, out uses_next_word) :
                     opcode.Name);
-                m += (ushort)(uses_next_word ? 2 : 1);
+                m += (ushort)(uses_next_word ? 4 : 2);
             }
             return s;
         }
@@ -67,49 +67,58 @@ namespace YCPU.Hardware
 
             switch (addressingmode)
             {
-                case 0: // Immediate
-                    uses_next_word = true;
+                case 0: // Immediate or Absolute
+                    
                     bool absolute = (operand & 0x0100) != 0;
-                    return string.Format("{0} {1}, {3}${2:X4}{4}", name, NameOfRegGP(r_dest),
-                        nextword, absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
+                    if (name == "STO" && absolute == false)
+                    {
+                        uses_next_word = false;
+                        return "NOP";
+                    }
+                    else
+                    {
+                        uses_next_word = true;
+                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", name, NameOfRegGP(r_dest),
+                            nextword, absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
+                    }
                 case 1: // Register
                     uses_next_word = false;
-                    return string.Format("{0} {1}, {2}          (${3:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, {2}          (${3:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         R[(int)r_src]);
                 case 2: // Indirect
                     uses_next_word = false;
-                    return string.Format("{0} {1}, [{2}]        (${3:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
+                        ReadMemInt16(R[(int)r_src]));
                 case 3: // Indirect Offset (also Absolute Offset)
                     uses_next_word = true;
-                    return string.Format("{0} {1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
-                        GetMemory((ushort)(R[(int)r_src] + nextword)));
+                        ReadMemInt16((ushort)(R[(int)r_src] + nextword)));
                 case 4: // Indirect PostInc
                     uses_next_word = false;
-                    return string.Format("{0} {1}, [{2}+]       (${3:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
+                        ReadMemInt16(R[(int)r_src]));
                 case 5: // Indirect PreDec
                     uses_next_word = false;
-                    return string.Format("{0} {1}, [-{2}]       (${3:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
-                case 6: // Indirect Indexed
+                        ReadMemInt16(R[(int)r_src]));
+                case 6: // Indirect Indexed, R0-R3
                     uses_next_word = false;
-                    return string.Format("{0} {1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         NameOfRegGP((RegGPIndex)index_bits),
-                        GetMemory((ushort)
+                        ReadMemInt16((ushort)
                             (R[(int)r_src] + R[index_bits])));
-                case 7:
+                case 7: // Indirect Indexed, R4-R7
                     uses_next_word = false;
-                    return string.Format("{0} {1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
+                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
                        NameOfRegGP((RegGPIndex)((int)r_src)),
                        NameOfRegGP((RegGPIndex)(index_bits + 4)),
-                       GetMemory((ushort)
+                       ReadMemInt16((ushort)
                            (R[(int)r_src] + R[index_bits + 4])));
                 default:
                     uses_next_word = false;
@@ -125,8 +134,8 @@ namespace YCPU.Hardware
             ushort value = (as_register) ?
                 (ushort)(R[((operand & 0x1C00) >> 10)] & 0x000F) :
                 (ushort)((operand & 0x1E00) >> 9);
-            return string.Format("{0} {1}, {2}", name, NameOfRegGP(destination), as_register ?
-                string.Format("{0} (${1:X1})", NameOfRegGP(destination), value) :
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), as_register ?
+                string.Format("{0,-8}(${1:X1})", NameOfRegGP(destination), value) :
                 string.Format("${0:X1}", value));
         }
 
@@ -134,7 +143,7 @@ namespace YCPU.Hardware
         {
             uses_next_word = false;
             sbyte value = (sbyte)((operand & 0xFF00) >> 8);
-            return string.Format("{0} {3}{1:000}            (${2:X4})", name, value, (ushort)(address + value + 1), (value & 0x80) == 0 ? "+" : string.Empty);
+            return string.Format("{0,-8}{3}{1:000}            (${2:X4})", name, value, (ushort)(address + value), (value & 0x80) == 0 ? "+" : string.Empty);
         }
 
         private string DisassembleFLG(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -147,7 +156,7 @@ namespace YCPU.Hardware
                 ((operand & 0x1000) != 0) ? "V" : string.Empty);
             if (flags == string.Empty)
                 flags = "<NONE>";
-            return string.Format("{0} {1}", name, flags);
+            return string.Format("{0,-8}{1}", name, flags);
         }
 
         private string DisassembleFPU(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -179,7 +188,7 @@ namespace YCPU.Hardware
 
             float[] operands = FPU_GetOperands(destination, (RegGPIndex)source);
 
-            return string.Format("{0} [{1}], [{2}]  {3:E3},{4:E3}", op_name, NameOfRegGP(destination), NameOfRegGP((RegGPIndex)source), operands[0], operands[1]);
+            return string.Format("{0,-8}[{1}], [{2}]  {3:E3},{4:E3}", op_name, NameOfRegGP(destination), NameOfRegGP((RegGPIndex)source), operands[0], operands[1]);
         }
 
         private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -189,7 +198,7 @@ namespace YCPU.Hardware
             ushort value;
             BitPatternHWQ(operand, out value, out unused);
 
-            return string.Format("{0} ${1:X2}", name, value);
+            return string.Format("{0,-8}${1:X2}", name, value);
         }
 
         private string DisassembleINC(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -199,7 +208,7 @@ namespace YCPU.Hardware
             ushort value;
             BitPatternINC(operand, out value, out destination);
 
-            return string.Format("{0} {1}, ${2:X2}", name, NameOfRegGP(destination), value);
+            return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
 
         private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -213,47 +222,47 @@ namespace YCPU.Hardware
                 case 0: // Immediate
                     uses_next_word = true;
                     bool absolute = (operand & 0x0100) != 0;
-                    return string.Format("{0} {2}${1:X4}{3}{4}", name, nextword, 
+                    return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword, 
                         absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
-                        absolute ? string.Format("         (${0:X4})", GetMemory(nextword)) : string.Empty);
+                        absolute ? string.Format("         (${0:X4})", ReadMemInt16(nextword)) : string.Empty);
                 case 1: // Register
                     uses_next_word = false;
-                    return string.Format("{0} {1}              (${2:X4})", name, 
+                    return string.Format("{0,-8}{1}              (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         R[(int)r_src]);
                 case 2: // Indirect
                     uses_next_word = false;
-                    return string.Format("{0} [{1}]            (${2:X4})", name, 
+                    return string.Format("{0,-8}[{1}]            (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
+                        ReadMemInt16(R[(int)r_src]));
                 case 3: // Indirect Offset (also Absolute Offset)
                     uses_next_word = true;
-                    return string.Format("{0} [{1},${2:X4}]      (${3:X4})", name, 
+                    return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
-                        GetMemory((ushort)(R[(int)r_src] + nextword)));
+                        ReadMemInt16((ushort)(R[(int)r_src] + nextword)));
                 case 4: // Indirect PostInc
                     uses_next_word = false;
-                    return string.Format("{0} [{1}+]           (${2:X4})", name, 
+                    return string.Format("{0,-8}[{1}+]           (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
+                        ReadMemInt16(R[(int)r_src]));
                 case 5: // Indirect PreDec
                     uses_next_word = false;
-                    return string.Format("{0} [-{1}]           (${2:X4})", name, 
+                    return string.Format("{0,-8}[-{1}]           (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        GetMemory(R[(int)r_src]));
+                        ReadMemInt16(R[(int)r_src]));
                 case 6: // Indirect Indexed
                     uses_next_word = false;
-                    return string.Format("{0} [{1},{2}]         (${3:X4})", name, 
+                    return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         NameOfRegGP((RegGPIndex)index_bits),
-                        GetMemory((ushort)
+                        ReadMemInt16((ushort)
                             (R[(int)r_src] + R[index_bits])));
                 case 7:
                     uses_next_word = false;
-                    return string.Format("{0} [{1},{2}]         (${3:X4})", name, 
+                    return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name, 
                        NameOfRegGP((RegGPIndex)((int)r_src)),
                        NameOfRegGP((RegGPIndex)(index_bits + 4)),
-                       GetMemory((ushort)
+                       ReadMemInt16((ushort)
                            (R[(int)r_src] + R[index_bits + 4])));
                 default:
                     uses_next_word = false;
@@ -267,7 +276,7 @@ namespace YCPU.Hardware
             RegGPIndex RegMmuIndex;
             ushort RegMmuValue;
             BitPatternMMU(operand, out RegMmuValue, out RegMmuIndex);
-            return string.Format("{0} {1}, {2}", name, NameOfRegGP(RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
         }
 
         private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -308,7 +317,7 @@ namespace YCPU.Hardware
                 flags = "<NONE>";
             if (name.ToLower() == "pop" && (flags.Trim() == "PC"))
                 return "RTS";
-            return string.Format("{0} {1}", name, flags);
+            return string.Format("{0,-8}{1}", name, flags);
         }
 
         private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -320,7 +329,7 @@ namespace YCPU.Hardware
                 value = string.Format("${0:X2}", (ushort)(((operand & 0x0F00) >> 8)));
             else
                 value = NameOfRegGP((RegGPIndex)((operand & 0x0700) >> 8));
-            return string.Format("{0} {1}, {2}", name, NameOfRegGP(destination), value);
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
         }
 
         private string DisassembleSWO(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -353,7 +362,7 @@ namespace YCPU.Hardware
                     return "ERR";
             }
 
-            return string.Format("{0} {1}, {2}", name, regD, regS);
+            return string.Format("{0,-8}{1}, {2}", name, regD, regS);
         }
 
         private string DisassembleTSR(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
@@ -362,7 +371,7 @@ namespace YCPU.Hardware
             RegGPIndex destination;
             ushort value;
             BitPatternTSR(operand, out value, out destination);
-            return string.Format("{0} {1}, ${2:X2}", name, NameOfRegGP(destination), value);
+            return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
 
         private string NameOfRegGP(RegGPIndex register)

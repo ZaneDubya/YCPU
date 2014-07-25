@@ -19,7 +19,7 @@ namespace YCPU.Hardware
             PS_M = mmu_enabled;
             ushort ps = m_PS;
 
-            for (int i = 0; i < 0x100; i++)
+            for (int i = 0; i < 0x100; i += 1)
             {
                 if (m_Opcodes[i].IsNOP)
                 {
@@ -28,18 +28,18 @@ namespace YCPU.Hardware
                 else
                 {
                     m_PS = ps;
-                    for (int r = 0; r < 0x08; r++)
+                    for (int r = 0; r < 0x08; r += 1)
                         R[r] = 1;
-                    for (int m = 0; m < 0x10000; m++)
+                    for (int m = 0; m < 0x10000; m += 1)
                         SetMemory((ushort)m, 0x0001);
                     timer.Reset();
                     timer.Start();
-                    for (int j = 0; j < count_runs; j++)
+                    for (int j = 0; j < count_runs; j += 1)
                     {
                         m_PS = ps;
                         ushort word = (ushort)(i & ((j & 0xFF) << 8));
                         m_Opcodes[i].Opcode(word, m_Opcodes[i].BitPattern);
-                        count++;
+                        count += 1;
                         cycles += m_Opcodes[i].Cycles;
                     }
                     timer.Stop();
@@ -49,7 +49,7 @@ namespace YCPU.Hardware
             total.Stop();
 
             long min_value = long.MaxValue;
-            for (int i = 0; i < 0x100; i++)
+            for (int i = 0; i < 0x100; i += 1)
             {
                 if ((benchmark[i] != 0) && (benchmark[i] < min_value))
                     min_value = benchmark[i];
@@ -57,10 +57,10 @@ namespace YCPU.Hardware
 
 
             string[] lines = new string[0x101];
-            for (int i = 0; i < 0x100; i++)
+            for (int i = 0; i < 0x100; i += 1)
             {
                 if (m_Opcodes[i].IsNOP)
-                    lines[i] = "---";
+                    lines[i] = "###";
                 else
                     lines[i] = string.Format("{0}     {1:0.00}", m_Opcodes[i].Name, (float)benchmark[i] / (float)min_value);
             }

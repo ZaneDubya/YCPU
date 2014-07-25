@@ -45,7 +45,7 @@ namespace YCPU.Platform.ParallelTasks
             scheduledItems = new Stack<Task>();
             semaphore = new Semaphore(0);
 
-            for (int i = 0; i < threadCount; i++)
+            for (int i = 0; i < threadCount; i += 1)
             {
                 Thread thread = new Thread(new ThreadStart(WorkerLoop));
                 thread.IsBackground = true;

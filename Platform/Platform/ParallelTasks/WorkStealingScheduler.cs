@@ -39,10 +39,10 @@ namespace YCPU.Platform.ParallelTasks
         {
             tasks = new Queue<Task>();
             Workers = new List<Worker>(numThreads);
-            for (int i = 0; i < numThreads; i++)
+            for (int i = 0; i < numThreads; i += 1)
                 Workers.Add(new Worker(this, i));
 
-            for (int i = 0; i < numThreads; i++)
+            for (int i = 0; i < numThreads; i += 1)
             {
                 Workers[i].Start();
             }
@@ -88,7 +88,7 @@ namespace YCPU.Platform.ParallelTasks
             if (threads > 1)
                 WorkItem.Replicable = task;
 
-            for (int i = 0; i < Workers.Count; i++)
+            for (int i = 0; i < Workers.Count; i += 1)
             {
                 Workers[i].Gate.Set();
             }

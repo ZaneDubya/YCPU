@@ -23,18 +23,23 @@ namespace YCPU.Assembler.DCPU16ASM
 
     public partial class Parser
     {
-        protected List<ushort> m_MachineCode;
+        public delegate ushort[] OpcodeAssembler(string[] param, int bit_width);
+
+        protected List<byte> m_MachineCode;
         protected Dictionary<ushort, string> m_LabelReferences;
         protected Dictionary<string, OpcodeAssembler> m_OpcodeAssemblers;
         protected readonly Dictionary<ushort, string> m_LabelDataFieldReferences;
         protected Dictionary<string, ushort> m_RegisterDictionary;
         protected bool m_DataNextLine = false;
 
+        protected string m_DefaultTarget = "ycpu";
+        protected int m_DefaultBitWidth = 16;
+
         public Parser()
         {
             m_LabelReferences = new Dictionary<ushort, string>();
 
-            m_MachineCode = new List<ushort>();
+            m_MachineCode = new List<byte>();
             m_LabelDataFieldReferences = new Dictionary<ushort, string>();
 
             m_OpcodeAssemblers = new Dictionary<string, OpcodeAssembler>();
@@ -57,7 +62,7 @@ namespace YCPU.Assembler.DCPU16ASM
         public string MessageOuput { get; protected set; }
         public int LineCounter { get; protected set; }
 
-        public virtual ushort[] Parse(string[] lines, string working_directory)
+        public virtual byte[] Parse(string[] lines, string working_directory)
         {
             return null;
         }
@@ -81,7 +86,7 @@ namespace YCPU.Assembler.DCPU16ASM
 
             if (m_DataNextLine != false)
             {
-                m_DataNextLine = this.ParseData(line);
+                m_DataNextLine = this.ParseData16(line);
                 return;
             }
 
@@ -100,6 +105,16 @@ namespace YCPU.Assembler.DCPU16ASM
 
             string[] tokens = this.Tokenize(line);
             string opcode = tokens[0].Trim();
+            int bit_width = m_DefaultBitWidth;
+
+            if (opcode.Contains('.') && (opcode.IndexOf('.') > 1) && (opcode.Length - opcode.IndexOf('.') - 1 > 0))
+            {
+                // opcode has a flag
+                string flag = opcode.Substring(opcode.IndexOf('.') + 1);
+                if (!ParseBitWidth(flag, out bit_width))
+                    throw new Exception(string.Format("Unknown bit width flag '{0}' for instruction '{1}'.\nAcceptable bit widths are 8, 16, and 32.", flag, line));
+                opcode = opcode.Substring(0, opcode.IndexOf('.'));
+            }
 
             if (ParsePragma(line, opcode, tokens))
             {
@@ -119,11 +134,25 @@ namespace YCPU.Assembler.DCPU16ASM
             // get the assembler for this opcode
             OpcodeAssembler assembler = m_OpcodeAssemblers[opcode];
             // pass the params to the opcode's assembler
-            ushort[] code = assembler(param.ToArray());
+            ushort[] code = assembler(param.ToArray(), bit_width);
             if (code == null)
                 throw new Exception(string.Format("Error assembling line {0}", line));
             for (int i = 0; i < code.Length; i++)
-                m_MachineCode.Add(code[i]);
+            {
+                ushort this_opcode = code[i];
+                m_MachineCode.Add((byte)(this_opcode & 0x00ff));
+                m_MachineCode.Add((byte)((this_opcode & 0xff00) >> 8));
+            }
+        }
+
+        protected virtual bool ParseBitWidth(string value, out int bit_width)
+        {
+            bit_width = 0;
+            if (!int.TryParse(value, out bit_width))
+                return false;
+            if (bit_width != 8 && bit_width != 16 && bit_width != 32)
+                return false;
+            return true;
         }
 
         protected virtual bool ParsePragma(string line, string opcode, string[] tokens)
@@ -148,11 +177,11 @@ namespace YCPU.Assembler.DCPU16ASM
             return tokens.Where(t => t.Trim() != string.Empty).ToArray();
         }
 
-        protected bool ParseData(string line)
+        protected bool ParseData8(string line)
         {
             List<string> dataFields = new List<string>();
 
-            string lineData = m_DataNextLine != true ? line.Substring(4, line.Length - 4).Trim() : line.Trim();
+            string lineData = m_DataNextLine != true ? line.Substring(6, line.Length - 6).Trim() : line.Trim();
             foreach (var field in lineData.Split(','))
             {
                 if (field.Trim() == string.Empty) continue;
@@ -162,9 +191,9 @@ namespace YCPU.Assembler.DCPU16ASM
                 }
                 else
                 {
-                    var count = 0;
-                    var last = -1;
-                    var lastStr = dataFields[dataFields.Count - 1];
+                    int count = 0;
+                    int last = -1;
+                    string lastStr = dataFields[dataFields.Count - 1];
 
                     while ((last = lastStr.IndexOf('\"', last + 1)) != -1)
                     {
@@ -182,44 +211,126 @@ namespace YCPU.Assembler.DCPU16ASM
                 }
             }
 
-            GenerateInstructionsForDataFields(dataFields);
+            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int8);
 
             return line.EndsWith(",") ? true : false;
         }
 
-        private void GenerateInstructionsForDataFields(IList<string> dataFields)
+        protected bool ParseData16(string line)
         {
-            foreach (var dat in dataFields)
+            List<string> dataFields = new List<string>();
+
+            string lineData = m_DataNextLine != true ? line.Substring(6, line.Length - 6).Trim() : line.Trim();
+            foreach (var field in lineData.Split(','))
             {
-                var valStr = dat.Trim();
+                if (field.Trim() == string.Empty) continue;
+                if (dataFields.Count == 0)
+                {
+                    dataFields.Add(field);
+                }
+                else
+                {
+                    int count = 0;
+                    int last = -1;
+                    string lastStr = dataFields[dataFields.Count - 1];
+
+                    while ((last = lastStr.IndexOf('\"', last + 1)) != -1)
+                    {
+                        count++;
+                    }
+
+                    if (count == 1)
+                    {
+                        dataFields[dataFields.Count - 1] += "," + field;
+                    }
+                    else
+                    {
+                        dataFields.Add(field);
+                    }
+                }
+            }
+
+            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int16);
+
+            return line.EndsWith(",") ? true : false;
+        }
+
+        private void GenerateInstructionsForDataFields(IList<string> dataFields, DataFieldTypes dataType)
+        {
+            foreach (string data in dataFields)
+            {
+                string valStr = data.Trim();
                 if (valStr.IndexOf('"') > -1)
                 {
-                    var asciiLine = dat.Replace("\"", string.Empty).Trim();
-                    foreach (var t in asciiLine)
+                    string asciiLine = data.Replace("\"", string.Empty).Trim();
+                    foreach (char c in asciiLine)
                     {
-                        this.m_MachineCode.Add(t);
+                        switch (dataType)
+                        {
+                            case DataFieldTypes.Int8:
+                                m_MachineCode.Add((byte)c);
+                                break;
+                            case DataFieldTypes.Int16:
+                                m_MachineCode.Add((byte)((ushort)c & 0x00ff));
+                                m_MachineCode.Add((byte)((ushort)(c & 0xff00) >> 8));
+                                break;
+                            case DataFieldTypes.Int32:
+                                m_MachineCode.Add((byte)((ushort)c & 0x00ff));
+                                m_MachineCode.Add((byte)((ushort)(c & 0xff00) >> 8));
+                                m_MachineCode.Add(0x00);
+                                m_MachineCode.Add(0x00);
+                                break;
+                        }
                     }
                 }
                 else
                 {
-                    var val = (ushort)0;
+                    uint val = (uint)0;
 
                     if (valStr.Contains("0x") != false)
                     {
-                        val = Convert.ToUInt16(valStr, 16);
+                        val = Convert.ToUInt32(valStr, 16);
                     }
                     else if (valStr.All(x => char.IsDigit(x)))
                     {
-                        val = Convert.ToUInt16(valStr, 10);
+                        val = Convert.ToUInt32(valStr, 10);
                     }
                     else
                     {
-                        this.m_LabelDataFieldReferences.Add((ushort)this.m_MachineCode.Count, valStr);
+                        m_LabelDataFieldReferences.Add((ushort)m_MachineCode.Count, valStr);
                     }
 
-                    this.m_MachineCode.Add(val);
+                    switch (dataType)
+                    {
+                        case DataFieldTypes.Int8:
+                            if ((val > byte.MaxValue) || (val < byte.MinValue))
+                                throw new Exception(string.Format("Included byte value '{0}' cannot be expressed in an 8-bit value.", data));
+                            m_MachineCode.Add((byte)val);
+                            break;
+                        case DataFieldTypes.Int16:
+                            if ((val > ushort.MaxValue) || (val < ushort.MinValue))
+                                throw new Exception(string.Format("Included ushort value '{0}' cannot be expressed in a 16-bit value.", data));
+                            m_MachineCode.Add((byte)((ushort)val & 0x00ff));
+                            m_MachineCode.Add((byte)((ushort)(val & 0xff00) >> 8));
+                            break;
+                        case DataFieldTypes.Int32:
+                            if ((val > uint.MaxValue) || (val < uint.MinValue))
+                                throw new Exception(string.Format("Included uint value '{0}' cannot be expressed in a 32-bit value.", data));
+                            m_MachineCode.Add((byte)((uint)val & 0x00ff));
+                            m_MachineCode.Add((byte)((uint)(val & 0x0000ff00) >> 8));
+                            m_MachineCode.Add((byte)((uint)(val & 0x00ff0000) >> 16));
+                            m_MachineCode.Add((byte)((uint)(val & 0xff000000) >> 24));
+                            break;
+                    }
                 }
             }
+        }
+
+        public enum DataFieldTypes
+        {
+            Int8,
+            Int16,
+            Int32
         }
 
         protected virtual void SetLabelAddressReferences()

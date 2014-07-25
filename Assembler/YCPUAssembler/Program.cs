@@ -12,7 +12,7 @@ namespace YCPU
         {
             string in_path, out_path;
 #if DEBUG
-            args = new string[1] { "../../../../Tests/console.yasm" };
+            args = new string[1] { "../../../../Tests/rain.yasm" };
 #endif
 
             if (args.Length == 1)
@@ -64,7 +64,7 @@ namespace YCPU
                 return AssemblerResult.EmptyDocument;
 
             Assembler.Parser parser = new Assembler.Parser();
-            ushort[] machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
+            byte[] machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
 
             if (machineCode == null)
             {

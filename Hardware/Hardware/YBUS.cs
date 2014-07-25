@@ -23,13 +23,13 @@ namespace YCPU.Hardware
 
         public void Update()
         {
-            for (int i = 0; i < m_Devices.Count; i++)
+            for (int i = 0; i < m_Devices.Count; i += 1)
                 m_Devices[i].Update();
         }
 
         public void Display(IRenderer renderer)
         {
-            for (int i = 0; i < m_Devices.Count; i++)
+            for (int i = 0; i < m_Devices.Count; i += 1)
                 m_Devices[i].Display(renderer);
         }
 

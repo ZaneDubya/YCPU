@@ -1,11 +1,13 @@
-; interrupt table
-.dat start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
-.dat 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+.target ycpu
+.alu_width 16
 
-start:
-lod c, 0x1234 ; rand_seed
-lod y, c ; cur_rand
-baw main_loop
+; interrupt table
+.dat16 start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+.dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+
+lod.8   a, 255
+lod.16  a, 2000
+lod.8   a, 2000
 
 next_rand:
 psh a
@@ -13,6 +15,11 @@ mul y, 10061
 pop a
 add y, 1
 rts
+
+start:
+lod c, 0x1234 ; rand_seed
+lod y, c ; cur_rand
+baw main_loop
 
 main_loop:
 lod i, 0
@@ -37,13 +44,18 @@ next_row1:
     lod b, [a]          ; and [a], 0xff00 ; reset char
     and b, 0xff00
     and y, 0x003f
-    orr b, [y,code]     ; bor [a], [code+y] ; set letter
+    psh a
+    lod a, [chars,y]
+    and a, 0x00ff
+    orr b, a            ; bor [a], [chars+y] ; set letter
+    pop a
+    sto b, [a]
     lod x, y
     pop y
     
     skip1:
     add j, 1
-    add a, 1
+    add a, 2
     cmp j, 32           ; ifg 32, j
     bne next_char1      ; jmp next_char1
     
@@ -55,7 +67,7 @@ lod y, x
 
 ; step 2 - move all columns down
 lod i, 12
-lod a, 0x817f
+lod a, 0x82FE
 
 next_row2:
   lod j, 32
@@ -73,7 +85,9 @@ next_row2:
     
     lod x, y
     and x, 0x003f
-    lod x, [x,code]     ; bor [32+a], [code+x]
+    lod x, [chars,y]     ; bor [32+a], [chars+x]
+    and x, 0x00ff
+    
     orr x, [a,32]
     sto x, [a,32]
     lod b, [a]
@@ -89,7 +103,7 @@ next_row2:
     orr b, 0x7fff
 
     skip2:
-    sub a, 1
+    sub a, 2
     sub j, 1            ; ifg j, 0
     bne next_char2      ; jmp next_char2
   sub i, 1              ; ifg i, 0
@@ -118,7 +132,9 @@ next_char3:
 no_set:
   lod x, y
   and x, 0x003f
-  lod b, [code,x]       ; bor [a], [code+x]
+  lod b, [chars,x]       ; bor [a], [chars+x]
+  and b, 0x00ff
+  
   orr b, [a]
   sto b, [a]
   baw skip3
@@ -128,12 +144,12 @@ no_set:
   sto b, [a]
 
   skip3:
-  add a, 1
+  add a, 2
   add j, 1
   cmp j, 32             ; ifg 32, j
   bne next_char3        ; jmp next_char3
   
 jmp main_loop
 
-code:
-.dat "00112334567889&||!!@==::**##<>>__TYYUDQZJJIX- ~~oiwlrkm//\\'[]^)`"
+chars:
+.dat16 "00112334567889&||!!@==::**##<>>__TYYUDQZJJIX- ~~oiwlrkm//\\'[]^)`"

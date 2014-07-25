@@ -76,7 +76,7 @@ namespace YCPU.Platform.ParallelTasks
         {
             if (ID < int.MaxValue)
             {
-                ID++;
+                ID += 1;
 
                 // MartinG@DigitalRune: Reset properties before recycling to avoid "memory leaks".
                 Function = null;

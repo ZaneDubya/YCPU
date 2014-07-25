@@ -7,10 +7,44 @@ namespace YCPU.Hardware
 {
     partial class YCPU
     {
+        public enum BitWidth
+        {
+            Int8 = 0,
+            Int16 = 1,
+            Int32 = 2
+        }
+
         private YCPUInstruction[] m_Opcodes = new YCPUInstruction[0x100];
         public YCPUInstruction[] Opcodes
         {
             get { return m_Opcodes; }
+        }
+
+        public struct YCPUInstruction
+        {
+            public string Name;
+            public YCPUOpcode Opcode;
+            public YCPUBitPattern BitPattern;
+            public YCPUDisassembler Disassembler;
+            public int Cycles;
+            public bool IsNOP;
+
+            public YCPUInstruction(string name, YCPUOpcode opcode, YCPUBitPattern bitpattern, YCPUDisassembler disassembler, int cycles, bool isNOP = false)
+            {
+                Name = name;
+                Opcode = opcode;
+                BitPattern = bitpattern;
+                Disassembler = disassembler;
+                Cycles = cycles;
+                IsNOP = isNOP;
+            }
+
+            public bool UsesNextWord(ushort opcode)
+            {
+                bool value;
+                string s = Disassembler(string.Empty, opcode, 0x0000, 0x0000, out value);
+                return value;
+            }
         }
 
         #region OpCode Initialization
@@ -25,8 +59,8 @@ namespace YCPU.Hardware
             m_Opcodes[0x06] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectIndexed, DisassembleALU, 1);
             m_Opcodes[0x07] = new YCPUInstruction("LOD", LOD, BitPatternALU_IndirectIndexedHi, DisassembleALU, 1);
 
-            // No STO Immediate (0x08) or STO Register (0x09)
-            // indirect = value in register
+            m_Opcodes[0x08] = new YCPUInstruction("STO", STO, BitPatternSTO_Immediate, DisassembleALU, 1);
+            // no such this as STO register.
             m_Opcodes[0x0A] = new YCPUInstruction("STO", STO, BitPatternSTO_Indirect, DisassembleALU, 1);
             m_Opcodes[0x0B] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectOffset, DisassembleALU, 2);
             m_Opcodes[0x0C] = new YCPUInstruction("STO", STO, BitPatternSTO_IndirectPostInc, DisassembleALU, 1);
@@ -230,9 +264,27 @@ namespace YCPU.Hardware
             m_Opcodes[0xC5] = new YCPUInstruction("SLP", SLP, null, DisassembleNoBits, 1);
             m_Opcodes[0xC6] = new YCPUInstruction("SWI", SWI, null, DisassembleNoBits, 1);
             m_Opcodes[0xC7] = new YCPUInstruction("RTI", RTI, null, DisassembleNoBits, 12);
+            // C8 - CF are undefined.
 
+            m_Opcodes[0xD0] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_Immediate, DisassembleALU, 2);
+            m_Opcodes[0xD1] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_Register, DisassembleALU, 1);
+            m_Opcodes[0xD2] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_Indirect, DisassembleALU, 1);
+            m_Opcodes[0xD3] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0xD4] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0xD5] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0xD6] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0xD7] = new YCPUInstruction("LOD.8", LOD, BitPatternAL8_IndirectIndexedHi, DisassembleALU, 1);
 
-            for (int i = 0; i < 0x100; i++)
+            m_Opcodes[0xD8] = new YCPUInstruction("STO.8", STO, BitPatternST8_Immediate, DisassembleALU, 1);
+            // no such this as STO.8 register.
+            m_Opcodes[0xDA] = new YCPUInstruction("STO.8", STO, BitPatternST8_Indirect, DisassembleALU, 1);
+            m_Opcodes[0xDB] = new YCPUInstruction("STO.8", STO, BitPatternST8_IndirectOffset, DisassembleALU, 2);
+            m_Opcodes[0xDC] = new YCPUInstruction("STO.8", STO, BitPatternST8_IndirectPostInc, DisassembleALU, 1);
+            m_Opcodes[0xDD] = new YCPUInstruction("STO.8", STO, BitPatternST8_IndirectPreDec, DisassembleALU, 1);
+            m_Opcodes[0xDE] = new YCPUInstruction("STO.8", STO, BitPatternST8_IndirectIndexed, DisassembleALU, 1);
+            m_Opcodes[0xDF] = new YCPUInstruction("STO.8", STO, BitPatternST8_IndirectIndexedHi, DisassembleALU, 1);
+
+            for (int i = 0; i < 0x100; i += 1)
                 if (m_Opcodes[i].Opcode == null)
                     m_Opcodes[i] = new YCPUInstruction("NOP", NOP, null, DisassembleNoBits, 1, true);
         }
@@ -553,11 +605,13 @@ namespace YCPU.Hardware
 
         private void STO(ushort operand, YCPUBitPattern bits)
         {
-            ushort value;
+            ushort dest_address;
             RegGPIndex source;
-            bits(operand, out value, out source);
-
-            SetMemory(value, R[(int)source]);
+            bits(operand, out dest_address, out source);
+            if (source == RegGPIndex.Error)
+                return;
+            else
+                WriteMemInt16(dest_address, R[(int)source]);
             // N [Negative] Not effected.
             // Z [Zero] Not effected.
             // C [Carry] Not effected.
@@ -663,7 +717,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -674,7 +728,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -685,7 +739,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -696,7 +750,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -707,7 +761,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -718,7 +772,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -729,7 +783,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -740,7 +794,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -751,7 +805,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -762,7 +816,7 @@ namespace YCPU.Hardware
                 ushort value;
                 RegGPIndex destination;
                 bits(operand, out value, out destination);
-                PC = (ushort)(PC + (sbyte)value - 1);
+                PC = (ushort)(PC + (sbyte)value - 2);
             }
         }
 
@@ -771,7 +825,7 @@ namespace YCPU.Hardware
             ushort value;
             RegGPIndex destination;
             bits(operand, out value, out destination);
-            PC = (ushort)(PC + (sbyte)value - 1);
+            PC = (ushort)(PC + (sbyte)value - 2);
         }
         #endregion
 
@@ -854,11 +908,17 @@ namespace YCPU.Hardware
             ushort addr_dest = R[(int)dest];
             ushort addr_src = R[(int)src];
             ushort[] m = new ushort[4];
-            m[0] = GetMemory(addr_dest++);
-            m[1] = GetMemory(addr_dest);
-            m[2] = GetMemory(addr_src++);
-            m[3] = GetMemory(addr_src);
+            // get the address of the first operand.
+            m[0] = ReadMemInt16(addr_dest);
+            addr_dest += 2;
+            m[1] = ReadMemInt16(addr_dest);
 
+            // get the address of the second operand.
+            m[2] = ReadMemInt16(addr_src);
+            addr_src += 2;
+            m[3] = ReadMemInt16(addr_src);
+
+            // copy the data into local memory as floats so the host processor can work on them.
             float[] f = new float[2];
             Buffer.BlockCopy(m, 0, f, 0, 8);
             return f;

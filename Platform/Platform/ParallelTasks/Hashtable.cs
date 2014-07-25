@@ -56,7 +56,7 @@ namespace YCPU.Platform.ParallelTasks
                 Node node;
                 do
                 {
-                    currentIndex++;
+                    currentIndex += 1;
                     if (table.array.Length <= currentIndex)
                         return false;
 
@@ -122,7 +122,7 @@ namespace YCPU.Platform.ParallelTasks
         private void Resize()
         {
             var newArray = new Node[array.Length * 2];
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i += 1)
             {
                 var item = array[i];
                 if (item.Token == Token.Used)

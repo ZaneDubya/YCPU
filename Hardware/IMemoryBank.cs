@@ -6,7 +6,7 @@ using System.Text;
 namespace YCPU
 {
     /// <summary>
-    /// Standard interface to a 4 kiloword memory bank.
+    /// Standard interface to a 4 kilobyte memory bank.
     /// </summary>
     public interface IMemoryBank
     {
@@ -19,10 +19,10 @@ namespace YCPU
         }
 
         /// <summary>
-        /// Returns the word of memory at this address.
+        /// Returns the byte of memory at this address.
         /// </summary>
         /// <returns></returns>
-        ushort this[int address]
+        byte this[int address]
         {
             get; set;
         }

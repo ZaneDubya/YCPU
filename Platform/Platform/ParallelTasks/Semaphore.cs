@@ -44,7 +44,7 @@ namespace YCPU.Platform.ParallelTasks
         {
             lock (free_lock)
             {
-                free++;
+                free += 1;
                 gate.Set();//Open gate
             }
         }

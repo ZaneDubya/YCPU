@@ -100,7 +100,7 @@ namespace YCPU.Platform.ParallelTasks
                     continue;
                 }
 
-                for (int i = 0; i < scheduler.Workers.Count; i++)
+                for (int i = 0; i < scheduler.Workers.Count; i += 1)
                 {
                     var worker = scheduler.Workers[i];
                     if (worker == this)

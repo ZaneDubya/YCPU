@@ -195,7 +195,7 @@ namespace YCPU.Platform.ParallelTasks
                     return true;
                 if (executing == work.Options.MaximumThreads)
                     return false;
-                executing++;
+                executing += 1;
             }
 
             // associate the current task with this thread, so that Task.CurrentTask gives the correct result
@@ -236,7 +236,7 @@ namespace YCPU.Platform.ParallelTasks
                     foreach (var child in children)
                         child.Wait();
 
-                    runCount++;
+                    runCount += 1;
 
                     // open the reset event, so tasks waiting on this once can continue
                     resetEvent.Set();
@@ -299,7 +299,7 @@ namespace YCPU.Platform.ParallelTasks
                         resetEvent.WaitOne();
                     else
                         Thread.Sleep(0);
-                    i++;
+                    i += 1;
                 }
             }
             finally

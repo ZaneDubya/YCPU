@@ -50,7 +50,7 @@ namespace YCPU.Platform.Graphics
         {
             short[] indices = new short[primitiveCount * 6];
 
-            for (int i = 0; i < primitiveCount; i++)
+            for (int i = 0; i < primitiveCount; i += 1)
             {
                 indices[i * 6] = (short)(i * 4);
                 indices[i * 6 + 1] = (short)(i * 4 + 1);
@@ -149,12 +149,12 @@ namespace YCPU.Platform.Graphics
             if (zInc)
             {
                 position += _zOffset;
-                _zOffset.Z++;
+                _zOffset.Z += 1;
             }
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, (hue == null ? Color.White : hue.Value), new Vector2(0, Palettized ? 0 : 1));
 
-            for (int i = 0; i < q.Vertices.Length; i++)
+            for (int i = 0; i < q.Vertices.Length; i += 1)
             {
                 vertexList.Add(q.Vertices[i]);
             }
@@ -187,9 +187,9 @@ namespace YCPU.Platform.Graphics
             }
 
             position += _zOffset;
-            _zOffset.Z++;
+            _zOffset.Z += 1;
 
-            for (int i = 0; i < list.Length; i++)
+            for (int i = 0; i < list.Length; i += 1)
             {
                 VertexPositionTextureHueExtra v = list[i];
                 v.Position += position;
@@ -202,7 +202,7 @@ namespace YCPU.Platform.Graphics
         public void DrawRectangle(Vector3 position, Vector2 area, Color hue)
         {
             position += _zOffset;
-            _zOffset.Z++;
+            _zOffset.Z += 1;
 
             // Upper edge
             DrawRectangleFilled(position, 
@@ -224,7 +224,7 @@ namespace YCPU.Platform.Graphics
             if (zInc)
             {
                 position += _zOffset;
-                _zOffset.Z++;
+                _zOffset.Z += 1;
             }
 
             if (_texture == null)
@@ -383,7 +383,8 @@ namespace YCPU.Platform.Graphics
                     extra = new Vector2(Palette0, Palette1);
                     break;
             }
-            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z++, color == null ? Color.White : color.Value, extra);
+            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z, color == null ? Color.White : color.Value, extra);
+            _zOffset.Z += 1;
 
             List<VertexPositionTextureHueExtra> vertexList;
 
@@ -408,7 +409,7 @@ namespace YCPU.Platform.Graphics
                 _drawQueue.Add(key, vertexList);
             }
 
-            for (int i = 0; i < q.Vertices.Length; i++)
+            for (int i = 0; i < q.Vertices.Length; i += 1)
             {
                 vertexList.Add(q.Vertices[i]);
             }

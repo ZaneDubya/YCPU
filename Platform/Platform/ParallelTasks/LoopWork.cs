@@ -35,7 +35,7 @@ namespace YCPU.Platform.ParallelTasks
             while ((start = IncrementIndex()) < length)
             {
                 int end = Math.Min(start + stride, length);
-                for (int i = start; i < end; i++)
+                for (int i = start; i < end; i += 1)
                 {
                     action(i);
                 }

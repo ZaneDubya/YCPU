@@ -66,7 +66,7 @@ namespace YCPU.Platform.Graphics
             string tempText;
 
             //Starting from end of last line loop though the characters
-            for (var iCount = start; iCount < text.Length; iCount++)
+            for (var iCount = start; iCount < text.Length; iCount += 1)
             {
                 //Calculate the width of the current line
                 lineLength += MeasureCharacter(text, iCount);

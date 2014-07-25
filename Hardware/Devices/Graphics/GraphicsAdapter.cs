@@ -116,14 +116,14 @@
                 m_LEM_CHRRAM = Platform.YTexture.Create(128, 32);
                 m_LEM_PALRAM = Platform.YTexture.Create(16, 1);
 
-                ushort[] chrram_default = new ushort[256];
+                byte[] chrram_default = new byte[512];
                 System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
-                for (int i = 0; i < 256; i++)
+                for (int i = 0; i < 512; i += 1)
                     m_BankLEM[0x0800 + i] = chrram_default[i];
 
-                ushort[] palram_default = new ushort[16];
+                byte[] palram_default = new byte[32];
                 System.Buffer.BlockCopy(YCPU.ResContent.lem1802_16bitpal, 0, palram_default, 0, 32);
-                for (int i = 0; i < 16; i++)
+                for (int i = 0; i < 32; i += 1)
                     m_BankLEM[0x0C00 + i] = palram_default[i];
             }
         }
@@ -151,22 +151,30 @@
         private void Update_LEM_CHRRAM()
         {
             // Assume CHRRAM format is Color (ARGB8888)
+            // Each character is 4x8 pixels at 1bit depth, 4 bytes total.
+            // byte 0, bit 0-3: 3210
+            // byte 0, bit 4-7: 7654
+            // byte 1, bit 0-3: 3210
+            // byte 1, bit 4-7: 7654
+            // ... same for bytes 2 and 3.
             uint[] data = new uint[128 * 32];
             int data_index = 0;
-            for (int iTile = 0; iTile < 128; iTile++)
+            for (int iTile = 0; iTile < 128; iTile += 1)
             {
                 int y = (iTile / 32) * 8;
                 int x = (iTile % 32) * 4;
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 4; i += 1)
                 {
-                    ushort binary_data = m_BankLEM[0x0800 + data_index++];
+                    byte binary_data = m_BankLEM[0x0800 + data_index];
+                    data_index += 1;
                     int bit_index = 0;
-                    for (int iY = 0; iY < 4; iY++)
+                    for (int iY = 0; iY < 2; iY += 1)
                     {
-                        for (int iX = 0; iX < 4; iX++)
+                        for (int iX = 0; iX < 4; iX += 1)
                         {
-                            bool bit = ((binary_data & (1 << bit_index++)) != 0);
-                            data[(y + i * 4 + iY) * 128 + (x + iX)] = (bit) ? 0xFFFFFFFF : 0xFF000000;
+                            bool bit = ((binary_data & (1 << bit_index)) != 0);
+                            bit_index += 1;
+                            data[(y + i * 2 + iY) * 128 + (x + iX)] = (bit) ? 0xFFFFFFFF : 0xFF000000;
                         }
                     }
                 }
@@ -178,9 +186,9 @@
         {
             // Assume PALRAM format is Color (ARGB8888)
             uint[] data = new uint[0x10];
-            for (int i = 0; i < 0x10; i++)
+            for (int i = 0; i < 0x10; i += 1)
             {
-                ushort color = m_BankLEM[0x0C00 + i];
+                ushort color = (ushort)(m_BankLEM[0x0C00 + i * 2] + (m_BankLEM[0x0C00 + i * 2 + 1] << 8));
                 data[i] = (uint)(0xFF000000) | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
 
@@ -191,9 +199,15 @@
         {
             renderer.Palette_LEM = m_LEM_PALRAM;
             int current_word = 0;
-            for (int y = 0; y < 12; y++)
-                for (int x = 0; x < 32; x++)
-                    m_LEM_CHRRAM.DrawLEM(renderer, x, y, m_BankLEM[current_word++]);
+            for (int y = 0; y < 12; y += 1)
+                for (int x = 0; x < 32; x += 1)
+                {
+                    byte byte0 = m_BankLEM[current_word++];
+                    byte byte1 = m_BankLEM[current_word++];
+                    m_LEM_CHRRAM.DrawLEM(renderer, x, y, byte0, byte1);
+                }
+                    
+            // m_LEM_PALRAM.Draw(renderer, 16, 16);
         }
 
         enum GraphicsMode

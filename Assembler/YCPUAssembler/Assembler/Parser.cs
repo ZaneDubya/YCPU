@@ -23,7 +23,7 @@ namespace YCPU.Assembler
             m_Scopes = new Scopes();
         }
 
-        public override ushort[] Parse(string[] lines, string working_directory)
+        public override byte[] Parse(string[] lines, string working_directory)
         {
             m_MachineCode.Clear();
             m_BranchReferences.Clear();
@@ -108,7 +108,8 @@ namespace YCPU.Assembler
                 int delta = label_address - index;
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
                     throw new Exception("Branch operation out of range.");
-                m_MachineCode[index] = (ushort)((m_MachineCode[index] & 0x00FF) | (((sbyte)delta) << 8));
+                m_MachineCode[index] = m_MachineCode[index]; // same operand; this line may not be necessary.
+                m_MachineCode[index + 1] = (byte)((sbyte)delta);
             }
         }
 
@@ -123,7 +124,9 @@ namespace YCPU.Assembler
                     throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
                 }
 
-                m_MachineCode[index] = (ushort)m_Scopes.LabelAddress(labelName, index);
+                ushort address = (ushort)m_Scopes.LabelAddress(labelName, index);
+                m_MachineCode[index] = (byte)(address & 0x00ff);
+                m_MachineCode[index + 1] = (byte)((address & 0xff00) >> 8);
             }
         }
 
@@ -138,7 +141,9 @@ namespace YCPU.Assembler
                     throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
                 }
 
-                m_MachineCode[key] = (ushort)m_Scopes.LabelAddress(labelName, key);
+                ushort address = (ushort)m_Scopes.LabelAddress(labelName, key);
+                m_MachineCode[key] = (byte)(address & 0x00ff);
+                m_MachineCode[key + 1] = (byte)((address & 0xff00) >> 8);
             }
         }
 
@@ -148,6 +153,23 @@ namespace YCPU.Assembler
             {
                 switch (opcode.ToLower())
                 {
+                    case ".target":
+                        m_DefaultTarget = tokens[1];
+                        return true;
+                    case ".alu_width":
+                        int bit_width;
+                        if (!ParseBitWidth(tokens[1], out bit_width))
+                            throw new Exception(string.Format("Unknown bit width flag '{0}' for pragma '{1}'.\nAcceptable bit widths are 8, 16, and 32.", tokens[1], opcode));
+                        m_DefaultBitWidth = bit_width;
+                        return true;
+                    case ".dat8":
+                        m_DataNextLine = ParseData8(line);
+                        return true;
+
+                    case ".dat16":
+                        m_DataNextLine = ParseData16(line);
+                        return true;
+                    
                     case ".advance":
 
                         break;
@@ -157,9 +179,10 @@ namespace YCPU.Assembler
                     case ".checkpc":
 
                         break;
-                    case ".dat":
-                        m_DataNextLine = ParseData(line);
-                        return true;
+                    case ".org":
+
+                        break;
+                    
                     case ".incbin":
                         return IncludeBinary(tokens);
                     case ".include":
@@ -171,9 +194,7 @@ namespace YCPU.Assembler
                     case ".macend":
 
                         break;
-                    case ".org":
-
-                        break;
+                    
                     case ".require":
 
                         break;
@@ -205,7 +226,7 @@ namespace YCPU.Assembler
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
-            ushort[] data = YCPU.Platform.Common.GetBinaryWordsFromFile(m_Directory + @"\" + tokens[1]);
+            byte[] data = YCPU.Platform.Common.GetBytesFromFile(m_Directory + @"\" + tokens[1]);
             if (data == null)
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 

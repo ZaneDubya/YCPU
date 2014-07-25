@@ -50,6 +50,7 @@
     <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
     <Compile Include="Hardware\YCPU_Benchmark.cs" />
+    <Compile Include="Hardware\YCPU_Memory.cs" />
     <Compile Include="IMemoryBank.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Hardware\YBUS.cs" />
