@@ -1,3 +1,4 @@
+; these are currently not used, but in the future might allow targeting of multiple ISAs.
 .target ycpu
 .alu_width 16
 
@@ -7,7 +8,7 @@
 
 lod.8   a, 255
 lod.16  a, 2000
-lod.8   a, 2000
+lod.8   a, 255
 
 next_rand:
 psh a

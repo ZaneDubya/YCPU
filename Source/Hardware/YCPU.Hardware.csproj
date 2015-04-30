@@ -78,9 +78,9 @@
     <None Include="Resources\lem1802_charset.bin" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Platform\YCPUPlatform.csproj">
-      <Project>{AACF1738-A2F8-4783-BBFF-2163B5187830}</Project>
-      <Name>YCPUPlatform</Name>
+    <ProjectReference Include="..\Platform\YCPU.Platform.csproj">
+      <Project>{aacf1738-a2f8-4783-bbff-2163b5187830}</Project>
+      <Name>YCPU.Platform</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

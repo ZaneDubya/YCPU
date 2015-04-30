@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4x
+Version 0.4y
 
 =============================[ Table of Contents ]==============================
 
@@ -65,7 +65,7 @@ time. Any multi-byte values are stored in little-endian format.
 
 For most instructions, the only addressable unit of memory is a 16-bit word.
 There are 8-bit operations for Load, Store, Add, and Subtract operations. While
-using 8-bit operations, the upper 8-bits of memory are cleared, and ignored.
+using 8-bit operations, the upper 8-bits of memory are cleared and ignored.
 Storing an 8-bit value with the "STO.8" instruction will only store one byte,
 and the second byte in the 16-bit word will not be affected.
 
@@ -73,6 +73,12 @@ For all other instructions, there is no support for 8-bit math. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
 which has a 32-bit result, spread over two registers, and the FPU instructions,
 which deals with 32-bit data).
+
+All instructions must be aligned to a 16-bit address. The processor cannot
+execute instructions at 8-bit aligned addresses. Any attempt to execute
+such an address will result in execution of the address with the least
+significant bit masked out. Thus, attempting to execute address $8003
+will result in execution of address at $8002).
 
 2.2. MEMORY ACCESS
 
@@ -1125,13 +1131,13 @@ bit pattern:
     FEDC BA98 7654 3210                        
     bbbb bbbb OOOO Occc                    
         O = opcode
-        b = signed 8-bit offset
+        b = signed 8-bit offset (-128 to +127)
         c = condition
         
 When a branch opcode is executed and its condition is true, the signed offset is
-added to the PC. Note that because each opcode takes up two bytes (not counting
-any extra 16-bit operands), the range of a branch opcode is effectively only -64
-to +63 opcodes relative to the current PC.
+added to the PC. Note that because instructions must be 16-bit aligned, the offset
+is shifted left by 1 (multiplied by 2) to allow for an effective range of -128 to
++127 opcodes relative to the current PC.
 
 1001 0ccc   BXX                                                             NZCV
       000 = BCC/BUF, Branch if carry clear AKA Unsigned Fewer Than          ..0.
@@ -1687,4 +1693,6 @@ takes place:
   * Specified on-chip hardware (RAM/ROM chips).
   * Specified that processor is Hardware Device 0 on the bus in most setups.
   * Added MIM/MIA instructions and MIM bit pattern.
-  
+0.4y 04/30/2015
+  * All instructions must be 16-bit aligned!
+  * Branch offsets are multiplied by 2 (restoring offset range of -128~+127)!
