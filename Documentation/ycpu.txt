@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4a
+Version 0.4x
 
 =============================[ Table of Contents ]==============================
 
@@ -52,23 +52,22 @@ http://creativecommons.org/about/cc0
 The YCPU is a 16-bit imaginary processor. The processor includes features
 intended to ease the development of software, including a comprehensive
 instruction set, support for 32-bit floating point operations, a MMU that allows
-switching 4 kilobyte banks within the 16-bit logical address space, a real time
-clock, a hardware bus that supports up to 256 devices, and Supervisor/User modes
-with separate stack pointers.
+switching 16 4 kilobyte banks within the 16-bit logical address space, a real
+time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
+modes with separate stack pointers.
 
 
 2.1. MEMORY MODEL
 
-Internally, all registers and cache words are 16-bit. Although the processor
-does have a 32-bit external bus, all logical addresses are 16-bit, and thus an
-instruction can only address 64 kilobytes of memory at any time. Any multi-byte
-values are stored in little-endian format.
+Internally, all registers and cache words are 16-bit. All logical addresses are
+16-bit, and thus an instruction can only address 64 kilobytes of memory at any
+time. Any multi-byte values are stored in little-endian format.
 
 For most instructions, the only addressable unit of memory is a 16-bit word.
 There are 8-bit operations for Load, Store, Add, and Subtract operations. While
 using 8-bit operations, the upper 8-bits of memory are cleared, and ignored.
 Storing an 8-bit value with the "STO.8" instruction will only store one byte,
-not two.
+and the second byte in the 16-bit word will not be affected.
 
 For all other instructions, there is no support for 8-bit math. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
@@ -88,6 +87,15 @@ as fast as a 16-bit load.
 For quick retrieval of 8-bit values from 16-bit registers, the Switch Octet
 (SWO) instruction allows easy and fast access to individual 8-bit bytes.
 
+2.3. ON-CHIP HARDWARE
+
+All models of the YCPU are guaranteed to have 64kb of internal RAM on board,
+and possibly more, depending on the processor model. The YCPU will also have a
+variable amount of ROM on chip, depending on the model of the YCPU. The YCPU
+can determine how much RAM/ROM is available by querying 'Hardware Device 0' on
+the Hardware Bus, and can load its RAM/ROM into active memory with the MMU ()or
+the MIA/MIM instructions while the MMU is disabled).
+
 
 ===============================[ 2.A. Registers ]===============================
 General Purpose Registers: R0-R7 (Also referenced as A,B,C,I,J,X,Y, and Z)
@@ -102,11 +110,11 @@ Stack Pointer SP, consists of USP or SSP.
 2.A.1. GENERAL PURPOSE REGISTERS
 
 The processor has 8 general purpose 16-bit registers, which can be referenced as
-R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers can be
-used as both data and address registers, are interchangable and directly
-modified by most instructions.
+R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
+used as both data and address registers, are interchangeable, and are directly
+referenced and modified by most instructions.
 
-R0 has a special purpose in the following situations:
+R0 has a special purpose in the following situation:
     * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
       If R0 is also the src/dest register, then the high 16-bits are lost, and
       R0 will contain the low 16-bits after the instruction completes.
@@ -114,9 +122,10 @@ R0 has a special purpose in the following situations:
 
 2.A.2. PROCESSOR STATUS REGISTERS
 
-The processor also has several specific purpose 16-bit registers. Unlike the
-general purpose registers, these are not generally accessible by most ALU
-addressing modes.
+The processor also has eight specific purpose 16-bit registers. Unlike the
+general purpose registers, these are not accessible by most instructions.
+The eight specific purpose registers are FL, IA, II, PC, PS, P2, SSP, and USP.
+
     FL: The FLag register. This register contains flags that are set by ALU
         operations.
         The flags are as follows:
@@ -142,14 +151,14 @@ addressing modes.
             [S] -   [S]upervisor Mode enabled
             [M] -   Memory [M]anagement enabled
             [I] -   Hardware [I]nterrupts enabled.
-            [R] -   0: Load processor ROM bank $00 at $0000-$0FFF on interrupt.
-                    1: Load processor RAM bank $00 at $0000-$0FFF on interrupt.
+            [R] -   0: Load internal ROM bank $00 at $0000-$0FFF on interrupt.
+                    1: Load internal RAM bank $00 at $0000-$0FFF on interrupt.
             [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
             [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
             [W] -   Bank Fault, Attempt to Write to Read-Only Memory
             [E] -   Bank Fault, Attempt to Execute in Non-Execute Memory
             
-    P2: Processor Status 2. Set during certain interrupts.
+    P2: Processor Status 2. Set during bank fault interrupt.
     
     SP: The Stack Pointer is the address of the first full stack space. It is
         decremented before a stack value is pushed onto the stack, and is
@@ -193,12 +202,18 @@ In User mode, the processor:
 
 ===========================[ 2.C. Hardware Devices ]============================
 All additional Devices connect to the processor through a modular Hardware Bus.
-This Hardware Bus can host up to 256 Devices. The processor can directly address
+This Hardware Bus can host up to 255 Devices. The processor can directly address
 memory banks exposed by the Devices, and can also directly communicate with a
 Device by executing a Hardware Query instruction. Devices can request the
 processor's attention by raising an interrupt.
 
-#to be determined.
+Acceptable hardware Devices can include input (keyboard, mouse, touch), storage
+(disk, hard drive), networking, RAM, ROM, and interfaces for other hardware
+Devices not directly connected to the Hardware Bus.
+
+Device Index 0 on the Hardware Bus refers to the YCPU itself. A program can
+retrieve information about the YCPU by using the Hardware Query instruction to
+query the Device at Index 0.
 
 
 =============================[ 2.D. Interrupts ]================================
@@ -242,12 +257,13 @@ below.
 
 When an interrupt is raised, the processor halts the current executing process.
 It then executes the following sequence:
-    1.  Save the current PS to a temporary register.
+    1.  Save the state of PS to a temporary register.
     2.  Set the S status bit. Clear the M status bit.
         The processor is now in Supervisor mode, with the MMU disabled.
     3.  If this is a hardware interrupt, the Q status bit will be set. This
-        blocks other hardware interrupts from occuring while the current
-        interrupt is being processed.
+        blocks other hardware interrupts from occurring while the current
+        interrupt is being processed. If this is a BankFault, P2 is set to the
+        address of the memory address that was attempted address.
     4.  Push the saved PS to the Stack.
     5.  Push PC* to the Stack.
     6.  Set PC to Mem[II + InterruptIndex].
@@ -264,8 +280,7 @@ It then executes the following sequence:
 2.D.5. RETURNING FROM AN INTERRUPT
 
 When an interrupt handler ends, it should call RTI, which restores the values of
-PS and PC. If the MMU was enabled before, the processor's memory space will be
-restored as well.
+PS and PC. If the MMU was enabled before, the MMU will be re-enabled.
 
 If an interrupt handler modifies a register or changes the MMU cache, it should
 save that register before doing so, and restore the register before ending the
@@ -354,8 +369,6 @@ of the instruction is memory, only a single byte is stored in memory. If the
 target is another register, the lower 8 bits of memory are stored, and the high
 8 bits of the destination register are cleared.
 
-Note that 
-
 2.E.2. POST-INCREMENT AND PRE-DECREMENT VALUES.
 
 When using post-increment and pre-decrement, the value of the register is
@@ -375,14 +388,21 @@ when enabled, provides virtual address translation.
 2.F.1. ADDRESS SPACE WHEN THE MMU IS DISABLED
 
 While the 'Memory Banking' status bit is clear, the MMU is disabled, and the
-processor's address space is mapped as follows:
+processor's address space is initially mapped as follows:
     Bank $0 - If R status bit is clear, Internal ROM Bank $00
-              If R statis bit is set, Internal RAM Bank $00
+              If R status bit is set, Internal RAM Bank $00
     Bank $1 - Internal RAM Bank $01
     Bank $2 - Internal RAM Bank $02
         ...
     Bank $E - Internal RAM Bank $0E
     Bank $F - Internal RAM Bank $0F
+
+This address space can be modified without enabling the MMU to a limited extent
+with the MIM (Map Internal Memory Bank) instruction. MIM allows a program to
+map a specific bank of internal processor RAM or ROM to a specific bank of
+memory. However, a bank set-up created by MIM does not persist after the MMU
+is enabled. The next time the MMU is enabled and disabled, the state of the
+processor's address space will be reset to the values in the above table.
 
     
 2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED
@@ -403,7 +423,7 @@ the physical address that is mapped to a single MMU bank.
 
 Word $00___________     Word $01___________
 FEDC BA98 7654 3210     FEDC BA98 7654 3210
-bbbb bbbb bbbb bbbb     SWEH AP.. .... bbbb
+bbbb bbbb bbbb bbbb     SWEP A... .... bbbb
 
     S - Supervisor only flag:
         0:  User mode and Supervisor mode may access this bank.
@@ -414,43 +434,32 @@ bbbb bbbb bbbb bbbb     SWEH AP.. .... bbbb
     E - Execute protect flag:
         0:  The processor can execute opcodes within this bank.
         1:  Execution of opcodes while PC is in this bank raises a bank fault.
-    H - Hardware bank flag:
-        0:  This bank is taken from the internal processor address space.
-        1:  This bank is taken from a device on the hardware bus.
-    A - Access flag:
-        This bit is set every time this bank is written to.
     P - Not present flag:
         If this bit is set, any access to this bank will raise a bank fault.
+    A - Accessed flag:
+        This bit is set every time this bank is written to.
     b - These bits determine the bank of memory that is mapped to this bank of
-        virtual address space. If the 'H' bit is clear, this bank is mapped to
-        RAM or ROM internal to the processor. If the 'H' bit is set, then this
-        bank is mapped to a memory bank within a hardware device.
+        virtual address space. The bank will be taken from a Hardware Device,
+        except that bank $0 will be mapped to internal processor rom if the 'R'
+        status bit in PS is set and the 'M' status bit is clear.
 
         
 2.F.4. ADDRESS TRANSLATION
 
-Counting the 'H' bit, which selects internal vs external physical addresses, the
-MMU has access to 33 bits of physical address space. A physical address is thus:
+The MMU has access to 32 bits of physical address space. A physical address is:
 
-        H   FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        h   bbbb bbbb bbbb bbbb     bbbb aaaa aaaa aaaa
+        FEDC BA98 7654 3210     FEDC BA98 7654 3210
+        bbbb bbbb bbbb bbbb     bbbb aaaa aaaa aaaa
 
-Where 'H' is the 'hardware select' bit (bit $1C in the mmu cache entry for the 
-current bank), the 20 'b' bits are the bank select bits taken from the same mmu
-cache entry, and 'a' is the 12-bit address of a byte within that bank.
+Where the 20 'b' bits are the bank select bits taken from a mmu cache entry,
+and 'a' is the 12-bit address of a byte within that bank.
 
-If the 'H' bit is clear, the 20 'b' bits reference an internal processor bank of
-RAM or ROM. These banks are selected by these indexes:
-    Index           Description
-    $00000-$7FFFF   One of 16 internal RAM banks, with index = (b & 0x0000F).
-    $80000-$FFFFF   One of 16 internal ROM banks, with index = (b & 0x0000F).
-
-If the 'H' bit is set, the 20 'b' bits reference a bank of RAM or ROM from a
-device on the hardware bus. The uppermost 8 'b' bits (bits $0C-$13 in the MMU
-cache entry) are the 8 bit hardware bus index, and the lower 12 'b' bits (bits
-$00-$0B) are the bank index within the hardware device. Thus, the maximum number
-of banks which a single hardware device can make available is 2^12 = 4096 banks,
-comprising a total of 16 megabytes of memory.
+The 20 'b' bits reference a bank of RAM or ROM from a device on the hardware
+bus. The uppermost 8 'b' bits (bits $0C-$13 in the MMU cache entry) are a 8-bit
+hardware bus index, and the lower 12 'b' bits (bits $00-$0B) are the bank index
+within the hardware device. Thus, the maximum number of banks which a single
+hardware device can make available is 2^12 = 4096 banks, for a total of
+16 megabytes of memory.
 
 
 2.F.5. BANK FAULTS
@@ -540,16 +549,15 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 0110 1AAA   ORR                 ALU             Bitwise or                  1
 0111 0AAA   EOR                 ALU             Bitwise exclusive or        1    
 0111 1AAA   NOT                 ALU             Bitwise not                 1
-
 1000 0AAA   CMP                 ALU             Compare R and M, sets FL    1
 1000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1    
 1001 0bbb   Bxx                 BRA             Branch operations           1
 1001 1bbb   Bxx                 BRA             Branch operations           1
-1010 0000   ASL                 SHF             Arithmatic Shift left       1
+1010 0000   ASL                 SHF             Arithmetic Shift left       1
 1010 0001   LSL                 SHF             Logical Shift Left          1
 1010 0010   ROL                 SHF             Rotate Through-Carry Left   1
 1010 0011   RNL                 SHF             Rotate No-Carry Left        1
-1010 0100   ASR                 SHF             Arithmatic Shift Right      4
+1010 0100   ASR                 SHF             Arithmetic Shift Right      4
 1010 0101   LSR                 SHF             Logical Shift Right         4
 1010 0110   ROR                 SHF             Rotate Through-Carry Right  1
 1010 0111   RNR                 SHF             Rotate No-Carry Right       1
@@ -563,7 +571,9 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit              1
 1011 000x   PSH                 STK             Push to stack               1+
 1011 001x   POP                 STK             Pop from stack              1+
-1011 01xx   ---                 ---             UNDEFINED (4 opcodes)       -
+1011 0100   MIM/MIA             MIM             Map Internal Memory Bank    1    
+1011 0101   ---                 ---             UNDEFINED (1 opcode)        -
+1011 011x   ---                 ---             UNDEFINED (2 opcodes)       -
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
@@ -572,7 +582,6 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1100 1101   MMW         X       MMU             Write to MMU                1
 1100 1110   MML         X       JMP             MMU State Load (MMU->Mem)   16
 1100 1111   MMS         X       JMP             MMU State Store (Mem->MMU)  16
-
 1100 0000   JMP                 JMP             Jump                        1
 1100 0001   JSR                 JMP             Jump to Subroutine          2
 1100 0010   JUM         X       JMP             Jump and enter User Mode    2
@@ -586,7 +595,7 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1101 1AAA   STO.8               AL8             Store (8bit)                1
 111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
 
-There are 12 remaining uspecified opcodes. These remaining unspecified opcodes
+There are 12 remaining unspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
 
 
@@ -687,7 +696,7 @@ HWQ Bit Pattern
     FEDC BA98 7654 3210
     iiii iiii OOOO OOOO
         O = Opcode
-        i = Index of bus query operation
+        i = Type of Hardware Busy Query operation
             Index   Operation
             $00     Bus Device Count. R0 = number of devices attached to bus.
             $01     Bus Device Query. R0-R3 are set with information about the
@@ -729,6 +738,31 @@ IMM Bit Pattern
         O = Opcode
         r = register to be incremented
         v = value to increment register by (5-bit value + 1, range of $01-$20)
+        
+MIM Bit Pattern
+    FEDC BA98 7654 3210
+    RRRr rrii OOOO OOOO
+        O = Opcode
+        i = Type of Map Internal Memory Bank operation
+            Index   Operation
+            $0      MIM: Map processor bank in [r] to Memory Bank [R & $000F].
+                    [r] can be an internal processor ROM or RAM bank.
+                    RAM banks are indicated with bit 15 clear.
+                        Ex. Load internal RAM bank $0E to memory bank $05:
+                            LOD R0, $000E
+                            LOD R1, $0005
+                            MIM R0, R1
+                    ROM banks are indicated with bit 15 set.
+                        Ex. Load internal ROM bank $0E to memory bank $05:
+                            LOD R0, $800E
+                            LOD R1, $0005
+                            MIM R0, R1
+            $1      MIA: Map all memory banks from data at address in [r].
+                        Ex. Load all 16 banks from memory address $1080
+                            LOD R0, $1080
+                            MIA R0
+            $2      Undefined.
+            $3      Undefined.
 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
@@ -1385,10 +1419,37 @@ possible bits may be specified in a single instruction.
 
 
 HWQ         Sends a message to the Hardware Bus.
-Syntax HWQ $00
+Syntax: HWQ $00
 Sends a message with the specified identified to the Hardware Bus. This may
 query the bus directly, or send a message to a hardware device.
 
+
+MIA         Sets all Internal Memory Banks to Address Space.
+Syntax: MIA Ra
+Reads a 16-word data structure at address in Ra and sets all internal memory banks
+based on this data. Each word is formatted as follows:
+    FEDC BA98 7654 3210
+    Rbbb bbbb bbbb bbbb
+        R: 0 == RAM bank.
+           1 == ROM bank.
+        b: bank index of RAM or ROM.
+Note: this has no effect when the MMU is enabled.
+Note: internal bank setup is not saved when MMU is enabled. See 2.F.1., infra.
+Note: there are almost certainly less than 2^15 = 32k banks of internal RAM or
+      ROM. Thus, the value specified by 'b' will be truncated to the number
+      of available banks of the specified type (RAM/ROM).
+
+
+MIM         Sets one Internal Memory Bank to Address Space.
+Syntax: MIM Ra, Rv
+Loads the internal processor RAM/ROM bank specified by Ra into memory address
+bank [Rv & $000F]. Ra has the following format:
+    FEDC BA98 7654 3210
+    Rbbb bbbb bbbb bbbb
+        R: 0 == RAM bank.
+           1 == ROM bank.
+        b: bank index of RAM or ROM.
+Note: all notes that apply to MIA also apply to MIM instructions.
 
 MML         Loads the MMU cache data into memory.
 Syntax: MML Ra
@@ -1622,4 +1683,8 @@ takes place:
   * Memory is now accessed as bytes, not words. Changes throughout to make this
     change clear.
   * Added new ".8" 8-bit instructions for LOD, STO, ADD, ADC, SUB, and SBC.
+0.4x 04/30/2015
+  * Specified on-chip hardware (RAM/ROM chips).
+  * Specified that processor is Hardware Device 0 on the bus in most setups.
+  * Added MIM/MIA instructions and MIM bit pattern.
   
