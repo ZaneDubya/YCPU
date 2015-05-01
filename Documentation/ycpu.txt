@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4y
+Version 0.4z
 
 =============================[ Table of Contents ]==============================
 
@@ -61,24 +61,20 @@ modes with separate stack pointers.
 
 Internally, all registers and cache words are 16-bit. All logical addresses are
 16-bit, and thus an instruction can only address 64 kilobytes of memory at any
-time. Any multi-byte values are stored in little-endian format.
+time. Any multi-byte values are stored in little-endian format. For most
+instructions, the only addressable unit of memory is a 16-bit word.
 
-For most instructions, the only addressable unit of memory is a 16-bit word.
-There are 8-bit operations for Load, Store, Add, and Subtract operations. While
+8-bit operations are supported for any instruction which uses the "ALU" bit
+pattern: Load, Store, Add, Subtract, Multiply, Divide, Bitwise And, Bitwise Or,
+Bitwise Not, Bitwise Exclusive Or, Compare, and Negate. The user must note that
 using 8-bit operations, the upper 8-bits of memory are cleared and ignored.
 Storing an 8-bit value with the "STO.8" instruction will only store one byte,
 and the second byte in the 16-bit word will not be affected.
 
 For all other instructions, there is no support for 8-bit math. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
-which has a 32-bit result, spread over two registers, and the FPU instructions,
-which deals with 32-bit data).
-
-All instructions must be aligned to a 16-bit address. The processor cannot
-execute instructions at 8-bit aligned addresses. Any attempt to execute
-such an address will result in execution of the address with the least
-significant bit masked out. Thus, attempting to execute address $8003
-will result in execution of address at $8002).
+which has a 32-bit result, with the upper 16 bits in R0, and FPU instructions,
+which deal with 32-bit data).
 
 2.2. MEMORY ACCESS
 
@@ -93,14 +89,19 @@ as fast as a 16-bit load.
 For quick retrieval of 8-bit values from 16-bit registers, the Switch Octet
 (SWO) instruction allows easy and fast access to individual 8-bit bytes.
 
+All instructions and immediate constants must be aligned to a 16-bit address.
+The processor cannot execute instructions at 8-bit aligned addresses. Any
+attempt to execute such an address will result in execution of the address with
+the least significant bit masked out. Thus, attempting to execute address $8003
+will result in execution of address at $8002).
+
 2.3. ON-CHIP HARDWARE
 
-All models of the YCPU are guaranteed to have 64kb of internal RAM on board,
-and possibly more, depending on the processor model. The YCPU will also have a
-variable amount of ROM on chip, depending on the model of the YCPU. The YCPU
-can determine how much RAM/ROM is available by querying 'Hardware Device 0' on
-the Hardware Bus, and can load its RAM/ROM into active memory with the MMU ()or
-the MIA/MIM instructions while the MMU is disabled).
+All models of the YCPU are guaranteed to have 64kb of internal RAM on board.
+The YCPU will also have a variable amount of ROM on chip, depending on the
+model of the YCPU. The YCPU can determine how much RAM/ROM is available by
+querying 'Hardware Device 0' on the Hardware Bus, and can move its RAM/ROM in
+active memory with the MMU.
 
 
 ===============================[ 2.A. Registers ]===============================
@@ -286,11 +287,9 @@ It then executes the following sequence:
 2.D.5. RETURNING FROM AN INTERRUPT
 
 When an interrupt handler ends, it should call RTI, which restores the values of
-PS and PC. If the MMU was enabled before, the MMU will be re-enabled.
-
-If an interrupt handler modifies a register or changes the MMU cache, it should
-save that register before doing so, and restore the register before ending the
-interrupt handler.
+PS and PC. If an interrupt handler modifies a register or changes the MMU cache,
+it should save the state of the registers and/or cache before doing so, and
+restore the same before returning from the interrupt handler.
 
 The RTI instruction follows this sequence:
     1.  Pop PC from the Stack.
@@ -402,13 +401,6 @@ processor's address space is initially mapped as follows:
         ...
     Bank $E - Internal RAM Bank $0E
     Bank $F - Internal RAM Bank $0F
-
-This address space can be modified without enabling the MMU to a limited extent
-with the MIM (Map Internal Memory Bank) instruction. MIM allows a program to
-map a specific bank of internal processor RAM or ROM to a specific bank of
-memory. However, a bank set-up created by MIM does not persist after the MMU
-is enabled. The next time the MMU is enabled and disabled, the state of the
-processor's address space will be reset to the values in the above table.
 
     
 2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED
@@ -555,8 +547,9 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 0110 1AAA   ORR                 ALU             Bitwise or                  1
 0111 0AAA   EOR                 ALU             Bitwise exclusive or        1    
 0111 1AAA   NOT                 ALU             Bitwise not                 1
+
 1000 0AAA   CMP                 ALU             Compare R and M, sets FL    1
-1000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1    
+1000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1   
 1001 0bbb   Bxx                 BRA             Branch operations           1
 1001 1bbb   Bxx                 BRA             Branch operations           1
 1010 0000   ASL                 SHF             Arithmetic Shift left       1
@@ -572,14 +565,14 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1010   BTC                 BTT             Test a bit and clear it     2
 1010 1011   BTS                 BTT             Test a bit and set it       2    
 1010 1100   SWO                 SWO             Switch Octet                1
-1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       10
+1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       16
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
 1011 000x   PSH                 STK             Push to stack               1+
 1011 001x   POP                 STK             Pop from stack              1+
-1011 0100   MIM/MIA             MIM             Map Internal Memory Bank    1    
+1011 0100   SFL                 SFL             Stack Flush                 1
 1011 0101   ---                 ---             UNDEFINED (1 opcode)        -
-1011 011x   ---                 ---             UNDEFINED (2 opcodes)       -
+1011 011x   SET                 SET             Set register to value       1
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
@@ -595,11 +588,9 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1100 0100   HWQ         X       HWQ             Hardware Bus Query          1
 1100 0101   SLP         X       ---             Sleep until Interrupt       1
 1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
-1100 0111   RTI         X       ---             Return from Interrupt       12
+1100 0111   RTI         X       ---             Return from Interrupt       16
 1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
-1101 0AAA   LOD.8               AL8             Load (8bit)                 1
-1101 1AAA   STO.8               AL8             Store (8bit)                1
-111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
+11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)      -
 
 There are 12 remaining unspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
@@ -608,54 +599,43 @@ will raise the 'undefined' interrupt on execution.
 ============================[ 3.A. Bit Patterns ]===============================
 ALU Bit Pattern
     FEDC BA98 7654 3210                             
-    RRRr rrii AAAO OOOO
+    rrrE AAAA OOOO ORRR
+        R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
-        R = First Operand/Destination Register
         r = Second Operand Register
         i = Index Register. See Note 1, below.
+        s = Stack Offset. See Note 2, below.
+        E = 8-bit Mode. See Note 3, below.
     
-    RRRr rrii OOOO OAAA     Addressing Mode     Example Syntax          Cycles
-    RRR. ...0       000     Immediate           ADD R0, $1234           +1
-    RRR. ...1       000     Absolute            ADD R0, [$1234]         +1
-    RRRr rr..       001     Register            ADD R0, R1              
-    RRRr rr..       010     Indirect            ADD R0, [R1]            
-    RRRr rr..       011     Indirect Offset     ADD R0, [R1,$1234]      +1
-    RRRr rr..       011     Absolute Offset     ADD R0, [$1234,R1]      +1
-    RRRr rr..       100     Indirect PostInc    ADD R0, [R1+]           
-    RRRr rr..       101     Indirect PreDec     ADD R0, [-R1]           
-    RRRr rrii       110     Indirect Indexed    ADD R0, [R1,R2]         
-    RRRr rrii       111     Indirect Indexed    ADD R0, [R1,R2]         
+    rrrE AAAA OOOO ORRR     Addressing Mode     Example Syntax          Cycles
+    ...E 0000       RRR     Immediate           ADD R0, $1234           +1
+    ...E 0001       RRR     Absolute            ADD R0, [$1234]         +1
+    rrrE 0010       RRR     Register            ADD R0, R1              
+    rrrE 0011       RRR     Indirect            ADD R0, [R1]          
+    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      +1
+                            Indirect Offset     ADD R0, [R1,$1234]      +1
+    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]
+    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           
+    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           
+    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]                   
     
-        Note 1: The 'i' bit in the ALU Bit Pattern is used to distinguish
-                Immediate addressing from Absolute addressing, and to determine
+        Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
-                The two 'i' bits (bits 8 & 9) and the low 'A' bit (bit 0)
-                designate a 3-bit index for a register. The two 'i' bits are the
-                low bits, and the low 'A' bit is the high bit. Thus, the second
-                index register is designated as follows:
-                    A[0]    i[9]    i[8]    R2 is...
-                    0       0       0           R0
-                    0       0       1           R1
-                    0       1       0           R2
-                    0       1       1           R3
-                    1       0       0           R4
-                    1       0       1           R5
-                    1       1       0           R6
-                    1       1       1           R7
-                    
-AL8 Bit Pattern
-    LOD (load from memory) and STO (store to memory) have an alternate 8-bit
-    mode. To use 8-bit mode for these two instructions, follow the normal opcode
-    with a ".8" flag. Examples follow:
-        Instruction             Compiled as:
-        LOD.8   R0, $34         LOD R0 = $34, 8-bit operation.
-        STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
-        LOD.8   R0, $1234       Will raise an wa during assmebly, as
-                                $1234 is greater than an 8-bit value.
-        
-    The AL8 Bit Pattern is identical to the ALU Bit Pattern in usage of bits.
-    The differences in function are as follows:
+        Note 2: The 's' bits describe a value between $00 and $07. This value
+                is used as an offset into the stack. S[$00] returns the value
+                at the stack pointer; S[$07] returns the value at [StckPtr + 7].
+        Note 3: When the 'E' bit is set, the ALU processes values in its 8-bit
+                mode. To use 8-bit mode for ALU instructions, follow the normal
+                opcode with a ".8" flag. Examples follow:
+                
+                Instruction             Compiled as:
+                LOD.8   R0, $34         LOD R0 = $34, 8-bit operation.
+                STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
+                LOD.8   R0, $1234       Will raise an error during assmebly, as
+                                        $1234 is greater than an 8-bit value.
+                                        
+    The ALU operating in 8-bit mode has the following modified behavior:
         1.  Only the low 8-bits of the input registers are used.
         2.  Only the low 8-bits of the output register are set. The high 8-bits
             of the output register are cleared (set to '0').
@@ -664,8 +644,7 @@ AL8 Bit Pattern
         4.  Only the low 8 bits of an immediate value are loaded, and the
             following byte is skipped (the entire 16 bits of offsets and
             absolute values are still used).
-            
-    
+
 BTT Bit Pattern
     FEDC BA98 7654 3210
     rrrR ssss OOOO OOOO
@@ -744,38 +723,37 @@ IMM Bit Pattern
         O = Opcode
         r = register to be incremented
         v = value to increment register by (5-bit value + 1, range of $01-$20)
-        
-MIM Bit Pattern
-    FEDC BA98 7654 3210
-    RRRr rrii OOOO OOOO
-        O = Opcode
-        i = Type of Map Internal Memory Bank operation
-            Index   Operation
-            $0      MIM: Map processor bank in [r] to Memory Bank [R & $000F].
-                    [r] can be an internal processor ROM or RAM bank.
-                    RAM banks are indicated with bit 15 clear.
-                        Ex. Load internal RAM bank $0E to memory bank $05:
-                            LOD R0, $000E
-                            LOD R1, $0005
-                            MIM R0, R1
-                    ROM banks are indicated with bit 15 set.
-                        Ex. Load internal ROM bank $0E to memory bank $05:
-                            LOD R0, $800E
-                            LOD R1, $0005
-                            MIM R0, R1
-            $1      MIA: Map all memory banks from data at address in [r].
-                        Ex. Load all 16 banks from memory address $1080
-                            LOD R0, $1080
-                            MIA R0
-            $2      Undefined.
-            $3      Undefined.
 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
     RRRr rr.. OOOO OOOO
         O = Opcode
         r = register containing index of MMU word to read from/write to 
-        R = register containing value to write/destination for value read
+        R = register containing value to write/destination for value read.
+        
+SET Bit Pattern
+    FEDC BA98 7654 3210
+    RRRv vvvv OOOO OOOV
+        O = Opcode
+        R = destination register
+        v = value
+        V = alternate value trigger.
+        
+        If V == 0:            R = v        Constant values from $00 - $1F
+        If V == 1:
+            v = $00         : R = $20
+            v = $01         : R = $21
+            v = $02         : R = $22
+            v = $03         : R = $23
+            v = $04         : R = $24
+            v = $05...$0F   : R = (2^(5+v)) Power of two constants from 1 ^ 5.
+            v = $10...$1F   : R = !(v-$10).
+
+SFL Bit Pattern
+    FEDC BA98 7654 3210
+    vvvv vvvv OOOO OOOO
+        O = Opcode
+        v = number of 16-bit values to flush from the stack.
             
 STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
@@ -827,6 +805,7 @@ XSR Bit Pattern
         v = Index of special register
         
 ===========================[ 3.B. ALU Instructions ]============================
+Note: all ALU instructions support the .8 bitflag.
 
 ADC         Add value to register with carry
 Operation:  Rx + M + C -> Rx, C
@@ -888,7 +867,6 @@ Operation:  Rx ^ M -> Rx
     
 LOD         Loads a value into a specified register
 Operation:  M -> Rx
-NOTE:   This operation supports the .8 bitflag.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -970,7 +948,6 @@ Operation:  Rx - M - (1-C) -> Rx, C
 
 STO         Stores the value of a register into another register or memory
 Operation:  Rx -> M
-NOTE:   This operation supports the .8 bitflag.
 NOTE:   Immediate and Register addressing is not available with STO opcodes.
         Thus the two opcodes that would code for STO with these addressing
         modes are UNDEFINED.
@@ -1430,33 +1407,6 @@ Sends a message with the specified identified to the Hardware Bus. This may
 query the bus directly, or send a message to a hardware device.
 
 
-MIA         Sets all Internal Memory Banks to Address Space.
-Syntax: MIA Ra
-Reads a 16-word data structure at address in Ra and sets all internal memory banks
-based on this data. Each word is formatted as follows:
-    FEDC BA98 7654 3210
-    Rbbb bbbb bbbb bbbb
-        R: 0 == RAM bank.
-           1 == ROM bank.
-        b: bank index of RAM or ROM.
-Note: this has no effect when the MMU is enabled.
-Note: internal bank setup is not saved when MMU is enabled. See 2.F.1., infra.
-Note: there are almost certainly less than 2^15 = 32k banks of internal RAM or
-      ROM. Thus, the value specified by 'b' will be truncated to the number
-      of available banks of the specified type (RAM/ROM).
-
-
-MIM         Sets one Internal Memory Bank to Address Space.
-Syntax: MIM Ra, Rv
-Loads the internal processor RAM/ROM bank specified by Ra into memory address
-bank [Rv & $000F]. Ra has the following format:
-    FEDC BA98 7654 3210
-    Rbbb bbbb bbbb bbbb
-        R: 0 == RAM bank.
-           1 == ROM bank.
-        b: bank index of RAM or ROM.
-Note: all notes that apply to MIA also apply to MIM instructions.
-
 MML         Loads the MMU cache data into memory.
 Syntax: MML Ra
 Reads the 32-word MMU cache and saves it to a memory location specified by Ra.
@@ -1696,3 +1646,8 @@ takes place:
 0.4y 04/30/2015
   * All instructions must be 16-bit aligned!
   * Branch offsets are multiplied by 2 (restoring offset range of -128~+127)!
+0.4z 05/01/2015
+  * Removed MIM/MIA instructions and MIM bit pattern.
+  * Added Stack flush instruction and SFL bit pattern.
+  * Added SET instruction and SET bit pattern.
+  * Reworked ALU bit pattern. All ALU now support 8-bit operations with ".8".
