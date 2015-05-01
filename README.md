@@ -18,5 +18,4 @@ Source Tree
 Thanks To:
 ----
 Tim "DensitY" Hancock ([DCPU-16 ASM.NET](https://github.com/densitynz/DCPU-16-ASM.NET), a C# DCPU emulator, included under the MIT License)  
-"Aphid" ([ParallelTasks](http://http://paralleltasks.codeplex.com/), a threading library, included under the Microsoft Public License)  
 The [NESDEV Community](http://www.nesdev.com) (help developing the specification)

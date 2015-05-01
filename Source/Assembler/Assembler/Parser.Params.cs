@@ -7,16 +7,13 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using YCPU.Assembler.DCPU16ASM;
 
 namespace YCPU.Assembler
 {
-    partial class Parser : DCPU16ASM.Parser
+    partial class Parser
     {
-        public new ParsedOpcode ParseParam(string param)
+        public ParsedOpcode ParseParam(string param)
         {
             var ParsedOpcode = new ParsedOpcode();
             var clearedParameter = param.Replace(" ", string.Empty).Trim();

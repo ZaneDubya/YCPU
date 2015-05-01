@@ -13,7 +13,7 @@ using System.Text;
 
 namespace YCPU.Assembler
 {
-    public partial class Parser : DCPU16ASM.Parser
+    public partial class Parser
     {
         private const ushort c_NOP = 0x0001; // LOD R0, R0
         public const int c_InstructionSize = 2;
@@ -581,7 +581,7 @@ namespace YCPU.Assembler
             if (p2.UsesNextWord)
             {
                 if (p2.LabelName.Length > 0)
-                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + m_Code.Count * c_InstructionSize), p2.LabelName);
+                    m_LabelReferences.Add((ushort)(m_MachineCodeOutput.Count + m_Code.Count * c_InstructionSize), p2.LabelName);
                 m_Code.Add(p2.NextWord);
             }
             return m_Code.ToArray();
@@ -651,7 +651,7 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)opcode);
-            m_BranchReferences.Add((ushort)m_MachineCode.Count, p1.LabelName);
+            m_BranchReferences.Add((ushort)m_MachineCodeOutput.Count, p1.LabelName);
             return m_Code.ToArray();
         }
 
@@ -774,7 +774,7 @@ namespace YCPU.Assembler
             if (p1.UsesNextWord)
             {
                 if (p1.LabelName.Length > 0)
-                    m_LabelReferences.Add((ushort)(m_MachineCode.Count + m_Code.Count * c_InstructionSize), p1.LabelName);
+                    m_LabelReferences.Add((ushort)(m_MachineCodeOutput.Count + m_Code.Count * c_InstructionSize), p1.LabelName);
                 m_Code.Add(p1.NextWord);
             }
             return m_Code.ToArray();

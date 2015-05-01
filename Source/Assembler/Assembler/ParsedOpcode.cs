@@ -13,12 +13,27 @@ using System.Text;
 
 namespace YCPU.Assembler
 {
-    public class ParsedOpcode : DCPU16ASM.ParsedOpcode
+    public class ParsedOpcode
     {
-        public ParsedOpcode() : base()
+        public ParsedOpcode()
         {
             this.AddressingMode = AddressingMode.None;
+            this.Word = 0x0000;
+            this.UsesNextWord = false;
+            this.NextWord = 0x0000;
+            this.LabelName = string.Empty;
+            this.Illegal = false;
         }
+
+        public ushort Word { get; set; }
+
+        public bool UsesNextWord { get; set; }
+
+        public ushort NextWord { get; set; }
+
+        public string LabelName { get; set; }
+
+        public bool Illegal { get; set; }
 
         public AddressingMode AddressingMode { get; set; }
     }

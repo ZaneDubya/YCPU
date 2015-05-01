@@ -117,7 +117,7 @@ namespace YCPU
 
             if (machineCode == null)
             {
-                Console.WriteLine(parser.MessageOuput);
+                Console.WriteLine(parser.MessageOutput);
                 return AssemblerResult.ParseError;
             }
             else
