@@ -24,14 +24,7 @@ namespace YCPU.Assembler
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[2] { 8, 16 });
 
-            switch (bit_width)
-            {
-                case 8:
-                    return AssembleAL8((ushort)0x00D0, param[0], param[1]);
-                case 16:
-                    return AssembleALU((ushort)0x0000, param[0], param[1]);
-            }
-            return null;
+            return AssembleALU((ushort)0x0000, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleSTO(string[] param, int bit_width)
@@ -39,130 +32,123 @@ namespace YCPU.Assembler
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[2] { 8, 16 });
 
-            ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1]);
-            int addressing = (code[0] & 0x0107);
-            if ((addressing == 0) || (addressing == 1)) // no sto reg or sto immediate.
+            ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1], bit_width);
+            int addressing = (code[0] & 0x0F00);
+            if ((addressing == 0x0000) || (addressing == 0x0200)) // no sto reg or sto immediate.
                 return null;
-            switch (bit_width)
-            {
-                case 8:
-                    return AssembleAL8((ushort)0x00D8, param[0], param[1]);
-                case 16:
-                    return AssembleALU((ushort)0x0008, param[0], param[1]);
-            }
-            return null;
+            return code;
         }
 
         ushort[] AssembleADD(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0010, param[0], param[1]);
+            return AssembleALU((ushort)0x0010, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleSUB(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0018, param[0], param[1]);
+            return AssembleALU((ushort)0x0018, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleADC(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0020, param[0], param[1]);
+            return AssembleALU((ushort)0x0020, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleSBC(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0028, param[0], param[1]);
+            return AssembleALU((ushort)0x0028, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleMUL(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0030, param[0], param[1]);
+            return AssembleALU((ushort)0x0030, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleDIV(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0038, param[0], param[1]);
+            return AssembleALU((ushort)0x0038, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleMLI(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0040, param[0], param[1]);
+            return AssembleALU((ushort)0x0040, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleDVI(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0048, param[0], param[1]);
+            return AssembleALU((ushort)0x0048, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleMOD(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0050, param[0], param[1]);
+            return AssembleALU((ushort)0x0050, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleMDI(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0058, param[0], param[1]);
+            return AssembleALU((ushort)0x0058, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleAND(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0060, param[0], param[1]);
+            return AssembleALU((ushort)0x0060, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleORR(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0068, param[0], param[1]);
+            return AssembleALU((ushort)0x0068, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleEOR(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0070, param[0], param[1]);
+            return AssembleALU((ushort)0x0070, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleNOT(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0078, param[0], param[1]);
+            return AssembleALU((ushort)0x0078, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleCMP(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0080, param[0], param[1]);
+            return AssembleALU((ushort)0x0080, param[0], param[1], bit_width);
         }
 
         ushort[] AssembleNEG(string[] param, int bit_width)
         {
             Sanity_RequireParamCountExact(param, 2);
             Sanity_RequireBitWidth(bit_width, new int[1] { 16 });
-            return AssembleALU((ushort)0x0088, param[0], param[1]);
+            return AssembleALU((ushort)0x0088, param[0], param[1], bit_width);
         }
         #endregion
 
@@ -517,7 +503,7 @@ namespace YCPU.Assembler
 
         private List<ushort> m_Code = new List<ushort>();
 
-        ushort[] AssembleALU(ushort opcode, string param1, string param2)
+        ushort[] AssembleALU(ushort opcode, string param1, string param2, int bit_width)
         {
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
@@ -542,7 +528,7 @@ namespace YCPU.Assembler
                     {
                         return AssembleIMM((ushort)0x00B9, param1, param2);
                     }
-                    // special case: lod immediate should raise a warning...
+                    // special case: lod.8 immediate with value greater than $FF should raise a warning...
                     else if (opcode == 0x00D0 && p2.NextWord >= 256)
                     {
                         throw new Exception("Error: 8-bit load operation with an immediate value of greater than 8 bits.");
@@ -556,28 +542,35 @@ namespace YCPU.Assembler
                     addressingmode = 0x0100;
                     break;
                 case AddressingMode.Register:
-                    addressingmode = 0x0001;
+                    addressingmode = 0x0200;
                     break;
                 case AddressingMode.Indirect:
-                    addressingmode = 0x0002;
+                    addressingmode = 0x0300;
                     break;
                 case AddressingMode.IndirectOffset:
-                    addressingmode = 0x0003;
+                    addressingmode = 0x0400;
                     break;
+                // stack goes here
                 case AddressingMode.IndirectPostInc:
-                    addressingmode = 0x0004;
+                    addressingmode = 0x0600;
                     break;
                 case AddressingMode.IndirectPreDec:
-                    addressingmode = 0x0005;
+                    addressingmode = 0x0700;
                     break;
                 case AddressingMode.IndirectIndexed:
                     int r3 = (p2.Word & 0x0700);
-                    addressingmode = (ushort)(0x0006 + (r3 & 0x0300) + ((r3 & 0x0400) >> 10));
+                    addressingmode = (ushort)(0x0800 | r3);
                     break;
             }
 
+            ushort bitwidth = 0x0000;
+            if (bit_width == 8)
+                bitwidth = 0x1000;
+
+            // FEDC BA98 7654 3210                             
+            // rrrE AAAA OOOO ORRR
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
+            m_Code.Add((ushort)(opcode | addressingmode | bitwidth | (p1.Word & 0x0007) | ((p2.Word & 0x0007) << 13)));
             if (p2.UsesNextWord)
             {
                 if (p2.LabelName.Length > 0)
@@ -585,11 +578,6 @@ namespace YCPU.Assembler
                 m_Code.Add(p2.NextWord);
             }
             return m_Code.ToArray();
-        }
-
-        ushort[] AssembleAL8(ushort opcode, string param1, string param2)
-        {
-            return AssembleALU(opcode, param1, param2);
         }
 
         ushort[] AssembleBTT(ushort opcode, string param1, string param2)

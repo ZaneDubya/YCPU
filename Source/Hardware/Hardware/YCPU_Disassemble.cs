@@ -13,7 +13,7 @@ namespace YCPU.Hardware
             ushort m = memory;
             ushort w_tmp = ReadMemInt16((ushort)((m - 2)));
             bool badOpcodeIgnored = false;
-            if (m_Opcodes[w_tmp & 0x00FF].UsesNextWord(w_tmp))
+            if (Opcodes[w_tmp & 0x00FF].UsesNextWord(w_tmp))
             {
                 // bad opcode immediately prior to this one. ignore it.
                 m -= 4;
@@ -31,7 +31,7 @@ namespace YCPU.Hardware
                 // uses an extra word, then the current word is that extra word.
                 // Otherwise, the current memory position is it's own opcode.
                 ushort word = ReadMemInt16((ushort)(m - 2));
-                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+                YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 if (opcode.UsesNextWord(word))
                     m -= 4;
                 else
@@ -47,7 +47,7 @@ namespace YCPU.Hardware
                 ushort nextword = ReadMemInt16((ushort)(m + 2));
                 bool uses_next_word = false;
 
-                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+                YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 s[i] = string.Format(
                     "{0:X4}:{1:X4} {2}",
                     m, word, (opcode.Disassembler != null) ?
@@ -60,15 +60,15 @@ namespace YCPU.Hardware
 
         private string DisassembleALU(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
         {
-            int addressingmode = (operand & 0x0007);
-            RegGPIndex r_dest = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r_src = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
+            int addressingmode = (operand & 0x0F00) >> 8;
+            RegGPIndex regDest = (RegGPIndex)((operand & 0x0007));
+            RegGPIndex regSrc = (RegGPIndex)((operand & 0xE000) >> 13);
+            int index_bits = ((operand & 0x0700) >> 8);
 
             switch (addressingmode)
             {
-                case 0: // Immediate or Absolute
-                    
+                case 0: // Immediate
+                case 1: // Absolute
                     bool absolute = (operand & 0x0100) != 0;
                     if (name == "STO" && absolute == false)
                     {
@@ -78,51 +78,43 @@ namespace YCPU.Hardware
                     else
                     {
                         uses_next_word = true;
-                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", name, NameOfRegGP(r_dest),
+                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", name, NameOfRegGP(regDest),
                             nextword, absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
                     }
-                case 1: // Register
+                case 2: // Register
                     uses_next_word = false;
-                    return string.Format("{0,-8}{1}, {2}          (${3:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        R[(int)r_src]);
-                case 2: // Indirect
+                    return string.Format("{0,-8}{1}, {2}          (${3:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        R[(int)regSrc]);
+                case 3: // Indirect
                     uses_next_word = false;
-                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
-                case 3: // Indirect Offset (also Absolute Offset)
+                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        ReadMemInt16(R[(int)regSrc]));
+                case 4: // Indirect Offset (also Absolute Offset)
                     uses_next_word = true;
-                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
-                        ReadMemInt16((ushort)(R[(int)r_src] + nextword)));
-                case 4: // Indirect PostInc
+                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)), nextword,
+                        ReadMemInt16((ushort)(R[(int)regSrc] + nextword)));
+                case 5: // stack, not implemented.
+                    throw new Exception("Unimplemented Stack operation in disassembly.");
+                case 6: // Indirect PostInc
                     uses_next_word = false;
-                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
-                case 5: // Indirect PreDec
+                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        ReadMemInt16(R[(int)regSrc]));
+                case 7: // Indirect PreDec
                     uses_next_word = false;
-                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
-                case 6: // Indirect Indexed, R0-R3
+                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        ReadMemInt16(R[(int)regSrc]));
+                default: // $8 - $F are Indirect Indexed
                     uses_next_word = false;
-                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
+                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
                         NameOfRegGP((RegGPIndex)index_bits),
                         ReadMemInt16((ushort)
-                            (R[(int)r_src] + R[index_bits])));
-                case 7: // Indirect Indexed, R4-R7
-                    uses_next_word = false;
-                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(r_dest),
-                       NameOfRegGP((RegGPIndex)((int)r_src)),
-                       NameOfRegGP((RegGPIndex)(index_bits + 4)),
-                       ReadMemInt16((ushort)
-                           (R[(int)r_src] + R[index_bits + 4])));
-                default:
-                    uses_next_word = false;
-                    return "ERROR ALU Unsigned Format";
+                            (R[(int)regSrc] + R[index_bits])));
             }
         }
 

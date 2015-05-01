@@ -570,9 +570,9 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit              1
 1011 000x   PSH                 STK             Push to stack               1+
 1011 001x   POP                 STK             Pop from stack              1+
-1011 0100   SFL                 SFL             Stack Flush                 1
+1011 0100   SFL*                SFL             Stack Flush                 1
 1011 0101   ---                 ---             UNDEFINED (1 opcode)        -
-1011 011x   SET                 SET             Set register to value       1
+1011 011x   SET*                SET             Set register to value       1
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
@@ -590,7 +590,8 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
 1100 0111   RTI         X       ---             Return from Interrupt       16
 1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
-11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)      -
+1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)      -
+111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
 
 There are 12 remaining unspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.

@@ -82,7 +82,7 @@ namespace YCPU.Hardware
                         Interrupt_Clock();
 
                     // Execute Memory[PC] and increment the cycle counter:
-                    YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+                    YCPUInstruction opcode = Opcodes[word & 0x00FF];
                     opcode.Opcode(word, opcode.BitPattern);
                     m_Cycles += opcode.Cycles;
 
@@ -122,7 +122,7 @@ namespace YCPU.Hardware
                 }
 
                 // Execute Memory[PC]
-                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+                YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 opcode.Opcode(word, opcode.BitPattern);
                 // Increment the Cycle counter.
                 m_Cycles += opcode.Cycles;
@@ -633,7 +633,7 @@ namespace YCPU.Hardware
         private ushort SizeOfLastInstruction(ushort current_address)
         {
             ushort word = ReadMemInt16((ushort)(current_address - 2));
-            YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
+            YCPUInstruction opcode = Opcodes[word & 0x00FF];
             if (opcode.UsesNextWord(word))
                 return 4;
             else

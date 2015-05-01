@@ -7,324 +7,117 @@ namespace YCPU.Hardware
 {
     partial class YCPU
     {
-        #region YCPU 16bit ALU/STO
-        private void BitPatternALU_Immediate(ushort operand, out ushort value, out RegGPIndex destination)
+        #region YCPU ALU (includes STO)
+        private void BitPatternALU(ushort operand, out ushort value, out RegGPIndex destination)
         {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
+            // FEDC BA98 7654 3210                             
+            // rrrE AAAA OOOO ORRR
 
-            // nextworld & 0x0100 == 0x0000 is immediate, 0x0100 is absolute.
-            ushort nextword = ReadMemInt16(PC, true);
-            if ((operand & 0x0100) != 0x0000)
-                nextword = ReadMemInt16(nextword, false);
-            value = nextword;
-            
-            PC += 2; // advance PC two bytes because we're reading an immediate value.
-        }
+            // R = destination register
+            destination = (RegGPIndex)(operand & 0x0007);
+            // r = source register
+            RegGPIndex source = (RegGPIndex)((operand & 0xE000) >> 13);
+            // E = 8-bit mode
+            bool eightBitMode = (operand & 0x1000) != 0;
+            // A = addressing mode
+            int addressingMode = (operand & 0x0F00) >> 8;
 
-        private void BitPatternALU_Register(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = R[(int)source];
-        }
-
-        private void BitPatternALU_Indirect(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt16(R[(int)source]);
-        }
-
-        private void BitPatternALU_IndirectOffset(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            ushort nextword = ReadMemInt16(PC, true);
-            value = ReadMemInt16((ushort)(R[(int)source] + nextword));
-            PC += 2; // advance PC two bytes because we're reading an immediate value.
-        }
-
-        private void BitPatternALU_IndirectPostInc(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt16(R[(int)source]);
-            R[(int)source] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
-        }
-
-        private void BitPatternALU_IndirectPreDec(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            R[(int)source] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-            value = ReadMemInt16(R[(int)source]);
-        }
-
-        private void BitPatternALU_IndirectIndexed(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits]));
-        }
-
-        private void BitPatternALU_IndirectIndexedHi(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits + 4]));
-        }
-
-        private void BitPatternSTO_Immediate(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            if ((operand & 0x0100) == 0x0100)
+            ushort nextword;
+            switch (addressingMode)
             {
-                // absolute store
-                ushort nextword = ReadMemInt16(PC, true);
-                dest_address = nextword;
-                PC += 2; // advance PC two bytes because we're reading a 16-bit immediate value.
+                case 0: // Immediate
+                    value = ReadMemInt16(PC, true);
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+                case 1: // Absolute
+                    nextword = ReadMemInt16(PC, true);
+                    value = ReadMemInt16(nextword, false);
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+                case 2: // Register
+                    value = R[(int)source];
+                    break;
+                case 3: // Indirect
+                    value = ReadMemInt16(R[(int)source]);
+                    break;
+                case 4: // Absolute Offset OR Indirect Offset
+                    nextword = ReadMemInt16(PC, true);
+                    value = ReadMemInt16((ushort)(R[(int)source] + nextword), false);
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+                case 5: // Stack offset. Not coded.
+                    throw new Exception("Unimplemented stack offset ALU/LOD operation.");
+                case 6: // Indirect PostInc.
+                    value = ReadMemInt16(R[(int)source]);
+                    R[(int)source] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
+                    break;
+                case 7: // Indirect PreDec.
+                    R[(int)source] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
+                    value = ReadMemInt16(R[(int)source]);
+                    break;
+                default: // $8-$F are Indirect Indexed operations.
+                    int index_bits = ((operand & 0x0700) >> 8);
+                    value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits]));
+                    break;
             }
-            else
+
+            if (eightBitMode)
+                value &= 0x00FF;
+        }
+
+        private void BitPatternSTO(ushort operand, out ushort destAddress, out RegGPIndex source)
+        {
+            // FEDC BA98 7654 3210                             
+            // rrrE AAAA OOOO ORRR
+
+            // R = source register
+            source = (RegGPIndex)(operand & 0x0007);
+            // r = r2 register
+            RegGPIndex r2 = (RegGPIndex)((operand & 0xE000) >> 13);
+            // E = 8-bit mode
+            bool eightBitMode = (operand & 0x1000) != 0;
+            // A = addressing mode
+            int addressingMode = (operand & 0x0F00) >> 8;
+
+            ushort nextword;
+            switch (addressingMode)
             {
-                // immediate store, no write.
-                source = RegGPIndex.Error;
-                dest_address = 0xffff;
+                case 0: // Immediate - no such addressing mode for STO.
+                    source = RegGPIndex.Error;
+                    destAddress = 0xffff;
+                    break;
+                case 1: // Absolute
+                    nextword = ReadMemInt16(PC, true);
+                    destAddress = nextword;
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+                case 2: // Register - no such addressing mode for STO.
+                    source = RegGPIndex.Error;
+                    destAddress = 0xffff;
+                    break;
+                case 3: // Indirect
+                    destAddress = R[(int)r2];
+                    break;
+                case 4: // Absolute Offset OR Indirect Offset
+                    nextword = ReadMemInt16(PC, true);
+                    destAddress = (ushort)(R[(int)r2] + nextword);
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+                case 5: // Stack offset. Not coded.
+                    throw new Exception("Unimplemented stack offset STO operation.");
+                case 6: // Indirect PostInc.
+                    destAddress = R[(int)r2];
+                    R[(int)r2] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
+                    break;
+                case 7: // Indirect PreDec.
+                    R[(int)r2] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
+                    destAddress = R[(int)r2];
+                    break;
+                default: // $8-$F are Indirect Indexed operations.
+                    int index_bits = ((operand & 0x0700) >> 8);
+                    destAddress = ((ushort)(R[(int)source] + R[index_bits]));
+                    break;
             }
-        }
-
-        private void BitPatternSTO_Indirect(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = R[(int)r2];
-        }
-
-        private void BitPatternSTO_IndirectOffset(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            ushort nextword = ReadMemInt16(PC, true);
-            dest_address = (ushort)(R[(int)r2] + nextword);
-            PC += 2; // advance PC two bytes because we're reading a 16-bit immediate value.
-        }
-
-        private void BitPatternSTO_IndirectPostInc(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = R[(int)r2];
-            R[(int)r2] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
-        }
-
-        private void BitPatternSTO_IndirectPreDec(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            R[(int)r2] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-            dest_address =R[(int)r2];
-        }
-
-        private void BitPatternSTO_IndirectIndexed(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = (ushort)(R[(int)r2] + R[index_bits]);
-        }
-
-        private void BitPatternSTO_IndirectIndexedHi(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = (ushort)(R[(int)r2] + R[index_bits + 4]);
-        }
-        #endregion
-
-        #region YCPU 8bit ALU/STO
-        private void BitPatternAL8_Immediate(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            ushort nextword = ReadMemInt16(PC, true);
-            if ((operand & 0x0100) != 0x0000)
-                nextword = ReadMemInt16(nextword, false);
-            value = (ushort)(nextword & 0x00FF);
-            PC += 2; // advance PC two bytes because we're reading an immediate value.
-        }
-
-        private void BitPatternAL8_Register(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = (ushort)(R[(int)source] & 0x00FF);
-        }
-
-        private void BitPatternAL8_Indirect(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt8(R[(int)source]);
-        }
-
-        private void BitPatternAL8_IndirectOffset(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            ushort nextword = ReadMemInt16(PC, true);
-            value = ReadMemInt8((ushort)(R[(int)source] + nextword));
-            PC += 2; // advance PC two bytes because we're reading an immediate value.
-        }
-
-        private void BitPatternAL8_IndirectPostInc(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt8(R[(int)source]);
-            R[(int)source] += 1; // post increment by data size in bytes (8-bit = 1 byte).
-        }
-
-        private void BitPatternAL8_IndirectPreDec(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            R[(int)source] -= 1; // pre decrement by data size in bytes (8-bit = 1 byte).
-            value = ReadMemInt8(R[(int)source]);
-        }
-
-        private void BitPatternAL8_IndirectIndexed(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt8((ushort)(R[(int)source] + R[index_bits]));
-        }
-
-        private void BitPatternAL8_IndirectIndexedHi(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            // int AddressMode = (operand & 0x0007);
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            value = ReadMemInt8((ushort)(R[(int)source] + R[index_bits + 4]));
-        }
-
-        private void BitPatternST8_Immediate(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            if ((operand & 0x0100) == 0x0100)
-            {
-                // absolute store
-                ushort nextword = ReadMemInt16(PC, true);
-                dest_address = nextword;
-                PC += 2; // advance PC two bytes because we're reading a 16-bit immediate value.
-            }
-            else
-            {
-                // immediate store, no write.
-                source = RegGPIndex.Error;
-                dest_address = 0xffff;
-            }
-        }
-
-        private void BitPatternST8_Indirect(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = R[(int)r2];
-        }
-
-        private void BitPatternST8_IndirectOffset(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            ushort nextword = ReadMemInt16(PC, true);
-            dest_address = (ushort)(R[(int)r2] + nextword);
-            PC += 2; // advance PC two bytes because we're reading a 16-bit immediate value.
-        }
-
-        private void BitPatternST8_IndirectPostInc(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = R[(int)r2];
-            R[(int)r2] += 1; // post increment by data size in bytes (8-bit = 1 bytes).
-        }
-
-        private void BitPatternST8_IndirectPreDec(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            R[(int)r2] -= 1; // pre decrement by data size in bytes (8-bit = 1 bytes).
-            dest_address = R[(int)r2];
-        }
-
-        private void BitPatternST8_IndirectIndexed(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = (ushort)(R[(int)r2] + R[index_bits]);
-        }
-
-        private void BitPatternST8_IndirectIndexedHi(ushort operand, out ushort dest_address, out RegGPIndex source)
-        {
-            // int AddressMode = (operand & 0x0007);
-            source = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex r2 = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            dest_address = (ushort)(R[(int)r2] + R[index_bits + 4]);
         }
         #endregion
 

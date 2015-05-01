@@ -54,7 +54,6 @@
     <Compile Include="Assembler\Parser.cs" />
     <Compile Include="Assembler\Parser.Params.cs" />
     <Compile Include="Assembler\Regex.cs" />
-    <Compile Include="Disassembler\Generator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

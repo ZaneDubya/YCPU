@@ -2,9 +2,10 @@
 .dat16 start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 .dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 
-lod.8   a, 255
-lod.16  a, 2000
-lod.8   a, 255
+start:
+lod c, 0x1234 ; rand_seed
+lod y, c ; cur_rand
+baw main_loop
 
 next_rand:
 psh a
@@ -12,11 +13,6 @@ mul y, 10061
 pop a
 add y, 1
 rts
-
-start:
-lod c, 0x1234 ; rand_seed
-lod y, c ; cur_rand
-baw main_loop
 
 main_loop:
 lod i, 0
