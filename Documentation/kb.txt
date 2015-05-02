@@ -1,0 +1,34 @@
+Keyboard
+
+DeviceType:     2 (Keyboard)
+ManufacturerID: 0
+DeviceID:       0
+DeviceRevision: 0
+
+Behaviour:
+
+    HWQ $02:
+    R1  R2?     Message
+    $00 Y       Set mode based on R2. 
+                    R2 = $00, get only press events.
+                    R2 = $01, get press, up, and down events.
+                    R2 = other values, no effect, return MSG_ERROR.
+                All pending events cleared. Returns MSG_ACK
+                
+    $01 Y       Get pending events. Memory at [R2] set as follows:
+                    + $0000 = count of events (max 15)
+                    + $0001 = event 0
+                    + $0002 = event 1
+                       ...
+                    + $000F = event 15
+                If event count is less than 15, only memory up to the number
+                of pending events will be set.
+                
+Format of keyboard events:
+    FEDC BA98 7654 3210
+    .SAC EEEE KKKK KKKK
+        S = shift down
+        A = alt down
+        C = ctrl down
+        E = event type (1 = up, 2 = down, 3 = press)
+        K = keyboard char (ASCII-ish)

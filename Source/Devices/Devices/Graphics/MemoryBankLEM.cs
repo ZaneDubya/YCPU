@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ypsilon.Devices.Graphics
 {
-    class MemoryBankLEM : IMemoryBank
+    public class MemoryBankLEM : IMemoryBank
     {
         public MemoryBankLEM()
         {

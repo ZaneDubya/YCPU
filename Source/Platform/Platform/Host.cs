@@ -1,15 +1,16 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Ypsilon.Platform.Support;
 
 namespace Ypsilon.Platform
 {
     public class Host : Game
     {
         GraphicsDeviceManager m_Graphics;
-        Support.Settings m_Settings;
-        Support.InputState m_Input;
-        Support.FPS m_FPS;
+        Settings m_Settings;
+        InputState m_Input;
+        FPS m_FPS;
         private Graphics.SpriteBatchExtended m_SBX;
 
         protected Graphics.SpriteBatchExtended SpriteBatch
@@ -17,12 +18,12 @@ namespace Ypsilon.Platform
             get { return m_SBX; }
         }
 
-        protected Support.InputState InputState
+        protected InputState InputState
         {
             get { return m_Input; }
         }
 
-        protected Support.Settings Settings
+        protected Settings Settings
         {
             get { return m_Settings; }
         }
@@ -44,7 +45,7 @@ namespace Ypsilon.Platform
 
             this.IsMouseVisible = true;
 
-            Support.Library.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
+            Library.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
         }
 
         protected override void Initialize()
@@ -54,8 +55,8 @@ namespace Ypsilon.Platform
 
         protected override void LoadContent()
         {
-            m_Settings = new Support.Settings();
-            Support.Library.Initialize(m_Settings, m_Graphics.GraphicsDevice, m_Input);
+            m_Settings = new Settings();
+            Library.Initialize(m_Settings, m_Graphics.GraphicsDevice, m_Input);
         }
 
         protected override void UnloadContent()
@@ -66,9 +67,6 @@ namespace Ypsilon.Platform
         protected override void Update(GameTime gameTime)
         {
             m_Input.Update(gameTime);
-
-            if (m_Input.HandleKeyboardEvent(Input.KeyboardEvent.Press, Input.WinKeys.Escape, false, false, false))
-                this.Exit();
 
             if (m_Settings.HasUpdates)
                 handleUpdates();
@@ -87,7 +85,7 @@ namespace Ypsilon.Platform
 
         private void handleUpdates()
         {
-            Support.Settings.Setting s;
+            Settings.Setting s;
             while ((s = m_Settings.NextUpdate()) != Support.Settings.Setting.None)
             {
                 switch (s)

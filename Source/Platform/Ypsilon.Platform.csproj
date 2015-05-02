@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ypsilon</RootNamespace>
-    <AssemblyName>YCPUPlatform</AssemblyName>
+    <AssemblyName>YPlatform</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -58,9 +58,9 @@
     <Compile Include="Platform\Support\FPS.cs" />
     <Compile Include="Platform\Support\InputState.cs" />
     <Compile Include="Platform\Input\Enums.cs" />
-    <Compile Include="Platform\Input\InputEventC.cs" />
-    <Compile Include="Platform\Input\InputEventCKB.cs" />
-    <Compile Include="Platform\Input\InputEventCM.cs" />
+    <Compile Include="Platform\Input\InputEvent.cs" />
+    <Compile Include="Platform\Input\InputEventKeyboard.cs" />
+    <Compile Include="Platform\Input\InputEventMouse.cs" />
     <Compile Include="Platform\Input\Message.cs" />
     <Compile Include="Platform\Input\MessageHook.cs" />
     <Compile Include="Platform\Input\NativeMethods.cs" />

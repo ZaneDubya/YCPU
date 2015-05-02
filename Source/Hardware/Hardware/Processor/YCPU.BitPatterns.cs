@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Hardware.Processor
 {
     partial class YCPU
     {
@@ -230,7 +230,7 @@ namespace Ypsilon.Hardware
         private void BitPatternMMU(ushort operand, out ushort mmuIndex, out RegGPIndex regValue)
         {
             regValue = (RegGPIndex)((operand & 0xE000) >> 13);
-            mmuIndex = (ushort)((operand & 0x1C) >> 10);
+            mmuIndex = (ushort)((operand & 0x1C00) >> 10);
         }
 
         private void BitPatternPSH(ushort operand, out ushort value, out RegGPIndex destination)

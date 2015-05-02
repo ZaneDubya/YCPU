@@ -1,31 +1,25 @@
 ﻿using System;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Hardware.Processor
 {
     partial class YCPU
     {
-        public string[] Disassemble(ushort memory, int begin, int count)
+        public string[] Disassemble(ushort address, int begin, int count)
         {
             string[] s = new string[count];
-            ushort m = memory;
-            ushort word = ReadMemInt16((ushort)((m - 2)));
+            ushort word = DebugReadMemory((ushort)(address - 2));
             bool badOpcodeIgnored = false;
             if (Opcodes[word & 0x00FF].UsesNextWord(word))
             {
                 // bad opcode immediately prior to this one. ignore it.
-                m -= 4;
+                address -= 4;
                 badOpcodeIgnored = true;
             }
             else
             {
                 // opcode immediately prior is good. use it.
-                m -= 2;
-                word = ReadMemInt16((ushort)(m - 2));
-                /*if (Opcodes[word & 0x00FF].UsesNextWord(word))
-                {
-                    m -= 2;
-                    badOpcodeIgnored = true;
-                }*/
+                address -= 2;
+                word = DebugReadMemory((ushort)(address - 2));
             }
 
             for (int i = -1; i > begin; i -= 1)
@@ -33,33 +27,33 @@ namespace Ypsilon.Hardware
                 // check the memory word before this one. if it is an opcode that
                 // uses an extra word, then the current word is that extra word.
                 // Otherwise, the current memory position is it's own opcode.
-                word = ReadMemInt16((ushort)(m - 4));
+                word = DebugReadMemory((ushort)(address - 4));
                 if (Opcodes[word & 0x00FF].UsesNextWord(word))
                 {
-                    m -= 4;
+                    address -= 4;
                 }
                 else
                 {
-                    m -= 2;
+                    address -= 2;
                 }
             }
 
 
             for (int i = 0; i < count; i += 1)
             {
-                if (badOpcodeIgnored && (m == (ushort)(memory - 2)))
-                    m += 2;
-                word = ReadMemInt16(m);
-                ushort nextword = ReadMemInt16((ushort)(m + 2));
+                if (badOpcodeIgnored && (address == (ushort)(address - 2)))
+                    address += 2;
+                word = DebugReadMemory(address);
+                ushort nextword = DebugReadMemory((ushort)(address + 2));
                 bool uses_next_word = false;
 
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 s[i] = string.Format(
                     "{0:X4}:{1:X4} {2}",
-                    m, word, (opcode.Disassembler != null) ?
-                    opcode.Disassembler(opcode.Name, word, nextword, m, out uses_next_word) :
+                    address, word, (opcode.Disassembler != null) ?
+                    opcode.Disassembler(opcode.Name, word, nextword, address, out uses_next_word) :
                     opcode.Name);
-                m += (ushort)(uses_next_word ? 4 : 2);
+                address += (ushort)(uses_next_word ? 4 : 2);
             }
             return s;
         }
@@ -96,32 +90,32 @@ namespace Ypsilon.Hardware
                     uses_next_word = false;
                     return string.Format("{0,-8}{1}, [{2}]        (${3:X4})", name, NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        ReadMemInt16(R[(int)regSrc]));
+                        DebugReadMemory(R[(int)regSrc]));
                 case 4: // Indirect Offset (also Absolute Offset)
                     uses_next_word = true;
                     return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)), nextword,
-                        ReadMemInt16((ushort)(R[(int)regSrc] + nextword)));
+                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
                 case 5:
                     uses_next_word = true;
                     return string.Format("{0,-8}{1}, S[${2:X2}]  (${3:X4})", name, NameOfRegGP(regDest),  index_bits,
-                        ReadMemInt16((ushort)(R[(int)regSrc] + nextword)));
+                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
                 case 6: // Indirect PostInc
                     uses_next_word = false;
                     return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})", name, NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        ReadMemInt16(R[(int)regSrc]));
+                        DebugReadMemory(R[(int)regSrc]));
                 case 7: // Indirect PreDec
                     uses_next_word = false;
                     return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})", name, NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        ReadMemInt16(R[(int)regSrc]));
+                        DebugReadMemory(R[(int)regSrc]));
                 default: // $8 - $F are Indirect Indexed
                     uses_next_word = false;
                     return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         NameOfRegGP((RegGPIndex)index_bits),
-                        ReadMemInt16((ushort)
+                        DebugReadMemory((ushort)
                             (R[(int)regSrc] + R[index_bits])));
             }
         }
@@ -224,7 +218,7 @@ namespace Ypsilon.Hardware
                     bool absolute = (operand & 0x0100) != 0;
                     return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword, 
                         absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
-                        absolute ? string.Format("         (${0:X4})", ReadMemInt16(nextword)) : string.Empty);
+                        absolute ? string.Format("         (${0:X4})", DebugReadMemory(nextword)) : string.Empty);
                 case 1: // Register
                     uses_next_word = false;
                     return string.Format("{0,-8}{1}              (${2:X4})", name, 
@@ -234,35 +228,35 @@ namespace Ypsilon.Hardware
                     uses_next_word = false;
                     return string.Format("{0,-8}[{1}]            (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
+                        DebugReadMemory(R[(int)r_src]));
                 case 3: // Indirect Offset (also Absolute Offset)
                     uses_next_word = true;
                     return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
-                        ReadMemInt16((ushort)(R[(int)r_src] + nextword)));
+                        DebugReadMemory((ushort)(R[(int)r_src] + nextword)));
                 case 4: // Indirect PostInc
                     uses_next_word = false;
                     return string.Format("{0,-8}[{1}+]           (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
+                        DebugReadMemory(R[(int)r_src]));
                 case 5: // Indirect PreDec
                     uses_next_word = false;
                     return string.Format("{0,-8}[-{1}]           (${2:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        ReadMemInt16(R[(int)r_src]));
+                        DebugReadMemory(R[(int)r_src]));
                 case 6: // Indirect Indexed
                     uses_next_word = false;
                     return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name, 
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         NameOfRegGP((RegGPIndex)index_bits),
-                        ReadMemInt16((ushort)
+                        DebugReadMemory((ushort)
                             (R[(int)r_src] + R[index_bits])));
                 case 7:
                     uses_next_word = false;
                     return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name, 
                        NameOfRegGP((RegGPIndex)((int)r_src)),
                        NameOfRegGP((RegGPIndex)(index_bits + 4)),
-                       ReadMemInt16((ushort)
+                       DebugReadMemory((ushort)
                            (R[(int)r_src] + R[index_bits + 4])));
                 default:
                     uses_next_word = false;
@@ -273,10 +267,10 @@ namespace Ypsilon.Hardware
         private string DisassembleMMU(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
         {
             uses_next_word = false;
-            RegGPIndex RegMmuIndex;
-            ushort RegMmuValue;
-            BitPatternMMU(operand, out RegMmuValue, out RegMmuIndex);
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
+            ushort RegMmuIndex;
+            RegGPIndex RegMmuValue;
+            BitPatternMMU(operand, out RegMmuIndex, out RegMmuValue);
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP((RegGPIndex)RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
         }
 
         private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)

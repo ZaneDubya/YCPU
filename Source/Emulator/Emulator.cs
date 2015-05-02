@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System.Threading;
+using Ypsilon.Hardware.Processor;
+using Ypsilon.Platform.Input;
+using System.Diagnostics;
+using Ypsilon.Platform;
 
 namespace Ypsilon
 {
-    class Emulator : Platform.Host
+    class Emulator : Host
     {
-        private Hardware.YCPU m_CPU;
-        private System.Diagnostics.Stopwatch m_Stopwatch;
-        private int m_LastRunMS;
+        private YCPU m_CPU;
+        private Stopwatch m_Stopwatch;
 
-        public Emulator() : base()
+        private int m_LastRunMS;
+        private long m_LastRunCycles;
+
+        public Emulator()
+            : base()
         {
-            m_Stopwatch = new System.Diagnostics.Stopwatch();
+            m_Stopwatch = new Stopwatch();
         }
 
         protected override void Initialize()
@@ -33,7 +40,8 @@ namespace Ypsilon
 
             if (m_CPU == null)
             {
-                m_CPU = new Hardware.YCPU();
+                m_CPU = new YCPU();
+                SetupDebugDevices();
                 m_CPU.Interrupt_Reset();
             }
 
@@ -45,54 +53,48 @@ namespace Ypsilon
 
             if (m_Running && !m_Threaded)
             {
-                Stopwatch_Start();
                 m_CPU.Run(100000 / 60);
-                Stopwatch_Stop();
             }
 
-            List<Platform.Input.InputEventKeyboard> kb = InputState.GetKeyboardEvents();
-            foreach (Platform.Input.InputEventKeyboard e in kb)
+            if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Escape, false, false, true))
             {
-                switch (e.KeyChar)
-                {
-                    case 'b':
-                        StopCPU();
-                        break;
-                    case 'r':
-                        StartCPU(false);
-                        break;
-                    case 't':
-                        StartCPU(true);
-                        break;
-                    case 'y':
-                        Stopwatch_Start();
-                        m_CPU.Run(100000 / 60);
-                        Stopwatch_Stop();
-                        break;
-                    case 'n':
-                        StopCPU();
-                        m_CPU.RunOneInstruction();
-                        break;
-                    case 'l':
-                        StopCPU();
-                        m_CPU.PS_R = true;
-#if DEBUG
-                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
-#else
-                        m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
-#endif
-                        m_CPU.BUS.SetupDebugDevices();
-                        m_CPU.Interrupt_Reset();
-                        m_CPU.MMU_SwitchInHardwareBank(0x08, 0x00, 0x00);
-                        m_CPU.PS_M = true;
-                        break;
-#if BENCHMARK
-                    case 'v':
-                        m_CPU.Benchmark(true, 0x100000);
-                        break;
-#endif
-                }
+                this.Exit();
             }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.R, false, false, true))
+            {
+                StartCPU(false);
+            }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
+            {
+                StartCPU(true);
+            }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.B, false, false, true))
+            {
+                StopCPU();
+            }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.N, false, false, true))
+            {
+                StopCPU();
+                m_CPU.RunOneInstruction();
+            }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, true))
+            {
+                StopCPU();
+                m_CPU.Run(100);
+            }
+            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
+            {
+                StopCPU();
+                m_CPU.PS_R = true;
+#if DEBUG
+                m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
+#else
+                m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
+#endif
+                m_CPU.Interrupt_Reset();
+            }
+
+            m_CPU.Update(InputState);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -102,23 +104,33 @@ namespace Ypsilon
             
         }
 
+        private void RunCPU(int cycles)
+        {
+            StopCPU();
+            m_Running = true;
+            m_Threaded = false;
+            Stopwatch_Start();
+            m_CPU.Run(cycles);
+            StopCPU();
+        }
+
         private void StartCPU(bool threaded)
         {
             StopCPU();
             m_Running = true;
             m_Threaded = threaded;
+            Stopwatch_Start();
             if (m_Threaded)
             {
                 ThreadPool.QueueUserWorkItem(Task_StartCPU);
-                Stopwatch_Start();
             }
         }
 
         private void StopCPU()
         {
+            Stopwatch_Stop();
             if (m_CPU.Running)
             {
-                Stopwatch_Stop();
                 m_CPU.Pause();
             }
             m_Running = false;
@@ -131,14 +143,29 @@ namespace Ypsilon
 
         private void Stopwatch_Start()
         {
+            m_LastRunCycles = m_CPU.Cycles;
+            m_LastRunMS = 0;
             m_Stopwatch.Reset();
             m_Stopwatch.Start();
+
         }
 
         private void Stopwatch_Stop()
         {
-            m_Stopwatch.Stop();
-            m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
+            if (m_Stopwatch.IsRunning)
+            {
+                m_Stopwatch.Stop();
+                m_LastRunMS = (int)m_Stopwatch.ElapsedMilliseconds;
+                m_LastRunCycles = m_CPU.Cycles - m_LastRunCycles;
+            }
+        }
+
+        private void SetupDebugDevices()
+        {
+            m_CPU.BUS.Reset();
+
+            m_CPU.BUS.AddDevice(new Ypsilon.Devices.Graphics.GraphicsAdapter(m_CPU.BUS));
+            m_CPU.BUS.AddDevice(new Ypsilon.Devices.Input.Keyboard(m_CPU.BUS));
         }
 
         #region Console
@@ -180,9 +207,10 @@ namespace Ypsilon
             for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 11, ">");
-            if (m_CPU.LastRunCycles != 0)
+            ConsoleWrite(2, 23, string.Format("{0} Cycles total", m_CPU.Cycles));
+            if (m_LastRunCycles != 0 && m_LastRunMS > 0)
             {
-                ConsoleWrite(2, 23, string.Format("{0} Cycles in {1} ms. {2:0.00} mhz                  ", m_CPU.LastRunCycles, m_LastRunMS, ((float)m_CPU.LastRunCycles / m_LastRunMS) / 1000));
+                ConsoleWrite(2, 24, string.Format("{0} Cycles in {1} ms. {2:0.0000} mhz                  ", m_LastRunCycles, m_LastRunMS, ((float)m_LastRunCycles / m_LastRunMS) / 1000));
             }
         }
 

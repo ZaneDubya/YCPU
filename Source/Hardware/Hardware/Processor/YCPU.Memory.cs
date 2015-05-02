@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Hardware.Processor
 {
     partial class YCPU
     {
@@ -19,10 +19,10 @@ namespace Ypsilon.Hardware
         private ushort m_Rom_CPU_Count = 0x0001;
 
         // MMU Tables
-        private ushort[][] m_MMU;
-        private const ushort c_MMUCache_H = 0x1000, c_MMUCache_E = 0x2000, c_MMUCache_W = 0x4000, c_MMUCache_S = 0x8000;
-        private const ushort c_MMUCache_A = 0x0800, c_MMUCache_P = 0x0400, c_MMUCache_ESP = 0xA400;
-        private const ushort c_MMUCache_Rom = 0x0008;
+        private uint[] m_MMU;
+        private const uint c_MMUCache_P = 0x10000000, c_MMUCache_E = 0x20000000, c_MMUCache_W = 0x40000000, c_MMUCache_S = 0x80000000;
+        private const uint c_MMUCache_A = 0x08000000, c_MMUCache_Device = 0x000FF000, c_MMUCache_Bank = 0x00000FFF;
+        private const ushort c_MMUCache_Rom = 0x0800;
 
         public void InitializeMemory()
         {
@@ -32,27 +32,27 @@ namespace Ypsilon.Hardware
             m_Rom_CPU = new MemoryBank[m_Rom_CPU_Count];
             for (int i = 0; i < m_Rom_CPU_Count; i += 1)
                 m_Rom_CPU[i] = new MemoryBank();
-            m_MMU = new ushort[0x10][];
-            for (int i = 0; i < 0x10; i += 1)
-                m_MMU[i] = new ushort[2] { (ushort)i, 0x0000 };
+            m_MMU = new uint[0x10];
+            for (uint i = 0; i < 0x10; i++)
+                m_MMU[i] = i;
         }
 
         public delegate ushort ReadMemInt16Method(ushort address, bool execute = false);
-        private delegate void WriteMemInt16Method(ushort address, ushort value);
+        public delegate void WriteMemInt16Method(ushort address, ushort value);
         public delegate byte ReadMemInt8Method(ushort address, bool execute = false);
-        private delegate void WriteMemInt8Method(ushort address, byte value);
+        public delegate void WriteMemInt8Method(ushort address, byte value);
 
         public ReadMemInt16Method ReadMemInt16 = null;
-        private WriteMemInt16Method WriteMemInt16 = null;
+        public WriteMemInt16Method WriteMemInt16 = null;
         public ReadMemInt8Method ReadMemInt8 = null;
-        private WriteMemInt8Method WriteMemInt8 = null;
+        public WriteMemInt8Method WriteMemInt8 = null;
 
         private bool MMU_CheckRead(ushort address, bool execute)
         {
             int bank = (address & 0xF000) >> 12;
-            ushort bits = m_MMU[bank][1];
+            uint mmu = m_MMU[bank];
 
-            if ((bits & c_MMUCache_P) != 0)
+            if ((mmu & c_MMUCache_P) != 0)
             {
                 // memory access failed, attempted read of bank that is not loaded.
                 PS_U = false;
@@ -62,7 +62,7 @@ namespace Ypsilon.Hardware
                 Interrupt_BankFault(execute);
                 return false;
             }
-            else if (!m_PS_S && ((bits & c_MMUCache_S) != 0))
+            else if (!m_PS_S && ((mmu & c_MMUCache_S) != 0))
             {
                 // memory access failed, attempted to access supervisor memory while not in supervisor mode.
                 PS_U = true;
@@ -72,7 +72,7 @@ namespace Ypsilon.Hardware
                 Interrupt_BankFault(execute);
                 return false;
             }
-            else if (execute && ((bits & c_MMUCache_E) != 0))
+            else if (execute && ((mmu & c_MMUCache_E) != 0))
             {
                 // memory access failed, attempted to execute execute-protected memory.
                 PS_U = false;
@@ -92,9 +92,9 @@ namespace Ypsilon.Hardware
         private bool MMU_CheckWrite(ushort address)
         {
             int bank = (address & 0xF000) >> 12;
-            ushort bits = m_MMU[bank][1];
+            uint mmu = m_MMU[bank];
             // if not in supervisor mode and attempting to access supervisor memory...
-            if (!PS_S && ((bits & c_MMUCache_S) != 0))
+            if (!PS_S && ((mmu & c_MMUCache_S) != 0))
             {
                 PS_U = true;
                 PS_W = true;
@@ -104,7 +104,7 @@ namespace Ypsilon.Hardware
                 return false;
             }
             // if attempting to write to read-only memory...
-            else if (((bits & c_MMUCache_W) != 0))
+            else if (((mmu & c_MMUCache_W) != 0))
             {
                 PS_U = false;
                 PS_W = true;
@@ -115,6 +115,7 @@ namespace Ypsilon.Hardware
             }
             else
             {
+                // memory access is successful, return true.
                 return true;
             }
         }
@@ -287,35 +288,38 @@ namespace Ypsilon.Hardware
         private ushort MMU_Read(ushort index)
         {
             int bank = (index & 0x001E) >> 1;
-            int hi_lo_select = (index & 0x0001);
-            return m_MMU[bank][hi_lo_select];
+            bool hiWord = (index & 0x0001) != 0;
+            if (hiWord)
+                return (ushort)(m_MMU[bank] >> 16);
+            else
+                return (ushort)(m_MMU[bank] & 0x0000FFFF);
         }
 
         private void MMU_Write(ushort index, ushort value)
         {
             int bank = (index & 0x001E) >> 1;
-            int hi_lo_select = (index & 0x0001);
-            m_MMU[bank][hi_lo_select] = value;
+            bool hiWord = (index & 0x0001) != 0;
+            if (hiWord)
+                m_MMU[bank] = (((m_MMU[bank]) & 0x0000FFFF) | (uint)(value << 16));
+            else
+                m_MMU[bank] = (((m_MMU[bank]) & 0xFFFF0000) | (uint)(value));
         }
 
         private void MMU_LoadMemoryWithCacheData(ushort address)
         {
-            for (int i = 0; i < 0x10; i += 1)
+            for (ushort i = 0; i < 0x20; i += 1)
             {
-                WriteMemInt16(address, m_MMU[i][0]);
-                address += 2;
-                WriteMemInt16(address, m_MMU[i][1]);
+                ushort mmuWord = MMU_Read(i);
+                WriteMemInt16(address, mmuWord);
                 address += 2;
             }
         }
 
         private void MMU_StoreCacheDataFromMemory(ushort address)
         {
-            for (int i = 0; i < 0x10; i += 1)
+            for (ushort i = 0; i < 0x20; i += 1)
             {
-                m_MMU[i][0] = ReadMemInt16(address);
-                address += 2;
-                m_MMU[i][1] = ReadMemInt16(address);
+                MMU_Write(i, ReadMemInt16(address));
                 address += 2;
             }
         }
@@ -344,9 +348,11 @@ namespace Ypsilon.Hardware
 
             for (int i = 0x00; i < 0x10; i += 1)
             {
-                if ((m_MMU[i][1] & c_MMUCache_H) == 0) // select internal memory space
+                ushort device = (ushort)((m_MMU[i] & c_MMUCache_Device) >> 12);
+                ushort bank = (ushort)(m_MMU[i] & c_MMUCache_Bank);
+                if (device == 0) // select internal memory space
                 {
-                    if ((m_MMU[i][1] & c_MMUCache_Rom) == 0) // select internal ram
+                    if ((bank & c_MMUCache_Rom) == 0) // select internal ram
                     {
                         m_M[i] = m_Mem_CPU[i % m_Mem_CPU_Count];
                     }
@@ -357,9 +363,7 @@ namespace Ypsilon.Hardware
                 }
                 else
                 {
-                    ushort device_index = (ushort)(((m_MMU[i][1] & 0x000F) << 4) + ((m_MMU[i][0] & 0xF000) >> 12));
-                    ushort bank_index = (ushort)(m_MMU[i][0] & 0x0FFF);
-                    m_M[i] = (IMemoryBank)m_Bus.GetMemoryBank(device_index, bank_index);
+                    m_M[i] = (IMemoryBank)m_Bus.GetMemoryBank(device, bank);
                 }
             }
         }
@@ -371,10 +375,21 @@ namespace Ypsilon.Hardware
             m_M[0x00].ReadOnly = !PS_R;
         }
 
-        public void MMU_SwitchInHardwareBank(ushort bank_index, ushort device_index, ushort device_bank)
+        public void MMU_SwitchInHardwareBank(ushort mmuBankIndex, ushort deviceBusIndex, ushort deviceBankIndex)
         {
-            MMU_Write((ushort)(bank_index * 2), 0x0000);
-            MMU_Write((ushort)(bank_index * 2 + 1), 0x1000);
+            ushort w00 = (ushort)((deviceBankIndex & 0x0FFF) + ((deviceBusIndex & 0x000F) << 12));
+            ushort w01 = (ushort)((deviceBusIndex & 0x00F0) >> 4); // plus the five bits?
+
+            MMU_Write((ushort)(mmuBankIndex * 2), w00);
+            MMU_Write((ushort)(mmuBankIndex * 2 + 1), w01);
+        }
+
+        public ushort DebugReadMemory(ushort address)
+        {
+            long cycles = m_Cycles;
+            ushort memory = ReadMemInt16(address);
+            m_Cycles = cycles;
+            return memory;
         }
         #endregion
     }

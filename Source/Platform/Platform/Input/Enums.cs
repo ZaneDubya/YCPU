@@ -1,4 +1,6 @@
-﻿namespace Ypsilon.Platform.Input
+﻿using System;
+
+namespace Ypsilon.Platform.Input
 {
     public enum MouseButtonInternal
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Hardware.Processor
 {
     partial class YCPU
     {
@@ -14,7 +14,9 @@ namespace Ypsilon.Hardware
             Int32 = 2
         }
 
-        public YCPUInstruction[] Opcodes = new YCPUInstruction[0x100];
+        public delegate void YCPUOpcode(ushort opcode, YCPUBitPattern bits);
+        public delegate void YCPUBitPattern(ushort operand, out ushort value, out RegGPIndex destination);
+        public delegate string YCPUDisassembler(string name, ushort opcode, ushort nextword, ushort address, out bool uses_next_word);
 
         public struct YCPUInstruction
         {
@@ -42,6 +44,8 @@ namespace Ypsilon.Hardware
                 return value;
             }
         }
+
+        public YCPUInstruction[] Opcodes = new YCPUInstruction[0x100];
 
         #region OpCode Initialization
         private void InitializeOpcodes()
@@ -943,12 +947,15 @@ namespace Ypsilon.Hardware
                     break;
                 case 0x01:
                     ushort[] device_info = m_Bus.QueryDevice(R[(int)RegGPIndex.R0]);
+                    R[(int)RegGPIndex.R0] = device_info[0];
+                    R[(int)RegGPIndex.R1] = device_info[1];
+                    R[(int)RegGPIndex.R2] = device_info[2];
+                    R[(int)RegGPIndex.R3] = device_info[3];
                     break;
                 case 0x02:
-                    m_Bus.SendDeviceMessage(R[(int)RegGPIndex.R0],
+                    R[0] = m_Bus.SendDeviceMessage(R[(int)RegGPIndex.R0],
                         R[(int)RegGPIndex.R1],
-                        R[(int)RegGPIndex.R2],
-                        R[(int)RegGPIndex.R3]);
+                        R[(int)RegGPIndex.R2]);
                     break;
                 case 0x03:
                     m_RTC.SetTickRate(R[(int)RegGPIndex.R0], m_Cycles);
@@ -1053,7 +1060,7 @@ namespace Ypsilon.Hardware
             MMU_LoadMemoryWithCacheData(address);
         }
 
-        private void MMR(ushort operand, YCPUBitPattern bits)
+        private void MMW(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {
@@ -1082,7 +1089,7 @@ namespace Ypsilon.Hardware
             MMU_StoreCacheDataFromMemory(address);
         }
 
-        private void MMW(ushort operand, YCPUBitPattern bits)
+        private void MMR(ushort operand, YCPUBitPattern bits)
         {
             if (!PS_S)
             {

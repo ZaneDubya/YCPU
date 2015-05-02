@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ypsilon</RootNamespace>
-    <AssemblyName>YCPUEmulator</AssemblyName>
+    <AssemblyName>YEmulator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -49,13 +49,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hardware\YCPU.Hardware.csproj">
-      <Project>{fc4ded94-2256-43d1-9c43-d4af7d1bfece}</Project>
-      <Name>YCPU.Hardware</Name>
+    <ProjectReference Include="..\Devices\Ypsilon.Devices.csproj">
+      <Project>{4bdb236d-a587-409a-81b8-1db0e5df37b9}</Project>
+      <Name>Ypsilon.Devices</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Platform\YCPU.Platform.csproj">
+    <ProjectReference Include="..\Hardware\Ypsilon.Hardware.csproj">
+      <Project>{fc4ded94-2256-43d1-9c43-d4af7d1bfece}</Project>
+      <Name>Ypsilon.Hardware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Platform\Ypsilon.Platform.csproj">
       <Project>{aacf1738-a2f8-4783-bbff-2163b5187830}</Project>
-      <Name>YCPU.Platform</Name>
+      <Name>Ypsilon.Platform</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

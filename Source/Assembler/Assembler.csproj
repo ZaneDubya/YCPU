@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ypsilon</RootNamespace>
-    <AssemblyName>YCPUAssembler</AssemblyName>
+    <AssemblyName>YAssembler</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -58,7 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Platform\YCPU.Platform.csproj">
+    <ProjectReference Include="..\Platform\Ypsilon.Platform.csproj">
       <Project>{aacf1738-a2f8-4783-bbff-2163b5187830}</Project>
       <Name>YCPU.Platform</Name>
     </ProjectReference>

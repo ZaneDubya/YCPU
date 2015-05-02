@@ -1,6 +1,10 @@
-; interrupt table
+; TEST CONSOLE
+; Expects Graphics Device in bus index 1 and Keyboard in bus index 2
+
+; === interrupt table =========================================================
 .dat16 Start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 .dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+
 
 ; === WriteChars ==============================================================
 ; Writes a string of chars to video memory.
@@ -43,6 +47,29 @@ FillMemoryWords:
 ; === Start ===================================================================
 Start:
 .scope
+    ; set up devices
+    lod     a, $0001    ; set graphics adapter to LEM mode.
+    lod     b, $0000
+    lod     c, $0001
+    hwq     $02
+    lod     a, $0002    ; reset keyboard, press events only.
+    lod     b, $0000
+    lod     c, $0000
+    hwq     $02
+    
+    ; set mmu to load graphics adaptor memory in bank $08
+    lod     a, $10      ; mmu cache index 16 (bank $08, word 0)
+    lod     b, $1000    ; device 01, bank 0
+    mmw     a, b
+    inc     a
+    lod     b, $0000    ; high bits of device 01, no features
+    mmw     a, b
+
+    ; enable mmu
+    tsr     a, ps
+    orr     a, 0x4000   ; mmu bit is 0x4000
+    trs     a, ps
+    
     ; clear screen
     lod     b, $0220    ; space char with blue background
     lod     c, 384      ; words to write

@@ -691,7 +691,7 @@ namespace Ypsilon.Assembler
             // iiii iiii OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x00FF) << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.NextWord & 0x00FF) << 8)));
             return m_Code.ToArray();
         }
 
@@ -785,7 +785,7 @@ namespace Ypsilon.Assembler
             // RRRr rr.. OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10)));
+            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 10) | ((p2.Word & 0x0007) << 13)));
             return m_Code.ToArray();
         }
 
@@ -962,28 +962,28 @@ namespace Ypsilon.Assembler
             ushort special_index = 0x0000;
             switch (param2)
             {
-                case "PC":
+                case "pc":
                     special_index = 0x0000;
                     break;
-                case "SP":
+                case "sp":
                     special_index = 0x0001;
                     break;
-                case "IA":
+                case "ia":
                     special_index = 0x0002;
                     break;
-                case "II":
+                case "ii":
                     special_index = 0x0003;
                     break;
-                case "PS":
+                case "ps":
                     special_index = 0x0004;
                     break;
-                case "P2":
+                case "p2":
                     special_index = 0x0005;
                     break;
-                case "USP":
+                case "usp":
                     special_index = 0x0006;
                     break;
-                case "SSP":
+                case "ssp":
                     special_index = 0x0007;
                     break;
                 default:

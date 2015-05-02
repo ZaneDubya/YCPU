@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Ypsilon.Platform.Support;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Hardware.Processor
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
@@ -17,13 +18,10 @@ namespace Ypsilon.Hardware
         {
             get { return m_Bus; }
         }
-        
-        /// <summary>
-        /// How many cycles did the YCPU run before it was stopped?
-        /// </summary>
-        public int LastRunCycles
+
+        public long Cycles
         {
-            get { return m_LastRunCycles; }
+            get { return m_Cycles; }
         }
         
         /// <summary>
@@ -39,7 +37,7 @@ namespace Ypsilon.Hardware
         /// </summary>
         public YCPU()
         {
-            m_Bus = new YBUS();
+            m_Bus = new YBUS(this);
             m_RTC = new YRTC();
 
             InitializeOpcodes();
@@ -66,12 +64,6 @@ namespace Ypsilon.Hardware
                 if (!m_ExecuteFail)
                 {
                     PC += 2;
-                    // Check for hardware update:
-                    if (m_Cycles >= m_Cycles_NextBusUpdate)
-                    {
-                        m_Bus.Update();
-                        m_Cycles_NextBusUpdate += m_BUS_UpdateFrequency;
-                    }
                     
                     // Check for hardware interrupt:
                     if (PS_I && !PS_Q && m_Bus.IRQ)
@@ -96,8 +88,6 @@ namespace Ypsilon.Hardware
                     }
                 }
             }
-            // Save the executed cycles from this run:
-            m_LastRunCycles = (int)(m_Cycles - cycles_start);
         }
 
         /// <summary>
@@ -140,6 +130,15 @@ namespace Ypsilon.Hardware
                 // we wait 1ms between each try so we don't lock this variable.
                 System.Threading.Thread.Sleep(1);
             }
+        }
+
+        /// <summary>
+        /// All devices receive an input event.
+        /// </summary>
+        /// <param name="input"></param>
+        public void Update(InputState input)
+        {
+            m_Bus.Update(input);
         }
 
         /// <summary>
@@ -533,7 +532,7 @@ namespace Ypsilon.Hardware
                     StackPush(PC);
             }
             PC = ReadMemInt16((ushort)(IA + interrupt_number));
-            m_Cycles += 32;
+            m_Cycles += 31;
         }
 
         private void ReturnFromInterrupt()
@@ -666,13 +665,9 @@ namespace Ypsilon.Hardware
         }
 
         private YRTC m_RTC;
-
         private YBUS m_Bus;
-        private int m_BUS_UpdateFrequency = 1024;
 
         private long m_Cycles;
-        private long m_Cycles_NextBusUpdate;
-        private int m_LastRunCycles = 0;
 
         private bool m_Running = false, m_Pausing = false, m_ExecuteFail = false;
     }

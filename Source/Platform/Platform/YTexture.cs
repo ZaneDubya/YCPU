@@ -24,6 +24,12 @@ namespace Ypsilon.Platform
             return t;
         }
 
+        public void Dispose()
+        {
+            m_Texture.Dispose();
+            m_Texture = null;
+        }
+
         public void SetData(uint[] data)
         {
             m_Texture.SetData<uint>(data);

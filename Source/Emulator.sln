@@ -8,9 +8,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emulator", "Emulator\Emulat
 		{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE} = {FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPU.Platform", "Platform\YCPU.Platform.csproj", "{AACF1738-A2F8-4783-BBFF-2163B5187830}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ypsilon.Platform", "Platform\Ypsilon.Platform.csproj", "{AACF1738-A2F8-4783-BBFF-2163B5187830}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPU.Hardware", "Hardware\YCPU.Hardware.csproj", "{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ypsilon.Hardware", "Hardware\Ypsilon.Hardware.csproj", "{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ypsilon.Devices", "Devices\Ypsilon.Devices.csproj", "{4BDB236D-A587-409A-81B8-1DB0E5DF37B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}.Debug|x86.Build.0 = Debug|x86
 		{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}.Release|x86.ActiveCfg = Release|x86
 		{FC4DED94-2256-43D1-9C43-D4AF7D1BFECE}.Release|x86.Build.0 = Release|x86
+		{4BDB236D-A587-409A-81B8-1DB0E5DF37B9}.Debug|x86.ActiveCfg = Debug|x86
+		{4BDB236D-A587-409A-81B8-1DB0E5DF37B9}.Debug|x86.Build.0 = Debug|x86
+		{4BDB236D-A587-409A-81B8-1DB0E5DF37B9}.Release|x86.ActiveCfg = Release|x86
+		{4BDB236D-A587-409A-81B8-1DB0E5DF37B9}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

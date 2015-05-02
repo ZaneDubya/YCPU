@@ -1,30 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Ypsilon.Platform.Support;
+using Ypsilon.Hardware.Processor;
+using Ypsilon.Platform;
 
 namespace Ypsilon.Hardware
 {
     public class YBUS
     {
-        private List<Devices.BaseDevice> m_Devices;
-
-        public YBUS()
+        private List<ADevice> m_Devices;
+        protected List<ADevice> Devices
         {
-            m_Devices = new List<Devices.BaseDevice>();
+            get { return m_Devices; }
         }
 
-        public void SetupDebugDevices()
+        public YCPU CPU
         {
-            // DEBUG set up of devices.
-            m_Devices.Add(new Devices.Graphics.GraphicsAdapter(this));
-            SendDeviceMessage(0x0000, 0x0000, 0x0001, 0x0000); // set graphics adapter to LEM mode.
+            get;
+            private set;
         }
 
-        public void Update()
+        public YBUS(YCPU cpu)
+        {
+            m_Devices = new List<ADevice>();
+            CPU = cpu;
+        }
+
+        public void Reset()
+        {
+            while(m_Devices.Count > 0)
+            {
+                m_Devices[0].Dispose();
+                m_Devices.RemoveAt(0);
+            }
+        }
+
+        public void Update(InputState input)
         {
             for (int i = 0; i < m_Devices.Count; i += 1)
-                m_Devices[i].Update();
+                m_Devices[i].Update(input);
         }
 
         public void Display(IRenderer renderer)
@@ -38,13 +52,9 @@ namespace Ypsilon.Hardware
             get { return (ushort)m_Devices.Count; }
         }
 
-        public ushort[] QueryDevice(ushort device_index)
+        public ushort[] QueryDevice(ushort deviceIndex)
         {
-            if (m_Devices.Count <= device_index)
-            {
-                return m_Devices[device_index].Bus_DeviceQuery();
-            }
-            else
+            if (deviceIndex <= 0 || deviceIndex > m_Devices.Count)
             {
                 ushort[] info = new ushort[0x04];
                 info[0] = 0x0000;
@@ -53,19 +63,31 @@ namespace Ypsilon.Hardware
                 info[3] = 0x0000;
                 return info;
             }
+            else
+            {
+                return m_Devices[deviceIndex - 1].Bus_DeviceQuery();
+            }
         }
 
-        public void SendDeviceMessage(ushort device_index, ushort param_0, ushort param_1, ushort param_2)
+        public void AddDevice(ADevice device)
         {
-            if (device_index < m_Devices.Count)
-                m_Devices[device_index].Bus_SendMessage(param_0, param_1, param_2);
+            m_Devices.Add(device);
+        }
+
+        public ushort SendDeviceMessage(ushort deviceIndex, ushort param_0, ushort param_1)
+        {
+            if (deviceIndex <= 0 || deviceIndex > m_Devices.Count)
+                return ADevice.MSG_NO_DEVICE;
+
+            return m_Devices[deviceIndex - 1].Bus_SendMessage(param_0, param_1);
         }
 
         private List<ushort> m_DevicesRaisingIRQ = new List<ushort>();
 
-        public void Device_RaiseIRQ(Devices.BaseDevice device)
+        internal void Device_RaiseIRQ(ADevice device)
         {
             int device_index = (int)m_Devices.IndexOf(device);
+
             if (device_index == -1)
             {
                 // should never occur
@@ -78,12 +100,13 @@ namespace Ypsilon.Hardware
             }
         }
 
-        public void AcknowledgeIRQ(ushort device_index)
+        public void AcknowledgeIRQ(ushort deviceIndex)
         {
-            if (m_DevicesRaisingIRQ.Contains(device_index))
+            deviceIndex -= 1;
+            if (m_DevicesRaisingIRQ.Contains(deviceIndex))
             {
-                m_Devices[device_index].IRQAcknowledged();
-                m_DevicesRaisingIRQ.Remove(device_index);
+                m_Devices[deviceIndex].IRQAcknowledged();
+                m_DevicesRaisingIRQ.Remove(deviceIndex);
             }
         }
 
@@ -98,15 +121,16 @@ namespace Ypsilon.Hardware
             {
                 if (m_DevicesRaisingIRQ.Count == 0)
                     return 0xFFFF;
-                return m_DevicesRaisingIRQ.Min();
+                return (ushort)(m_DevicesRaisingIRQ.Min() + 1);
             }
         }
 
-        public IMemoryBank GetMemoryBank(ushort device_index, ushort bank_index)
+        public IMemoryBank GetMemoryBank(ushort deviceIndex, ushort bank_index)
         {
-            if (device_index >= m_Devices.Count)
+            deviceIndex -= 1;
+            if (deviceIndex >= m_Devices.Count)
                 return null;
-            return m_Devices[device_index].GetMemoryBank((ushort)(bank_index & 0x0FFF));
+            return m_Devices[deviceIndex].GetMemoryBank((ushort)(bank_index & 0x0FFF));
         }
     }
 }

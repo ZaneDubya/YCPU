@@ -1,1 +1,1 @@
-..\Binaries\YCPUAssembler rain.s
+..\Binaries\YAssembler rain.s

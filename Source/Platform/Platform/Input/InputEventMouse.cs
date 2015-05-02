@@ -20,9 +20,6 @@ namespace Ypsilon.Platform.Input
             get { return (_clicks / WHEEL_DELTA); }
         }
 
-
-
-
         private readonly MouseButtonInternal _button;
         private readonly int _clicks;
         private readonly int _mouseData;
