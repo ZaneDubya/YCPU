@@ -157,7 +157,7 @@ namespace YCPU.Hardware
                 {
                     return 0x0000;
                 }
-                return (ushort)(byte1 << 8 + byte0);
+                return (ushort)((byte1 << 8) + byte0);
             }
             else
             {

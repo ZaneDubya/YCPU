@@ -48,12 +48,28 @@ namespace YCPU.Hardware
                 case 5: // Stack offset. Not coded.
                     throw new Exception("Unimplemented stack offset ALU/LOD operation.");
                 case 6: // Indirect PostInc.
-                    value = ReadMemInt16(R[(int)source]);
-                    R[(int)source] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
+                    if (eightBitMode)
+                    {
+                        value = ReadMemInt8(R[(int)source]);
+                        R[(int)source] += (ushort)1; // post increment by data size in bytes (8-bit = 1 byte).
+                    }
+                    else
+                    {
+                        value = ReadMemInt16(R[(int)source]);
+                        R[(int)source] += (ushort)2; // post increment by data size in bytes (16-bit = 2 bytes).
+                    }
                     break;
                 case 7: // Indirect PreDec.
-                    R[(int)source] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
-                    value = ReadMemInt16(R[(int)source]);
+                    if (eightBitMode)
+                    {
+                        R[(int)source] -= (ushort)1; // pre decrement by data size in bytes (8-bit = 1 bytes).
+                        value = ReadMemInt8(R[(int)source]);
+                    }
+                    else
+                    {
+                        R[(int)source] -= (ushort)2; // pre decrement by data size in bytes (16-bit = 2 bytes).
+                        value = ReadMemInt16(R[(int)source]);
+                    }
                     break;
                 default: // $8-$F are Indirect Indexed operations.
                     int index_bits = ((operand & 0x0700) >> 8);
@@ -227,7 +243,9 @@ namespace YCPU.Hardware
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             if ((operand & 0x1000) == 0)
-                value = (ushort)(((operand & 0x0F00) >> 8));
+            {
+                value = (ushort)(((operand & 0x0F00) >> 8) + 1);
+            }
             else
                 value = R[(operand & 0x0700) >> 8];
         }

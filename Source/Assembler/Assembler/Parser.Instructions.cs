@@ -639,7 +639,7 @@ namespace YCPU.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)opcode);
-            m_BranchReferences.Add((ushort)m_MachineCodeOutput.Count, p1.LabelName);
+            m_BranchReferences.Add((ushort)m_MachineCodeOutput.Count, p1.LabelName.ToLower());
             return m_Code.ToArray();
         }
 
@@ -802,12 +802,12 @@ namespace YCPU.Assembler
                 return null;
 
             // p2 MUST be EITHER an immediate value, OR a register.
-            // if p2 is immediate, it MUST be 0 - 15.
+            // if p2 is immediate, it MUST be 1 - 16.
             // if p2 is a register, it MUST be 0 - 7.
             switch (p2.AddressingMode)
             {
                 case AddressingMode.Immediate:
-                    if (p2.Word >= 16)
+                    if (p2.NextWord > 16 || p2.NextWord == 0)
                         return null;
                     break;
                 case AddressingMode.Register:
@@ -828,7 +828,7 @@ namespace YCPU.Assembler
 
             ushort s_bits = 0x0000;
             if (p2.AddressingMode == AddressingMode.Immediate)
-                s_bits = (ushort)(p2.Word << 8);
+                s_bits = (ushort)((p2.NextWord - 1) << 8);
             if (p2.AddressingMode == AddressingMode.Register)
                 s_bits = (ushort)((0x1000) | (p2.Word << 8));
 

@@ -58,12 +58,6 @@ namespace YCPU.Assembler
                         return true;
                     case ".scend":
                         return m_Scopes.ScopeClose(m_MachineCodeOutput.Count);
-                    case ".data":
-
-                        break;
-                    case ".text":
-
-                        break;
                     default:
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }

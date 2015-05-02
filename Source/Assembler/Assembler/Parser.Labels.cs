@@ -8,7 +8,7 @@ namespace YCPU.Assembler
         {
             foreach (ushort index in m_LabelReferences.Keys)
             {
-                string labelName = this.m_LabelReferences[index];
+                string labelName = this.m_LabelReferences[index].ToLower();
 
                 if (!m_Scopes.ContainsLabel(labelName, index))
                 {
@@ -34,7 +34,7 @@ namespace YCPU.Assembler
             else
                 labelName = line.Substring(0, colon_pos);
 
-            if (!m_Scopes.AddLabel(labelName.Trim(), m_MachineCodeOutput.Count, local))
+            if (!m_Scopes.AddLabel(labelName.Trim().ToLower(), m_MachineCodeOutput.Count, local))
                 throw new Exception(string.Format("Error adding label '{0}'.", labelName));
             return index;
         }

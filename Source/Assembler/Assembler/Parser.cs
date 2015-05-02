@@ -109,7 +109,7 @@ namespace YCPU.Assembler
 
         protected void AssembleLine(string line)
         {
-            line = line.ToLower().Trim();
+            line = line.Trim();
 
             if (m_IsNextLineData != false)
             {
@@ -151,8 +151,8 @@ namespace YCPU.Assembler
             }
 
             // get the assembler for this opcode. If no assembler exists, throw error.
-            Func<string[], int, ushort[]> assembler = m_OpcodeAssemblers[opcode];
-            if (!this.m_OpcodeAssemblers.TryGetValue(opcode, out assembler))
+            Func<string[], int, ushort[]> assembler;
+            if (!this.m_OpcodeAssemblers.TryGetValue(opcode.ToLower(), out assembler))
             {
                 throw new Exception(string.Format("Undefined cpu opcode in line {0}", line));
             }
@@ -283,7 +283,7 @@ namespace YCPU.Assembler
                 string valStr = data.Trim();
                 if (valStr.IndexOf('"') > -1)
                 {
-                    string asciiLine = data.Replace("\"", string.Empty).Trim();
+                    string asciiLine = data.Replace("\"", string.Empty);
                     foreach (char c in asciiLine)
                     {
                         switch (dataType)

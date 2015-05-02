@@ -783,7 +783,7 @@ SHF Bit Pattern
             0 = L, 1 = R
         r = register to shift
         R = shift value select, see s
-        s = if R = 0, bits to shift (0-15)
+        s = if R = 0, bits to shift (1-16)
             if R = 1, register to use as shift value (r = .sss)
         
 SWO Bit Pattern
