@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4z
+Version 0.4aa
 
 =============================[ Table of Contents ]==============================
 
@@ -214,13 +214,58 @@ memory banks exposed by the Devices, and can also directly communicate with a
 Device by executing a Hardware Query instruction. Devices can request the
 processor's attention by raising an interrupt.
 
-Acceptable hardware Devices can include input (keyboard, mouse, touch), storage
+Possible hardware Devices can include input (keyboard, mouse, touch), storage
 (disk, hard drive), networking, RAM, ROM, and interfaces for other hardware
 Devices not directly connected to the Hardware Bus.
 
 Device Index 0 on the Hardware Bus refers to the YCPU itself. A program can
 retrieve information about the YCPU by using the Hardware Query instruction to
 query the Device at Index 0.
+
+Note that Hardware Devices have full access to the YCPU's active memory, but
+only one device or the processor can access memory at once. Thus, while a
+device is reading or writing memory, the processor is stalled.
+
+
+2.C.1. INTERACTING WITH HARDWARE
+
+A program interacts with hardware using the HWQ (HardWare Query) instruction.
+This instruction accepts one operand, a 8-bit 'operation index'. Calling HWQ
+operation $00 will query the Bus for the number of devices connected, and
+the YCPU will save this value in R0. The YCPU can also determine what device is
+present in each of the 255 Bus Slots by calling HWQ operation $01 with the index
+of the Bus Slot to check in R0. If no device is present, R0 will be set to
+"ERR_NO_DEVICE" ($0000). If a device is present, the registers of the YCPU will
+be set as follows:
+
+        R0: Device Type
+        R1: Manufacturer ID
+        R2: Device ID
+        R3: Device Version
+        
+A program can send messages to a Bus Device by calling HWQ operation $02. This
+will send a two-word message, consisting of the words in R1 and R2, to the
+Hardware Device in Bus Slot R0. If there is no hardware device in this Bus Slot,
+there will be no effect. If there is an active Hardware Device in this Bus Slot,
+one of several results will occur:
+
+    If the device can instantly respond to the message, it will acknowledge the
+    message by setting R0 to "MSG_ACK" ($0001). R1 and R2 may also be used as
+    return parameters, if required by the device.
+    
+    If the device requires time to respond to the message, it will acknowledge
+    the message by setting R0 to "MSG_WAIT" ($0002). When the device is ready
+    to respond to the message, it will raise a Hardware Interrupt.
+    
+    If the device requires access to main memory, the processor will be halted
+    while the device reads/writes to memory. Generally, the memory read to will
+    be based on the contents of R1 and R2. A program can send more than two
+    parameters to a device by using R1 or R2 as a pointer to memory. When the
+    device has completed its operation, it will set R0 to "MSG_ACK" ($0001).
+    
+    If the device encounters an error while responding to the message, it will
+    acknowledge the message by setting R0 to "MSG_ERROR" ($FFFF). R1 and R2
+    will remain unchanged.
 
 
 =============================[ 2.D. Interrupts ]================================
@@ -421,7 +466,7 @@ the physical address that is mapped to a single MMU bank.
 
 Word $00___________     Word $01___________
 FEDC BA98 7654 3210     FEDC BA98 7654 3210
-bbbb bbbb bbbb bbbb     SWEP A... .... bbbb
+DDDD bbbb bbbb bbbb     SWEP A... .... DDDD
 
     S - Supervisor only flag:
         0:  User mode and Supervisor mode may access this bank.
@@ -447,7 +492,7 @@ bbbb bbbb bbbb bbbb     SWEP A... .... bbbb
 The MMU has access to 32 bits of physical address space. A physical address is:
 
         FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        bbbb bbbb bbbb bbbb     bbbb aaaa aaaa aaaa
+        DDDD DDDD bbbb bbbb     bbbb aaaa aaaa aaaa
 
 Where the 20 'b' bits are the bank select bits taken from a mmu cache entry,
 and 'a' is the 12-bit address of a byte within that bank.
@@ -687,13 +732,13 @@ HWQ Bit Pattern
             $00     Bus Device Count. R0 = number of devices attached to bus.
             $01     Bus Device Query. R0-R3 are set with information about the
                     device at Bus index = R0
-                    R0: Manufacturer ID
-                    R1: Device ID
-                    R2: Device Version
-                    R3: Device Type
+                    R0: Device Type
+                    R1: Manufacturer ID
+                    R2: Device ID
+                    R3: Device Version
             $02     Bus Device Message. Send a message to device at bus index =
-                    R0, with parameters in R1-R3, and possibly in memory if a
-                    register is a pointer.
+                    R0, with parameters in R1-R2, and possibly in memory if a
+                    register is a pointer. See 2.C., Infra.
             $03     Set RTC data based on the value of R0.
                     See 2.H.2. for the input format of R0.
             $04     Gets RTC data in R0-R3.
@@ -1415,21 +1460,21 @@ Reads the 32-word MMU cache and saves it to a memory location specified by Ra.
 
 MMR         Reads a word from the Memory Management Cache.
 Syntax: MMR Ra, Rv
-Retrieves a value from Memory Management Cache at address [Ra] and loads it into
+Retrieves a value from Memory Management Cache at index Ra and loads it into
 register Rv.
 
 
 MMS         Restores the MMU cache from memory.
 Syntax: MMS Ra
-Reads 32-words from memory starting at address Ra, and stores that data in the
+Reads 32-words from memory starting at address [Ra], and stores that data in the
 MMU cache. Note that if the M processor status bit is set when this operation
 runs, the instructions the processor is operating on will almost certainly be
 changed.
 
 
-MMW         Writes a word to the Memmory Managment Cache.
+MMW         Writes a word to the Memory Managment Cache.
 Syntax: MMR Ra, Rv
-Loads a value from Rv into the Memory Management Cache at address [Ra].
+Loads a value from Rv into the Memory Management Cache at index Ra.
 
 
 
@@ -1652,3 +1697,6 @@ takes place:
   * Added Stack flush instruction and SFL bit pattern.
   * Added SET instruction and SET bit pattern.
   * Reworked ALU bit pattern. All ALU now support 8-bit operations with ".8".
+0.4aa 05/02/2015
+  * Reworked HWQ instruction. Included information on how to communicate with
+    Hardware devices.
