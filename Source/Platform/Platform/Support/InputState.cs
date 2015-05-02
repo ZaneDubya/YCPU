@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using YCPU.Platform.Input;
+using Ypsilon.Platform.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace YCPU.Platform.Support
+namespace Ypsilon.Platform.Support
 {
     public class InputState
     {
@@ -180,7 +180,7 @@ namespace YCPU.Platform.Support
             return false;
         }
 
-        public bool HandleMouseEvent(MouseEvent type, YCPU.Platform.Input.MouseButton mb)
+        public bool HandleMouseEvent(MouseEvent type, Ypsilon.Platform.Input.MouseButton mb)
         {
             List<InputEventMouse> events = GetMouseEvents();
             foreach (InputEventMouse e in events)

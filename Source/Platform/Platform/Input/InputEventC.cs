@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     public class InputEvent
     {

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
-namespace YCPU.Platform
+namespace Ypsilon.Platform
 {
     public class Host : Game
     {

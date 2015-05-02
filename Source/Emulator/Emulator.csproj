@@ -8,7 +8,7 @@
     <ProjectGuid>{83A151DD-8F56-4EBA-9482-5B4E5548CD20}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>YCPU</RootNamespace>
+    <RootNamespace>Ypsilon</RootNamespace>
     <AssemblyName>YCPUEmulator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>

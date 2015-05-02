@@ -10,7 +10,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     public static class NativeConstants
     {

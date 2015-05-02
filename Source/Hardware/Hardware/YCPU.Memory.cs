@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
 
-namespace YCPU.Hardware
+namespace Ypsilon.Hardware
 {
     partial class YCPU
     {
@@ -121,6 +121,7 @@ namespace YCPU.Hardware
 
         public byte ReadMemInt8_MMUEnabled(ushort address, bool execute = false)
         {
+            m_Cycles += 1;
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
             // If the bank access is successful, return the value of the Int8 at this address, else return 0x00.
             if (MMU_CheckRead(address, execute))
@@ -133,6 +134,7 @@ namespace YCPU.Hardware
         {
             if ((address & 0x0001) == 0x0001)
             {
+                m_Cycles += 2;
                 // This read is not 16-bit aligned. Two memory accesses needed.
                 // If both bank accesses are successful, return the value of the Int16 at this address, else return 0x0000.
                 byte byte0, byte1;
@@ -161,12 +163,13 @@ namespace YCPU.Hardware
             }
             else
             {
+                m_Cycles += 1;
                 // This read is 16-bit aligned.. Only one memory access is needed.
                 // If the bank access is successful, return the value of the Int16 at this address, else return 0x0000.
                 if (MMU_CheckRead(address, execute))
                 {
                     int bank = (address & 0xF000) >> 12;
-                    return (ushort)(m_M[bank][(address + 1)] << 8 | (m_M[bank][(address + 0)]));
+                    return (ushort)((m_M[bank][(address + 1)] << 8) | (m_M[bank][(address + 0)]));
                 }
                 else
                 {
@@ -177,6 +180,7 @@ namespace YCPU.Hardware
 
         public byte ReadMemInt8_MMUDisabled(ushort address, bool execute = false)
         {
+            m_Cycles += 1;
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
             int bank = (address & 0xF000) >> 12;
             return m_M[bank][(address)];
@@ -186,6 +190,7 @@ namespace YCPU.Hardware
         {
             if ((address & 0x0001) == 0x0001)
             {
+                m_Cycles += 2;
                 // This read is not 16-bit aligned. Two memory accesses needed.
                 byte byte0, byte1;
                 int bank = (address & 0xF000) >> 12;
@@ -199,6 +204,7 @@ namespace YCPU.Hardware
             }
             else
             {
+                m_Cycles += 1;
                 // This read is 16-bit aligned.. Only one memory access is needed.
                 int bank = (address & 0xF000) >> 12;
                 return (ushort)((m_M[bank][address]) + (m_M[bank][address + 1] << 8));

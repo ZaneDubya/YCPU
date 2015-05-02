@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace YCPU.Platform.Graphics
+namespace Ypsilon.Platform.Graphics
 {
     public class TextureBaker : SpriteBatch, IDisposable
     {

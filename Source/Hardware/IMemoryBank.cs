@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU
+namespace Ypsilon
 {
     /// <summary>
     /// Standard interface to a 4 kilobyte memory bank.

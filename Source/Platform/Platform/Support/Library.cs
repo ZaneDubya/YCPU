@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace YCPU.Platform.Support
+namespace Ypsilon.Platform.Support
 {
     internal static class Library
     {

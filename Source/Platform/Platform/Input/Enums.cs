@@ -1,4 +1,4 @@
-﻿namespace YCPU.Platform.Input
+﻿namespace Ypsilon.Platform.Input
 {
     public enum MouseButtonInternal
     {

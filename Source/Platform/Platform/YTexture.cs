@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace YCPU.Platform
+namespace Ypsilon.Platform
 {
     /// <summary>
     /// Wrapper for Texture2D

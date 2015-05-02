@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace YCPU.Platform.Graphics
+namespace Ypsilon.Platform.Graphics
 {
     class TextRenderer
     {

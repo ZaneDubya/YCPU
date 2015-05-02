@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     public class InputEventMouse : InputEvent
     {

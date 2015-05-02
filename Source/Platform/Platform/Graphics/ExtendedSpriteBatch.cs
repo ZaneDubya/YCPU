@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace YCPU.Platform.Graphics
+namespace Ypsilon.Platform.Graphics
 {
     public class SpriteBatchExtended : DrawableGameComponent, IRenderer
     {

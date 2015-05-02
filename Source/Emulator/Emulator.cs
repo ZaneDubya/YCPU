@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System.Threading;
 
-namespace YCPU
+namespace Ypsilon
 {
     class Emulator : Platform.Host
     {

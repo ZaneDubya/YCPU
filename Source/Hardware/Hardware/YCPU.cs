@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Hardware
+namespace Ypsilon.Hardware
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
@@ -72,15 +72,15 @@ namespace YCPU.Hardware
                         m_Bus.Update();
                         m_Cycles_NextBusUpdate += m_BUS_UpdateFrequency;
                     }
-
+                    
                     // Check for hardware interrupt:
                     if (PS_I && !PS_Q && m_Bus.IRQ)
                         Interrupt_HWI();
 
                     // Check for RTC interrupt:
-                    if (m_RTC.IRQ(m_Cycles))
+                    if (m_RTC.IsEnabled && m_RTC.IRQ(m_Cycles))
                         Interrupt_Clock();
-
+                    
                     // Execute Memory[PC] and increment the cycle counter:
                     YCPUInstruction opcode = Opcodes[word & 0x00FF];
                     opcode.Opcode(word, opcode.BitPattern);
@@ -109,17 +109,14 @@ namespace YCPU.Hardware
             if (!m_ExecuteFail)
             {
                 PC += 2;
+
                 // Check for hardware interrupt:
                 if (PS_I && !PS_Q && m_Bus.IRQ)
-                {
                     Interrupt_HWI();
-                }
 
                 // Check for RTC interrupt:
-                if (m_RTC.IRQ(m_Cycles))
-                {
+                if (m_RTC.IsEnabled && m_RTC.IRQ(m_Cycles))
                     Interrupt_Clock();
-                }
 
                 // Execute Memory[PC]
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];

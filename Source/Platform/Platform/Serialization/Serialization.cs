@@ -25,7 +25,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 
-namespace YCPU.Platform
+namespace Ypsilon.Platform
 {
     public abstract class GenericReader
     {

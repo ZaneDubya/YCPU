@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YCPU.Hardware
+namespace Ypsilon.Hardware
 {
     partial class YCPU
     {

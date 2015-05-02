@@ -10,7 +10,7 @@
 using System;
 using Microsoft.Xna.Framework.Input;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     internal delegate void MouseEventHandler(InputEventMouse e);
     internal delegate void KeyboardEventHandler(InputEventKeyboard e);

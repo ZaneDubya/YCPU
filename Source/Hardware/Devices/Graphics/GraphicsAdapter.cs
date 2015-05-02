@@ -1,4 +1,4 @@
-﻿namespace YCPU.Devices.Graphics
+﻿namespace Ypsilon.Devices.Graphics
 {
     class GraphicsAdapter : BaseDevice
     {
@@ -117,12 +117,12 @@
                 m_LEM_PALRAM = Platform.YTexture.Create(16, 1);
 
                 byte[] chrram_default = new byte[512];
-                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
+                System.Buffer.BlockCopy(Ypsilon.ResContent.lem1802_charset, 0, chrram_default, 0, 512);
                 for (int i = 0; i < 512; i += 1)
                     m_BankLEM[0x0800 + i] = chrram_default[i];
 
                 byte[] palram_default = new byte[32];
-                System.Buffer.BlockCopy(YCPU.ResContent.lem1802_16bitpal, 0, palram_default, 0, 32);
+                System.Buffer.BlockCopy(Ypsilon.ResContent.lem1802_16bitpal, 0, palram_default, 0, 32);
                 for (int i = 0; i < 32; i += 1)
                     m_BankLEM[0x0C00 + i] = palram_default[i];
             }

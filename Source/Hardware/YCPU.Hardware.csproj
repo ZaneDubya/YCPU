@@ -8,7 +8,7 @@
     <ProjectGuid>{77E5BB60-E037-4D15-9D4F-0D9CD6BFF50F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>YCPU</RootNamespace>
+    <RootNamespace>Ypsilon</RootNamespace>
     <AssemblyName>YCPUHardware</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -49,16 +49,16 @@
     <Compile Include="Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
-    <Compile Include="Hardware\YCPU_Benchmark.cs" />
-    <Compile Include="Hardware\YCPU_Memory.cs" />
+    <Compile Include="Hardware\YCPU.Benchmark.cs" />
+    <Compile Include="Hardware\YCPU.Memory.cs" />
     <Compile Include="IMemoryBank.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Hardware\YBUS.cs" />
     <Compile Include="Hardware\YCPU.cs" />
-    <Compile Include="Hardware\YCPU_BitPatterns.cs" />
-    <Compile Include="Hardware\YCPU_Disassemble.cs" />
-    <Compile Include="Hardware\YCPU_Extras.cs" />
-    <Compile Include="Hardware\YCPU_Instructions.cs" />
+    <Compile Include="Hardware\YCPU.BitPatterns.cs" />
+    <Compile Include="Hardware\YCPU.Disassemble.cs" />
+    <Compile Include="Hardware\YCPU.Extras.cs" />
+    <Compile Include="Hardware\YCPU.Instructions.cs" />
     <Compile Include="Hardware\YRTC.cs" />
     <Compile Include="ResContent.Designer.cs">
       <AutoGen>True</AutoGen>

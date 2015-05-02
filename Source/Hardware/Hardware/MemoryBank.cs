@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Hardware
+namespace Ypsilon.Hardware
 {
     /// <summary>
     /// A bank of 0x1000 = 4096 bytes.

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using YCPU.Platform;
-using YCPU.Platform.Graphics;
+using Ypsilon.Platform;
+using Ypsilon.Platform.Graphics;
 
-namespace YCPU
+namespace Ypsilon
 {
     public interface IRenderer
     {

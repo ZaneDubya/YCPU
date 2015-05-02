@@ -40,7 +40,7 @@ purpose and non-infringement.
 
 using System;
 
-namespace YCPU.Platform.Graphics
+namespace Ypsilon.Platform.Graphics
 {
     [Flags]
     public enum YSpriteEffect

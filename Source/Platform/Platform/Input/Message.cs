@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Message

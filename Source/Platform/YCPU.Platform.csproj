@@ -8,7 +8,7 @@
     <ProjectGuid>{AACF1738-A2F8-4783-BBFF-2163B5187830}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>YCPU</RootNamespace>
+    <RootNamespace>Ypsilon</RootNamespace>
     <AssemblyName>YCPUPlatform</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

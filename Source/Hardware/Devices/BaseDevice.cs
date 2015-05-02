@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Devices
+namespace Ypsilon.Devices
 {
     public abstract class BaseDevice
     {

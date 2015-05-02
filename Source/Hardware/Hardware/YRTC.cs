@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace YCPU.Hardware
+namespace Ypsilon.Hardware
 {
     class YRTC
     {
         private long m_NextTickAtCycle = 0;
         private long m_TickRate = 0;
+
+        public bool IsEnabled = false;
 
         public void SetTickRate(ushort value, long cycle)
         {
@@ -18,6 +20,7 @@ namespace YCPU.Hardware
             }
             else
             {
+                IsEnabled = true;
                 m_TickRate = (long)(Math.Pow(2, value));
                 if (m_TickRate > 1024)
                     m_TickRate = 1024;
@@ -28,7 +31,7 @@ namespace YCPU.Hardware
 
         public void DisableInterrupt()
         {
-            m_NextTickAtCycle = long.MaxValue;
+            IsEnabled = false;
         }
 
         public bool IRQ(long cycle)

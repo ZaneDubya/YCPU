@@ -10,7 +10,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace YCPU.Platform.Input
+namespace Ypsilon.Platform.Input
 {
     public delegate IntPtr WndProcHandler(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 

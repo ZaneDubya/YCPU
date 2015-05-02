@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace YCPU.Platform.Support
+namespace Ypsilon.Platform.Support
 {
     internal class FPS
     {

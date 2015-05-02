@@ -61,5 +61,5 @@ start:
         add c, 4
         jsr WriteChars
     _infiniteLoop:
-        jmp _infiniteLoop
+        jmp start
 .scend
