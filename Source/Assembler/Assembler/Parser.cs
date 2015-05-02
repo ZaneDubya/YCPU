@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace YCPU.Assembler
+namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
@@ -381,7 +381,7 @@ namespace YCPU.Assembler
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
-            byte[] data = YCPU.Platform.Common.GetBytesFromFile(m_Directory + @"\" + tokens[1]);
+            byte[] data = Ypsilon.Platform.Common.GetBytesFromFile(m_Directory + @"\" + tokens[1]);
             if (data == null)
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 

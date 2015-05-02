@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace YCPU
+namespace Ypsilon
 {
     class Program
     {
@@ -17,7 +17,7 @@ namespace YCPU
             if (args.Length == 0)
             {
 #if DEBUG
-                args = new string[1] { "../../../../Tests/rain.yasm" };
+                args = new string[1] { "../../../../Tests/rain.s" };
 #else
                 Console.WriteLine(errNoArguments);
                 return;

@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace YCPU.Assembler
+namespace Ypsilon.Assembler
 {
     class Generator
     {

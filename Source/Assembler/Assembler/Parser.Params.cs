@@ -9,7 +9,7 @@
 using System;
 using System.Linq;
 
-namespace YCPU.Assembler
+namespace Ypsilon.Assembler
 {
     partial class Parser
     {

@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace YCPU.Assembler
+namespace Ypsilon.Assembler
 {
     class RegEx
     {
