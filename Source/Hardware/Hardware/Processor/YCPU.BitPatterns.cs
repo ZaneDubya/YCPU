@@ -239,6 +239,19 @@ namespace Ypsilon.Hardware.Processor
             value = (ushort)(operand & 0xFF01);
         }
 
+        private void BitPatternSET(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            value = (ushort)((operand & 0x1F00) >> 8);
+            if ((operand & 0x0001) == 1)
+            {
+                if (value <= 0x0A)
+                    value = (ushort)(0x0001 << (value + 0x05));
+                else
+                    value = (ushort)(0xFFE0 + value);
+            }
+        }
+
         private void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
@@ -247,7 +260,9 @@ namespace Ypsilon.Hardware.Processor
                 value = (ushort)(((operand & 0x0F00) >> 8) + 1);
             }
             else
+            {
                 value = R[(operand & 0x0700) >> 8];
+            }
         }
 
         private void BitPatternSWO(ushort operand, out ushort value, out RegGPIndex destination)

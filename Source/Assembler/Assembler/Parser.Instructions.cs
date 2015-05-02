@@ -493,6 +493,12 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
+        ushort[] AssembleSET(string[] param, int bit_width)
+        {
+            Sanity_RequireParamCountExact(param, 2);
+            return AssembleSET((ushort)0x00B6, param[0], param[1]);
+        }
+
         #region Macros
         ushort[] AssembleRTS(string[] param, int bit_width)
         {
@@ -528,10 +534,15 @@ namespace Ypsilon.Assembler
                     {
                         return AssembleIMM((ushort)0x00B9, param1, param2);
                     }
-                    // special case: lod.8 immediate with value greater than $FF should raise a warning...
-                    else if (opcode == 0x00D0 && p2.NextWord >= 256)
+                    // special case: alu.8 immediate with value greater than $FF should raise a warning...
+                    else if (bit_width == 8 && p2.NextWord >= 256)
                     {
                         throw new Exception("Error: 8-bit load operation with an immediate value of greater than 8 bits.");
+                    }
+                    // special case: lod can be optimized with set for certain values.
+                    else if (opcode == 0x0000 && IsAcceptableSETValue(p2))
+                    {
+                        return AssembleSET((ushort)0x00B6, param1, param2);
                     }
                     else
                     {
@@ -787,6 +798,77 @@ namespace Ypsilon.Assembler
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 10) | ((p2.Word & 0x0007) << 13)));
             return m_Code.ToArray();
+        }
+
+        ushort[] AssembleSET(ushort opcode, string param1, string param2)
+        {
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
+
+            if (p1.Illegal || p2.Illegal)
+                return null;
+
+            // p1 MUST be a register.
+            if (p1.AddressingMode != AddressingMode.Register)
+                return null;
+
+            // p2 must be a value, and there is a limited range of allowed values.
+            if (p2.AddressingMode != AddressingMode.Immediate)
+                return null;
+
+            ushort alternateValueBit, value;
+            bool valueIsAllowed = TryGetSETValue(p2, out value, out alternateValueBit);
+
+            if (!valueIsAllowed)
+                throw new Exception(string.Format("SET instruction with invalid value parameter: {0}.", p2.NextWord));
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | alternateValueBit | (value << 8) | ((p1.Word & 0x0007) << 13)));
+            return m_Code.ToArray();
+        }
+
+        bool IsAcceptableSETValue(ParsedOpcode input)
+        {
+            ushort alternateValueBit, value;
+            return TryGetSETValue(input, out value, out alternateValueBit);
+        }
+
+        bool TryGetSETValue(ParsedOpcode input, out ushort value, out ushort alternateValueBit)
+        {
+            alternateValueBit = 0;
+            value = 0;
+
+            if (input.UsesNextWord && input.LabelName.Length > 0)
+            {
+                // not allowed to use labels with SET instructions.
+                return false;
+            }
+
+            if (input.NextWord <= 0x1F)
+            {
+                value = input.NextWord;
+                return true;
+            }
+            else if (input.NextWord >= 0xFFEB)
+            {
+                value = (ushort)((input.NextWord - 0xFFEB) + 0x000B);
+                alternateValueBit = 1;
+                return true;
+            }
+            else
+            {
+                for (int i = 0x05; i < 0x10; i++)
+                {
+                    int allowedValue = (ushort)(Math.Pow(2, i));
+                    if (input.NextWord == allowedValue)
+                    {
+                        value = (ushort)(i - 5);
+                        alternateValueBit = 1;
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         ushort[] AssembleSHF(ushort opcode, string param1, string param2)

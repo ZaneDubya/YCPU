@@ -79,7 +79,9 @@ namespace Ypsilon.Assembler
             // stack operations
             m_OpcodeAssemblers.Add("psh", AssemblePSH);
             m_OpcodeAssemblers.Add("pop", AssemblePOP);
-            // increment / decrement
+            // sfl stack flush goes here
+            m_OpcodeAssemblers.Add("set", AssembleSET);
+            // increment / decrement / add small immediate
             m_OpcodeAssemblers.Add("inc", AssembleINC);
             m_OpcodeAssemblers.Add("adi", AssembleADI);
             m_OpcodeAssemblers.Add("dec", AssembleDEC);

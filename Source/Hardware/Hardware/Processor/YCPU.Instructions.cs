@@ -220,6 +220,7 @@ namespace Ypsilon.Hardware.Processor
             Opcodes[0x95] = new YCPUInstruction("BMI", BMI, BitPatternBRA, DisassembleBRA, 0);
             Opcodes[0x96] = new YCPUInstruction("BVC", BVC, BitPatternBRA, DisassembleBRA, 0);
             Opcodes[0x97] = new YCPUInstruction("BVS", BVS, BitPatternBRA, DisassembleBRA, 0);
+
             Opcodes[0x98] = new YCPUInstruction("BUG", BUG, BitPatternBRA, DisassembleBRA, 0);
             Opcodes[0x99] = new YCPUInstruction("BSG", BSG, BitPatternBRA, DisassembleBRA, 0);
             // 0x9A - 0x9E are Undefined operations in the branch opcode space.
@@ -246,11 +247,10 @@ namespace Ypsilon.Hardware.Processor
             Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, BitPatternPSH, DisassemblePSH, 0);
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, BitPatternPSH, DisassemblePSH, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, BitPatternPSH, DisassemblePSH, 0);
-
             // B4 : SFL
             // B5 : ---
-            // B6 : SET
-            // B7 : SET
+            Opcodes[0xB6] = new YCPUInstruction("SET", SET, BitPatternSET, DisassembleSET, 0);
+            Opcodes[0xB7] = new YCPUInstruction("SET", SET, BitPatternSET, DisassembleSET, 0);
 
             Opcodes[0xB8] = new YCPUInstruction("ADI", ADI, BitPatternINC, DisassembleINC, 0);
             Opcodes[0xB9] = new YCPUInstruction("SBI", SBI, BitPatternINC, DisassembleINC, 0);
@@ -1450,5 +1450,13 @@ namespace Ypsilon.Hardware.Processor
             // V [Overflow] Not effected.
         }
         #endregion
+
+        private void SET(ushort operand, YCPUBitPattern bits)
+        {
+            RegGPIndex regDestination;
+            ushort value;
+            bits(operand, out value, out regDestination);
+            R[(int)regDestination] = value;
+        }
     }
 }

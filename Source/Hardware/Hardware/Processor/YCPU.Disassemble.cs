@@ -314,6 +314,21 @@ namespace Ypsilon.Hardware.Processor
             return string.Format("{0,-8}{1}", name, flags);
         }
 
+        private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
+        {
+            uses_next_word = false;
+            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            int value = ((operand & 0x1F00) >> 8);
+            if ((operand & 0x0001) == 1)
+            {
+                if (value <= 0x0A)
+                    value = (ushort)(0x0001 << (value + 0x05));
+                else
+                    value = (ushort)(0xFFE0 + value);
+            }
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), string.Format("${0:X2}", value));
+        }
+
         private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, out bool uses_next_word)
         {
             uses_next_word = false;

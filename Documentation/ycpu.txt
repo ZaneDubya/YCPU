@@ -787,13 +787,8 @@ SET Bit Pattern
         
         If V == 0:            R = v        Constant values from $00 - $1F
         If V == 1:
-            v = $00         : R = $20
-            v = $01         : R = $21
-            v = $02         : R = $22
-            v = $03         : R = $23
-            v = $04         : R = $24
-            v = $05...$0F   : R = (2^(5+v)) Power of two constants from 1 ^ 5.
-            v = $10...$1F   : R = !(v-$10).
+            v = $00...$0A   : R = (2^(5+v)) Power of two constants 2^5 ~ 2^15.
+            v = $0B...$1F   : R = ($FFE0 + v).
 
 SFL Bit Pattern
     FEDC BA98 7654 3210
