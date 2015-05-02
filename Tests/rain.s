@@ -1,65 +1,78 @@
 ; interrupt table
-.dat16 start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+.dat16 Start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 .dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 
-; boot up txt
-BOOT_txt:
-.dat8 "  \ |  ___"
-.dat8 "|\ \|  ___" 
-.dat8 "| \       "
-.DAT8 "NYA ELEKTRISKA"
-
+; === WriteChars ==============================================================
 ; Writes a string of chars to video memory.
 ; in:   b: color
 ; in:   c: count of chars to write.
 ; in:   x: location to write to video memory.
 ; in:   y: location to read 8-bit characters from.
 WriteChars:
-.SCOPE
-    PSH A, C                ; push a and c to stack
-    lod a, c                ; x += c * 2
-    asl a, 1                ;
-    add x, a                ;
-    lod a, y                ; a = y
-    add y, c                ; y += c
-    lod c, a                ; c = a (original y)
-    _writeChar:             
-        lod.8   a, [-y]
+.scope
+    psh a, c, x, y              ; push a c x  to the stack
+    add c, y                    ; c = y + c
+    _writeChar:                 ; copy c chars from y to x
+        lod.8   a, [y+]
         orr     a, b
-        sto     a, [-x]
-        cmp     y, c
-        bne _writeChar
-    pop a, c                ; pop a and c to stack
+        sto     a, [x+]
+        cmp     c, y
+        bne     _writeChar
+    pop a, c, x, y              ; pop a c x y from the stack
     rts
 .scend
 
-start:
+; === FillMemoryWords =========================================================
+; Fills range of memory with words of specified value.
+; in:   b - word to fill memory with
+; in:   c - count of memory to fill    
+; in:   x - first address to write to
+FillMemoryWords:
+.scope
+    psh c, x
+    asl c, 1
+    add c, x
+    _copyWord:
+        sto     b, [x+]
+        cmp     x, c
+        bne     _copyWord
+    pop c, x
+    rts
+.scend
+
+; === Start ===================================================================
+Start:
 .scope
     ; clear screen
-    lod     b, $0220
-    lod     i, 384
-    lod     x, $8000
-    _fillScreen:
-        sto b, [x+]
-        dec i
-        bne _fillScreen
+    lod     b, $0220    ; space char with blue background
+    lod     c, 384      ; words to write
+    lod     x, $8000    ; start of video memory
+    jsr     FillMemoryWords
+    
     ; write logo in center of screen.
-    lod     b, $8200            ; black on white
-    lod     x, $80D6            ; video memory
-    lod     y, boot_txt
+    lod     b, $8280            ; yellow on blue
+    lod     x, $80D6            ; location in video memory
+    lod     y, txtBootText
     lod     i, 3                ; count of lines to draw
     lod     c, 10
     _writeLine:
         jsr WriteChars
-        add     y,10
-        add     x,64
+        add     y, 10           ; increment ten chars in txtBootText
+        add     x, 64           ; increment one line in video memory (32 words)
         dec     i
-        beq _LastLine
-        bne _writeLine
+        beq     _LastLine
+        bne     _writeLine
     _lastLine:
-        add x, $3C ; skip line, left 4 chars
-        add c, 4
-        jsr WriteChars
+        add     x, $3C ; skip line, left 4 chars
+        add     c, 4
+        jsr     WriteChars
     _infiniteLoop:
-        jmp start
+        jmp _infiniteLoop
 .scend
+
+; boot up txt
+txtBootText:
+.dat8 "  \ |  ___"
+.dat8 "|\ \|  ___" 
+.dat8 "| \       "
+.dat8 "NYA ELEKTRISKA"

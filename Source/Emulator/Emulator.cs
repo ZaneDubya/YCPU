@@ -77,9 +77,9 @@ namespace Ypsilon
                         StopCPU();
                         m_CPU.PS_R = true;
 #if DEBUG
-                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
 #else
-                        m_CPU.LoadBinaryToMemory("../Tests/rain.yasm.bin", 0x0000);
+                        m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
 #endif
                         m_CPU.BUS.SetupDebugDevices();
                         m_CPU.Interrupt_Reset();

@@ -11,7 +11,7 @@ namespace Ypsilon.Assembler
         {
             foreach (ushort key in m_LabelDataFieldReferences.Keys)
             {
-                string labelName = m_LabelDataFieldReferences[key];
+                string labelName = m_LabelDataFieldReferences[key].ToLower();
 
                 if (m_Scopes.ContainsLabel(labelName, key) != true)
                 {
