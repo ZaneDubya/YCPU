@@ -280,8 +280,8 @@ namespace Ypsilon.Hardware.Processor
             {
                 // 16-bit word aligned access. Only one memory access is needed.
                 int bank = (address & 0xF000) >> 12;
-                m_M[bank][(address)] = (byte)((value & 0xff00) >> 8);
-                m_M[bank][(address + 1)] = (byte)(value & 0x00ff);
+                m_M[bank][address++] = (byte)(value & 0x00ff);
+                m_M[bank][address] = (byte)((value & 0xff00) >> 8); 
             }
         }
 

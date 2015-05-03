@@ -73,6 +73,8 @@ namespace Ypsilon.Devices.Input
                         address += 2;
                         BUS.CPU.WriteMemInt16(address, m_CommandBuffer[i + 1]);
                     }
+                    for (int i = 0; i < m_CommandBuffer.Length; i++)
+                        m_CommandBuffer[i] = 0;
                     break;
                 default:
                     return MSG_ERROR;
@@ -89,8 +91,6 @@ namespace Ypsilon.Devices.Input
 
                 if (m_CommandBuffer[0] < m_CommandBuffer.Length - 1)
                 {
-                    m_CommandBuffer[0]++;
-
                     ushort e1 = (ushort)(((byte)(e.KeyCode)) |
                         ((e.Shift) ? ShiftDown : 0) |
                         ((e.Alt) ? AltDown : 0) |
@@ -98,6 +98,8 @@ namespace Ypsilon.Devices.Input
                         ((e.EventType == KeyboardEvent.Up) ? EventUp : 0) | 
                         ((e.EventType == KeyboardEvent.Down) ? EventDown : 0) |
                         ((e.EventType == KeyboardEvent.Press) ? EventPress : 0));
+                    
+                    m_CommandBuffer[0]++;
                     m_CommandBuffer[m_CommandBuffer[0]] = e1;
 
                     e.Handled = true;
