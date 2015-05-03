@@ -124,8 +124,6 @@ namespace Ypsilon.Devices.Graphics
         {
             if (m_GraphicsMode != GraphicsMode.LEM1802)
             {
-                m_GraphicsMode = GraphicsMode.LEM1802;
-
                 m_LEM_CHRRAM = Platform.YTexture.Create(128, 32);
                 m_LEM_PALRAM = Platform.YTexture.Create(16, 1);
 
@@ -138,6 +136,8 @@ namespace Ypsilon.Devices.Graphics
                 System.Buffer.BlockCopy(ResContent.lem1802_16bitpal, 0, palram_default, 0, 32);
                 for (int i = 0; i < 32; i += 1)
                     m_Bank[0x0C00 + i] = palram_default[i];
+
+                m_GraphicsMode = GraphicsMode.LEM1802;
             }
         }
 

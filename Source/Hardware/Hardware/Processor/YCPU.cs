@@ -75,7 +75,7 @@ namespace Ypsilon.Hardware.Processor
                     
                     // Execute Memory[PC] and increment the cycle counter:
                     YCPUInstruction opcode = Opcodes[word & 0x00FF];
-                    opcode.Opcode(word, opcode.BitPattern);
+                    opcode.Opcode(word);
                     m_Cycles += opcode.Cycles;
 
                     // Check to see if we've exceeded our cycle target:
@@ -110,7 +110,7 @@ namespace Ypsilon.Hardware.Processor
 
                 // Execute Memory[PC]
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];
-                opcode.Opcode(word, opcode.BitPattern);
+                opcode.Opcode(word);
                 // Increment the Cycle counter.
                 m_Cycles += opcode.Cycles;
             }
