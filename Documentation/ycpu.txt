@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4aa
+Version 0.4ac
 
 =============================[ Table of Contents ]==============================
 
@@ -14,6 +14,7 @@ Version 0.4aa
 2.F.        Memory Management
 2.G.        Boot Sequence
 2.H.        The Real Time Clock
+2.I.        Switching Context
 3.      Instructions
 3.A.        Bit Patterns
 3.B.        ALU Instructions
@@ -52,7 +53,7 @@ http://creativecommons.org/about/cc0
 The YCPU is a 16-bit imaginary processor. The processor includes features
 intended to ease the development of software, including a comprehensive
 instruction set, support for 32-bit floating point operations, a MMU that allows
-switching 16 4 kilobyte banks within the 16-bit logical address space, a real
+switching 4 16 kilobyte banks within the 16-bit logical address space, a real
 time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
 modes with separate stack pointers.
 
@@ -66,12 +67,15 @@ instructions, the only addressable unit of memory is a 16-bit word.
 
 8-bit operations are supported for any instruction which uses the "ALU" bit
 pattern: Load, Store, Add, Subtract, Multiply, Divide, Bitwise And, Bitwise Or,
-Bitwise Not, Bitwise Exclusive Or, Compare, and Negate. The user must note that
-using 8-bit operations, the upper 8-bits of memory are cleared and ignored.
-Storing an 8-bit value with the "STO.8" instruction will only store one byte,
-and the second byte in the 16-bit word will not be affected.
+Bitwise Not, Bitwise Exclusive Or, Compare, and Negate. When executing 8-bit
+operations in registers, the upper 8-bits of memory are cleared and ignored.
+When executing an 8-bit STOre operation, the processor will store only one byte,
+and the second byte in the 16-bit word in memory will not be affected. When
+executing an 8-bit LOaD operation, the processor will load only the lower byte
+at the address, and the upper 8-bits of the destination register will be
+cleared.
 
-For all other instructions, there is no support for 8-bit math. All other
+For all other instructions there is no support for 8-bit math. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
 which has a 32-bit result, with the upper 16 bits in R0, and FPU instructions,
 which deal with 32-bit data).
@@ -90,18 +94,16 @@ For quick retrieval of 8-bit values from 16-bit registers, the Switch Octet
 (SWO) instruction allows easy and fast access to individual 8-bit bytes.
 
 All instructions and immediate constants must be aligned to a 16-bit address.
-The processor cannot execute instructions at 8-bit aligned addresses. Any
-attempt to execute such an address will result in execution of the address with
-the least significant bit masked out. Thus, attempting to execute address $8003
-will result in execution of address at $8002).
+The processor cannot execute instructions at 8-bit aligned addresses. If the
+processor ticks when the PC’s lowest bit is set, the processor will raise
+an ‘UnalignedEx’ interrupt.
 
 2.3. ON-CHIP HARDWARE
 
 All models of the YCPU are guaranteed to have 64kb of internal RAM on board.
 The YCPU will also have a variable amount of ROM on chip, depending on the
 model of the YCPU. The YCPU can determine how much RAM/ROM is available by
-querying 'Hardware Device 0' on the Hardware Bus, and can move its RAM/ROM in
-active memory with the MMU.
+querying 'Hardware Device 0' on the Hardware Bus.
 
 
 ===============================[ 2.A. Registers ]===============================
@@ -121,7 +123,8 @@ R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
 used as both data and address registers, are interchangeable, and are directly
 referenced and modified by most instructions.
 
-R0 has a special purpose in the following situation:
+R0 is also used for the high 16-bits of the result of the YCPU’s 16x6b=32b math:
+
     * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
       If R0 is also the src/dest register, then the high 16-bits are lost, and
       R0 will contain the low 16-bits after the instruction completes.
@@ -154,12 +157,10 @@ The eight specific purpose registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMIR QUWE .... ....
+        SMI. QUWE .... ....
             [S] -   [S]upervisor Mode enabled
             [M] -   Memory [M]anagement enabled
             [I] -   Hardware [I]nterrupts enabled.
-            [R] -   0: Load internal ROM bank $00 at $0000-$0FFF on interrupt.
-                    1: Load internal RAM bank $00 at $0000-$0FFF on interrupt.
             [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
             [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
             [W] -   Bank Fault, Attempt to Write to Read-Only Memory
@@ -241,7 +242,7 @@ be set as follows:
         R0: Device Type
         R1: Manufacturer ID
         R2: Device ID
-        R3: Device Version
+        R3: Device Flags
         
 A program can send messages to a Bus Device by calling HWQ operation $02. This
 will send a two-word message, consisting of the words in R1 and R2, to the
@@ -310,23 +311,22 @@ below.
 When an interrupt is raised, the processor halts the current executing process.
 It then executes the following sequence:
     1.  Save the state of PS to a temporary register.
-    2.  Set the S status bit. Clear the M status bit.
-        The processor is now in Supervisor mode, with the MMU disabled.
+    2.  Set the S status bit. The processor is now in Supervisor mode.
     3.  If this is a hardware interrupt, the Q status bit will be set. This
         blocks other hardware interrupts from occurring while the current
         interrupt is being processed. If this is a BankFault, P2 is set to the
-        address of the memory address that was attempted address.
+        address of the memory address that raised the BankFault.
     4.  Push the saved PS to the Stack.
     5.  Push PC* to the Stack.
-    6.  Set PC to Mem[II + InterruptIndex].
+    6.  Set PC to Mem[II + (InterruptIndex * 2)].
     7.  Execution continues.  
 
 * For the interrupts which are raised by an error condition, the PC is rewound
   to the instruction that *caused* the the interrupt. Interrupts raised by error
   conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
-  BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
-  interrupts, the PC is unchanged, pointing to the address following the
-  instruction the processor was executing immediately prior to the interrupt.
+  BankFault ($05), UnprivOpcode ($06), UndefOpcode ($07). and UnalignedEx ($08).
+  For all other interrupts, the PC is unchanged, pointing to the address following
+  the instruction the processor was executing immediately prior to the interrupt.
 
 
 2.D.5. RETURNING FROM AN INTERRUPT
@@ -337,10 +337,9 @@ it should save the state of the registers and/or cache before doing so, and
 restore the same before returning from the interrupt handler.
 
 The RTI instruction follows this sequence:
-    1.  Pop PC from the Stack.
-    2.  Pop PS from the Stack.
-        Note that bits Q, U, W, and E are cleared on RTI.
-    3.  Execution Continues.
+    1.  Pop PC, PS from the Stack.
+        Note that PC bits Q, U, W, and E are cleared on RTI.
+    2.  Execution Continues.
     
 
 2.D.6. THE INTERRUPT VECTOR TABLE
@@ -374,7 +373,8 @@ $6  UnprivOpcode    Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
 $7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
                     opcode.
-$8  RESERVED        Not currently used, never raised.
+$8  UnalignedEx     Raised when the processor attempts to execute an instruction
+                    at an address which is not 16-bit aligned.
 $9  RESERVED        Not currently used, never raised.
 $A  RESERVED        Not currently used, never raised.
 $B  RESERVED        Not currently used, never raised.
@@ -405,8 +405,7 @@ Indirect Indexed    [Rx,Rx]     Mem[R+R]
 
 ALU instructions are by default 16 bits wide. Thus, all LOD instructions take
 16 bits from memory, and ADD instructions operate on all 16 bits of memory.
-There is an alternate 8-bit mode for LOD and STO instructions, which can be
-accessed by entering a '.8' flag following the instruction, as such:
+There is an alternate 8-bit mode for ALU instructions (ADD, STO, LOD, etc.):
 
     LOD.8   [$8000]
     STO.8   [$8000]
@@ -432,41 +431,42 @@ changed by the byte-size of the data operated on by the instruction. Thus:
 Because the processor has a 16-bit logical address space, it can only address
 $10000 bytes of linear address space at a time. This limited address space is
 augmented by the processor's integrated memory management unit (MMU) which,
-when enabled, provides virtual address translation.
+when enabled, implements bankable memory and thus a limited form of virtual
+address translation.
 
 
 2.F.1. ADDRESS SPACE WHEN THE MMU IS DISABLED
 
-While the 'Memory Banking' status bit is clear, the MMU is disabled, and the
-processor's address space is initially mapped as follows:
-    Bank $0 - If R status bit is clear, Internal ROM Bank $00
-              If R status bit is set, Internal RAM Bank $00
-    Bank $1 - Internal RAM Bank $01
-    Bank $2 - Internal RAM Bank $02
-        ...
-    Bank $E - Internal RAM Bank $0E
-    Bank $F - Internal RAM Bank $0F
+When the 'M’ status bit is in PC clear, the MMU is disabled, and the processor's
+address space is mapped as follows:
+    $0000-$3FFF : Internal ROM Bank $00
+    $4000-$7FFF : Internal RAM Bank $01
+    $8000-$BFFF : Internal RAM Bank $02
+    $C000-$FFFF : Internal RAM Bank $03
 
     
 2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED
     
-While the 'Memory Banking' status bit is set, the MMU is enabled, and will
-translate memory references to physical addresses. It does so by dividing the
-processor's virtual address space into 16 banks of 4 kilobytes each. The high
-four bits of the virtual address select the bank of memory that is accessed,
-and the low twelve bits of the virtual address select a byte of memory within
-that bank.
+While the 'M' status bit in PC is set, the MMU is enabled, and will translate
+memory references to physical addresses. It does so by dividing the processor's
+virtual address space into 4 banks of 16 kilobytes each. The high two bits of
+the virtual address select the bank of memory that is accessed, and the low
+fourteen bits of the virtual address select a byte of memory within that bank.
+
+Note that there are different MMU caches for both user and supervisor mode. The
+supervisor can set both caches, while the user mode can set neither. 
 
 
 2.F.3. THE MMU CACHE
 
-The MMU has 32 16-bit words of internal cache that describe the 16 banks
-currently loaded into the virtual address space. Each pair of words describes
-the physical address that is mapped to a single MMU bank. 
+The MMU has 16 16-bit words of internal cache. Each pair of words describes
+the physical address that is mapped to a single MMU bank. 8 of these 16-bit words
+describe the configuration of the 4 banks of memory in supervisor mode, and the
+other 8 describe the configuration of the 4 banks of memory in user mode. 
 
 Word $00___________     Word $01___________
 FEDC BA98 7654 3210     FEDC BA98 7654 3210
-DDDD bbbb bbbb bbbb     SWEP A... .... DDDD
+.... ..bb bbbb bbbb     SWEP A... DDDD DDDD
 
     S - Supervisor only flag:
         0:  User mode and Supervisor mode may access this bank.
@@ -482,9 +482,8 @@ DDDD bbbb bbbb bbbb     SWEP A... .... DDDD
     A - Accessed flag:
         This bit is set every time this bank is written to.
     b - These bits determine the bank of memory that is mapped to this bank of
-        virtual address space. The bank will be taken from a Hardware Device,
-        except that bank $0 will be mapped to internal processor rom if the 'R'
-        status bit in PS is set and the 'M' status bit is clear.
+        virtual address space.
+    D - These bits determine the device that the bank of memory if mapped from.
 
         
 2.F.4. ADDRESS TRANSLATION
@@ -492,18 +491,16 @@ DDDD bbbb bbbb bbbb     SWEP A... .... DDDD
 The MMU has access to 32 bits of physical address space. A physical address is:
 
         FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        DDDD DDDD bbbb bbbb     bbbb aaaa aaaa aaaa
+        DDDD DDDD bbbb bbbb     bbaa aaaa aaaa aaaa
 
-Where the 20 'b' bits are the bank select bits taken from a mmu cache entry,
-and 'a' is the 12-bit address of a byte within that bank.
+The 18 'b' bits are the bank select bits taken from a mmu cache entry,
+and 'a' is the 14-bit address of a byte within that bank.
 
-The 20 'b' bits reference a bank of RAM or ROM from a device on the hardware
-bus. The uppermost 8 'b' bits (bits $0C-$13 in the MMU cache entry) are a 8-bit
-hardware bus index, and the lower 12 'b' bits (bits $00-$0B) are the bank index
-within the hardware device. Thus, the maximum number of banks which a single
-hardware device can make available is 2^12 = 4096 banks, for a total of
-16 megabytes of memory.
-
+The 10 'b' bits reference a bank of RAM or ROM from a device on the hardware
+bus. The 8 ‘D’ bits are a 8-bit hardware bus index. Because no hardware device
+can have more than 2^10 = 1024 banks, each bank can host no more than 16
+megabytes of memory, and the MMU as a whole can most no more than 2^32 =
+4 gigabytes of memory.
 
 2.F.5. BANK FAULTS
 
@@ -568,14 +565,57 @@ will raise the CLOCK interrupt at an interval which is specified by the
 processor. The RESET interrupt disables the RTC.
 
 The processor can set the desired interrupt interval by calling HWQ $03, with an
-input value in R0. If R0 is $FFFF, the interupt will be disabled. Otherwise, 
+input value in R0. If R0 is $FFFF, the interrupt will be disabled. Otherwise, 
 the CLOCK interrupt will be raised at a rate of (2 ^ (R0)) times per second.
 
 Note that the maximum tick rate is capped at 1024.
 
+
+=========================[ 2.I. Switching Context ]===========================
+The RTI instruction can also be used to switch the processor into user mode,
+or to switch contexts entirely.
+
+To change context from supervisor to user mode, the stack should be loaded with
+8 words of MMU cache, FL, USP, PS, and PC:
+
+    1. Load the MMU cache with the necessary user data.
+    2. Pop R0-R7 from the stack.
+    3. Pop FL, USP.
+    4. Use RTI to pop PS, PC from the stack (PC should have S bit cleared).
+    5. Execution will continue.
+
+            LOD R0, $00
+            MMS R0
+            POP R0, R1, R2, R3, R4, R5, R6, R7
+            POP FL, UP
+            RTI
+
+To save context (when responding to an interrupt from user mode). Note that upon
+entering the interrupt, the stack looks like this:
+
+                            [ ... ]
+                            [ PS  ]
+                    SP -->  [ PC  ]
+
+    1. Push FL and USP to the stack.
+    2. Push R0-R7 to the stack.
+    3. Save the user MMU cache to the stack.
+
+            PSH FL, UP
+            PSH R0, R1, R2, R3, R4, R5, R6, R7
+            LOD R0, $00
+            MML R0
+
+Switching context from supervisor to supervisor is more difficult, as modifying
+the active MMU cache will change the instruction that PC is operating on. It is
+advised that the programmer either disable the MMU as part of this operation,
+or lay out the banks of memory in such a way that when changing banks, the 
+context changing sequence will go on interrupted (the same sequence of context
+changing might be used in all banks).
+
     
 ==============================[ 3. Instructions ]===============================
-Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
+Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0AAA   LOD                 ALU             Load                        1
 0000 1AAA   STO                 ALU             Store                       1
 0001 0AAA   ADD                 ALU             R = R + M                   1
@@ -616,29 +656,26 @@ Low octet   Mnemoric    Priv?   Bit Pattern     Description               Cycles
 1011 000x   PSH                 STK             Push to stack               1+
 1011 001x   POP                 STK             Pop from stack              1+
 1011 0100   SFL*                SFL             Stack Flush                 1
-1011 0101   ---                 ---             UNDEFINED (1 opcode)        -
+1011 0101   MMR/MMW/MML/MMS     MMU             Read/Write/State Load/Store 1/8
 1011 011x   SET*                SET             Set register to value       1
 1011 1000   INC/ADI             IMM             Inc / Add immediate         1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
 1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg   1
-1100 1100   MMR         X       MMU             Read from MMU               1
-1100 1101   MMW         X       MMU             Write to MMU                1
-1100 1110   MML         X       JMP             MMU State Load (MMU->Mem)   16
-1100 1111   MMS         X       JMP             MMU State Store (Mem->MMU)  16
+1011 1100   HWQ         X       HWQ             Hardware Bus Query          1
+1011 1101   SLP         X       ---             Sleep until Interrupt       1
+1011 1110   SWI                 ---             Raise SOFTWARE Interrupt    1    
+1011 1111   RTI         X       ---             Return from Interrupt       16
 1100 0000   JMP                 JMP             Jump                        1
-1100 0001   JSR                 JMP             Jump to Subroutine          2
-1100 0010   JUM         X       JMP             Jump and enter User Mode    2
-1100 0011   JCX         X       ---             Jump and Switch Context     48
-1100 0100   HWQ         X       HWQ             Hardware Bus Query          1
-1100 0101   SLP         X       ---             Sleep until Interrupt       1
-1100 0110   SWI                 ---             Raise SOFTWARE Interrupt    1    
-1100 0111   RTI         X       ---             Return from Interrupt       16
+1100 0001   JMS                 JMP             Jump to Subroutine          2
+1100 0010   ---                 ---             UNDEFINED (1 opcode)        -
+1100 0011   ---                 ---             UNDEFINED (1 opcode)        -
+1100 01xx   ---	                ---             UNDEFINED (4 opcodes)       -
 1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
 1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)      -
 111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
 
-There are 12 remaining unspecified opcodes. These remaining unspecified opcodes
+There are 61 remaining unspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
 
 
@@ -735,7 +772,7 @@ HWQ Bit Pattern
                     R0: Device Type
                     R1: Manufacturer ID
                     R2: Device ID
-                    R3: Device Version
+                    R3: Device Flags
             $02     Bus Device Message. Send a message to device at bus index =
                     R0, with parameters in R1-R2, and possibly in memory if a
                     register is a pointer. See 2.C., Infra.
@@ -772,10 +809,15 @@ IMM Bit Pattern
 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
-    RRRr rr.. OOOO OOOO
+    RRRr rroo OOOO OOOO
         O = Opcode
-        r = register containing index of MMU word to read from/write to 
-        R = register containing value to write/destination for value read.
+        o = MMU operation:
+            $0 = MMR
+            $1 = MMW
+            $2 = MML
+            $3 = MMS
+        r = Ra
+        R = Rv
         
 SET Bit Pattern
     FEDC BA98 7654 3210
@@ -809,7 +851,7 @@ STK Bit Pattern < 2 / 2 >
         f = push/pop FL register                                N
         c = push/pop PC register                                N
         p = push/pop PS register                                Y
-        u = push/pop USP                                        N
+        u = push/pop USP                                        Y
         s = push/pop current Stack Pointer (USP / SSP)          N
         
 
@@ -1325,35 +1367,6 @@ See 2.D.4. for a description of this opcode's function.
     
     
 ======================[ 3.I. Jump & Call Instructions ]=========================
-
-JCX         Unconditional Jump and change Context
-    1. A pointer to a 32-word array of MMU data is popped from the stack.
-    2. The MMU is loaded with the data in the 32-word array.
-    3. The following registers are popped from the stack in this order:
-       R7, R6, R5, R4, R3, R2, R1, R0, FL
-    4. PS and PC are popped from the stack.
-    7. Execution continues.
-    
-    This intended usage of this instruction is to (1) Begin a new process, or
-    (2) Restore an interrupted process, particularly when the MMU is enabled.
-    The following operations are the equivalent of 'save context', when an 
-    interrupt has been called. Note that upon entering the interrupt, the stack
-    looks like this:
-                            [ ... ]
-                            [ PS  ]
-                    SP -->  [ PC  ]
-        
-        PSH FL
-        PSH R7, R6, R5, R4, R3, R2, R1, R0
-        LOD R0, {Address of 32-word MMU cache store location}
-        MML R0
-        PSH R0
-        
-    Following these instructions, the stack will be laid out in such a way that
-    executing JCX will restore the context which was interrupted. Note that the
-    RTI instruction merely pops PC and PS (in that order). Thus, JCX can be used
-    as, among other things, a RTI opcode that restores more of the processor
-    state.
     
 
 JMP         Unconditional Jump to new address.
@@ -1361,12 +1374,7 @@ JMP         Unconditional Jump to new address.
     2. Execution continues.
 
 
-JMU         Unconditional Jump and enter User mode
-    1. Supervisor status bit is cleared.
-    2. PC is set to the value of M.
-    3. Execution continues.
-
-JSR         Unconditional Jump, saving return address.
+JMS         Unconditional Jump, saving return address.
     1. PC is pushed to the stack. [PC is the address of the NEXT operation]
     2. PC is set to the value of M.
     3. Execution continues.
@@ -1448,29 +1456,39 @@ Sends a message with the specified identified to the Hardware Bus. This may
 query the bus directly, or send a message to a hardware device.
 
 
-MML         Loads the MMU cache data into memory.
+MML         Pushes 8 words of MMU cache data onto the stack.
 Syntax: MML Ra
-Reads the 32-word MMU cache and saves it to a memory location specified by Ra.
+Reads the 8 word MMU cache and pushes it onto the stack. The lowest bit of Ra
+determines whether the user or supervisor MMU cache is loaded in this way; if
+the bit is clear, the user cache is loaded; if the bit is set, the supervisor
+is loaded.
 
-
-MMR         Reads a word from the Memory Management Cache.
+MMR         Reads a word from the Memory Management Cache into a register.
 Syntax: MMR Ra, Rv
 Retrieves a value from Memory Management Cache at index Ra and loads it into
-register Rv.
+register Rv. The value in Ra is interpreted as follows:
+        $0000 - first word of user cache
+        ...
+        $0007 - last word of user cache
+        $0008 - first word of supervisor cache
+        ...
+        $000F - last word of supervisor cache  
 
 
-MMS         Restores the MMU cache from memory.
+MMS         Pulls 8 words from stack and write these to the MMU cache.
 Syntax: MMS Ra
-Reads 32-words from memory starting at address [Ra], and stores that data in the
-MMU cache. Note that if the M processor status bit is set when this operation
-runs, the instructions the processor is operating on will almost certainly be
-changed.
+Pulls 8 words from the stack and writes these to the MMU cache. As with MML, the
+lowest bit of Ra determines whether the user or supervisor MMU cache is loaded
+in this way; if the bit is clear, the user cache is loaded; if the bit is set,
+the supervisor is loaded. Note that if the M processor status bit is set when
+this operation runs, the instructions the processor is operating on will almost
+certainly be changed.
 
 
-MMW         Writes a word to the Memory Managment Cache.
+MMW         Writes a word to the Memory Managment Cache from a register.
 Syntax: MMR Ra, Rv
-Loads a value from Rv into the Memory Management Cache at index Ra.
-
+Loads a value from Rv into the Memory Management Cache at index Ra. See MMR for
+how value of Ra is interpreted.
 
 
 SEF         Sets bit(s) in the FL register.
@@ -1695,3 +1713,13 @@ takes place:
 0.4aa 05/02/2015
   * Reworked HWQ instruction. Included information on how to communicate with
     Hardware devices.
+0.4ac 05/11/2015
+  * MMU cache changed. Now U and S cache, each 8 words (4 entries x 2 word ea).
+  * Memory is now 4x16kb banks, instead of 16x4kb banks.
+  * MMU bit pattern changed.
+  * MML/MMR/MMW/MMS instructions changed.
+  * Index of HWQ/RTS/SLP/SWI changed.
+  * Got rid of JCX; it is an abomination.
+  * Got rid of JMU; it too is an abomination.
+  * Added easy instructions for switching context.
+
