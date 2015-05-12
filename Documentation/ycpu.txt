@@ -645,7 +645,7 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 0101   LSR                 SHF             Logical Shift Right         4
 1010 0110   ROR                 SHF             Rotate Through-Carry Right  1
 1010 0111   RNR                 SHF             Rotate No-Carry Right       1
-1010 1000   BIT                 BTT             Test a bit                  2
+1010 1000   BTT                 BTT             Test a bit                  2
 1010 1001   BTX                 BTT             Test a bit and change it    2
 1010 1010   BTC                 BTT             Test a bit and clear it     2
 1010 1011   BTS                 BTT             Test a bit and set it       2    
@@ -1150,7 +1150,7 @@ Operation:
   
 ======================[ 3.D. Bit Testing Instructions ]=========================
 
-BIT         Test a bit
+BTT         Test a bit
 Operation:  Rx{B} -> Z, C
     N [Negative] Not effected.
     Z [Zero] Set if Rx{B} is clear, clear otherwise.
@@ -1713,6 +1713,8 @@ takes place:
 0.4aa 05/02/2015
   * Reworked HWQ instruction. Included information on how to communicate with
     Hardware devices.
++0.4ab 05/08/2015
+  * BIT -> BTT
 0.4ac 05/11/2015
   * MMU cache changed. Now U and S cache, each 8 words (4 entries x 2 word ea).
   * Memory is now 4x16kb banks, instead of 16x4kb banks.
