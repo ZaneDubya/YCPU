@@ -616,25 +616,25 @@ changing might be used in all banks).
     
 ==============================[ 3. Instructions ]===============================
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
-0000 0AAA   LOD                 ALU             Load                        1
-0000 1AAA   STO                 ALU             Store                       1
-0001 0AAA   ADD                 ALU             R = R + M                   1
-0001 1AAA   SUB                 ALU             R = R - M                   1
-0010 0AAA   ADC                 ALU             R = R + M + C               1
-0010 1AAA   SBC                 ALU             R = R - M - (1 - C)         1
-0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)       1    
-0011 1AAA   DIV                 ALU             R = R / M                   32
-0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b)1
-0100 1AAA   DVI                 ALU             R = R / M (signed)          32
-0101 0AAA   MOD                 ALU             R = R % M (modulus)         32
-0101 1AAA   MDI                 ALU             R = R % M (modulus, signed) 32
-0110 0AAA   AND                 ALU             Bitwise and                 1
-0110 1AAA   ORR                 ALU             Bitwise or                  1
-0111 0AAA   EOR                 ALU             Bitwise exclusive or        1    
-0111 1AAA   NOT                 ALU             Bitwise not                 1
+0000 0AAA   CMP                 ALU             Compare R and M, sets FL    1+M 
+0000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1+M 
+0001 0AAA   ADD                 ALU             R = R + M                   1+M 
+0001 1AAA   SUB                 ALU             R = R - M                   1+M 
+0010 0AAA   ADC                 ALU             R = R + M + C               1+M 
+0010 1AAA   SBC                 ALU             R = R - M - (1 - C)         1+M 
+0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)       2+M  
+0011 1AAA   DIV                 ALU             R = R / M                   32+M
+0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b)2+M
+0100 1AAA   DVI                 ALU             R = R / M (signed)          32+M
+0101 0AAA   MOD                 ALU             R = R % M (modulus)         32+M
+0101 1AAA   MDI                 ALU             R = R % M (modulus, signed) 32+M
+0110 0AAA   AND                 ALU             Bitwise and                 1+M
+0110 1AAA   ORR                 ALU             Bitwise or                  1+M
+0111 0AAA   EOR                 ALU             Bitwise exclusive or        1+M  
+0111 1AAA   NOT                 ALU             Bitwise not                 1+M
 
-1000 0AAA   CMP                 ALU             Compare R and M, sets FL    1
-1000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1   
+1000 0AAA   LOD                 ALU             Load                        1+M
+1000 1AAA   STO                 ALU             Store                       1+M
 1001 0bbb   Bxx                 BRA             Branch operations           1
 1001 1bbb   Bxx                 BRA             Branch operations           1
 1010 0000   ASL                 SHF             Arithmetic Shift left       1
@@ -650,11 +650,11 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1010   BTC                 BTT             Test a bit and clear it     2
 1010 1011   BTS                 BTT             Test a bit and set it       2    
 1010 1100   SWO                 SWO             Switch Octet                1
-1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       16
+1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       32+M
 1010 1110   SEF                 FLG             Set flag bit                1
 1010 1111   CLF                 FLG             Clear flag bit              1
-1011 000x   PSH                 STK             Push to stack               1+
-1011 001x   POP                 STK             Pop from stack              1+
+1011 000x   PSH                 STK             Push to stack               1+1M
+1011 001x   POP                 STK             Pop from stack              1+1M
 1011 0100   SFL*                SFL             Stack Flush                 1
 1011 0101   MMR/MMW/MML/MMS     MMU             Read/Write/State Load/Store 1/8
 1011 011x   SET*                SET             Set register to value       1
@@ -662,12 +662,12 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
 1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg   1
-1011 1100   HWQ         X       HWQ             Hardware Bus Query          1
+1011 1100   HWQ         X       HWQ             Hardware Bus Query          2
 1011 1101   SLP         X       ---             Sleep until Interrupt       1
-1011 1110   SWI                 ---             Raise SOFTWARE Interrupt    1    
-1011 1111   RTI         X       ---             Return from Interrupt       16
-1100 0000   JMP                 JMP             Jump                        1
-1100 0001   JMS                 JMP             Jump to Subroutine          2
+1011 1110   SWI                 ---             Raise SOFTWARE Interrupt    2+2M    
+1011 1111   RTI         X       ---             Return from Interrupt       4+2M
+1100 0000   JMP                 JMP             Jump                        1+1M
+1100 0001   JMS                 JMP             Jump to Subroutine          1+2M
 1100 0010   ---                 ---             UNDEFINED (1 opcode)        -
 1100 0011   ---                 ---             UNDEFINED (1 opcode)        -
 1100 01xx   ---	                ---             UNDEFINED (4 opcodes)       -
@@ -692,16 +692,16 @@ ALU Bit Pattern
         E = 8-bit Mode. See Note 3, below.
     
     rrrE AAAA OOOO ORRR     Addressing Mode     Example Syntax          Cycles
-    ...E 0000       RRR     Immediate           ADD R0, $1234           +1
-    ...E 0001       RRR     Absolute            ADD R0, [$1234]         +1
-    rrrE 0010       RRR     Register            ADD R0, R1              
-    rrrE 0011       RRR     Indirect            ADD R0, [R1]          
-    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      +1
-                            Indirect Offset     ADD R0, [R1,$1234]      +1
-    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]
-    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           
-    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           
-    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]                   
+    ...E 0000       RRR     Immediate           ADD R0, $1234           1+M
+    ...E 0001       RRR     Absolute            ADD R0, [$1234]         1+M
+    rrrE 0010       RRR     Register            ADD R0, R1              1
+    rrrE 0011       RRR     Indirect            ADD R0, [R1]            1+M
+    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      1+M
+                            Indirect Offset     ADD R0, [R1,$1234]      1+M
+    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]          1
+    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           1+M
+    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           1+M
+    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]         1+M        
     
         Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
@@ -740,7 +740,7 @@ BRA Bit Pattern
     FEDC BA98 7654 3210                        
     bbbb bbbb OOOO Occc                    
         O = opcode
-        b = signed 8-bit offset
+        b = signed 8-bit offset (multiplied by 2)
         c = condition (See 3.E. 'Branch Operations')
      
 FLG Bit Pattern
