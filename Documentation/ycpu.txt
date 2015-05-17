@@ -616,64 +616,64 @@ changing might be used in all banks).
     
 ==============================[ 3. Instructions ]===============================
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
-0000 0AAA   CMP                 ALU             Compare R and M, sets FL    1+M 
-0000 1AAA   NEG                 ALU             R = 0 - R (two's complement)1+M 
-0001 0AAA   ADD                 ALU             R = R + M                   1+M 
-0001 1AAA   SUB                 ALU             R = R - M                   1+M 
-0010 0AAA   ADC                 ALU             R = R + M + C               1+M 
-0010 1AAA   SBC                 ALU             R = R - M - (1 - C)         1+M 
-0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)       2+M  
+0000 0AAA   CMP                 ALU             Compare R and M, sets FL     1+M 
+0000 1AAA   NEG                 ALU             R = 0 - R (two's complement) 1+M 
+0001 0AAA   ADD                 ALU             R = R + M                    1+M 
+0001 1AAA   SUB                 ALU             R = R - M                    1+M 
+0010 0AAA   ADC                 ALU             R = R + M + C                1+M 
+0010 1AAA   SBC                 ALU             R = R - M - (1 - C)          1+M 
+0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)        4+M  
 0011 1AAA   DIV                 ALU             R = R / M                   32+M
-0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b)2+M
+0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b) 4+M
 0100 1AAA   DVI                 ALU             R = R / M (signed)          32+M
 0101 0AAA   MOD                 ALU             R = R % M (modulus)         32+M
 0101 1AAA   MDI                 ALU             R = R % M (modulus, signed) 32+M
-0110 0AAA   AND                 ALU             Bitwise and                 1+M
-0110 1AAA   ORR                 ALU             Bitwise or                  1+M
-0111 0AAA   EOR                 ALU             Bitwise exclusive or        1+M  
-0111 1AAA   NOT                 ALU             Bitwise not                 1+M
+0110 0AAA   AND                 ALU             Bitwise and                  1+M
+0110 1AAA   ORR                 ALU             Bitwise or                   1+M
+0111 0AAA   EOR                 ALU             Bitwise exclusive or         1+M  
+0111 1AAA   NOT                 ALU             Bitwise not                  1+M
 
-1000 0AAA   LOD                 ALU             Load                        1+M
-1000 1AAA   STO                 ALU             Store                       1+M
-1001 0bbb   Bxx                 BRA             Branch operations           1
-1001 1bbb   Bxx                 BRA             Branch operations           1
-1010 0000   ASL                 SHF             Arithmetic Shift left       1
-1010 0001   LSL                 SHF             Logical Shift Left          1
-1010 0010   ROL                 SHF             Rotate Through-Carry Left   1
-1010 0011   RNL                 SHF             Rotate No-Carry Left        1
-1010 0100   ASR                 SHF             Arithmetic Shift Right      4
-1010 0101   LSR                 SHF             Logical Shift Right         4
-1010 0110   ROR                 SHF             Rotate Through-Carry Right  1
-1010 0111   RNR                 SHF             Rotate No-Carry Right       1
-1010 1000   BTT                 BTT             Test a bit                  2
-1010 1001   BTX                 BTT             Test a bit and change it    2
-1010 1010   BTC                 BTT             Test a bit and clear it     2
-1010 1011   BTS                 BTT             Test a bit and set it       2    
-1010 1100   SWO                 SWO             Switch Octet                1
-1010 1101   FPA/FPS/FPM/FPD     FPU             32-bit FPU operations       32+M
-1010 1110   SEF                 FLG             Set flag bit                1
-1010 1111   CLF                 FLG             Clear flag bit              1
-1011 000x   PSH                 STK             Push to stack               1+1M
-1011 001x   POP                 STK             Pop from stack              1+1M
-1011 0100   SFL*                SFL             Stack Flush                 1
-1011 0101   MMR/MMW/MML/MMS     MMU             Read/Write/State Load/Store 1/8
-1011 011x   SET*                SET             Set register to value       1
-1011 1000   INC/ADI             IMM             Inc / Add immediate         1
-1011 1001   DEC/SBI             IMM             Dec / Subtract immediate    1
-1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx   1
-1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg   1
-1011 1100   HWQ         X       HWQ             Hardware Bus Query          2
-1011 1101   SLP         X       ---             Sleep until Interrupt       1
-1011 1110   SWI                 ---             Raise SOFTWARE Interrupt    2+2M    
-1011 1111   RTI         X       ---             Return from Interrupt       4+2M
-1100 0000   JMP                 JMP             Jump                        1+1M
-1100 0001   JMS                 JMP             Jump to Subroutine          1+2M
-1100 0010   ---                 ---             UNDEFINED (1 opcode)        -
-1100 0011   ---                 ---             UNDEFINED (1 opcode)        -
-1100 01xx   ---	                ---             UNDEFINED (4 opcodes)       -
-1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)       -
-1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)      -
-111x xxxx   ---                 ---             UNDEFINED (32 opcodes)      -
+1000 0AAA   LOD                 ALU             Load                         1+M
+1000 1AAA   STO                 ALU             Store                        1+M
+1001 0bbb   Bxx                 BRA             Branch operations            1
+1001 1bbb   Bxx                 BRA             Branch operations            1
+1010 0000   ASL                 SHF             Arithmetic Shift left        1
+1010 0001   LSL                 SHF             Logical Shift Left           1
+1010 0010   ROL                 SHF             Rotate Through-Carry Left    1
+1010 0011   RNL                 SHF             Rotate No-Carry Left         1
+1010 0100   ASR                 SHF             Arithmetic Shift Right       4
+1010 0101   LSR                 SHF             Logical Shift Right          4
+1010 0110   ROR                 SHF             Rotate Through-Carry Right   1
+1010 0111   RNR                 SHF             Rotate No-Carry Right        1
+1010 1000   BTT                 BTT             Test a bit                   2
+1010 1001   BTX                 BTT             Test a bit and change it     2
+1010 1010   BTC                 BTT             Test a bit and clear it      2
+1010 1011   BTS                 BTT             Test a bit and set it        2    
+1010 1100   SWO                 SWO             Switch Octet                 1
+1010 1101   FP*                 FPU             32-bit FPU operations      32+4M
+1010 1110   SEF                 FLG             Set flag bit                 1
+1010 1111   CLF                 FLG             Clear flag bit               1
+1011 000x   PSH                 STK             Push to stack                1+1M
+1011 001x   POP                 STK             Pop from stack               1+1M
+1011 0100   SFL*                SFL             Stack Flush                  1
+1011 0101   MMR/MMW/MML/MMS     MMU             Read/Write/State Lod/Sto   1+(1/8)M
+1011 011x   SET*                SET             Set register to value        1
+1011 1000   INC/ADI             IMM             Inc / Add immediate          1
+1011 1001   DEC/SBI             IMM             Dec / Subtract immediate     1
+1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx    1
+1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg    1
+1011 1100   HWQ         X       HWQ             Hardware Bus Query           2
+1011 1101   SLP         X       ---             Sleep until Interrupt        1
+1011 1110   SWI                 ---             Raise SOFTWARE Interrupt     2+2M    
+1011 1111   RTI         X       ---             Return from Interrupt        4+2M
+1100 0000   JMP                 JMP             Jump                         1+1M
+1100 0001   JMS                 JMP             Jump to Subroutine           1+2M
+1100 0010   ---                 ---             UNDEFINED (1 opcode)         -
+1100 0011   ---                 ---             UNDEFINED (1 opcode)         -
+1100 01xx   ---                 ---             UNDEFINED (4 opcodes)        -
+1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)        -
+1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)       -
+111x xxxx   ---                 ---             UNDEFINED (32 opcodes)       -
 
 There are 61 remaining unspecified opcodes. These remaining unspecified opcodes
 will raise the 'undefined' interrupt on execution.
