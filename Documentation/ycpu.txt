@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.4ac
+Version 0.5 RC0
 
 =============================[ Table of Contents ]==============================
 
@@ -77,8 +77,8 @@ cleared.
 
 For all other instructions there is no support for 8-bit math. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
-which has a 32-bit result, with the upper 16 bits in R0, and FPU instructions,
-which deal with 32-bit data).
+which has a 32-bit result, with the upper 16 bits of the result stored in R0,
+and FPU instructions, which deal with 32-bit data).
 
 2.2. MEMORY ACCESS
 
@@ -90,17 +90,9 @@ loads the two bytes for a 16-bit word in separate memory access cycles.
 For 8-bit access, the YCPU loads only one 8-bit value. A single 8-bit load is
 as fast as a 16-bit load.
 
-For quick retrieval of 8-bit values from 16-bit registers, the Switch Octet
-(SWO) instruction allows easy and fast access to individual 8-bit bytes.
-
-All instructions and immediate constants must be aligned to a 16-bit address.
-The processor cannot execute instructions at 8-bit aligned addresses. If the
-processor ticks when the PC’s lowest bit is set, the processor will raise
-an ‘UnalignedEx’ interrupt.
-
 2.3. ON-CHIP HARDWARE
 
-All models of the YCPU are guaranteed to have 64kb of internal RAM on board.
+All models of the YCPU are guaranteed to have 4 x 16kb of internal RAM on board.
 The YCPU will also have a variable amount of ROM on chip, depending on the
 model of the YCPU. The YCPU can determine how much RAM/ROM is available by
 querying 'Hardware Device 0' on the Hardware Bus.
@@ -123,7 +115,7 @@ R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
 used as both data and address registers, are interchangeable, and are directly
 referenced and modified by most instructions.
 
-R0 is also used for the high 16-bits of the result of the YCPU’s 16x6b=32b math:
+R0 is also used for the high 16-bits of the result of the 16x16b=32b math:
 
     * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
       If R0 is also the src/dest register, then the high 16-bits are lost, and
@@ -324,9 +316,9 @@ It then executes the following sequence:
 * For the interrupts which are raised by an error condition, the PC is rewound
   to the instruction that *caused* the the interrupt. Interrupts raised by error
   conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
-  BankFault ($05), UnprivOpcode ($06), UndefOpcode ($07). and UnalignedEx ($08).
-  For all other interrupts, the PC is unchanged, pointing to the address following
-  the instruction the processor was executing immediately prior to the interrupt.
+  BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
+  interrupts, the PC is unchanged, pointing to the address following the
+  instruction the processor was executing immediately prior to the interrupt.
 
 
 2.D.5. RETURNING FROM AN INTERRUPT
@@ -373,8 +365,7 @@ $6  UnprivOpcode    Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
 $7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
                     opcode.
-$8  UnalignedEx     Raised when the processor attempts to execute an instruction
-                    at an address which is not 16-bit aligned.
+$8  RESERVED        Not currently used, never raised.
 $9  RESERVED        Not currently used, never raised.
 $A  RESERVED        Not currently used, never raised.
 $B  RESERVED        Not currently used, never raised.
@@ -386,9 +377,26 @@ $E  DebugQuery      Raised when the processor's DEBUG line is pulled high.
 $F  SWI             Raised by the SWI opcode.
 
 
+2.D.6. BANK FAULTS
+
+When a bank fault is raised, the processor status bits U, W, and E will describe
+the operation that caused the bank fault:
+        U W E   Bank Fault Type
+        0 0 0   Attempted access to bank that is not loaded.
+        0 0 1   Attempted execute in execute-protected memory.
+        0 1 0   Attempted supervisor write of write-protected memory.
+        1 0 0   Attempted user read of supervisor-only memory.
+        1 0 1   Attempted execute in supervisor-only memory while in user mode.
+        1 1 0   Attempted user write of supervisor-only memory.
+        
+Note that writes to ROM banks will fail silently unless the MMU is enabled and
+the write-protect bit is set, which will generate a bank fault.
+
+
 ===========================[ 2.E. Addressing Modes ]============================
-Any instruction which requires source data can can access that data using one
-of eight addressing modes. The addressing modes are detailed below: 
+Many instructions are register-only: they can take only data loaded in registers
+as their source. But all Load, Store, ALU, and Jump instructions can access
+memory using these nine addressing modes:
 
 Addressing Mode     Syntax      Value is...
 Immediate           $1234       Value of Next Word
@@ -396,7 +404,8 @@ Absolute            [$1234]     Mem[Next Word]
 Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
-Absolute Offset     [$1234,Rx]  Mem[R + Next Word] /// Same as Indirect Offset
+Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
+Stack Offset        S[$0-$7]    Stack[Offset]       // Offset limited to 0-7
 Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented.
 Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented.
 Indirect Indexed    [Rx,Rx]     Mem[R+R]
@@ -466,7 +475,7 @@ other 8 describe the configuration of the 4 banks of memory in user mode.
 
 Word $00___________     Word $01___________
 FEDC BA98 7654 3210     FEDC BA98 7654 3210
-.... ..bb bbbb bbbb     SWEP A... DDDD DDDD
+DDDD DDDD bbbb bbbb     SWEP A... .... ....
 
     S - Supervisor only flag:
         0:  User mode and Supervisor mode may access this bank.
@@ -488,34 +497,77 @@ FEDC BA98 7654 3210     FEDC BA98 7654 3210
         
 2.F.4. ADDRESS TRANSLATION
 
-The MMU has access to 32 bits of physical address space. A physical address is:
+The MMU has access to 30 bits of physical address space. A physical address is:
 
         FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        DDDD DDDD bbbb bbbb     bbaa aaaa aaaa aaaa
+        ..DD DDDD DDbb bbbb     bbaa aaaa aaaa aaaa
 
-The 18 'b' bits are the bank select bits taken from a mmu cache entry,
-and 'a' is the 14-bit address of a byte within that bank.
+'a' is the 14-bit address of a byte within that bank.
+'b' is the 8-bit index of the device bank mapped to that 16kb bank.
+'D' is the 8-bit hardware bus index that the bank is taken from.
 
 The 10 'b' bits reference a bank of RAM or ROM from a device on the hardware
 bus. The 8 ‘D’ bits are a 8-bit hardware bus index. Because no hardware device
-can have more than 2^10 = 1024 banks, each bank can host no more than 16
-megabytes of memory, and the MMU as a whole can most no more than 2^32 =
-4 gigabytes of memory.
+can have more than 2^8 = 256 banks, each bank can host no more than 4
+megabytes of memory, and the MMU as a whole can most no more than 2^30 bytes =
+1024 megabytes of memory.
 
-2.F.5. BANK FAULTS
 
-When a bank fault is raised, the processor status bits U, W, and E will describe
-the operation that caused the bank fault:
-        U W E   Bank Fault Type
-        0 0 0   Attempted access to bank that is not loaded.
-        0 0 1   Attempted execute in execute-protected memory.
-        0 1 0   Attempted supervisor write of write-protected memory.
-        1 0 0   Attempted user read of supervisor-only memory.
-        1 0 1   Attempted execute in supervisor-only memory while in user mode.
-        1 1 0   Attempted user write of supervisor-only memory.
+2.F.5. FAR JUMPS
 
-Note that writes to ROM banks will fail silently unless the MMU is enabled and
-the write-protect bit is set, which will generate a bank fault.
+The YCPU is internally 16-bit, and thus can address only 16-bits of logical
+address space. When the MMU is active, this memory is comprised of four 'banks',
+each of 16384 bytes. Which banks of memory are placed in memory is determined
+by the MMU; as noted in 2.F.3., supra, a User may manipulate the MMU cache
+directly to place specific banks of memory within the logical address space.
+
+A user may also replace a bank in memory using a 'far jump'. Where a normal jump
+instruction sets only the PC register, a far jump will also switch a new bank of
+memory into the address space containing the new PC value. The addressing mode
+of the instruction will indicate where the processor will find the word
+describing which Device and which Bank will occupy the address space containing
+the new address of the PC.
+
+An example of a far jump with immediate addressing will help illustrate how this
+works. Note that 'immediate addressing' indicates that the processor uses the
+next word following the current instruction as the new value of the new PC. With
+a far jump, the processor will use a second word immediately following the first
+operand as the second operand, as follows:
+
+    JMP.F $F006:$010E ; far jump to address $F006 in bank $0E in device $01.
+    
+    The processor sees this instruction as 3 words (6 bytes) containing five
+    sets of data:
+    
+    $00________________ $01________________ $02________________
+    OOOO OOOO OOOO OOOO bbaa aaaa aaaa aaaa DDDD DDDD BBBB BBBB
+    
+    O = 16-bit opcode, indicating a 'far jump immediate' instruction.
+    b = the bank which will contain the new PC value.
+    a = the address of the PC within that bank.
+    D = the index of the Device which will provide the bank.
+    B = the index of the Bank within the Device.
+    
+The two 'b' bits indicate the MMU bank which the new device bank will be
+'switched' into. The top two bits of '$F006' are '11', or '3'. Thus, the bank
+will switch bank $0E from device $01 into the fourth MMU address space (MMU
+banks are zero indexed) which extends from $C000 to $FFFF.
+    
+Following the operation, the PC will be set to $F006, and the fourth MMU bank
+will contain Bank index $0E from Device $01.
+
+Note 1: far jumps will clear all flags in the upper word for the MMU cache entry
+        containing that bank.
+Note 2: 'far jumps' are only accessible from Supervisor mode. If the processor
+        attempts to execute a 'far jump' while in user mode, the processor will
+        raise an 'UnprivOpcode' exception.
+
+2.F.7. UNLOADED MEMORY
+
+Any memory accesses to addresses which are not connected to real memory will
+result in reads with all bits set. Thus, a 16-bit read of address $C000, when
+the fourth MMU bank is set to memory that does not exist, will result in a 
+value of $FFFF.
         
 ============================[ 2.G. Boot Sequence ]==============================
 At initial power on, the state of all memory, registers, and cache is unknown.
@@ -529,8 +581,8 @@ in the following known state:
     PC <- [InterruptTable[$0]]      ; Execute 'RESET' interrupt code.
 
 Because Memory Banking is disabled, the processor's virtual address space is set
-up as follows: $0000-$0FFF is processor ROM $0000-$0FFF, and $1000-$FFFF is 
-processor RAM $1000-$FFFF. This is discussed in further detail in 2.F.1., infra.
+up as follows: $0000-$3FFF is processor ROM, and $4000-$FFFF is processor RAM.
+This is discussed in further detail in 2.F.1., supra.
     
 
 =========================[ 2.H. The Real Time Clock ]===========================
@@ -616,70 +668,71 @@ changing might be used in all banks).
     
 ==============================[ 3. Instructions ]===============================
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
-0000 0AAA   CMP                 ALU             Compare R and M, sets FL     1+M 
-0000 1AAA   NEG                 ALU             R = 0 - R (two's complement) 1+M 
-0001 0AAA   ADD                 ALU             R = R + M                    1+M 
-0001 1AAA   SUB                 ALU             R = R - M                    1+M 
-0010 0AAA   ADC                 ALU             R = R + M + C                1+M 
-0010 1AAA   SBC                 ALU             R = R - M - (1 - C)          1+M 
-0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)        4+M  
-0011 1AAA   DIV                 ALU             R = R / M                   32+M
-0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b) 4+M
-0100 1AAA   DVI                 ALU             R = R / M (signed)          32+M
-0101 0AAA   MOD                 ALU             R = R % M (modulus)         32+M
-0101 1AAA   MDI                 ALU             R = R % M (modulus, signed) 32+M
-0110 0AAA   AND                 ALU             Bitwise and                  1+M
-0110 1AAA   ORR                 ALU             Bitwise or                   1+M
-0111 0AAA   EOR                 ALU             Bitwise exclusive or         1+M  
-0111 1AAA   NOT                 ALU             Bitwise not                  1+M
+0000 0AAA   CMP                 ALU             Compare R and M, sets FL      1
+0000 1AAA   NEG                 ALU             R = 0 - R (two's complement)  1
+0001 0AAA   ADD                 ALU             R = R + M                     1
+0001 1AAA   SUB                 ALU             R = R - M                     1  
+0010 0AAA   ADC                 ALU             R = R + M + C                 1  
+0010 1AAA   SBC                 ALU             R = R - M - (1 - C)           1  
+0011 0AAA   MUL                 ALU             R = R * M (16x16=32b)         4   
+0011 1AAA   DIV                 ALU             R = R / M                    32 
+0100 0AAA   MLI                 ALU             R = R * M (signed 16x16=32b)  4 
+0100 1AAA   DVI                 ALU             R = R / M (signed)           32 
+0101 0AAA   MOD                 ALU             R = R % M (modulus)          32 
+0101 1AAA   MDI                 ALU             R = R % M (modulus, signed)  32 
+0110 0AAA   AND                 ALU             Bitwise and                   1 
+0110 1AAA   ORR                 ALU             Bitwise or                    1 
+0111 0AAA   EOR                 ALU             Bitwise exclusive or          1   
+0111 1AAA   NOT                 ALU             Bitwise not                   1 
 
-1000 0AAA   LOD                 ALU             Load                         1+M
-1000 1AAA   STO                 ALU             Store                        1+M
-1001 0bbb   Bxx                 BRA             Branch operations            1
-1001 1bbb   Bxx                 BRA             Branch operations            1
-1010 0000   ASL                 SHF             Arithmetic Shift left        1
-1010 0001   LSL                 SHF             Logical Shift Left           1
-1010 0010   ROL                 SHF             Rotate Through-Carry Left    1
-1010 0011   RNL                 SHF             Rotate No-Carry Left         1
-1010 0100   ASR                 SHF             Arithmetic Shift Right       4
-1010 0101   LSR                 SHF             Logical Shift Right          4
-1010 0110   ROR                 SHF             Rotate Through-Carry Right   1
-1010 0111   RNR                 SHF             Rotate No-Carry Right        1
-1010 1000   BTT                 BTT             Test a bit                   2
-1010 1001   BTX                 BTT             Test a bit and change it     2
-1010 1010   BTC                 BTT             Test a bit and clear it      2
-1010 1011   BTS                 BTT             Test a bit and set it        2    
-1010 1100   SWO                 SWO             Switch Octet                 1
-1010 1101   FP*                 FPU             32-bit FPU operations      32+4M
-1010 1110   SEF                 FLG             Set flag bit                 1
-1010 1111   CLF                 FLG             Clear flag bit               1
-1011 000x   PSH                 STK             Push to stack                1+1M
-1011 001x   POP                 STK             Pop from stack               1+1M
-1011 0100   SFL*                SFL             Stack Flush                  1
-1011 0101   MMR/MMW/MML/MMS     MMU             Read/Write/State Lod/Sto   1+(1/8)M
-1011 011x   SET*                SET             Set register to value        1
-1011 1000   INC/ADI             IMM             Inc / Add immediate          1
-1011 1001   DEC/SBI             IMM             Dec / Subtract immediate     1
-1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx    1
-1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg    1
-1011 1100   HWQ         X       HWQ             Hardware Bus Query           2
-1011 1101   SLP         X       ---             Sleep until Interrupt        1
-1011 1110   SWI                 ---             Raise SOFTWARE Interrupt     2+2M    
-1011 1111   RTI         X       ---             Return from Interrupt        4+2M
-1100 0000   JMP                 JMP             Jump                         1+1M
-1100 0001   JMS                 JMP             Jump to Subroutine           1+2M
-1100 0010   ---                 ---             UNDEFINED (1 opcode)         -
-1100 0011   ---                 ---             UNDEFINED (1 opcode)         -
-1100 01xx   ---                 ---             UNDEFINED (4 opcodes)        -
-1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)        -
-1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)       -
-111x xxxx   ---                 ---             UNDEFINED (32 opcodes)       -
+1000 0AAA   LOD                 ALU             Load                          1 
+1000 1AAA   STO                 ALU             Store                         1 
+1001 0bbb   Bxx                 BRA             Branch operations             1
+1001 1bbb   Bxx                 BRA             Branch operations             1
+1010 0000   ASL                 SHF             Arithmetic Shift left         1
+1010 0001   LSL                 SHF             Logical Shift Left            1
+1010 0010   ROL                 SHF             Rotate Through-Carry Left     1
+1010 0011   RNL                 SHF             Rotate No-Carry Left          1
+1010 0100   ASR                 SHF             Arithmetic Shift Right        4
+1010 0101   LSR                 SHF             Logical Shift Right           4
+1010 0110   ROR                 SHF             Rotate Through-Carry Right    1
+1010 0111   RNR                 SHF             Rotate No-Carry Right         1
+1010 1000   BTT                 BTT             Test a bit                    2
+1010 1001   BTX                 BTT             Test a bit and change it      2
+1010 1010   BTC                 BTT             Test a bit and clear it       2
+1010 1011   BTS                 BTT             Test a bit and set it         2    
+1010 1100   FPx                 FPU             32-bit FPU operations         X 
+1010 1101   ---                 ---             UNDEFINED                     -
+1010 1110   SEF                 FLG             Set flag bit                  1
+1010 1111   CLF                 FLG             Clear flag bit                1
+1011 000x   PSH                 STK             Push to stack                 1 
+1011 001x   POP                 STK             Pop from stack                1 
+1011 0100   SFL*                SFL             Stack Flush                   1
+1011 0101   MMR/MMW/MML/MMS     MMU             MMU Rd/Wri/Lod/Sto            1
+1011 011x   SET*                SET             Set register to value         1
+1011 1000   INC/ADI             IMM             Inc / Add immediate           1
+1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
+1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx     1
+1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg     1
+1011 1100   HWQ         X       HWQ             Hardware Bus Query            2
+1011 1101   SLP         X       ---             Sleep until Interrupt         1
+1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
+1011 1111   RTI         X       ---             Return from Interrupt         4 
+1100 0000   JMP                 JMP             Jump                          1 
+1100 0001   JSR                 JMP             Jump to Subroutine            2 
+1100 0010   ---                 ---                                           -
+1100 0011   ---                 ---                                           -
+1100 01xx   ---                 ---             UNDEFINED (4 opcodes)         -
+1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)         -
+1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)        -
+111x xxxx   ---                 ---             UNDEFINED (32 opcodes)        -
 
-There are 61 remaining unspecified opcodes. These remaining unspecified opcodes
-will raise the 'undefined' interrupt on execution.
+There are 63 remaining undefined opcodes. Undefined opcodes will raise the
+'undefined' interrupt on execution.
 
 
 ============================[ 3.A. Bit Patterns ]===============================
+
 ALU Bit Pattern
     FEDC BA98 7654 3210                             
     rrrE AAAA OOOO ORRR
@@ -692,16 +745,16 @@ ALU Bit Pattern
         E = 8-bit Mode. See Note 3, below.
     
     rrrE AAAA OOOO ORRR     Addressing Mode     Example Syntax          Cycles
-    ...E 0000       RRR     Immediate           ADD R0, $1234           1+M
-    ...E 0001       RRR     Absolute            ADD R0, [$1234]         1+M
-    rrrE 0010       RRR     Register            ADD R0, R1              1
-    rrrE 0011       RRR     Indirect            ADD R0, [R1]            1+M
-    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      1+M
-                            Indirect Offset     ADD R0, [R1,$1234]      1+M
-    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]          1
-    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           1+M
-    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           1+M
-    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]         1+M        
+    ...E 0000       RRR     Immediate           ADD R0, $1234           +1m
+    ...E 0001       RRR     Absolute            ADD R0, [$1234]         +2m
+    rrrE 0010       RRR     Register            ADD R0, R1              
+    rrrE 0011       RRR     Indirect            ADD R0, [R1]            +1m
+    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      +2m
+                            Indirect Offset     ADD R0, [R1,$1234]      +2m
+    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]          +1m
+    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           +1m
+    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           +1m
+    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]         +1m       
     
         Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
@@ -787,18 +840,53 @@ JMP Bit Pattern
         O = Opcode
         A = Addressing mode
         r = Source register
-        i = Index Register (lower 2 bits, high bit in bit 7)
+        i = Index Register. See Note 1, below.
+        s = Stack Offset. See Note 2, below.
+        F = Far Mode. See Note 3, below.
         
-    AAAr rrii OOOO OOOO     Addressing Mode     Syntax              Cycles
-    000. ...0               Immediate           JMP $1234           +1
-    000. ...1               Absolute            JMP [$1234]         +1
-    001r rr..               Register            JMP R1              
-    010r rr..               Indirect            JMP [R1]            
-    011r rr..               Indirect Offset     JMP [R1,$1234]      +1
-    100r rr..               Indirect PostInc    JMP [R1+]           
-    101r rr..               Indirect PostDec    JMP [-R1]           
-    110r rrii               Indirect Indexed    JMP [R1,R2]         
-    111r rrii               Indirect Indexed    JMP [R1,R2]         
+    rrrF AAAA OOOO OOOO     Addressing Mode     Example Syntax          Cycles
+    ...F 0000               Immediate           JMP $1234               +1m
+    ...F 0001               Absolute            JMP [$1234]             +2m
+    rrrF 0010               Register            JMP R              
+    rrrF 0011               Indirect            JMP [R]                 +1m
+    rrrF 0100               Absolute Offset     JMP [$1234,R]           +2m
+                            Indirect Offset     JMP [R,$1234]           +2m
+    sssF 0101               Stack Offset        JMP S[$00]              +1m
+    rrrF 0110               Indirect PostInc    JMP [R+]                +1m
+    rrrF 0111               Indirect PreDec     JMP [-R]                +1m
+    rrrF 1iii               Indirect Indexed    JMP [R,i]               +1m
+    
+        Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
+                the index register in the 'Indirect Indexed' addressing mode.
+        Note 2: The 's' bits describe a value between $00 and $07. This value
+                is used as an offset into the stack. S[$00] returns the value
+                at the stack pointer; S[$07] returns the value at [StckPtr + 7].
+        Note 3: When the 'F' bit is clear, the jump is 'short', and the PC will
+                be set to the value implied by the addressing mode, within the 
+                currently loaded 16-bit logical memory space.
+                When the 'F' bit is set, the jump is 'far', and will not only
+                change the PC, but will also change the logical memory space
+                within the bank of the upper address. This process is detailed
+                in 2.F.5., supra.
+                
+                Addressing Mode     Upper Address   Lower Address...    
+                Immediate           PC + 4          PC + 2
+                Absolute            [(PC + 2) + 2]  [PC + 2]
+                Register            R[+1]           R       // See Note 4.
+                Indirect            [R + 2]         [R]
+                Absolute Offset     [($1234,R) + 2] [$1234,R]
+                Indirect Offset     [(R,$1234) + 2] [R,$1234]
+                Stack Offset        S[s + 1]        S[s]    // +1 stk = +2 bytes
+                Indirect PostInc    [R + 2]         [R]     // post-increment
+                Indirect PreDec     [R - 4]         [R - 2] // pre-decrement
+                Indirect Indexed    [R,i + 2]       [R,i]
+                
+        Note 4: Register addressing with far jumps takes the PC address from the
+                specified register, and the 'upper address' from the register
+                with the next index. Register indexes wrap at 8. Examples:
+                JMP.F   R0      ; PC=R0 @ R1
+                JMP.F   R4      ; PC=R4 @ R5
+                JMP.F   R7      ; PC=R7 @ R0
     
 IMM Bit Pattern
     FEDC BA98 7654 3210
@@ -821,14 +909,14 @@ MMU Bit Pattern
         
 SET Bit Pattern
     FEDC BA98 7654 3210
-    RRRv vvvv OOOO OOOV
+    RRRA vvvv OOOO OOOV
         O = Opcode
         R = destination register
         v = value
-        V = alternate value trigger.
+        A = alternate value select
         
-        If V == 0:            R = v        Constant values from $00 - $1F
-        If V == 1:
+        If A == 0:            R = v        Constant values from $00 - $1F
+        If A == 1:
             v = $00...$0A   : R = (2^(5+v)) Power of two constants 2^5 ~ 2^15.
             v = $0B...$1F   : R = ($FFE0 + v).
 
@@ -837,6 +925,19 @@ SFL Bit Pattern
     vvvv vvvv OOOO OOOO
         O = Opcode
         v = number of 16-bit values to flush from the stack.
+        
+SHF Bit Pattern
+    FEDC BA98 7654 3210 
+    rrrR ssss OOOO ODoo
+        O = Opcode
+        o = Sub-Opcode
+            00 = ASx, 01 = LSx, 10 = ROx, 11 = RNx
+        D = direction
+            0 = L, 1 = R
+        r = register to shift
+        R = shift value select, see s
+        s = if R = 0, bits to shift (1-16)
+            if R = 1, register to use as shift value (register index = .sss)
             
 STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
@@ -853,32 +954,6 @@ STK Bit Pattern < 2 / 2 >
         p = push/pop PS register                                Y
         u = push/pop USP                                        Y
         s = push/pop current Stack Pointer (USP / SSP)          N
-        
-
-SHF Bit Pattern
-    FEDC BA98 7654 3210 
-    rrrR ssss OOOO ODoo
-        O = Opcode
-        o = Sub-Opcode
-            00 = ASx, 01 = LSx, 10 = ROx, 11 = RNx
-        D = direction
-            0 = L, 1 = R
-        r = register to shift
-        R = shift value select, see s
-        s = if R = 0, bits to shift (1-16)
-            if R = 1, register to use as shift value (r = .sss)
-        
-SWO Bit Pattern
-    FEDC BA98 7654 3210
-    RRRr rroo OOOO OOOO
-        O = Opcode
-        r = source register
-        R = dest register
-        o = operation
-            00: src low octet -> dest low octet, clear dest upper 8 bits.
-            01: src high octect -> dest low octet, clear dest upper 8 bits.
-            10: src low octect -> dest low octet, preserves dest upper 8 bits.
-            11: src low octect -> dest high octect, preserves dest lower 8 bits.
         
 XSR Bit Pattern
     FEDC BA98 7654 3210                        
@@ -1374,7 +1449,7 @@ JMP         Unconditional Jump to new address.
     2. Execution continues.
 
 
-JMS         Unconditional Jump, saving return address.
+JSR         Unconditional Jump, saving return address.
     1. PC is pushed to the stack. [PC is the address of the NEXT operation]
     2. PC is set to the value of M.
     3. Execution continues.
@@ -1537,16 +1612,6 @@ Places the processor into a halted state. No further instructions will be
 executed until a hardware interrupt is received, at which point the processor
 will exit the halted state and continue execution after the interrupt is
 handled.
-
-
-SWO         Switch Octet
-Syntax SWO Rs,Rd,[flags]
-Takes an octet from Rs and places it in Rd. Flags determine which operation
-takes place:
-    SWO R0,R1,LR    ; R0 low octet -> R1 low octet, R1 upper 8 bits cleared.
-    SWO R0,R1,HR    ; R0 high octect -> R1 low octet, R1 upper 8 bits cleared.
-    SWO R0,R1,LW    ; R0 low octet -> R1 low octet, R1 upper 8 bits preserved.
-    SWO R0,R1,HW    ; R0 low octet -> R1 high octet, R1 lower 8 bits preserved.
 
     
 ================================[ 4. History ]==================================
@@ -1724,4 +1789,14 @@ takes place:
   * Got rid of JCX; it is an abomination.
   * Got rid of JMU; it too is an abomination.
   * Added easy instructions for switching context.
-
+0.5 RC0 05/18/2015
+  * Got rid of SWO; it also is an abomination.
+  * Got rid of UnalignedEx. Processor should be able to execute unaligned; who
+    care if it's slower?
+  * Changed MMU Cache: now 256 devices, each with 256 banks. 1gig of physical
+    address space.
+  * Added far jump. This is exceptionally cool.
+  * Updated JMP bit pattern to allow for far jumps.
+  * Noted value for unloaded memory addresses.
+  * default name for JMS is JSR. JMS is a ridiculous name. JSR is way better.
+  
