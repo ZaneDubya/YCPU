@@ -56,7 +56,7 @@
     <Compile Include="Assembler\ParserState.cs" />
     <Compile Include="Assembler\Sanity.cs" />
     <Compile Include="Assembler\Scopes.cs" />
-    <Compile Include="Assembler\Opcode.cs" />
+    <Compile Include="Assembler\ParsedOpcode.cs" />
     <Compile Include="Assembler\Parser.cs" />
     <Compile Include="Assembler\Parser.Params.cs" />
     <Compile Include="Assembler\Regex.cs" />

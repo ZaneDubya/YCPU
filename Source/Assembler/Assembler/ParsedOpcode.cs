@@ -10,28 +10,28 @@ using System;
 
 namespace Ypsilon.Assembler
 {
-    public class Opcode
+    public class ParsedOpcode
     {
-        public Opcode()
+        public ParsedOpcode()
         {
             this.AddressingMode = AddressingMode.None;
-            this.Word = 0x0000;
-            this.UsesNextWord = false;
-            this.NextWord = 0x0000;
+            this.OpcodeWord = 0x0000;
+            this.HasImmediateWord = false;
+            this.ImmediateWord = 0x0000;
             this.LabelName = string.Empty;
-            this.Illegal = false;
+            this.IsIllegal = false;
         }
 
-        public ushort Word { get; set; }
+        public AddressingMode AddressingMode { get; set; }
 
-        public bool UsesNextWord { get; set; }
+        public ushort OpcodeWord { get; set; }
 
-        public ushort NextWord { get; set; }
+        public bool HasImmediateWord { get; set; }
+
+        public ushort ImmediateWord { get; set; }
 
         public string LabelName { get; set; }
 
-        public bool Illegal { get; set; }
-
-        public AddressingMode AddressingMode { get; set; }
+        public bool IsIllegal { get; set; }
     }
 }

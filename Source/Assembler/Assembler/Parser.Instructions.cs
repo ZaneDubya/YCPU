@@ -319,6 +319,8 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
+        // FPU instructions would go here. Not currently implemented.
+
         #region Set flags
         ushort[] AssembleSEF(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
@@ -335,21 +337,64 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        #region Stack Push/Pop
+        #region Stack Push/Pop/Flush
         ushort[] AssemblePSH(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountMinMax(param, 1, 13);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleSTK(0xB0, param, false);
+            return AssembleSTK(0x00B0, param, false);
         }
 
         ushort[] AssemblePOP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountMinMax(param, 1, 13);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleSTK(0xB2, param, true);
+            return AssembleSTK(0x00B2, param, true);
+        }
+
+        ushort[] AssembleSFL(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 1);
+            // base opcode is 0x00B4, high byte is number of stack inst to flush, + 1
+            return AssembleNOP(param, opcodeFlag, state);
         }
         #endregion
+
+        #region MMU
+        ushort[] AssembleMMR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return AssembleMMU((ushort)0x00B5, param[0], param[1]);
+        }
+
+        ushort[] AssembleMMW(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return AssembleMMU((ushort)0x01B5, param[0], param[1]);
+        }
+
+        ushort[] AssembleMML(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 1);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return AssembleJMP((ushort)0x02B5, param[0], state);
+        }
+
+        ushort[] AssembleMMS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 1);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return AssembleJMP((ushort)0x03B5, param[0], state);
+        }
+        #endregion
+
+        ushort[] AssembleSET(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            return AssembleSET((ushort)0x00B6, param[0], param[1]);
+        }
 
         #region Inc/Dec
         ushort[] AssembleINC(string[] param, OpcodeFlag opcodeFlag, ParserState state)
@@ -395,33 +440,33 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        #region MMU
-        ushort[] AssembleMMR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleMMU((ushort)0x00BC, param[0], param[1]);
-        }
-
-        ushort[] AssembleMMW(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleMMU((ushort)0x00BD, param[0], param[1]);
-        }
-
-        ushort[] AssembleMML(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        #region Processor Functions
+        ushort[] AssembleHWQ(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00BE, param[0], state);
+            return AssembleHWQ((ushort)0x00BC, param[0]);
         }
 
-        ushort[] AssembleMMS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        ushort[] AssembleSLP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
-            Sanity.RequireParamCountExact(param, 1);
+            Sanity.RequireParamCountExact(param, 0);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00BF, param[0], state);
+            return new ushort[1] { (ushort)0x00BD };
+        }
+
+        ushort[] AssembleSWI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 0);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return new ushort[1] { (ushort)0x00BE };
+        }
+
+        ushort[] AssembleRTI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 0);
+            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return new ushort[1] { (ushort)0x00BF };
         }
         #endregion
 
@@ -441,47 +486,21 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        #region Processor Functions
-        ushort[] AssembleHWQ(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 1);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleHWQ((ushort)0x00C4, param[0]);
-        }
+        
 
-        ushort[] AssembleSLP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 0);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new ushort[1] { (ushort)0x00C5 };
-        }
+        
 
-        ushort[] AssembleSWI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 0);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new ushort[1] { (ushort)0x00C6 };
-        }
-
-        ushort[] AssembleRTI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 0);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new ushort[1] { (ushort)0x00C7 };
-        }
-        #endregion
-
-        ushort[] AssembleSET(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            return AssembleSET((ushort)0x00B6, param[0], param[1]);
-        }
-
-        #region Macros
+        #region Macros: RTS, NOP
         ushort[] AssembleRTS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return AssemblePOP(new string[1] { "PC" }, opcodeFlag, state);
+        }
+
+        ushort[] AssembleNOP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 0);
+            return new ushort[] { (ushort)0x0280 }; // LOD R0, R0
         }
         #endregion
 
@@ -489,10 +508,10 @@ namespace Ypsilon.Assembler
 
         ushort[] AssembleALU(ushort opcode, string param1, string param2, OpcodeFlag opcodeFlag, ParserState state)
         {
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.Illegal || p2.Illegal)
+            if (p1.IsIllegal || p2.IsIllegal)
                 return null;
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
@@ -504,7 +523,7 @@ namespace Ypsilon.Assembler
                     return null;
                 case AddressingMode.Immediate:
                     // special case: alu.8 immediate with value greater than $FF should raise a warning...
-                    if (opcodeFlag == OpcodeFlag.BitWidth8 && p2.NextWord >= 256)
+                    if (opcodeFlag == OpcodeFlag.BitWidth8 && p2.ImmediateWord >= 256)
                     {
                         throw new Exception("8-bit load operation with an immediate value of greater than 8 bits.");
                     }
@@ -522,7 +541,6 @@ namespace Ypsilon.Assembler
                 case AddressingMode.IndirectOffset:
                     addressingmode = 0x0400;
                     break;
-                // stack goes here
                 case AddressingMode.StackAccess:
                     addressingmode = 0x0500;
                     break;
@@ -533,7 +551,7 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x0700;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int r3 = (p2.Word & 0x0700);
+                    int r3 = (p2.OpcodeWord & 0x0700);
                     addressingmode = (ushort)(0x0800 | r3);
                     break;
             }
@@ -545,22 +563,22 @@ namespace Ypsilon.Assembler
             // FEDC BA98 7654 3210                             
             // rrrE AAAA OOOO ORRR
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | addressingmode | bitwidth | (p1.Word & 0x0007) | ((p2.Word & 0x0007) << 13)));
-            if (p2.UsesNextWord)
+            m_Code.Add((ushort)(opcode | addressingmode | bitwidth | (p1.OpcodeWord & 0x0007) | ((p2.OpcodeWord & 0x0007) << 13)));
+            if (p2.HasImmediateWord)
             {
                 if (p2.LabelName.Length > 0)
                     state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p2.LabelName);
-                m_Code.Add(p2.NextWord);
+                m_Code.Add(p2.ImmediateWord);
             }
             return m_Code.ToArray();
         }
 
         ushort[] AssembleBTT(ushort opcode, string param1, string param2)
         {
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.Illegal || p2.Illegal)
+            if (p1.IsIllegal || p2.IsIllegal)
                 return null;
 
             // p1 MUST be a register.
@@ -573,11 +591,11 @@ namespace Ypsilon.Assembler
             switch (p2.AddressingMode)
             {
                 case AddressingMode.Immediate:
-                    if (p2.Word >= 16)
+                    if (p2.OpcodeWord >= 16)
                         return null;
                     break;
                 case AddressingMode.Register:
-                    if (p2.Word >= 8)
+                    if (p2.OpcodeWord >= 8)
                         return null;
                     break;
                 default:
@@ -590,13 +608,13 @@ namespace Ypsilon.Assembler
             //      R = select use of s.
             //      s = p2
 
-            ushort r_bits = (ushort)((p1.Word & 0x0007) << 13);
+            ushort r_bits = (ushort)((p1.OpcodeWord & 0x0007) << 13);
 
             ushort s_bits = 0x0000;
             if (p2.AddressingMode == AddressingMode.Immediate)
-                s_bits = (ushort)(p2.Word << 8);
+                s_bits = (ushort)(p2.OpcodeWord << 8);
             if (p2.AddressingMode == AddressingMode.Register)
-                s_bits = (ushort)((0x1000) | (p2.Word << 8));
+                s_bits = (ushort)((0x1000) | (p2.OpcodeWord << 8));
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | r_bits | s_bits));
@@ -605,8 +623,8 @@ namespace Ypsilon.Assembler
 
         ushort[] AssembleBRA(ushort opcode, string param1, ParserState state)
         {
-            Opcode p1 = ParseParam(param1);
-            if (p1.Illegal)
+            ParsedOpcode p1 = ParseParam(param1);
+            if (p1.IsIllegal)
                 return null;
             // must be branching to a label
             if (p1.LabelName == string.Empty)
@@ -654,11 +672,11 @@ namespace Ypsilon.Assembler
         ushort[] AssembleHWQ(ushort opcode, string param1)
         {
             // param1 = index of operations, must be integer from 0-255
-            Opcode p1 = ParseParam(param1);
+            ParsedOpcode p1 = ParseParam(param1);
 
             if (p1.AddressingMode != AddressingMode.Immediate)
                 return null;
-            if ((p1.Word < 0) || (p1.Word > 255))
+            if ((p1.OpcodeWord < 0) || (p1.OpcodeWord > 255))
                 return null;
 
             // Bit pattern is:
@@ -666,7 +684,7 @@ namespace Ypsilon.Assembler
             // iiii iiii OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.NextWord & 0x00FF) << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.ImmediateWord & 0x00FF) << 8)));
             return m_Code.ToArray();
         }
 
@@ -674,32 +692,32 @@ namespace Ypsilon.Assembler
         {
             // param1 = source/dest register, MUST be register
             // param2 = immediate value, MUST be number, MUST be 1 - 32
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
             if (p2.AddressingMode != AddressingMode.Immediate)
                 return null;
-            if ((p2.NextWord < 1) || (p2.NextWord > 32))
+            if ((p2.ImmediateWord < 1) || (p2.ImmediateWord > 32))
                 return null;
 
-            p2.NextWord -= 1;
+            p2.ImmediateWord -= 1;
 
             // Bit pattern is:
             // FEDC BA98 7654 3210
             // RRRv vvvv OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.NextWord & 0x001F) << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13) | ((p2.ImmediateWord & 0x001F) << 8)));
             return m_Code.ToArray();
         }
 
         ushort[] AssembleJMP(ushort opcode, string param1, ParserState state)
         {
-            Opcode p1 = ParseParam(param1);
+            ParsedOpcode p1 = ParseParam(param1);
 
-            if (p1.Illegal)
+            if (p1.IsIllegal)
                 return null;
             ushort addressingmode = 0x0000;
             switch (p1.AddressingMode)
@@ -728,17 +746,17 @@ namespace Ypsilon.Assembler
                     addressingmode = 0xA000;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int r3 = (p1.Word & 0x0700);
+                    int r3 = (p1.OpcodeWord & 0x0700);
                     addressingmode = (ushort)(0xC000 + (r3 & 0x0300) + ((r3 & 0x0400) << 3));
                     break;
             }
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | addressingmode | ((p1.Word & 0x0007) << 13)));
-            if (p1.UsesNextWord)
+            m_Code.Add((ushort)(opcode | addressingmode | ((p1.OpcodeWord & 0x0007) << 13)));
+            if (p1.HasImmediateWord)
             {
                 if (p1.LabelName.Length > 0)
                     state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p1.LabelName);
-                m_Code.Add(p1.NextWord);
+                m_Code.Add(p1.ImmediateWord);
             }
             return m_Code.ToArray();
         }
@@ -747,8 +765,8 @@ namespace Ypsilon.Assembler
         {
             // param1 = source register, MUST be register
             // param2 = dest register, MUST be register
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
@@ -760,16 +778,16 @@ namespace Ypsilon.Assembler
             // RRRr rr.. OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 10) | ((p2.Word & 0x0007) << 13)));
+            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 10) | ((p2.OpcodeWord & 0x0007) << 13)));
             return m_Code.ToArray();
         }
 
         ushort[] AssembleSET(ushort opcode, string param1, string param2)
         {
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.Illegal || p2.Illegal)
+            if (p1.IsIllegal || p2.IsIllegal)
                 return null;
 
             // p1 MUST be a register.
@@ -784,38 +802,38 @@ namespace Ypsilon.Assembler
             bool valueIsAllowed = TryGetSETValue(p2, out value, out alternateValueBit);
 
             if (!valueIsAllowed)
-                throw new Exception(string.Format("SET instruction with invalid value parameter: {0}.", p2.NextWord));
+                throw new Exception(string.Format("SET instruction with invalid value parameter: {0}.", p2.ImmediateWord));
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | alternateValueBit | (value << 8) | ((p1.Word & 0x0007) << 13)));
+            m_Code.Add((ushort)(opcode | alternateValueBit | (value << 8) | ((p1.OpcodeWord & 0x0007) << 13)));
             return m_Code.ToArray();
         }
 
-        bool IsAcceptableSETValue(Opcode input)
+        bool IsAcceptableSETValue(ParsedOpcode input)
         {
             ushort alternateValueBit, value;
             return TryGetSETValue(input, out value, out alternateValueBit);
         }
 
-        bool TryGetSETValue(Opcode input, out ushort value, out ushort alternateValueBit)
+        bool TryGetSETValue(ParsedOpcode input, out ushort value, out ushort alternateValueBit)
         {
             alternateValueBit = 0;
             value = 0;
 
-            if (input.UsesNextWord && input.LabelName.Length > 0)
+            if (input.HasImmediateWord && input.LabelName.Length > 0)
             {
                 // not allowed to use labels with SET instructions.
                 return false;
             }
 
-            if (input.NextWord <= 0x1F)
+            if (input.ImmediateWord <= 0x1F)
             {
-                value = input.NextWord;
+                value = input.ImmediateWord;
                 return true;
             }
-            else if (input.NextWord >= 0xFFEB)
+            else if (input.ImmediateWord >= 0xFFEB)
             {
-                value = (ushort)((input.NextWord - 0xFFEB) + 0x000B);
+                value = (ushort)((input.ImmediateWord - 0xFFEB) + 0x000B);
                 alternateValueBit = 1;
                 return true;
             }
@@ -824,7 +842,7 @@ namespace Ypsilon.Assembler
                 for (int i = 0x05; i < 0x10; i++)
                 {
                     int allowedValue = (ushort)(Math.Pow(2, i));
-                    if (input.NextWord == allowedValue)
+                    if (input.ImmediateWord == allowedValue)
                     {
                         value = (ushort)(i - 5);
                         alternateValueBit = 1;
@@ -837,10 +855,10 @@ namespace Ypsilon.Assembler
 
         ushort[] AssembleSHF(ushort opcode, string param1, string param2)
         {
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.Illegal || p2.Illegal)
+            if (p1.IsIllegal || p2.IsIllegal)
                 return null;
 
             // p1 MUST be a register.
@@ -853,11 +871,11 @@ namespace Ypsilon.Assembler
             switch (p2.AddressingMode)
             {
                 case AddressingMode.Immediate:
-                    if (p2.NextWord > 16 || p2.NextWord == 0)
+                    if (p2.ImmediateWord > 16 || p2.ImmediateWord == 0)
                         return null;
                     break;
                 case AddressingMode.Register:
-                    if (p2.Word >= 8)
+                    if (p2.OpcodeWord >= 8)
                         return null;
                     break;
                 default:
@@ -870,13 +888,13 @@ namespace Ypsilon.Assembler
             //      R = select use of s.
             //      s = p2
 
-            ushort r_bits = (ushort)((p1.Word & 0x0007) << 13);
+            ushort r_bits = (ushort)((p1.OpcodeWord & 0x0007) << 13);
 
             ushort s_bits = 0x0000;
             if (p2.AddressingMode == AddressingMode.Immediate)
-                s_bits = (ushort)((p2.NextWord - 1) << 8);
+                s_bits = (ushort)((p2.ImmediateWord - 1) << 8);
             if (p2.AddressingMode == AddressingMode.Register)
-                s_bits = (ushort)((0x1000) | (p2.Word << 8));
+                s_bits = (ushort)((0x1000) | (p2.OpcodeWord << 8));
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | r_bits | s_bits));
@@ -963,8 +981,8 @@ namespace Ypsilon.Assembler
             // param1 = source register, MUST be register
             // param2 = dest register, MUST be register
             // param3 = flags, MUST be LR, HR, LW, HW
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
             ushort flag_type = 0x0000;
             switch (param3)
             {
@@ -994,7 +1012,7 @@ namespace Ypsilon.Assembler
             // RRRr rroo OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | ((p2.Word & 0x0007) << 10) | (flag_type << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13) | ((p2.OpcodeWord & 0x0007) << 10) | (flag_type << 8)));
             return m_Code.ToArray();
         }
 
@@ -1003,8 +1021,8 @@ namespace Ypsilon.Assembler
             // param1 = source/dest register, MUST be register
             // param2 = special register, MUST be one of:
             //          PC, SP, IA, II, PS, P2, USP, SSP
-            Opcode p1 = ParseParam(param1);
-            Opcode p2 = ParseParam(param2);
+            ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
             ushort special_index = 0x0000;
             switch (param2)
             {
@@ -1044,7 +1062,7 @@ namespace Ypsilon.Assembler
             // RRRv vvvv OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.Word & 0x0007) << 13) | (special_index << 8)));
+            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13) | (special_index << 8)));
             return m_Code.ToArray();
         }
     }

@@ -13,15 +13,15 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        public Opcode ParseParam(string param)
+        public ParsedOpcode ParseParam(string param)
         {
-            Opcode ParsedOpcode = new Opcode();
+            ParsedOpcode ParsedOpcode = new ParsedOpcode();
 
             param = param.Replace(" ", string.Empty).Trim();
 
             if (m_Registers.ContainsKey(param))
             {
-                ParsedOpcode.Word = (ushort)m_Registers[param];
+                ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
             }
             else
@@ -32,7 +32,7 @@ namespace Ypsilon.Assembler
 
                     if (m_Registers.ContainsKey(param))
                     {
-                        ParsedOpcode.Word = (ushort)m_Registers[param];
+                        ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                         ParsedOpcode.AddressingMode = AddressingMode.Indirect;
                     }
                     else if (param[param.Length - 1] == '+')
@@ -40,7 +40,7 @@ namespace Ypsilon.Assembler
                         param = param.Substring(0, param.Length - 1);
                         if (m_Registers.ContainsKey(param))
                         {
-                            ParsedOpcode.Word = (ushort)m_Registers[param];
+                            ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPostInc;
                     }
@@ -49,7 +49,7 @@ namespace Ypsilon.Assembler
                         param = param.Substring(1, param.Length - 1);
                         if (m_Registers.ContainsKey(param))
                         {
-                            ParsedOpcode.Word = (ushort)m_Registers[param];
+                            ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPreDec;
                     }
@@ -60,24 +60,24 @@ namespace Ypsilon.Assembler
                             param.Length - param.IndexOf(',') - 1).Trim();
                         if (m_Registers.ContainsKey(param0) && m_Registers.ContainsKey(param1))
                         {
-                            ParsedOpcode.Word = (ushort)(m_Registers[param0] | (m_Registers[param1] << 8));
+                            ParsedOpcode.OpcodeWord = (ushort)(m_Registers[param0] | (m_Registers[param1] << 8));
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectIndexed;
                         }
                         else if (m_Registers.ContainsKey(param0) && CanDecodeLiteral(param1))
                         {
                             ParsedOpcode = ParseLiteralParameter(ParsedOpcode, param1);
-                            ParsedOpcode.Word = (ushort)(m_Registers[param0]);
+                            ParsedOpcode.OpcodeWord = (ushort)(m_Registers[param0]);
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectOffset;
                         }
                         else if (CanDecodeLiteral(param0) && m_Registers.ContainsKey(param1))
                         {
                             ParsedOpcode = ParseLiteralParameter(ParsedOpcode, param0);
-                            ParsedOpcode.Word = (ushort)(m_Registers[param1]);
+                            ParsedOpcode.OpcodeWord = (ushort)(m_Registers[param1]);
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectOffset;
                         }
                         else
                         {
-                            ParsedOpcode.Illegal = true;
+                            ParsedOpcode.IsIllegal = true;
                             return ParsedOpcode;
                         }
                     }
@@ -88,7 +88,7 @@ namespace Ypsilon.Assembler
                     }
                     else
                     {
-                        ParsedOpcode.Illegal = true;
+                        ParsedOpcode.IsIllegal = true;
                         return ParsedOpcode;
                     }
                 }
@@ -101,7 +101,7 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        public Opcode ParseMemoryAddressPlusRegisterParameter(Opcode ParsedOpcode, string param)
+        public ParsedOpcode ParseMemoryAddressPlusRegisterParameter(ParsedOpcode ParsedOpcode, string param)
         {
             var psplit = param.Split('+');
             if (psplit.Length < 2)
@@ -115,64 +115,64 @@ namespace Ypsilon.Assembler
                 throw new Exception(string.Format("Invalid register reference in '{0}'", param));
             }
 
-            ParsedOpcode.Word = (ushort)m_Registers[addressValue];
-            ParsedOpcode.UsesNextWord = true;
+            ParsedOpcode.OpcodeWord = (ushort)m_Registers[addressValue];
+            ParsedOpcode.HasImmediateWord = true;
 
             if (psplit[0].StartsWith("\'") && psplit[0].EndsWith("\'") && psplit[0].Length == 3)
             {
                 var val = (ushort)psplit[0][1];
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else if (psplit[0].Contains("0x"))
             {
                 ushort val = Convert.ToUInt16(psplit[0].Trim(), 16);
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else if (psplit[0].Trim().All(x => char.IsDigit(x)))
             {
                 var val = Convert.ToUInt16(psplit[0].Trim(), 10);
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else
             {
-                ParsedOpcode.UsesNextWord = true;
+                ParsedOpcode.HasImmediateWord = true;
                 ParsedOpcode.LabelName = psplit[0].Trim();
             }
 
             return ParsedOpcode;
         }
 
-        public Opcode ParseMemoryAddressParameter(Opcode ParsedOpcode, string param)
+        public ParsedOpcode ParseMemoryAddressParameter(ParsedOpcode ParsedOpcode, string param)
         {
-            ParsedOpcode.Word = (ushort)0x0000;
+            ParsedOpcode.OpcodeWord = (ushort)0x0000;
             ParsedOpcode.AddressingMode = AddressingMode.Indirect;
-            ParsedOpcode.UsesNextWord = true;
+            ParsedOpcode.HasImmediateWord = true;
 
             if (param.StartsWith("\'") && param.EndsWith("\'") && param.Length == 5)
             {
                 ushort val = param[1];
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else if (param.Contains("0x"))
             {
                 ushort val = Convert.ToUInt16(param.Trim(), 16);
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else if (param.Trim().All(x => char.IsDigit(x)))
             {
                 ushort val = Convert.ToUInt16(param.Trim(), 10);
-                ParsedOpcode.NextWord = val;
+                ParsedOpcode.ImmediateWord = val;
             }
             else
             {
-                ParsedOpcode.UsesNextWord = true;
+                ParsedOpcode.HasImmediateWord = true;
                 ParsedOpcode.LabelName = param.Trim();
             }
 
             return ParsedOpcode;
         }
 
-        public Opcode ParseLiteralParameter(Opcode ParsedOpcode, string param)
+        public ParsedOpcode ParseLiteralParameter(ParsedOpcode ParsedOpcode, string param)
         {
             ushort literalValue;
 
@@ -183,7 +183,6 @@ namespace Ypsilon.Assembler
             else if (param.Contains("0x"))
             {
                 // format: 0x12EF or -0x12EF
-                string param = param;
                 if (param[0] == '-')
                     literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
                 else
@@ -192,7 +191,7 @@ namespace Ypsilon.Assembler
             else if (param.Contains("$"))
             {
                 // format: $12EF or -$12EF
-                string param = param.Replace("$", "0x");
+                param = param.Replace("$", "0x");
                 if (param[0] == '-')
                     literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
                 else
@@ -211,8 +210,8 @@ namespace Ypsilon.Assembler
             else
             {
                 // format LABEL
-                ParsedOpcode.Word = 0x0000;
-                ParsedOpcode.UsesNextWord = true;
+                ParsedOpcode.OpcodeWord = 0x0000;
+                ParsedOpcode.HasImmediateWord = true;
                 ParsedOpcode.LabelName = param;
                 ParsedOpcode.AddressingMode = AddressingMode.Immediate;
                 return ParsedOpcode;
@@ -220,16 +219,16 @@ namespace Ypsilon.Assembler
 
             // unless the parameter is a LABEL, parameter parsing will end with this code:
             ParsedOpcode.AddressingMode = AddressingMode.Immediate;
-            ParsedOpcode.UsesNextWord = true;
-            ParsedOpcode.NextWord = literalValue;
+            ParsedOpcode.HasImmediateWord = true;
+            ParsedOpcode.ImmediateWord = literalValue;
             return ParsedOpcode;
         }
 
         public bool CanDecodeLiteral(string param)
         {
-            Opcode opcode = new Opcode();
+            ParsedOpcode opcode = new ParsedOpcode();
             opcode = ParseLiteralParameter(opcode, param);
-            return !opcode.Illegal;
+            return !opcode.IsIllegal;
         }
     }
 }
