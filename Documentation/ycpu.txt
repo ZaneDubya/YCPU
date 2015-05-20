@@ -39,7 +39,7 @@ modular hardware bus allows flexibility in extending the system.
 =======================[ 1.A. Public Domain Dedication ]========================
 This document is dedicated to the public domain under the terms of the Creative
 Commons Zero (CC0) waiver. All rights have been waived with regard to
-copyright law, including all related and neighboring rights, to the extent
+copyright law, including all related and neighbouring rights, to the extent
 allowed by law.
 
 You can copy, modify, and distribute this document, and use it to create
@@ -75,7 +75,7 @@ executing an 8-bit LOaD operation, the processor will load only the lower byte
 at the address, and the upper 8-bits of the destination register will be
 cleared.
 
-For all other instructions there is no support for 8-bit math. All other
+For all other instructions there is no support for 8-bit maths. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
 which has a 32-bit result, with the upper 16 bits of the result stored in R0,
 and FPU instructions, which deal with 32-bit data).
@@ -115,7 +115,7 @@ R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
 used as both data and address registers, are interchangeable, and are directly
 referenced and modified by most instructions.
 
-R0 is also used for the high 16-bits of the result of the 16x16b=32b math:
+R0 is also used for the high 16-bits of the result of the 16x16b=32b operation:
 
     * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
       If R0 is also the src/dest register, then the high 16-bits are lost, and
@@ -191,7 +191,7 @@ In Supervisor mode, the processor:
     * Uses the Supervisor Stack Pointer (SSP).
 
 In User mode, the processor:
-    * Raises an 'Unprivileged opcode' interrupt on executing a privileged opcode.
+    * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
     * Raises a 'Bank fault' interrupt on attempting to read, write, or execute
       supervisor-only memory, write to read-only memory, or execute
       execute-protected memory.
@@ -446,7 +446,7 @@ address translation.
 
 2.F.1. ADDRESS SPACE WHEN THE MMU IS DISABLED
 
-When the 'M’ status bit is in PC clear, the MMU is disabled, and the processor's
+When the 'M' status bit is in PC clear, the MMU is disabled, and the processor's
 address space is mapped as follows:
     $0000-$3FFF : Internal ROM Bank $00
     $4000-$7FFF : Internal RAM Bank $01
@@ -511,6 +511,10 @@ bus. The 8 ‘D’ bits are a 8-bit hardware bus index. Because no hardware devi
 can have more than 2^8 = 256 banks, each bank can host no more than 4
 megabytes of memory, and the MMU as a whole can most no more than 2^30 bytes =
 1024 megabytes of memory.
+
+Note that when selecting memory banks from processor space (device index 0), the
+high bit of the bank selection index (bit 7 of bank/device select) indicates a
+ROM bank. When this is clear, a RAM bank is selected.
 
 
 2.F.5. FAR JUMPS
@@ -768,10 +772,10 @@ ALU Bit Pattern
                 Instruction             Compiled as:
                 LOD.8   R0, $34         LOD R0 = $34, 8-bit operation.
                 STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
-                LOD.8   R0, $1234       Will raise an error during assmebly, as
+                LOD.8   R0, $1234       Will raise an error during assembly, as
                                         $1234 is greater than an 8-bit value.
                                         
-    The ALU operating in 8-bit mode has the following modified behavior:
+    The ALU operating in 8-bit mode has the following modified behaviour:
         1.  Only the low 8-bits of the input registers are used.
         2.  Only the low 8-bits of the output register are set. The high 8-bits
             of the output register are cleared (set to '0').
@@ -1186,7 +1190,7 @@ Operation:
     
     
 RNL         Rotate No-Carry Left
-Rorate all of the bits in Rx X bits to the left, without using the carry bit.
+Rotate all of the bits in Rx X bits to the left, without using the carry bit.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
@@ -1195,7 +1199,7 @@ Operation:
     
     
 RNR         Rotate No-Carry Right
-Rorate all of the bits in Rx X bits to the right, without using the carry bit.
+Rotate all of the bits in Rx X bits to the right, without using the carry bit.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
@@ -1204,7 +1208,7 @@ Operation:
     
     
 ROL         Rotate Through-Carry Left
-Rorate all of the bits in Rx X bits to the left, through carry.
+Rotate all of the bits in Rx X bits to the left, through carry.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
@@ -1214,7 +1218,7 @@ Operation:
     
     
 ROR         Rotate Through-Carry Right
-Rorate all of the bits in Rx X bits to the right, through carry.
+Rotate all of the bits in Rx X bits to the right, through carry.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
@@ -1485,7 +1489,7 @@ privileged operation. Attempting to push or pull this register in user mode
 will result in all other specified registers being pushed or pulled, followed by
 an 'Unprivileged opcode' interrupt.
 
-An assembler should tranform a stack operation that includes registers from 
+An assembler should transform a stack operation that includes registers from 
 these two different register groups should split the operation into two
 separate operations as follows: general purpose registers should always be
 popped first, and pushed last. Thus these two example instructions:
@@ -1560,7 +1564,7 @@ this operation runs, the instructions the processor is operating on will almost
 certainly be changed.
 
 
-MMW         Writes a word to the Memory Managment Cache from a register.
+MMW         Writes a word to the Memory Management Cache from a register.
 Syntax: MMR Ra, Rv
 Loads a value from Rv into the Memory Management Cache at index Ra. See MMR for
 how value of Ra is interpreted.
@@ -1659,7 +1663,7 @@ handled.
       * Specified size of interrupt vector table as 16 words (previously 256).
       * SWI now calls a single 'software interrupt' interrupt.
     Memory Management:
-      * Complete rewrite of the memory manager concept: re-specced MMU to use
+      * Complete rewrite of the memory manager concept: re-specified MMU to use
         the concept of virtual address translation.
       * Renamed all instances of 'Page' to 'Bank'.
     Added new INC/ADI and DEC/SBI instructions.

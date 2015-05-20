@@ -8,12 +8,11 @@ namespace Ypsilon
 {
     class Program
     {
-        const string errNoArguments = "ycpuassember: No input specified.";
-        const string errArguments = "ycpuassembler: Incorrect argument format. Stop.\n    {0}";
-        const string descAssembler = "ycpuassembler: Assembles YASM files into binary code for YCPU.\n    in:  {0}\n    out: {1}";
-
         static void Main(string[] args)
         {
+            string inPath, outPath, error;
+            string[] options;
+
             if (args.Length == 0)
             {
 #if DEBUG
@@ -24,8 +23,7 @@ namespace Ypsilon
 #endif
             }
 
-            string inPath, outPath, error;
-            string[] options;
+            
 
             if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
             {
@@ -39,8 +37,15 @@ namespace Ypsilon
 
             Console.WriteLine(string.Format(descAssembler, inPath, outPath));
 
-            AssemblerResult result = doAssemble(inPath, Path.GetDirectoryName(inPath), outPath);
+            byte[] machineCode;
+            AssemblerResult result = tryAssemble(inPath, out machineCode);
             Console.WriteLine(AssemblerResultMessages[(int)result]);
+
+            if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
+                Console.WriteLine("File successfully written. Press any key to continue.");
+            else
+                Console.WriteLine("Error while writing machine code. Press any key to continue.");
+
             Console.ReadKey();
         }
 
@@ -70,7 +75,7 @@ namespace Ypsilon
                         outPath = args[i];
                     else
                     {
-                        error = string.Format("Unknown parameter: {0}", args[i]);
+                        error = string.Format(errParam, args[i]);
                         return false;
                     }
                 }
@@ -102,51 +107,93 @@ namespace Ypsilon
                 return null;
 
             string[] lines = in_code.Split('\n');
-
             return lines;
         }
 
-        private static AssemblerResult doAssemble(string in_path, string out_dir, string out_filename)
+        private static AssemblerResult tryAssemble(string in_path, out byte[] machineCode)
         {
+            machineCode = null;
+
             string[] lines = getFileContents(in_path);
             if (lines == null)
                 return AssemblerResult.EmptyDocument;
 
             Assembler.Parser parser = new Assembler.Parser();
-            byte[] machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
+            machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
 
             if (machineCode == null)
             {
                 Console.WriteLine(parser.MessageOutput);
                 return AssemblerResult.ParseError;
             }
-            else
-            {
 
-                Assembler.Generator generator = new Assembler.Generator();
-                string output = generator.Generate(machineCode, out_dir, out_filename);
-                if (output == string.Empty)
-                    return AssemblerResult.GenerateError;
-                // note both assemble.MessageOutput and generator.MessageOutput have content.
-                return AssemblerResult.Success;
+            return AssemblerResult.Success;
+        }
+
+        private static bool tryWriteMachineCode(byte[] machineCode, string directory, string filename)
+        {
+            // if filename is null or empty, default to "out.bin"
+            filename = (filename == null || (filename.Trim() == string.Empty)) ?
+                "out.bin" : 
+                Path.GetFileNameWithoutExtension(filename) + ".bin";;
+
+            // make sure that directory, if not empty, is postfixed with a slash.
+            if (directory != string.Empty)
+            {
+                if ((directory[directory.Length - 1] != '/') && (directory[directory.Length - 1] != '\\'))
+                    directory += '\\';
             }
+
+            string path = directory + filename;
+
+            // delete the output file if it exists.
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+            catch
+            {
+                return false;
+            }
+
+            // write the file.
+            try
+            {
+                MemoryStream outfile = new MemoryStream();
+                foreach (byte word in machineCode)
+                {
+                    outfile.WriteByte(word);
+                }
+
+                File.WriteAllBytes(directory + filename, outfile.ToArray());
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+            
         }
 
         private enum AssemblerResult
         {
             Success,
             EmptyDocument,
-            ParseError,
-            GenerateError
+            ParseError
         }
 
-        private static string[] AssemblerResultMessages = new string[4]
+        private static string[] AssemblerResultMessages = new string[3]
         {
             "Successfully compiled input file.",
             "Nothing to compile.",
-            "Parser error.",
-            "Generator error."
+            "Parser error."
         };
 
+        const string errNoArguments = "yasm: No input specified.";
+        const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
+        const string errParam = "yasm: Unknown parameter: {0}";
+        const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
     }
 }

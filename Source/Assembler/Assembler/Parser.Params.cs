@@ -18,9 +18,9 @@ namespace Ypsilon.Assembler
             var ParsedOpcode = new ParsedOpcode();
             var clearedParameter = param.Replace(" ", string.Empty).Trim();
 
-            if (this.m_RegisterDictionary.ContainsKey(clearedParameter))
+            if (this.m_Registers.ContainsKey(clearedParameter))
             {
-                ParsedOpcode.Word = (ushort)this.m_RegisterDictionary[clearedParameter];
+                ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
             }
             else
@@ -29,26 +29,26 @@ namespace Ypsilon.Assembler
                 {
                     clearedParameter = clearedParameter.Substring(1, clearedParameter.Length - 2).Replace(" ", string.Empty);
 
-                    if (this.m_RegisterDictionary.ContainsKey(clearedParameter))
+                    if (this.m_Registers.ContainsKey(clearedParameter))
                     {
-                        ParsedOpcode.Word = (ushort)this.m_RegisterDictionary[clearedParameter];
+                        ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
                         ParsedOpcode.AddressingMode = AddressingMode.Indirect;
                     }
                     else if (clearedParameter[clearedParameter.Length - 1] == '+')
                     {
                         clearedParameter = clearedParameter.Substring(0, clearedParameter.Length - 1);
-                        if (this.m_RegisterDictionary.ContainsKey(clearedParameter))
+                        if (this.m_Registers.ContainsKey(clearedParameter))
                         {
-                            ParsedOpcode.Word = (ushort)this.m_RegisterDictionary[clearedParameter];
+                            ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPostInc;
                     }
                     else if (clearedParameter[0] == '-')
                     {
                         clearedParameter = clearedParameter.Substring(1, clearedParameter.Length - 1);
-                        if (this.m_RegisterDictionary.ContainsKey(clearedParameter))
+                        if (this.m_Registers.ContainsKey(clearedParameter))
                         {
-                            ParsedOpcode.Word = (ushort)this.m_RegisterDictionary[clearedParameter];
+                            ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPreDec;
                     }
@@ -57,21 +57,21 @@ namespace Ypsilon.Assembler
                         string param0 = clearedParameter.Substring(0, clearedParameter.IndexOf(',')).Trim();
                         string param1 = clearedParameter.Substring(clearedParameter.IndexOf(',') + 1, 
                             clearedParameter.Length - clearedParameter.IndexOf(',') - 1).Trim();
-                        if (m_RegisterDictionary.ContainsKey(param0) && m_RegisterDictionary.ContainsKey(param1))
+                        if (m_Registers.ContainsKey(param0) && m_Registers.ContainsKey(param1))
                         {
-                            ParsedOpcode.Word = (ushort)(m_RegisterDictionary[param0] | (m_RegisterDictionary[param1] << 8));
+                            ParsedOpcode.Word = (ushort)(m_Registers[param0] | (m_Registers[param1] << 8));
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectIndexed;
                         }
-                        else if (m_RegisterDictionary.ContainsKey(param0) && CanDecodeLiteral(param1))
+                        else if (m_Registers.ContainsKey(param0) && CanDecodeLiteral(param1))
                         {
                             ParsedOpcode = ParseLiteralParameter(ParsedOpcode, param1);
-                            ParsedOpcode.Word = (ushort)(m_RegisterDictionary[param0]);
+                            ParsedOpcode.Word = (ushort)(m_Registers[param0]);
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectOffset;
                         }
-                        else if (CanDecodeLiteral(param0) && m_RegisterDictionary.ContainsKey(param1))
+                        else if (CanDecodeLiteral(param0) && m_Registers.ContainsKey(param1))
                         {
                             ParsedOpcode = ParseLiteralParameter(ParsedOpcode, param0);
-                            ParsedOpcode.Word = (ushort)(m_RegisterDictionary[param1]);
+                            ParsedOpcode.Word = (ushort)(m_Registers[param1]);
                             ParsedOpcode.AddressingMode = AddressingMode.IndirectOffset;
                         }
                         else
@@ -109,12 +109,12 @@ namespace Ypsilon.Assembler
             }
 
             var addressValue = "[+" + psplit[1] + "]";
-            if (!this.m_RegisterDictionary.ContainsKey(addressValue))
+            if (!this.m_Registers.ContainsKey(addressValue))
             {
                 throw new Exception(string.Format("Invalid register reference in '{0}'", clearedParameter));
             }
 
-            ParsedOpcode.Word = (ushort)this.m_RegisterDictionary[addressValue];
+            ParsedOpcode.Word = (ushort)this.m_Registers[addressValue];
             ParsedOpcode.UsesNextWord = true;
 
             if (psplit[0].StartsWith("\'") && psplit[0].EndsWith("\'") && psplit[0].Length == 3)

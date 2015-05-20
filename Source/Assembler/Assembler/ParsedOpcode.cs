@@ -37,17 +37,4 @@ namespace Ypsilon.Assembler
 
         public AddressingMode AddressingMode { get; set; }
     }
-
-    public enum AddressingMode
-    {
-        None,
-        Immediate,
-        Absolute,
-        Register,
-        Indirect,
-        IndirectOffset,
-        IndirectPostInc,
-        IndirectPreDec,
-        IndirectIndexed
-    }
 }

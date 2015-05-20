@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        protected bool ParsePragma(string line, string opcode, string[] tokens)
+        bool ParsePragma(string line, string opcode, string[] tokens, ParserState state)
         {
             if (RegEx.MatchPragma(opcode.ToLower()))
             {
                 switch (opcode.ToLower())
                 {
                     case ".dat8":
-                        m_IsNextLineData = ParseData8(line);
+                        m_IsNextLineData = ParseData8(line, state);
                         return true;
 
                     case ".dat16":
-                        m_IsNextLineData = ParseData16(line);
+                        m_IsNextLineData = ParseData16(line, state);
                         return true;
 
                     case ".advance":
@@ -35,7 +33,7 @@ namespace Ypsilon.Assembler
                         break;
 
                     case ".incbin":
-                        return IncludeBinary(tokens);
+                        return IncludeBinary(tokens, state);
 
                     case ".include":
 
@@ -54,10 +52,10 @@ namespace Ypsilon.Assembler
 
                         break;
                     case ".scope":
-                        m_Scopes.ScopeOpen(m_MachineCodeOutput.Count);
+                        state.m_Scopes.ScopeOpen(state.machineCode.Count);
                         return true;
                     case ".scend":
-                        return m_Scopes.ScopeClose(m_MachineCodeOutput.Count);
+                        return state.m_Scopes.ScopeClose(state.machineCode.Count);
                     default:
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }

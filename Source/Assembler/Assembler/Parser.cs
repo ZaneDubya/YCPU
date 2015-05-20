@@ -14,30 +14,16 @@ namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
-        protected Dictionary<string, Func<string[], int, ushort[]>> m_OpcodeAssemblers;
-        protected Dictionary<ushort, string> m_BranchReferences;
-        protected Dictionary<ushort, string> m_LabelReferences;
-        protected Dictionary<ushort, string> m_LabelDataFieldReferences;
-        protected Dictionary<string, ushort> m_RegisterDictionary;
+        Dictionary<string, Func<string[], int, ParserState, ushort[]>> m_Opcodes;
+        Dictionary<string, ushort> m_Registers;
 
-        protected List<byte> m_MachineCodeOutput;
-
-        protected bool m_IsNextLineData = false;
-
-        protected Scopes m_Scopes;
-        protected string m_Directory;
+        bool m_IsNextLineData = false;
+        
 
         public Parser()
         {
-            m_OpcodeAssemblers = new Dictionary<string, Func<string[], int, ushort[]>>();
-            m_BranchReferences = new Dictionary<ushort, string>();
-            m_LabelReferences = new Dictionary<ushort, string>();
-            m_LabelDataFieldReferences = new Dictionary<ushort, string>();
-            m_RegisterDictionary = new Dictionary<string, ushort>();
-            
-
-            m_MachineCodeOutput = new List<byte>();
-            m_Scopes = new Scopes();
+            m_Opcodes = new Dictionary<string, Func<string[], int, ParserState, ushort[]>>();
+            m_Registers = new Dictionary<string, ushort>();
 
             InitOpcodeDictionary();
             InitRegisterDictionary();
@@ -45,56 +31,45 @@ namespace Ypsilon.Assembler
 
         public byte[] Parse(string[] lines, string working_directory)
         {
-            int linesParsed = 0;
+            ParserState state = new ParserState();
+            state.m_Directory = working_directory;
 
-            m_MachineCodeOutput.Clear();
-            m_BranchReferences.Clear();
-            m_LabelReferences.Clear();
-
-            m_Directory = working_directory;
+            int indexOfCurrentLine = 0;
 
             try
             {
                 foreach (var line in lines)
                 {
-                    linesParsed++;
+                    indexOfCurrentLine++;
 
                     string currentLine = line.Trim();
                     if (currentLine.Length < 1 || line[0] == ';')
                         continue;
 
-                    currentLine = RemoveLineComments(currentLine);
+                    currentLine = StripComments(currentLine);
                     if (currentLine.Trim().Length == 0)
                         continue;
 
-                    AssembleLine(currentLine);
+                    AssembleLine(currentLine, state);
                 }
 
-                if (m_Scopes.OpenScopes())
+                if (state.m_Scopes.OpenScopes())
                     throw new Exception("Unclosed scope.");
 
-                SetLabelAddressReferences();
-                SetBranchAddressReferences();
-                SetDataFieldLabelAddressReferences();
+                SetLabelAddressReferences(state);
+                SetBranchLabelAddressReferences(state);
+                SetDataFieldLabelAddressReferences(state);
 
-                var count = 1;
-
-                foreach (ushort code in m_MachineCodeOutput)
-                {
-                    AddMessage(string.Format("{0:X4} ", code));
-                    count++;
-                }
-
-                return m_MachineCodeOutput.ToArray();
+                return state.machineCode.ToArray();
             }
             catch (Exception ex)
             {
-                AddMessageLine(string.Format("Line {0}: {1}", linesParsed, ex.Message));
+                AddMessageLine(string.Format("Line {0}: {1}", indexOfCurrentLine, ex.Message));
                 return null;
             }
         }
 
-        protected string RemoveLineComments(string line)
+        string StripComments(string line)
         {
             string clearedLine = line;
             int commentIndex = line.IndexOf(";");
@@ -107,13 +82,13 @@ namespace Ypsilon.Assembler
             return clearedLine;
         }
 
-        protected void AssembleLine(string line)
+        void AssembleLine(string line, ParserState state)
         {
             line = line.Trim();
 
             if (m_IsNextLineData != false)
             {
-                m_IsNextLineData = this.ParseData16(line);
+                m_IsNextLineData = this.ParseData16(line, state);
                 return;
             }
 
@@ -121,7 +96,7 @@ namespace Ypsilon.Assembler
             {
                 bool local = RegEx.MatchLabelLocal(line);
                 // parse label and determine if there is anything else to parse on this line.
-                int remaiderLineContentIndex = ParseLabel(line, local);
+                int remaiderLineContentIndex = ParseLabel(line, local, state);
                 if (remaiderLineContentIndex <= 0)
                     return;
                 // if there is something left to parse, trim it and then interpret it as its own line.
@@ -144,15 +119,15 @@ namespace Ypsilon.Assembler
                 opcode = opcode.Substring(0, opcode.IndexOf('.'));
             }
 
-            if (ParsePragma(line, opcode, tokens))
+            if (ParsePragma(line, opcode, tokens, state))
             {
                 // Successfully parsed a pragma, no need to continue with this line.
                 return;
             }
 
             // get the assembler for this opcode. If no assembler exists, throw error.
-            Func<string[], int, ushort[]> assembler;
-            if (!this.m_OpcodeAssemblers.TryGetValue(opcode.ToLower(), out assembler))
+            Func<string[], int, ParserState, ushort[]> assembler;
+            if (!m_Opcodes.TryGetValue(opcode.ToLower(), out assembler))
             {
                 throw new Exception(string.Format("Undefined cpu opcode in line {0}", line));
             }
@@ -163,7 +138,7 @@ namespace Ypsilon.Assembler
                 param.Add(tokens[i].Trim());
 
             // pass the params to the opcode's assembler. If no output, throw error.
-            ushort[] code = assembler(param.ToArray(), bit_width);
+            ushort[] code = assembler(param.ToArray(), bit_width, state);
             if (code == null)
                 throw new Exception(string.Format("Error assembling line {0}", line));
 
@@ -171,12 +146,12 @@ namespace Ypsilon.Assembler
             for (int i = 0; i < code.Length; i++)
             {
                 ushort this_opcode = code[i];
-                m_MachineCodeOutput.Add((byte)(this_opcode & 0x00ff));
-                m_MachineCodeOutput.Add((byte)((this_opcode & 0xff00) >> 8));
+                state.machineCode.Add((byte)(this_opcode & 0x00ff));
+                state.machineCode.Add((byte)((this_opcode & 0xff00) >> 8));
             }
         }
 
-        protected virtual bool ParseBitWidth(string value, out int bit_width)
+        bool ParseBitWidth(string value, out int bit_width)
         {
             bit_width = 0;
             if (!int.TryParse(value, out bit_width))
@@ -186,7 +161,7 @@ namespace Ypsilon.Assembler
             return true;
         }
 
-        protected string[] Tokenize(string data)
+        string[] Tokenize(string data)
         {
             string[] tokens = data.Split(new[] { ' ', '\t', ',' });
             for (int i = 0; i < tokens.Length - 1; i++)
@@ -198,7 +173,7 @@ namespace Ypsilon.Assembler
             return tokens.Where(t => t.Trim() != string.Empty).ToArray();
         }
 
-        protected bool ParseData8(string line)
+        bool ParseData8(string line, ParserState state)
         {
             List<string> dataFields = new List<string>();
 
@@ -232,12 +207,12 @@ namespace Ypsilon.Assembler
                 }
             }
 
-            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int8);
+            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int8, state);
 
             return line.EndsWith(",") ? true : false;
         }
 
-        protected bool ParseData16(string line)
+        bool ParseData16(string line, ParserState state)
         {
             List<string> dataFields = new List<string>();
 
@@ -271,12 +246,12 @@ namespace Ypsilon.Assembler
                 }
             }
 
-            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int16);
+            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int16, state);
 
             return line.EndsWith(",") ? true : false;
         }
 
-        private void GenerateInstructionsForDataFields(IList<string> dataFields, DataFieldTypes dataType)
+        private void GenerateInstructionsForDataFields(IList<string> dataFields, DataFieldTypes dataType, ParserState state)
         {
             foreach (string data in dataFields)
             {
@@ -289,17 +264,11 @@ namespace Ypsilon.Assembler
                         switch (dataType)
                         {
                             case DataFieldTypes.Int8:
-                                m_MachineCodeOutput.Add((byte)c);
+                                state.machineCode.Add((byte)c);
                                 break;
                             case DataFieldTypes.Int16:
-                                m_MachineCodeOutput.Add((byte)((ushort)c & 0x00ff));
-                                m_MachineCodeOutput.Add((byte)((ushort)(c & 0xff00) >> 8));
-                                break;
-                            case DataFieldTypes.Int32:
-                                m_MachineCodeOutput.Add((byte)((ushort)c & 0x00ff));
-                                m_MachineCodeOutput.Add((byte)((ushort)(c & 0xff00) >> 8));
-                                m_MachineCodeOutput.Add(0x00);
-                                m_MachineCodeOutput.Add(0x00);
+                                state.machineCode.Add((byte)((ushort)c & 0x00ff));
+                                state.machineCode.Add((byte)((ushort)(c & 0xff00) >> 8));
                                 break;
                         }
                     }
@@ -318,7 +287,7 @@ namespace Ypsilon.Assembler
                     }
                     else
                     {
-                        m_LabelDataFieldReferences.Add((ushort)m_MachineCodeOutput.Count, valStr);
+                        state.DataFields.Add((ushort)state.machineCode.Count, valStr);
                     }
 
                     switch (dataType)
@@ -326,85 +295,17 @@ namespace Ypsilon.Assembler
                         case DataFieldTypes.Int8:
                             if ((val > byte.MaxValue) || (val < byte.MinValue))
                                 throw new Exception(string.Format("Included byte value '{0}' cannot be expressed in an 8-bit value.", data));
-                            m_MachineCodeOutput.Add((byte)val);
+                            state.machineCode.Add((byte)val);
                             break;
                         case DataFieldTypes.Int16:
                             if ((val > ushort.MaxValue) || (val < ushort.MinValue))
                                 throw new Exception(string.Format("Included ushort value '{0}' cannot be expressed in a 16-bit value.", data));
-                            m_MachineCodeOutput.Add((byte)((ushort)val & 0x00ff));
-                            m_MachineCodeOutput.Add((byte)((ushort)(val & 0xff00) >> 8));
-                            break;
-                        case DataFieldTypes.Int32:
-                            if ((val > uint.MaxValue) || (val < uint.MinValue))
-                                throw new Exception(string.Format("Included uint value '{0}' cannot be expressed in a 32-bit value.", data));
-                            m_MachineCodeOutput.Add((byte)((uint)val & 0x00ff));
-                            m_MachineCodeOutput.Add((byte)((uint)(val & 0x0000ff00) >> 8));
-                            m_MachineCodeOutput.Add((byte)((uint)(val & 0x00ff0000) >> 16));
-                            m_MachineCodeOutput.Add((byte)((uint)(val & 0xff000000) >> 24));
+                            state.machineCode.Add((byte)((ushort)val & 0x00ff));
+                            state.machineCode.Add((byte)((ushort)(val & 0xff00) >> 8));
                             break;
                     }
                 }
             }
-        }
-
-        public enum DataFieldTypes
-        {
-            Int8,
-            Int16,
-            Int32
-        }
-
-        protected void SetBranchAddressReferences()
-        {
-            foreach (ushort index in m_BranchReferences.Keys)
-            {
-                string labelName = m_BranchReferences[index];
-
-                if (!m_Scopes.ContainsLabel(labelName, index))
-                {
-                    throw new Exception(string.Format("Unknown label reference '{0}'.", labelName));
-                }
-
-                ushort label_address = (ushort)m_Scopes.LabelAddress(labelName, index);
-                int delta = label_address - index;
-                if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
-                    throw new Exception("Branch operation out of range.");
-                m_MachineCodeOutput[index] = m_MachineCodeOutput[index]; // same operand; this line may not be necessary.
-                m_MachineCodeOutput[index + 1] = (byte)((sbyte)delta);
-            }
-        }
-
-        protected bool IncludeBinary(string[] tokens)
-        {
-            if (tokens.Length == 1)
-                throw new Exception(string.Format("No file specified for .incbin pragma.", tokens[1]));
-
-            tokens[1] = tokens[1].Replace("\"", string.Empty);
-
-            byte[] data = Ypsilon.Platform.Common.GetBytesFromFile(m_Directory + @"\" + tokens[1]);
-            if (data == null)
-                throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
-
-            int begin = 0, length = data.Length;
-            if (tokens.Length >= 3)
-                if (!Int32.TryParse(tokens[2], out begin))
-                    throw new Exception(string.Format("Third paramter for incbin must be numeric."));
-
-            if (tokens.Length == 3)
-            {
-                length = length - begin;
-            }
-
-            if (tokens.Length == 4)
-                if (!Int32.TryParse(tokens[3], out length))
-                    throw new Exception(string.Format("Fourth paramter for incbin must be numeric."));
-
-            if ((begin >= length) || (begin + length > data.Length))
-                throw new Exception("Out of bounds for incbin.");
-
-            for (int i = 0; i < length; i++)
-                m_MachineCodeOutput.Add(data[i + begin]);
-            return true;
         }
     }
 }

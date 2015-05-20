@@ -87,7 +87,7 @@ namespace Ypsilon.Platform.Input
             System.Windows.Forms.Application.AddMessageFilter(this);
         }
         [DllImport("user32.dll", EntryPoint = "TranslateMessage")]
-        protected extern static bool _TranslateMessage(ref System.Windows.Forms.Message m);
+        extern static bool _TranslateMessage(ref System.Windows.Forms.Message m);
 
         bool System.Windows.Forms.IMessageFilter.PreFilterMessage(ref System.Windows.Forms.Message m)
         {

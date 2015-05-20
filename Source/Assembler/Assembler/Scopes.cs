@@ -76,25 +76,6 @@ namespace Ypsilon.Assembler
             return -1;
         }
 
-        /*private Scope ParentScope(Scope child)
-        {
-            if (child == m_Global)
-                return null;
-
-            int child_index = m_Scopes.IndexOf(child);
-            // if this child does not exist in the collection, error out.
-            if (child_index == -1)
-                return m_Global;
-
-            for (int i = child_index - 2; i >= 0; i--)
-            {
-                if ((m_Scopes[i].Begin <= child.Begin) && ((m_Scopes[i].IsOpen) || (m_Scopes[i].End >= child.End)))
-                    return m_Scopes[i];
-            }
-
-            return m_Global;
-        }*/
-
         private Scope LastOpenScope()
         {
             for (int i = m_Scopes.Count - 1; i >= 0; i--)

@@ -43,13 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assembler\Parser.Data.cs" />
+    <Compile Include="Assembler\AddressingMode.cs" />
+    <Compile Include="Assembler\DataFieldTypes.cs" />
+    <Compile Include="Assembler\Parser.Includes.cs" />
+    <Compile Include="Assembler\Parser.Init.cs" />
     <Compile Include="Assembler\Parser.Instructions.cs" />
     <Compile Include="Assembler\Parser.Labels.cs" />
     <Compile Include="Assembler\Parser.Pragmas.cs" />
+    <Compile Include="Assembler\ParserState.cs" />
     <Compile Include="Assembler\Scopes.cs" />
-    <Compile Include="Assembler\Generator.cs" />
-    <Compile Include="Assembler\Parser.Opcodes.cs" />
     <Compile Include="Assembler\ParsedOpcode.cs" />
     <Compile Include="Assembler\Parser.cs" />
     <Compile Include="Assembler\Parser.Params.cs" />

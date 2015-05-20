@@ -13,7 +13,7 @@ namespace Ypsilon.Assembler
             set;
         }
 
-        protected void AddMessageLine(string input)
+        void AddMessageLine(string input)
         {
             if (MessageOutput == null)
                 MessageOutput = string.Empty;
@@ -22,7 +22,7 @@ namespace Ypsilon.Assembler
             MessageOutput += input;
         }
 
-        protected void AddMessage(string input)
+        void AddMessage(string input)
         {
             if (MessageOutput == null)
                 MessageOutput = string.Empty;
