@@ -8,6 +8,9 @@
 ; === Start ===================================================================
 Start:
 .scope
+	lod		a, S[$0]
+	lod		a, S[07]
+	lod		a, S[$08]
     ;set up devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen

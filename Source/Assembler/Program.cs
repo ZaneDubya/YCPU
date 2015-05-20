@@ -16,7 +16,7 @@ namespace Ypsilon
             if (args.Length == 0)
             {
 #if DEBUG
-                args = new string[1] { "../../../../Tests/rain.s" };
+                args = new string[1] { "../../../../Tests/rain.asm" };
 #else
                 Console.WriteLine(errNoArguments);
                 return;
