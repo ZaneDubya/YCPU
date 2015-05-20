@@ -1,14 +1,13 @@
 ; TEST CONSOLE
 ; Expects Graphics Device in bus index 1 and Keyboard in bus index 2
 
-; === interrupt table =========================================================
+; === Interrupt table =========================================================
 .dat16 Start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 .dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 
 ; === Start ===================================================================
 Start:
 .scope
-	lod		a, S[$0]
     ;set up devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen

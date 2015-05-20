@@ -63,16 +63,6 @@ namespace Ypsilon {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] Arial12 {
-            get {
-                object obj = ResourceManager.GetObject("Arial12", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         internal static byte[] NES_PTHE {
             get {
                 object obj = ResourceManager.GetObject("NES_PTHE", resourceCulture);

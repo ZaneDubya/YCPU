@@ -356,7 +356,7 @@ namespace Ypsilon.Assembler
         {
             Sanity.RequireParamCountExact(param, 1);
             // base opcode is 0x00B4, high byte is number of stack inst to flush, + 1
-            return AssembleNOP(param, opcodeFlag, state);
+            return AssembleSFL(0x00B4, param[0]);
         }
         #endregion
 
@@ -552,6 +552,8 @@ namespace Ypsilon.Assembler
                     int r3 = (p2.OpcodeWord & 0x0700);
                     addressingmode = (ushort)(0x0800 | r3);
                     break;
+                default:
+                    throw new Exception("Unknown addressing mode.");
             }
 
             ushort bitwidth = 0x0000;
@@ -619,13 +621,15 @@ namespace Ypsilon.Assembler
         ushort[] AssembleBRA(ushort opcode, string param1, ParserState state)
         {
             ParsedOpcode p1 = ParseParam(param1);
-            // must be branching to a label
+            // must be branching to a label or an immediate value between $7f and -$80
             if (p1.LabelName == string.Empty)
-                return null;
+                if (p1.ImmediateWord > 255)
+                    return null;
 
             m_Code.Clear();
-            m_Code.Add((ushort)opcode);
-            state.Branches.Add((ushort)state.Code.Count, p1.LabelName.ToLower());
+            m_Code.Add((ushort)(opcode | (p1.ImmediateWord << 8)));
+            if (p1.LabelName != string.Empty)
+                state.Branches.Add((ushort)state.Code.Count, p1.LabelName.ToLower());
             return m_Code.ToArray();
         }
 
@@ -884,6 +888,25 @@ namespace Ypsilon.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | r_bits | s_bits));
+            return m_Code.ToArray();
+        }
+
+        ushort[] AssembleSFL(ushort opcode, string param1)
+        {
+            // param1 = index of operations, must be integer from 1-256
+            ParsedOpcode p1 = ParseParam(param1);
+
+            if (p1.AddressingMode != AddressingMode.Immediate)
+                return null;
+            if ((p1.OpcodeWord < 1) || (p1.OpcodeWord > 256))
+                return null;
+
+            // Bit pattern is:
+            // FEDC BA98 7654 3210
+            // iiii iiii OOOO OOOO
+
+            m_Code.Clear();
+            m_Code.Add((ushort)(opcode | (((p1.ImmediateWord - 1) & 0x00FF) << 8)));
             return m_Code.ToArray();
         }
 
