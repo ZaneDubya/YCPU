@@ -19,7 +19,6 @@ namespace Ypsilon.Assembler
             this.HasImmediateWord = false;
             this.ImmediateWord = 0x0000;
             this.LabelName = string.Empty;
-            this.IsIllegal = false;
         }
 
         public AddressingMode AddressingMode { get; set; }
@@ -31,7 +30,5 @@ namespace Ypsilon.Assembler
         public ushort ImmediateWord { get; set; }
 
         public string LabelName { get; set; }
-
-        public bool IsIllegal { get; set; }
     }
 }

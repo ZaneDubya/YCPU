@@ -511,8 +511,6 @@ namespace Ypsilon.Assembler
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.IsIllegal || p2.IsIllegal)
-                return null;
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
             
@@ -578,9 +576,6 @@ namespace Ypsilon.Assembler
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.IsIllegal || p2.IsIllegal)
-                return null;
-
             // p1 MUST be a register.
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
@@ -624,8 +619,6 @@ namespace Ypsilon.Assembler
         ushort[] AssembleBRA(ushort opcode, string param1, ParserState state)
         {
             ParsedOpcode p1 = ParseParam(param1);
-            if (p1.IsIllegal)
-                return null;
             // must be branching to a label
             if (p1.LabelName == string.Empty)
                 return null;
@@ -717,8 +710,6 @@ namespace Ypsilon.Assembler
         {
             ParsedOpcode p1 = ParseParam(param1);
 
-            if (p1.IsIllegal)
-                return null;
             ushort addressingmode = 0x0000;
             switch (p1.AddressingMode)
             {
@@ -786,9 +777,6 @@ namespace Ypsilon.Assembler
         {
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
-
-            if (p1.IsIllegal || p2.IsIllegal)
-                return null;
 
             // p1 MUST be a register.
             if (p1.AddressingMode != AddressingMode.Register)
@@ -858,8 +846,6 @@ namespace Ypsilon.Assembler
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.IsIllegal || p2.IsIllegal)
-                return null;
 
             // p1 MUST be a register.
             if (p1.AddressingMode != AddressingMode.Register)
