@@ -26,6 +26,27 @@ namespace Ypsilon.Assembler
                 ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
             }
+            else if (isStackOffset(param))
+            {
+                string stackOffset = param.Substring(2, param.Length - 3);
+                if (CanDecodeLiteral(stackOffset))
+                {
+                    TryParseLiteralParameter(ParsedOpcode, stackOffset);
+                    if (ParsedOpcode.ImmediateWord < 8)
+                    {
+                        ParsedOpcode.OpcodeWord = ParsedOpcode.ImmediateWord;
+                        ParsedOpcode.AddressingMode = AddressingMode.StackAccess;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("Stack offset exceeds bounds of 0 - 7: '{0}'", originalParam));
+                    }
+                }
+                else
+                {
+                    throw new Exception(string.Format("Stack offset must be a liternal: '{0}'", originalParam));
+                }
+            }
             else if (isParamBracketed(param))
             {
                 param = removeBrackets(param);
@@ -114,20 +135,40 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        bool TryParseLiteralParameter(ParsedOpcode parsedOpcode, string param)
+        bool TryParseLiteralParameter(ParsedOpcode parsedOpcode, string originalParam)
         {
             ushort? literalValue = null;
 
-            if (param.StartsWith("$")) // allow both $ and 0x as indicators of hex numbers. other formats as well?
+            string param = originalParam;
+
+            if (param.Contains("$")) // allow both $ and 0x as indicators of hex numbers. other formats as well?
                 param = param.Replace("$", "0x");
 
-            if (param.StartsWith("0x"))
+            if (param.Contains("0x"))
             {
                 // format: 0x12EF or -0x12EF
                 if (param[0] == '-')
-                    literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
+                {
+                    try
+                    {
+                        literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
+                    }
+                    catch
+                    {
+                        throw new Exception(string.Format("Could not parse this hexidecimal parameter: '{0}'", originalParam));
+                    }
+                }
                 else
-                    literalValue = Convert.ToUInt16(param, 16);
+                {
+                    try
+                    {
+                        literalValue = Convert.ToUInt16(param, 16);
+                    }
+                    catch
+                    {
+                        throw new Exception(string.Format("Could not parse this hexidecimal parameter: '{0}'", originalParam));
+                    }
+                }
             }
             else if (param.Trim().All(x => char.IsDigit(x)))
             {
@@ -174,6 +215,16 @@ namespace Ypsilon.Assembler
         bool isParamBracketed(string param)
         {
             if ((param.StartsWith("[") && param.EndsWith("]")) || (param.StartsWith("(") && param.EndsWith(")")))
+                return true;
+            else
+                return false;
+        }
+
+        bool isStackOffset(string param)
+        {
+            if (param[0].ToString().ToUpper() == "S" && 
+                param.Length >= 4 && param[1] == '[' && 
+                param[param.Length - 1] == ']')
                 return true;
             else
                 return false;
