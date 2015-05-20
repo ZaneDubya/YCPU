@@ -1,5 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/* =================================================================
+ * YCPUAssembler
+ * Copyright (c) 2014 ZaneDubya
+ * Based on DCPU-16 ASM.NET
+ * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
+ * This code is licensed under the MIT License
+ * =============================================================== */
+
+using System;
 
 namespace Ypsilon.Assembler
 {
@@ -12,11 +19,11 @@ namespace Ypsilon.Assembler
                 switch (opcode.ToLower())
                 {
                     case ".dat8":
-                        m_IsNextLineData = ParseData8(line, state);
+                        ParseData8(line.Replace(".dat8", string.Empty), state);
                         return true;
 
                     case ".dat16":
-                        m_IsNextLineData = ParseData16(line, state);
+                        ParseData16(line.Replace(".dat16", string.Empty), state);
                         return true;
 
                     case ".advance":
@@ -52,10 +59,12 @@ namespace Ypsilon.Assembler
 
                         break;
                     case ".scope":
-                        state.m_Scopes.ScopeOpen(state.machineCode.Count);
+                    case "{":
+                        state.Scopes.ScopeOpen(state.Code.Count);
                         return true;
                     case ".scend":
-                        return state.m_Scopes.ScopeClose(state.machineCode.Count);
+                    case "}":
+                        return state.Scopes.ScopeClose(state.Code.Count);
                     default:
                         throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
                 }

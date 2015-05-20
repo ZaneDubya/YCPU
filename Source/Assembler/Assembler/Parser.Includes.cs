@@ -1,7 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿/* =================================================================
+ * YCPUAssembler
+ * Copyright (c) 2014 ZaneDubya
+ * Based on DCPU-16 ASM.NET
+ * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
+ * This code is licensed under the MIT License
+ * =============================================================== */
+
+using System;
 
 namespace Ypsilon.Assembler
 {
@@ -14,7 +19,7 @@ namespace Ypsilon.Assembler
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
-            byte[] data = Ypsilon.Platform.Common.GetBytesFromFile(state.m_Directory + @"\" + tokens[1]);
+            byte[] data = Ypsilon.Platform.Common.GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
             if (data == null)
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 
@@ -36,7 +41,7 @@ namespace Ypsilon.Assembler
                 throw new Exception("Out of bounds for incbin.");
 
             for (int i = 0; i < length; i++)
-                state.machineCode.Add(data[i + begin]);
+                state.Code.Add(data[i + begin]);
             return true;
         }
     }

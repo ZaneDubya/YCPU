@@ -1,10 +1,10 @@
-﻿/*
+﻿/* =================================================================
  * YCPUAssembler
  * Copyright (c) 2014 ZaneDubya
  * Based on DCPU-16 ASM.NET
  * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
  * This code is licensed under the MIT License
-*/
+ * =============================================================== */
 
 using System;
 using System.Collections.Generic;
@@ -14,65 +14,54 @@ namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
-        Dictionary<string, Func<string[], int, ParserState, ushort[]>> m_Opcodes;
-        Dictionary<string, ushort> m_Registers;
-
-        bool m_IsNextLineData = false;
-        
-
         public Parser()
         {
-            m_Opcodes = new Dictionary<string, Func<string[], int, ParserState, ushort[]>>();
-            m_Registers = new Dictionary<string, ushort>();
-
-            InitOpcodeDictionary();
-            InitRegisterDictionary();
+            Initialize();
         }
 
-        public byte[] Parse(string[] lines, string working_directory)
+        public byte[] Parse(string[] lines, string workingDirectory)
         {
             ParserState state = new ParserState();
-            state.m_Directory = working_directory;
+            state.WorkingDirectory = workingDirectory;
 
             int indexOfCurrentLine = 0;
 
-            try
+            // pass 1: assemble the assembly file into machine code
+            foreach (var line in lines)
             {
-                foreach (var line in lines)
+                indexOfCurrentLine++;
+
+                // trim whitespace at tail/end and discard empty lines
+                string currentLine = StripComments(line).Trim();
+                if (currentLine.Length == 0 || currentLine[0] == ';')
+                    continue;
+
+                try
                 {
-                    indexOfCurrentLine++;
-
-                    string currentLine = line.Trim();
-                    if (currentLine.Length < 1 || line[0] == ';')
-                        continue;
-
-                    currentLine = StripComments(currentLine);
-                    if (currentLine.Trim().Length == 0)
-                        continue;
-
                     AssembleLine(currentLine, state);
                 }
-
-                if (state.m_Scopes.OpenScopes())
-                    throw new Exception("Unclosed scope.");
-
-                SetLabelAddressReferences(state);
-                SetBranchLabelAddressReferences(state);
-                SetDataFieldLabelAddressReferences(state);
-
-                return state.machineCode.ToArray();
+                catch (Exception ex)
+                {
+                    AddMessageLine(string.Format("Line {0}: {1}", indexOfCurrentLine, ex.Message));
+                    return null;
+                }
             }
-            catch (Exception ex)
-            {
-                AddMessageLine(string.Format("Line {0}: {1}", indexOfCurrentLine, ex.Message));
-                return null;
-            }
+
+            // check for open scopes...
+            if (state.Scopes.OpenScopes())
+                throw new Exception("Unclosed scope.");
+
+            // pass 2: update all labels.
+            state.UpdateLabelReferences();
+
+            // return the assembled code!
+            return state.Code.ToArray();
         }
 
         string StripComments(string line)
         {
             string clearedLine = line;
-            int commentIndex = line.IndexOf(";");
+            int commentIndex = line.IndexOf(';');
 
             if (commentIndex == 0)
                 return string.Empty;
@@ -86,12 +75,6 @@ namespace Ypsilon.Assembler
         {
             line = line.Trim();
 
-            if (m_IsNextLineData != false)
-            {
-                m_IsNextLineData = this.ParseData16(line, state);
-                return;
-            }
-
             if (RegEx.MatchLabel(line) || RegEx.MatchLabelLocal(line))
             {
                 bool local = RegEx.MatchLabelLocal(line);
@@ -101,23 +84,12 @@ namespace Ypsilon.Assembler
                     return;
                 // if there is something left to parse, trim it and then interpret it as its own line.
                 line = line.Remove(0, remaiderLineContentIndex).Trim();
-                if (line.Length < 1)
+                if (line.Length == 0)
                     return;
             }
 
             string[] tokens = this.Tokenize(line);
             string opcode = tokens[0].Trim();
-            int bit_width = 16; // default to operating on 16 bits
-
-            // MATCH: xxx[.]xxx
-            if (opcode.Contains('.') && (opcode.IndexOf('.') > 1) && (opcode.Length - opcode.IndexOf('.') - 1 > 0))
-            {
-                // opcode has a flag
-                string flag = opcode.Substring(opcode.IndexOf('.') + 1);
-                if (!ParseBitWidth(flag, out bit_width))
-                    throw new Exception(string.Format("Unknown bit width flag '{0}' for instruction '{1}'.\nAcceptable bit widths are 8, 16, and 32.", flag, line));
-                opcode = opcode.Substring(0, opcode.IndexOf('.'));
-            }
 
             if (ParsePragma(line, opcode, tokens, state))
             {
@@ -125,11 +97,23 @@ namespace Ypsilon.Assembler
                 return;
             }
 
+            OpcodeFlag opcodeFlag = OpcodeFlag.BitWidth16; // default to operating on 16 bits
+
+            // Look for flags on operands (xxx.yyy, where y is the flag).
+            if (opcode.Contains('.') && (opcode.IndexOf('.') > 1) && (opcode.Length - opcode.IndexOf('.') - 1 > 0))
+            {
+                // opcode has a flag
+                string flag = opcode.Substring(opcode.IndexOf('.') + 1);
+                if (!ParseOpcodeFlag(flag, ref opcodeFlag))
+                    throw new Exception(string.Format("Unknown bit width flag '{0}' for instruction '{1}'.", flag, line));
+                opcode = opcode.Substring(0, opcode.IndexOf('.'));
+            }
+
             // get the assembler for this opcode. If no assembler exists, throw error.
-            Func<string[], int, ParserState, ushort[]> assembler;
+            Func<string[], OpcodeFlag, ParserState, ushort[]> assembler;
             if (!m_Opcodes.TryGetValue(opcode.ToLower(), out assembler))
             {
-                throw new Exception(string.Format("Undefined cpu opcode in line {0}", line));
+                throw new Exception(string.Format("Undefined command in line {0}", line));
             }
 
             // get the parameters
@@ -138,7 +122,7 @@ namespace Ypsilon.Assembler
                 param.Add(tokens[i].Trim());
 
             // pass the params to the opcode's assembler. If no output, throw error.
-            ushort[] code = assembler(param.ToArray(), bit_width, state);
+            ushort[] code = assembler(param.ToArray(), opcodeFlag, state);
             if (code == null)
                 throw new Exception(string.Format("Error assembling line {0}", line));
 
@@ -146,19 +130,27 @@ namespace Ypsilon.Assembler
             for (int i = 0; i < code.Length; i++)
             {
                 ushort this_opcode = code[i];
-                state.machineCode.Add((byte)(this_opcode & 0x00ff));
-                state.machineCode.Add((byte)((this_opcode & 0xff00) >> 8));
+                state.Code.Add((byte)(this_opcode & 0x00ff));
+                state.Code.Add((byte)((this_opcode & 0xff00) >> 8));
             }
         }
 
-        bool ParseBitWidth(string value, out int bit_width)
+        bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
         {
-            bit_width = 0;
-            if (!int.TryParse(value, out bit_width))
-                return false;
-            if (bit_width != 8 && bit_width != 16 && bit_width != 32)
-                return false;
-            return true;
+            switch (value)
+            {
+                case "8":
+                    opcodeFlag = OpcodeFlag.BitWidth8;
+                    return true;
+                case "16":
+                    opcodeFlag = OpcodeFlag.BitWidth16;
+                    return true;
+                case "F":
+                    opcodeFlag = OpcodeFlag.FarJump;
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         string[] Tokenize(string data)
@@ -171,141 +163,6 @@ namespace Ypsilon.Assembler
                     tokens[i + 1] = string.Empty;
                 }
             return tokens.Where(t => t.Trim() != string.Empty).ToArray();
-        }
-
-        bool ParseData8(string line, ParserState state)
-        {
-            List<string> dataFields = new List<string>();
-
-            string lineData = m_IsNextLineData != true ? line.Substring(6, line.Length - 6).Trim() : line.Trim();
-            foreach (var field in lineData.Split(','))
-            {
-                if (field.Trim() == string.Empty) continue;
-                if (dataFields.Count == 0)
-                {
-                    dataFields.Add(field);
-                }
-                else
-                {
-                    int count = 0;
-                    int last = -1;
-                    string lastStr = dataFields[dataFields.Count - 1];
-
-                    while ((last = lastStr.IndexOf('\"', last + 1)) != -1)
-                    {
-                        count++;
-                    }
-
-                    if (count == 1)
-                    {
-                        dataFields[dataFields.Count - 1] += "," + field;
-                    }
-                    else
-                    {
-                        dataFields.Add(field);
-                    }
-                }
-            }
-
-            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int8, state);
-
-            return line.EndsWith(",") ? true : false;
-        }
-
-        bool ParseData16(string line, ParserState state)
-        {
-            List<string> dataFields = new List<string>();
-
-            string lineData = m_IsNextLineData != true ? line.Substring(6, line.Length - 6).Trim() : line.Trim();
-            foreach (var field in lineData.Split(','))
-            {
-                if (field.Trim() == string.Empty) continue;
-                if (dataFields.Count == 0)
-                {
-                    dataFields.Add(field);
-                }
-                else
-                {
-                    int count = 0;
-                    int last = -1;
-                    string lastStr = dataFields[dataFields.Count - 1];
-
-                    while ((last = lastStr.IndexOf('\"', last + 1)) != -1)
-                    {
-                        count++;
-                    }
-
-                    if (count == 1)
-                    {
-                        dataFields[dataFields.Count - 1] += "," + field;
-                    }
-                    else
-                    {
-                        dataFields.Add(field);
-                    }
-                }
-            }
-
-            GenerateInstructionsForDataFields(dataFields, DataFieldTypes.Int16, state);
-
-            return line.EndsWith(",") ? true : false;
-        }
-
-        private void GenerateInstructionsForDataFields(IList<string> dataFields, DataFieldTypes dataType, ParserState state)
-        {
-            foreach (string data in dataFields)
-            {
-                string valStr = data.Trim();
-                if (valStr.IndexOf('"') > -1)
-                {
-                    string asciiLine = data.Replace("\"", string.Empty);
-                    foreach (char c in asciiLine)
-                    {
-                        switch (dataType)
-                        {
-                            case DataFieldTypes.Int8:
-                                state.machineCode.Add((byte)c);
-                                break;
-                            case DataFieldTypes.Int16:
-                                state.machineCode.Add((byte)((ushort)c & 0x00ff));
-                                state.machineCode.Add((byte)((ushort)(c & 0xff00) >> 8));
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    uint val = (uint)0;
-
-                    if (valStr.Contains("0x") != false)
-                    {
-                        val = Convert.ToUInt32(valStr, 16);
-                    }
-                    else if (valStr.All(x => char.IsDigit(x)))
-                    {
-                        val = Convert.ToUInt32(valStr, 10);
-                    }
-                    else
-                    {
-                        state.DataFields.Add((ushort)state.machineCode.Count, valStr);
-                    }
-
-                    switch (dataType)
-                    {
-                        case DataFieldTypes.Int8:
-                            if ((val > byte.MaxValue) || (val < byte.MinValue))
-                                throw new Exception(string.Format("Included byte value '{0}' cannot be expressed in an 8-bit value.", data));
-                            state.machineCode.Add((byte)val);
-                            break;
-                        case DataFieldTypes.Int16:
-                            if ((val > ushort.MaxValue) || (val < ushort.MinValue))
-                                throw new Exception(string.Format("Included ushort value '{0}' cannot be expressed in a 16-bit value.", data));
-                            state.machineCode.Add((byte)((ushort)val & 0x00ff));
-                            state.machineCode.Add((byte)((ushort)(val & 0xff00) >> 8));
-                            break;
-                    }
-                }
-            }
         }
     }
 }

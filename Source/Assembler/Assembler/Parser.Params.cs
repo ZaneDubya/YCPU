@@ -1,10 +1,10 @@
-﻿/*
+﻿/* =================================================================
  * YCPUAssembler
  * Copyright (c) 2014 ZaneDubya
  * Based on DCPU-16 ASM.NET
  * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
  * This code is licensed under the MIT License
-*/
+ * =============================================================== */
 
 using System;
 using System.Linq;
@@ -13,9 +13,9 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        public ParsedOpcode ParseParam(string param)
+        public Opcode ParseParam(string param)
         {
-            var ParsedOpcode = new ParsedOpcode();
+            var ParsedOpcode = new Opcode();
             var clearedParameter = param.Replace(" ", string.Empty).Trim();
 
             if (this.m_Registers.ContainsKey(clearedParameter))
@@ -100,7 +100,7 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        public ParsedOpcode ParseMemoryAddressPlusRegisterParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseMemoryAddressPlusRegisterParameter(Opcode ParsedOpcode, string clearedParameter)
         {
             var psplit = clearedParameter.Split('+');
             if (psplit.Length < 2)
@@ -141,7 +141,7 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        public ParsedOpcode ParseMemoryAddressParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseMemoryAddressParameter(Opcode ParsedOpcode, string clearedParameter)
         {
             ParsedOpcode.Word = (ushort)0x0000;
             ParsedOpcode.AddressingMode = AddressingMode.Indirect;
@@ -171,7 +171,7 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        public ParsedOpcode ParseLiteralParameter(ParsedOpcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseLiteralParameter(Opcode ParsedOpcode, string clearedParameter)
         {
             ushort literalValue;
 
@@ -226,7 +226,7 @@ namespace Ypsilon.Assembler
 
         public bool CanDecodeLiteral(string param)
         {
-            ParsedOpcode opcode = new ParsedOpcode();
+            Opcode opcode = new Opcode();
             opcode = ParseLiteralParameter(opcode, param);
             return !opcode.Illegal;
         }

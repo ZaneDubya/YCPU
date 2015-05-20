@@ -1,17 +1,31 @@
-﻿/*
+﻿/* =================================================================
  * YCPUAssembler
  * Copyright (c) 2014 ZaneDubya
  * Based on DCPU-16 ASM.NET
  * Copyright (c) 2012 Tim "DensitY" Hancock (densitynz@orcon.net.nz)
  * This code is licensed under the MIT License
-*/
+ * =============================================================== */
+
+using System;
+using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
     partial class Parser
     {
+        Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>> m_Opcodes;
+        Dictionary<string, ushort> m_Registers;
+
+        void Initialize()
+        {
+            InitOpcodeDictionary();
+            InitRegisterDictionary();
+        }
+
         void InitOpcodeDictionary()
         {
+            m_Opcodes = new Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>>();
+
             // alu instructions
             m_Opcodes.Add("lod", AssembleLOD);
             m_Opcodes.Add("sto", AssembleSTO);
@@ -105,6 +119,8 @@ namespace Ypsilon.Assembler
 
         void InitRegisterDictionary()
         {
+            m_Registers = new Dictionary<string, ushort>();
+
             m_Registers.Add("r0", (ushort)YCPUReg.R0);
             m_Registers.Add("r1", (ushort)YCPUReg.R1);
             m_Registers.Add("r2", (ushort)YCPUReg.R2);

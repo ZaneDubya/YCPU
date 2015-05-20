@@ -45,14 +45,18 @@
   <ItemGroup>
     <Compile Include="Assembler\AddressingMode.cs" />
     <Compile Include="Assembler\DataFieldTypes.cs" />
+    <Compile Include="Assembler\OpcodeFlag.cs" />
+    <Compile Include="Assembler\Optimizations.cs" />
+    <Compile Include="Assembler\Parser.Data.cs" />
     <Compile Include="Assembler\Parser.Includes.cs" />
-    <Compile Include="Assembler\Parser.Init.cs" />
+    <Compile Include="Assembler\Parser.Initialize.cs" />
     <Compile Include="Assembler\Parser.Instructions.cs" />
     <Compile Include="Assembler\Parser.Labels.cs" />
     <Compile Include="Assembler\Parser.Pragmas.cs" />
     <Compile Include="Assembler\ParserState.cs" />
+    <Compile Include="Assembler\Sanity.cs" />
     <Compile Include="Assembler\Scopes.cs" />
-    <Compile Include="Assembler\ParsedOpcode.cs" />
+    <Compile Include="Assembler\Opcode.cs" />
     <Compile Include="Assembler\Parser.cs" />
     <Compile Include="Assembler\Parser.Params.cs" />
     <Compile Include="Assembler\Regex.cs" />
