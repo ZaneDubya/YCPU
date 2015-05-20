@@ -15,48 +15,49 @@ namespace Ypsilon.Assembler
     {
         public Opcode ParseParam(string param)
         {
-            var ParsedOpcode = new Opcode();
-            var clearedParameter = param.Replace(" ", string.Empty).Trim();
+            Opcode ParsedOpcode = new Opcode();
 
-            if (this.m_Registers.ContainsKey(clearedParameter))
+            param = param.Replace(" ", string.Empty).Trim();
+
+            if (m_Registers.ContainsKey(param))
             {
-                ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
+                ParsedOpcode.Word = (ushort)m_Registers[param];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
             }
             else
             {
-                if ((clearedParameter.StartsWith("[") && clearedParameter.EndsWith("]")) || (clearedParameter.StartsWith("(") && clearedParameter.EndsWith(")")))
+                if ((param.StartsWith("[") && param.EndsWith("]")) || (param.StartsWith("(") && param.EndsWith(")")))
                 {
-                    clearedParameter = clearedParameter.Substring(1, clearedParameter.Length - 2).Replace(" ", string.Empty);
+                    param = param.Substring(1, param.Length - 2).Replace(" ", string.Empty);
 
-                    if (this.m_Registers.ContainsKey(clearedParameter))
+                    if (m_Registers.ContainsKey(param))
                     {
-                        ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
+                        ParsedOpcode.Word = (ushort)m_Registers[param];
                         ParsedOpcode.AddressingMode = AddressingMode.Indirect;
                     }
-                    else if (clearedParameter[clearedParameter.Length - 1] == '+')
+                    else if (param[param.Length - 1] == '+')
                     {
-                        clearedParameter = clearedParameter.Substring(0, clearedParameter.Length - 1);
-                        if (this.m_Registers.ContainsKey(clearedParameter))
+                        param = param.Substring(0, param.Length - 1);
+                        if (m_Registers.ContainsKey(param))
                         {
-                            ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
+                            ParsedOpcode.Word = (ushort)m_Registers[param];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPostInc;
                     }
-                    else if (clearedParameter[0] == '-')
+                    else if (param[0] == '-')
                     {
-                        clearedParameter = clearedParameter.Substring(1, clearedParameter.Length - 1);
-                        if (this.m_Registers.ContainsKey(clearedParameter))
+                        param = param.Substring(1, param.Length - 1);
+                        if (m_Registers.ContainsKey(param))
                         {
-                            ParsedOpcode.Word = (ushort)this.m_Registers[clearedParameter];
+                            ParsedOpcode.Word = (ushort)m_Registers[param];
                         }
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectPreDec;
                     }
-                    else if (clearedParameter.Contains(','))
+                    else if (param.Contains(','))
                     {
-                        string param0 = clearedParameter.Substring(0, clearedParameter.IndexOf(',')).Trim();
-                        string param1 = clearedParameter.Substring(clearedParameter.IndexOf(',') + 1, 
-                            clearedParameter.Length - clearedParameter.IndexOf(',') - 1).Trim();
+                        string param0 = param.Substring(0, param.IndexOf(',')).Trim();
+                        string param1 = param.Substring(param.IndexOf(',') + 1, 
+                            param.Length - param.IndexOf(',') - 1).Trim();
                         if (m_Registers.ContainsKey(param0) && m_Registers.ContainsKey(param1))
                         {
                             ParsedOpcode.Word = (ushort)(m_Registers[param0] | (m_Registers[param1] << 8));
@@ -80,9 +81,9 @@ namespace Ypsilon.Assembler
                             return ParsedOpcode;
                         }
                     }
-                    else if (CanDecodeLiteral(clearedParameter))
+                    else if (CanDecodeLiteral(param))
                     {
-                        ParsedOpcode = ParseLiteralParameter(ParsedOpcode, clearedParameter);
+                        ParsedOpcode = ParseLiteralParameter(ParsedOpcode, param);
                         ParsedOpcode.AddressingMode = AddressingMode.Absolute;
                     }
                     else
@@ -93,28 +94,28 @@ namespace Ypsilon.Assembler
                 }
                 else
                 {
-                    ParseLiteralParameter(ParsedOpcode, clearedParameter);
+                    ParseLiteralParameter(ParsedOpcode, param);
                 }
             }
 
             return ParsedOpcode;
         }
 
-        public Opcode ParseMemoryAddressPlusRegisterParameter(Opcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseMemoryAddressPlusRegisterParameter(Opcode ParsedOpcode, string param)
         {
-            var psplit = clearedParameter.Split('+');
+            var psplit = param.Split('+');
             if (psplit.Length < 2)
             {
-                throw new Exception(string.Format("malformated memory reference '{0}'", clearedParameter));
+                throw new Exception(string.Format("malformated memory reference '{0}'", param));
             }
 
             var addressValue = "[+" + psplit[1] + "]";
-            if (!this.m_Registers.ContainsKey(addressValue))
+            if (!m_Registers.ContainsKey(addressValue))
             {
-                throw new Exception(string.Format("Invalid register reference in '{0}'", clearedParameter));
+                throw new Exception(string.Format("Invalid register reference in '{0}'", param));
             }
 
-            ParsedOpcode.Word = (ushort)this.m_Registers[addressValue];
+            ParsedOpcode.Word = (ushort)m_Registers[addressValue];
             ParsedOpcode.UsesNextWord = true;
 
             if (psplit[0].StartsWith("\'") && psplit[0].EndsWith("\'") && psplit[0].Length == 3)
@@ -141,78 +142,78 @@ namespace Ypsilon.Assembler
             return ParsedOpcode;
         }
 
-        public Opcode ParseMemoryAddressParameter(Opcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseMemoryAddressParameter(Opcode ParsedOpcode, string param)
         {
             ParsedOpcode.Word = (ushort)0x0000;
             ParsedOpcode.AddressingMode = AddressingMode.Indirect;
             ParsedOpcode.UsesNextWord = true;
 
-            if (clearedParameter.StartsWith("\'") && clearedParameter.EndsWith("\'") && clearedParameter.Length == 5)
+            if (param.StartsWith("\'") && param.EndsWith("\'") && param.Length == 5)
             {
-                ushort val = clearedParameter[1];
+                ushort val = param[1];
                 ParsedOpcode.NextWord = val;
             }
-            else if (clearedParameter.Contains("0x"))
+            else if (param.Contains("0x"))
             {
-                ushort val = Convert.ToUInt16(clearedParameter.Trim(), 16);
+                ushort val = Convert.ToUInt16(param.Trim(), 16);
                 ParsedOpcode.NextWord = val;
             }
-            else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
+            else if (param.Trim().All(x => char.IsDigit(x)))
             {
-                ushort val = Convert.ToUInt16(clearedParameter.Trim(), 10);
+                ushort val = Convert.ToUInt16(param.Trim(), 10);
                 ParsedOpcode.NextWord = val;
             }
             else
             {
                 ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.LabelName = clearedParameter.Trim();
+                ParsedOpcode.LabelName = param.Trim();
             }
 
             return ParsedOpcode;
         }
 
-        public Opcode ParseLiteralParameter(Opcode ParsedOpcode, string clearedParameter)
+        public Opcode ParseLiteralParameter(Opcode ParsedOpcode, string param)
         {
             ushort literalValue;
 
-            if (clearedParameter.StartsWith("\'") && clearedParameter.EndsWith("\'") && clearedParameter.Length == 3)
+            if (param.StartsWith("\'") && param.EndsWith("\'") && param.Length == 3)
             {
-                literalValue = clearedParameter[1];
+                literalValue = param[1];
             }
-            else if (clearedParameter.Contains("0x"))
+            else if (param.Contains("0x"))
             {
                 // format: 0x12EF or -0x12EF
-                string param = clearedParameter;
-                if (param[0] == '-')
-                    literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
-                else
-                    literalValue = Convert.ToUInt16(clearedParameter, 16);
-            }
-            else if (clearedParameter.Contains("$"))
-            {
-                // format: $12EF or -$12EF
-                string param = clearedParameter.Replace("$", "0x");
+                string param = param;
                 if (param[0] == '-')
                     literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
                 else
                     literalValue = Convert.ToUInt16(param, 16);
             }
-            else if (clearedParameter.Trim().All(x => char.IsDigit(x)))
+            else if (param.Contains("$"))
+            {
+                // format: $12EF or -$12EF
+                string param = param.Replace("$", "0x");
+                if (param[0] == '-')
+                    literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 16));
+                else
+                    literalValue = Convert.ToUInt16(param, 16);
+            }
+            else if (param.Trim().All(x => char.IsDigit(x)))
             {
                 // format 1234
-                literalValue = Convert.ToUInt16(clearedParameter, 10);
+                literalValue = Convert.ToUInt16(param, 10);
             }
-            else if ((clearedParameter[0] == '-') && (clearedParameter.Substring(1).Trim().All(x => char.IsDigit(x))))
+            else if ((param[0] == '-') && (param.Substring(1).Trim().All(x => char.IsDigit(x))))
             {
                 // format -1234
-                literalValue = (ushort)(0 - Convert.ToInt16(clearedParameter.Substring(1, clearedParameter.Length - 1), 10));
+                literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 10));
             }
             else
             {
                 // format LABEL
                 ParsedOpcode.Word = 0x0000;
                 ParsedOpcode.UsesNextWord = true;
-                ParsedOpcode.LabelName = clearedParameter;
+                ParsedOpcode.LabelName = param;
                 ParsedOpcode.AddressingMode = AddressingMode.Immediate;
                 return ParsedOpcode;
             }

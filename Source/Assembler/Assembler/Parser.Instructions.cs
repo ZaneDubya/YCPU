@@ -13,16 +13,130 @@ namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
-        private const ushort c_NOP = 0x0001; // LOD R0, R0
         public const int c_InstructionSize = 2;
 
+        OpcodeFlag[] flag8or16 = new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 };
+
         #region ALU
+        ushort[] AssembleCMP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0000, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleNEG(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0008, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleADD(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0010, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleSUB(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0018, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleADC(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0020, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleSBC(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0028, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleMUL(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0030, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleDIV(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0038, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleMLI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0040, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleDVI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0048, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleMOD(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0050, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleMDI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0058, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleAND(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0060, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleORR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0068, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleEOR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0070, param[0], param[1], opcodeFlag, state);
+        }
+
+        ushort[] AssembleNOT(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Sanity.RequireParamCountExact(param, 2);
+            Sanity.RequireOpcodeFlag(opcodeFlag, flag8or16);
+            return AssembleALU((ushort)0x0078, param[0], param[1], opcodeFlag, state);
+        }
+
+
         ushort[] AssembleLOD(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
 
-            return AssembleALU((ushort)0x0000, param[0], param[1], opcodeFlag, state);
+            return AssembleALU((ushort)0x0080, param[0], param[1], opcodeFlag, state);
         }
 
         ushort[] AssembleSTO(string[] param, OpcodeFlag opcodeFlag, ParserState state)
@@ -30,123 +144,11 @@ namespace Ypsilon.Assembler
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
 
-            ushort[] code = AssembleALU((ushort)0x0008, param[0], param[1], opcodeFlag, state);
+            ushort[] code = AssembleALU((ushort)0x0088, param[0], param[1], opcodeFlag, state);
             int addressing = (code[0] & 0x0F00);
             if ((addressing == 0x0000) || (addressing == 0x0200)) // no sto reg or sto immediate.
                 return null;
             return code;
-        }
-
-        ushort[] AssembleADD(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0010, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleSUB(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0018, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleADC(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0020, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleSBC(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0028, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleMUL(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0030, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleDIV(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0038, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleMLI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0040, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleDVI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0048, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleMOD(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0050, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleMDI(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0058, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleAND(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0060, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleORR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0068, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleEOR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0070, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleNOT(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0078, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleCMP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0080, param[0], param[1], opcodeFlag, state);
-        }
-
-        ushort[] AssembleNEG(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleALU((ushort)0x0088, param[0], param[1], opcodeFlag, state);
         }
         #endregion
 
@@ -288,7 +290,7 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Bit testing operations
-        ushort[] AssembleBIT(string[] param, OpcodeFlag opcodeFlag, ParserState state)
+        ushort[] AssembleBTT(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -314,15 +316,6 @@ namespace Ypsilon.Assembler
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return AssembleBTT((ushort)0x00AB, param[0], param[1]);
-        }
-        #endregion
-
-        #region Switch Octet
-        ushort[] AssembleSWO(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 3);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleSWO((ushort)0x00AC, param[0], param[1], param[2]);
         }
         #endregion
 
@@ -446,19 +439,6 @@ namespace Ypsilon.Assembler
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return AssembleJMP((ushort)0x00C1, param[0], state);
         }
-
-        ushort[] AssembleJUM(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 1);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00C2, param[0], state);
-        }
-
-        ushort[] AssembleJCX(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new ushort[1] { (ushort)0x00C3 };
-        }
         #endregion
 
         #region Processor Functions
@@ -526,7 +506,7 @@ namespace Ypsilon.Assembler
                     // special case: alu.8 immediate with value greater than $FF should raise a warning...
                     if (opcodeFlag == OpcodeFlag.BitWidth8 && p2.NextWord >= 256)
                     {
-                        throw new Exception("Error: 8-bit load operation with an immediate value of greater than 8 bits.");
+                        throw new Exception("8-bit load operation with an immediate value of greater than 8 bits.");
                     }
                     addressingmode = 0x0000;
                     break;
@@ -543,6 +523,9 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x0400;
                     break;
                 // stack goes here
+                case AddressingMode.StackAccess:
+                    addressingmode = 0x0500;
+                    break;
                 case AddressingMode.IndirectPostInc:
                     addressingmode = 0x0600;
                     break;

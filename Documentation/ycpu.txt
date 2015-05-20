@@ -99,7 +99,7 @@ querying 'Hardware Device 0' on the Hardware Bus.
 
 
 ===============================[ 2.A. Registers ]===============================
-General Purpose Registers: R0-R7 (Also referenced as A,B,C,I,J,X,Y, and Z)
+General Purpose Registers: R0-R7 (Also commonly named A,B,C,I,J,X,Y, and Z).
 Flags register: FL
 Interrupt Address: IA
 IRQ Index: II
@@ -711,9 +711,9 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
-1011 0100   SFL*                SFL             Stack Flush                   1
+1011 0100   SFL                 SFL             Stack Flush                   1
 1011 0101   MMR/MMW/MML/MMS     MMU             MMU Rd/Wri/Lod/Sto            1
-1011 011x   SET*                SET             Set register to value         1
+1011 011x   SET                 SET             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
 1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx     1
@@ -722,8 +722,8 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
 1011 1111   RTI         X       ---             Return from Interrupt         4 
-1100 0000   JMP                 JMP             Jump                          1 
-1100 0001   JSR                 JMP             Jump to Subroutine            2 
+1100 0000   JMP         /       JMP             Jump                          1 
+1100 0001   JSR         /       JMP             Jump to Subroutine            2 
 1100 0010   ---                 ---                                           -
 1100 0011   ---                 ---                                           -
 1100 01xx   ---                 ---             UNDEFINED (4 opcodes)         -
@@ -872,6 +872,7 @@ JMP Bit Pattern
                 change the PC, but will also change the logical memory space
                 within the bank of the upper address. This process is detailed
                 in 2.F.5., supra.
+				Far jumps are only available in Supervisor mode.
                 
                 Addressing Mode     Upper Address   Lower Address...    
                 Immediate           PC + 4          PC + 2
@@ -891,6 +892,7 @@ JMP Bit Pattern
                 JMP.F   R0      ; PC=R0 @ R1
                 JMP.F   R4      ; PC=R4 @ R5
                 JMP.F   R7      ; PC=R7 @ R0
+		
     
 IMM Bit Pattern
     FEDC BA98 7654 3210
@@ -1519,6 +1521,11 @@ Regardless of the order of the registers specified in the instruction, the
 values registers are always saved in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
     Bit pattern 1: SP, USP, PS, PC, FL 
+	
+
+SFL			Stack flush
+Syntax:	SFL [$00-$FF]
+Removes the indicated number of 2-byte words from the stack.
 
     
 ===================[ 3.K. Processor Function Instructions ]=====================
@@ -1568,6 +1575,11 @@ MMW         Writes a word to the Memory Management Cache from a register.
 Syntax: MMR Ra, Rv
 Loads a value from Rv into the Memory Management Cache at index Ra. See MMR for
 how value of Ra is interpreted.
+
+
+NOP			No effect, cycle count increases by 1.
+Syntax:	NOP
+Nothing happens. This is a macro for LOD R0, R0
 
 
 SEF         Sets bit(s) in the FL register.

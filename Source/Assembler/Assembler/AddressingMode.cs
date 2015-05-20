@@ -16,6 +16,7 @@ namespace Ypsilon.Assembler
         Register,
         Indirect,
         IndirectOffset,
+        StackAccess,
         IndirectPostInc,
         IndirectPreDec,
         IndirectIndexed

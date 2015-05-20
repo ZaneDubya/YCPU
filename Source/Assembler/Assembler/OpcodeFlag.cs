@@ -5,10 +5,11 @@ using System.Text;
 
 namespace Ypsilon.Assembler
 {
+    [Flags]
     enum OpcodeFlag
     {
         BitWidth8 = 1,
         BitWidth16 = 2,
-        FarJump = 3
+        FarJump = 4
     }
 }

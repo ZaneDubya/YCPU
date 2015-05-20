@@ -19,7 +19,7 @@ namespace Ypsilon.Assembler
         public static void RequireOpcodeFlag(OpcodeFlag flag, OpcodeFlag[] acceptable)
         {
             for (int i = 0; i < acceptable.Length; i++)
-                if (acceptable[i] == flag)
+                if (flag.HasFlag(acceptable[i]))
                     return;
             throw new Exception(string.Format("Opcode flag of '{0}' is unsupported for this opcode.", flag.ToString()));
         }

@@ -27,8 +27,8 @@ namespace Ypsilon.Assembler
             m_Opcodes = new Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>>();
 
             // alu instructions
-            m_Opcodes.Add("lod", AssembleLOD);
-            m_Opcodes.Add("sto", AssembleSTO);
+            m_Opcodes.Add("cmp", AssembleCMP);
+            m_Opcodes.Add("neg", AssembleNEG);
             m_Opcodes.Add("add", AssembleADD);
             m_Opcodes.Add("sub", AssembleSUB);
             m_Opcodes.Add("adc", AssembleADC);
@@ -43,8 +43,8 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("orr", AssembleORR);
             m_Opcodes.Add("eor", AssembleEOR);
             m_Opcodes.Add("not", AssembleNOT);
-            m_Opcodes.Add("cmp", AssembleCMP);
-            m_Opcodes.Add("neg", AssembleNEG);
+            m_Opcodes.Add("lod", AssembleLOD);
+            m_Opcodes.Add("sto", AssembleSTO);
             // branch instructions
             m_Opcodes.Add("bcc", AssembleBCC);
             m_Opcodes.Add("buf", AssembleBCC);
@@ -71,13 +71,11 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("ror", AssembleROR);
             m_Opcodes.Add("rnr", AssembleRNR);
             // bit testing operations
-            m_Opcodes.Add("bit", AssembleBIT);
+            m_Opcodes.Add("btt", AssembleBTT);
             m_Opcodes.Add("btx", AssembleBTX);
             m_Opcodes.Add("btc", AssembleBTC);
             m_Opcodes.Add("bts", AssembleBTS);
-            // switch octet
-            m_Opcodes.Add("swo", AssembleSWO);
-            // fpu testing operations
+            // fpu operations. not implemented.
             m_Opcodes.Add("fpa", null);
             m_Opcodes.Add("fps", null);
             m_Opcodes.Add("fpm", null);
@@ -88,7 +86,14 @@ namespace Ypsilon.Assembler
             // stack operations
             m_Opcodes.Add("psh", AssemblePSH);
             m_Opcodes.Add("pop", AssemblePOP);
-            // sfl stack flush goes here
+            m_Opcodes.Add("sfl", AssembleSFL);
+            
+            // MMU operations
+            m_Opcodes.Add("mmr", AssembleMMR);
+            m_Opcodes.Add("mmw", AssembleMMW);
+            m_Opcodes.Add("mml", AssembleMML);
+            m_Opcodes.Add("mms", AssembleMMS);
+            // set register to value
             m_Opcodes.Add("set", AssembleSET);
             // increment / decrement / add small immediate
             m_Opcodes.Add("inc", AssembleINC);
@@ -98,16 +103,9 @@ namespace Ypsilon.Assembler
             // transfer special
             m_Opcodes.Add("tsr", AssembleTSR);
             m_Opcodes.Add("trs", AssembleTRS);
-            // MMU operations
-            m_Opcodes.Add("mmr", AssembleMMR);
-            m_Opcodes.Add("mmw", AssembleMMW);
-            m_Opcodes.Add("mml", AssembleMML);
-            m_Opcodes.Add("mms", AssembleMMS);
             // jump operations
             m_Opcodes.Add("jmp", AssembleJMP);
             m_Opcodes.Add("jsr", AssembleJSR);
-            m_Opcodes.Add("jum", AssembleJUM);
-            m_Opcodes.Add("jcx", AssembleJCX);
             // other instructions
             m_Opcodes.Add("hwq", AssembleHWQ);
             m_Opcodes.Add("slp", AssembleSLP);
@@ -115,6 +113,7 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("rti", AssembleRTI);
             // macros
             m_Opcodes.Add("rts", AssembleRTS);
+            m_Opcodes.Add("nop", AssembleNOP);
         }
 
         void InitRegisterDictionary()
@@ -138,6 +137,16 @@ namespace Ypsilon.Assembler
             m_Registers.Add("x", (ushort)YCPUReg.R5);
             m_Registers.Add("y", (ushort)YCPUReg.R6);
             m_Registers.Add("z", (ushort)YCPUReg.R7);
+
+            m_Registers.Add("fl", (ushort)YCPUReg.FL);
+            m_Registers.Add("ia", (ushort)YCPUReg.IA);
+            m_Registers.Add("ii", (ushort)YCPUReg.II);
+            m_Registers.Add("pc", (ushort)YCPUReg.PC);
+            m_Registers.Add("ps", (ushort)YCPUReg.PS);
+            m_Registers.Add("p2", (ushort)YCPUReg.P2);
+            m_Registers.Add("usp", (ushort)YCPUReg.USP);
+            m_Registers.Add("ssp", (ushort)YCPUReg.SSP);
+            m_Registers.Add("sp", (ushort)YCPUReg.SP);
         }
 
         enum YCPUReg : ushort
@@ -149,7 +158,17 @@ namespace Ypsilon.Assembler
             R4 = 0x0004,
             R5 = 0x0005,
             R6 = 0x0006,
-            R7 = 0x0007
+            R7 = 0x0007,
+
+            FL = 0x0100,
+            IA = 0x0101,
+            II = 0x0102,
+            PC = 0x0103,
+            PS = 0x0104,
+            P2 = 0x0105,
+            SSP = 0x0106,
+            USP = 0x0107,
+            SP = 0x1000
         }
     }
 }
