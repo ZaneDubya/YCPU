@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.5 RC0
+Version 0.5 RC1
 
 =============================[ Table of Contents ]==============================
 
@@ -614,7 +614,7 @@ This data is saved to R0-R3 upon calling HWQ $04, in this format:
                     R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
                     R1: 5 bits Day, 5 bits Hour     ...D DDDD ...h hhhh
                     R2: 6 bits Min, 6 bits Second   ..mm mmmm ..ss ssss
-                    R3: 16 bits Tick                .... tttt tttt tttt
+                    R3: 16 bits Tick                tttt tttt tttt tttt
                     
 2.H.2. The CLOCK interrupt
     
@@ -627,7 +627,8 @@ The processor can set the desired interrupt interval by calling HWQ $03, with an
 input value in R0. If R0 is $FFFF, the interrupt will be disabled. Otherwise, 
 the CLOCK interrupt will be raised at a rate of (2 ^ (R0)) times per second.
 
-Note that the maximum tick rate is capped at 1024.
+Note that the maximum tick rate is capped at (cpu speed / 1024), so a 131khz 
+ycpu can tick, at most, 128 times per second.
 
 
 =========================[ 2.I. Switching Context ]===========================
@@ -674,6 +675,17 @@ changing might be used in all banks).
 
     
 ==============================[ 3. Instructions ]===============================
+The YCPU's instruction set is comprised of 67 instructions (and four 'macros',
+where an opcode is known by two names: "NOP" is a second code for "LOD R0, R0").
+
+Each instruction is represented by an 8-bit opcode within the low octet of a
+16-bit program word. The program word can be followed by 1, or in rare cases,
+two immediate word values.
+
+There are 67 undefined opcodes: STO Immediate (0x00A8), STO Register (0x00AA),
+0x00AD, and 0x00C0 through 0x00FF inclusive. Undefined opcodes will raise the
+'undefined' interrupt on execution.
+
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
 0000 1RRR   NEG                 ALU             R = 0 - R (two's complement)  1
@@ -715,26 +727,17 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
 1011 0100   SFL                 SFL             Stack Flush                   1
-1011 0101   MMR/MMW/MML/MMS     MMU             MMU Rd/Wri/Lod/Sto            1
+1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
 1011 011x   SET                 SET             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
-1011 1010   TSR         /       XSR             Special Purpose Reg -> Rx     1
-1011 1011   TRS         /       XSR             Rx -> Special Purpose Reg     1
+1011 1010   JMP         /       JMP             Jump                          1 
+1011 1011   JSR         /       JMP             Jump to Subroutine            2 
 1011 1100   HWQ         X       HWQ             Hardware Bus Query            2
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
 1011 1111   RTI         X       ---             Return from Interrupt         4 
-1100 0000   JMP         /       JMP             Jump                          1 
-1100 0001   JSR         /       JMP             Jump to Subroutine            2 
-1100 001x   ---                 ---             UNDEFINED (2 opcodes)         -
-1100 01xx   ---                 ---             UNDEFINED (4 opcodes)         -
-1100 1xxx   ---                 ---             UNDEFINED (8 opcodes)         -
-1101 xxxx   ---                 ---             UNDEFINED (16 opcodes)        -
-111x xxxx   ---                 ---             UNDEFINED (32 opcodes)        -
-
-There are 63 undefined opcodes. Undefined opcodes will raise the 'undefined'
-interrupt on execution.
+11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
 
 
 ============================[ 3.A. Bit Patterns ]===============================
@@ -917,7 +920,7 @@ MMU Bit Pattern
         
 SET Bit Pattern
     FEDC BA98 7654 3210
-    RRRA vvvv OOOO OOOV
+    RRRv vvvv OOOO OOOA
         O = Opcode
         R = destination register
         v = value
@@ -963,12 +966,6 @@ STK Bit Pattern < 2 / 2 >
         u = push/pop USP                                        Y
         s = push/pop current Stack Pointer (USP / SSP)          N
         
-XSR Bit Pattern
-    FEDC BA98 7654 3210                        
-    RRRv vvvv OOOO OOOO
-        O = opcode
-        R = register index to read to or write from.
-        v = Index of special register
         
 ===========================[ 3.B. ALU Instructions ]============================
 Note: all ALU instructions support the .8 bitflag.
@@ -983,7 +980,7 @@ Operation:  Rx + M + C -> Rx, C
 
 ADD         Add value to register, carry is ignored.
 Operation:  Rx + M -> Rx, C
-For small immediate values, ($01-$20), ADD should be replaced with ADI.
+For small immediate values, ($01-$20), ADD should be optimized to ADI.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.
@@ -1522,7 +1519,7 @@ the number of registers specified.
 Regardless of the order of the registers specified in the instruction, the
 values registers are always saved in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
-    Bit pattern 1: SP, USP, PS, PC, FL 
+    Bit pattern 1: SP, USP, PS, PC, FL, P2, II, IA
 	
 
 SFL			Stack flush
@@ -1607,22 +1604,6 @@ The value in special register SR is loaded into general purpose register Rx.
  * Undefined SR codes have no functionality, and are supervisor only.
     
 
-TSR         Loads a special register into a general purpose register.
-Syntax: TSR Rx,SR
-The value in general purpose register Rx is loaded into special register SR.
-    SR      Value       Result      Supervisor only?
-    PC      0x00        PC = Rx
-    SP      0x01        SP* = Rx
-    IA      0x02        IA = Rx     X
-    II      0x03        II = Rx     X
-    PS      0x04        PS = Rx     X
-    P2      0x05        P2 = Rx     X
-    USP     0x06        USP = Rx    X
-    SSP     0x07        SSP = Rx    X
-            0x08-0x1F   Undefined*  X
- * SP is the current stack pointer; SSP in supervisor mode and USP in user mode.
- * Undefined SR codes have no functionality, and are supervisor only.
-
 
 SLP         Halts the processor until it receives an interrupt.
 Syntax: SLP
@@ -1631,190 +1612,8 @@ executed until a hardware interrupt is received, at which point the processor
 will exit the halted state and continue execution after the interrupt is
 handled.
 
-    
+
 ================================[ 4. History ]==================================
-0.1a 03/07/2014
-    Initial specification
-0.1b 03/08/2014
-    Renamed to YCPU.
-    R0 is the hi 16-bits of MUL/MLI result.
-    Renamed 'Maskable Interrupts' bit of FL from Q to I.
-    Added 'Absolute Offset' address mode - same as indirect offset.
-    Moved SWI Instruction
-    Clarified pop/push order of registers when multiple registers are specified.
-    Added descriptions of JMP/JSR/RTS, RTI/SWI.
-    Added descriptions to all ALU instructions, flags not fully fleshed out yet.
-0.1c 03/09/2014
-    Added II Register.
-    Added second stack. SP is now SSP/USP depending on flag bit S.
-    Added N bit for 'Interrupt i[N] progress'
-    Added 0x02 and 0x03 indexes to TRS bit pattern for USP/II access.
-    Made some TRS functions privileged.
-    Clarified SWI/RTI, JMP/JSR/RTS functions.
-    Added information on how interrupts are processed.
-0.1d 03/09/2014
-    Added hardware message opcode.
-    Clarified how hardware is accessed.
-0.1e 03/10/2014
-    Added PS register, which now contains supervisor mode, memory paging,
-        interrupts, and interrupt in process flag.
-    Added shift-without-carry opcodes, both left and right.
-    Added specification for all shift modes.
-    Added JMU (Jump, enter user mode) opcode.
-    Added ability to use Rx as an index for the bit to test.
-    TRS bit pattern now reads from any specified register, instead of always R0.
-    Noted the result of bad division operations:
-      * Dividing or Modulus by 0 always results in Rx being unchanged, and
-        raises the 'divide by zero' interrupt.
-      * Overflow flag set when attempting $8000 / $ffff, Rx is unchanged.
-    Clarified sign output of modulus instructions.
-    Added specification for bit testing operations.
-    Added preliminary memory management specification.
-0.2a 03/11/2014
-    Version 0.2! All instructions in the current set are specified.
-    Interrupts:
-      * Rewrote the Interrupts section to be more clear.
-      * Specified size of interrupt vector table as 16 words (previously 256).
-      * SWI now calls a single 'software interrupt' interrupt.
-    Memory Management:
-      * Complete rewrite of the memory manager concept: re-specified MMU to use
-        the concept of virtual address translation.
-      * Renamed all instances of 'Page' to 'Bank'.
-    Added new INC/ADI and DEC/SBI instructions.
-    Renamed TSW to TSR.
-    Specified result of bit-shifting when number of bits shifted is zero.
-    LSR: N flag is only clear if bit 15 of the result is set.
-    Added stubs for 'Stack Instructions' and 'Processor Function Instructions'.
-0.2b 03/12/2014
-    Added introduction.
-    Dedication to the Public Domain.
-    Specified boot sequence.
-    Moved Supervisor Mode bit to bit 15 in PS.
-0.2c 03/13/2014
-    Added page fault error bits to PS.
-    Reorganized opcodes to keep similar operations in contiguous opcodes.
-    Added floating point operations: FPA, FPD, FPM, FPS.
-    Added SWO operation.
-    Clarified when a branch occurs.
-    Added processor microcode description of interrupt instructions.
-0.2d 03/13/2014
-    Clarified which flags are effected on bit shifts of zero bits.
-    Minor spelling errors.
-0.2e 03/13/2014
-    Complete rewrite of 'Interrupts' section.
-    Added new 'P2' register which is used by the BankFault interrupt.
-    Added new 'R' status bit in PS which defines if ROM or RAM should be
-    switched to bank 0 on interrupt.
-    Clarified what banks are loaded when the MMU is enabled/disabled.
-    Clarified bootstrap sequence.
-    Made MMR/MMW privileged instructions.
-    Added Real Time Clock stub.
-    Changed bit pattern of ALU to match FPU.
-    Noted that Immediate addressing is not available with the STO opcode.
-    Minor spelling errors.
-0.2f 03/19/2014
-    Clarified use of RTI.
-    Clarified state of PC at Reset.
-    Moved around bit patterns of opcodes to make them better organized.
-    Added RTC spec in HWQ Bit Pattern information.
-    Changed state of N flag after CMP opcode to allow for signed compares.
-    Changed state of N and V flags following MDI instruction.
-    Changed state of V flag following MLI instruction.
-    Changed state of C and V flags following NEG instruction.
-    Removed unnecessary Branch opcodes.
-0.2g 03/20/2014
-    Reordered plenty of opcodes. Swear I'm done with this!
-    Reordered BIT, JMP, INC, and TSR bit patterns to match the ALU pattern.
-    the ALU Bit pattern.
-    Changed order of Rx and Ry in FPU Bit Pattern.
-    Changed some Registers in the HWQ Bit pattern results.
-    Removed ability to update RTC data.
-    C flag is not effected by BIT.
-    Clarified that C is clear when not set by BIT, BTX, BTC, BTS.
-    V flag is CLEARED by FPU operation errors.
-    Added JCX instruction.
-    Changed order of register popping when multiples are popped.
-0.2h 03/20/2014
-    Clarified that the I status bit only disables/enables Hardware Interrupts.
-    Removed an unneeded line describing User Mode privilege to edit FL bits.
-    Changed the Interrupt sequence.
-    Noted that after Reset, the processor follows the boot sequence.
-    Added an 'access' bit in the memory banking registers.
-    Added RTC 'desired tick rate' to the HWQ instruction.
-0.2i 03/20/2014
-    Bits QUW are cleared from PS on RTI.
-    Added Present bit to MMU cache registers.
-    Added information on Bank Faults.
-    TRS can now write to P2.
-0.2j 03/21/2014
-    R7 can now be referenced by three names: R7, SP, and Z.
-    Clarified that the processor raises and executes RESET interrupt on boot.
-    Added specification for RTC.
-    Clarified that the RTC is disabled on RESET.
-    Added MML/MMS instructions.
-    JCX no longer has a bit pattern: the addressing mode is Implied.
-    Changed the syntax for 'HWQ Set RTC Data'.
-    Changed precision of RTC Tick data from 8 bits to 16 bits.
-    Changed JCX instruction, and provided code that is the equivalent of
-        'Save context'.
-0.3a 03/23/2014
-    RTC is fully specified.
-    Added MML/MMS opcodes.
-    Cycle count specified for all instructions.
-    Register R7 can now be referenced by R7, Z, and SP.
-    Slight change to JCX to make it compatible with interrupt stack usage.
-    Slight clarification of RTC tick rate.
-    PC is rewound by one or two on an error interrupt.
-0.3b 04/06/2014
-  * R7 and SP are now separate registers: R7 is an eighth general purpose, and
-    SP is a special purpose register only accessible through POP/PSH & TSR/TRS.
-  * Added Absolute addressing mode for ALU and JMP.
-  * Reduced cycles for many instructions.
-  * Slight change to BTT bit pattern (previously BIT)
-  * Renamed INC to IMM.
-  * Renamed PSH to STK, broke up bit pattern into two separate patterns.
-  * Changed SHF to allow for a register to contain the value to shift by.
-  * Renamed TSR to XSR.
-  * Changed order of BXX bit pattern.
-  * BAW is now condition code 111, used to be 010.
-0.4a 07/18/14
-  * Memory is now accessed as bytes, not words. Changes throughout to make this
-    change clear.
-  * Added new ".8" 8-bit instructions for LOD, STO, ADD, ADC, SUB, and SBC.
-0.4x 04/30/2015
-  * Specified on-chip hardware (RAM/ROM chips).
-  * Specified that processor is Hardware Device 0 on the bus in most setups.
-  * Added MIM/MIA instructions and MIM bit pattern.
-0.4y 04/30/2015
-  * All instructions must be 16-bit aligned!
-  * Branch offsets are multiplied by 2 (restoring offset range of -128~+127)!
-0.4z 05/01/2015
-  * Removed MIM/MIA instructions and MIM bit pattern.
-  * Added Stack flush instruction and SFL bit pattern.
-  * Added SET instruction and SET bit pattern.
-  * Reworked ALU bit pattern. All ALU now support 8-bit operations with ".8".
-0.4aa 05/02/2015
-  * Reworked HWQ instruction. Included information on how to communicate with
-    Hardware devices.
-+0.4ab 05/08/2015
-  * BIT -> BTT
-0.4ac 05/11/2015
-  * MMU cache changed. Now U and S cache, each 8 words (4 entries x 2 word ea).
-  * Memory is now 4x16kb banks, instead of 16x4kb banks.
-  * MMU bit pattern changed.
-  * MML/MMR/MMW/MMS instructions changed.
-  * Index of HWQ/RTS/SLP/SWI changed.
-  * Got rid of JCX; it is an abomination.
-  * Got rid of JMU; it too is an abomination.
-  * Added easy instructions for switching context.
-0.5 RC0 05/18/2015
-  * Got rid of SWO; it also is an abomination.
-  * Got rid of UnalignedEx. Processor should be able to execute unaligned; who
-    care if it's slower?
-  * Changed MMU Cache: now 256 devices, each with 256 banks. 1gig of physical
-    address space.
-  * Added far jump. This is exceptionally cool.
-  * Updated JMP bit pattern to allow for far jumps.
-  * Noted value for unloaded memory addresses.
-  * default name for JMS is JSR. JMS is a ridiculous name. JSR is way better.
-  
+
+Please refer to the file 'ycpu history.txt' for a complete history of revisions
+to the YCPU specification.
