@@ -20,7 +20,10 @@ namespace AsmTstGn
                 file.WriteLine(generateALU());
             using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-BRA.asm"))
                 file.WriteLine(generateBRA());
-
+            using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-SHF.asm"))
+                file.WriteLine(generateSHF());
+            using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-BTT.asm"))
+                file.WriteLine(generateBTT());
         }
 
         static string generateALU()
@@ -41,7 +44,7 @@ namespace AsmTstGn
                 AddressingMode.IndirectIndexed };
 
             StringBuilder sb = new StringBuilder();
-            generateInstructions2p(sb, ins, modes);
+            generateInstructions2p(sb, ins, modes, "$FFEE");
             return sb.ToString();
         }
 
@@ -57,12 +60,39 @@ namespace AsmTstGn
                 AddressingMode.Immediate };
 
             StringBuilder sb = new StringBuilder();
-            generateInstructions1p(sb, ins, modes);
+            generateInstructions1p(sb, ins, modes, "$7F");
             return sb.ToString();
 
         }
 
-        static void generateInstructions1p(StringBuilder sb, string[] instructions, AddressingMode[] modes)
+        static string generateSHF()
+        {
+            string[] ins = new string[] { 
+                "asl", "lsl", "rol", "rnl",
+                "asr", "lsr", "ror", "rnr" };
+
+            AddressingMode[] modes = new AddressingMode[] {
+                AddressingMode.Immediate, AddressingMode.Register };
+
+            StringBuilder sb = new StringBuilder();
+            generateInstructions2p(sb, ins, modes, "13");
+            return sb.ToString();
+        }
+
+        static string generateBTT()
+        {
+            string[] ins = new string[] { 
+                "btt", "btx", "btc", "bts" };
+
+            AddressingMode[] modes = new AddressingMode[] {
+                AddressingMode.Immediate, AddressingMode.Register };
+
+            StringBuilder sb = new StringBuilder();
+            generateInstructions2p(sb, ins, modes, "11");
+            return sb.ToString();
+        }
+
+        static void generateInstructions1p(StringBuilder sb, string[] instructions, AddressingMode[] modes, string immediate)
         {
             foreach (string instruction in instructions)
             {
@@ -74,11 +104,11 @@ namespace AsmTstGn
                         case AddressingMode.Immediate:
                             if (instruction == "sto")
                                 continue;
-                            addr = "$7F";
+                            addr = immediate;
                             sb.AppendLine(string.Format("{0}     {1}", instruction, addr));
                             break;
                         case AddressingMode.Absolute:
-                            addr = "$007F";
+                            addr = immediate;
                             sb.AppendLine(string.Format("{0}     [{1}]", instruction, addr));
                             break;
                         case AddressingMode.Register:
@@ -119,7 +149,7 @@ namespace AsmTstGn
             }
         }
 
-        static void generateInstructions2p(StringBuilder sb, string[] instructions, AddressingMode[] modes)
+        static void generateInstructions2p(StringBuilder sb, string[] instructions, AddressingMode[] modes, string immediate)
         {
             foreach (string instruction in instructions)
             {
@@ -133,11 +163,11 @@ namespace AsmTstGn
                             case AddressingMode.Immediate:
                                 if (instruction == "sto")
                                     continue;
-                                addr = "$7F";
+                                addr = immediate;
                                 sb.AppendLine(string.Format("{0}     r{1}, {2}", instruction, r, addr));
                                 break;
                             case AddressingMode.Absolute:
-                                addr = "$007F";
+                                addr = immediate;
                                 sb.AppendLine(string.Format("{0}     r{1}, [{2}]", instruction, r, addr));
                                 break;
                             case AddressingMode.Register:
