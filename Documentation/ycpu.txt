@@ -1,33 +1,33 @@
 YCPU Specification
-Version 0.5 RC1
+Version 0.5a RC1
 
 =============================[ Table of Contents ]==============================
 
-1.      Introduction
-1.A.        Public Domain Dedication
-2.      Hardware Information
-2.A.        Registers
-2.B.        Supervisor/User Modes
-2.C.        Hardware Devices
-2.D.        Interrupts
-2.E.        Addressing Modes
-2.F.        Memory Management
-2.G.        Boot Sequence
-2.H.        The Real Time Clock
-2.I.        Switching Context
-3.      Instructions
-3.A.        Bit Patterns
-3.B.        ALU Instructions
-3.C.        Bit Shifting Instructions
-3.D.        Bit Testing Instructions
-3.E.        Branch Instructions
-3.F.        FPU Operations
-3.G.        Immediate Instructions
-3.H.        Interrupt Instructions
-3.I.        Jump & Call Instructions
-3.J.        Stack Instructions
-3.K.        Processor Function Instructions
-4.      History
+        1.      Introduction
+        1.A.        Public Domain Dedication
+        2.      Hardware Information
+        2.A.        Registers
+        2.B.        Supervisor/User Modes
+        2.C.        Hardware Devices
+        2.D.        Interrupts
+        2.E.        Addressing Modes
+        2.F.        Memory Management
+        2.G.        Boot Sequence
+        2.H.        The Real Time Clock
+        2.I.        Switching Context
+        3.      Instructions
+        3.A.        Bit Patterns
+        3.B.        ALU Instructions
+        3.C.        Bit Shifting Instructions
+        3.D.        Bit Testing Instructions
+        3.E.        Branch Instructions
+        3.F.        FPU Operations
+        3.G.        Immediate Instructions
+        3.H.        Interrupt Instructions
+        3.I.        Jump & Call Instructions
+        3.J.        Stack Instructions
+        3.K.        Processor Function Instructions
+        4.      History
 
 
 ==============================[ 1. Introduction ]===============================
@@ -519,13 +519,14 @@ ROM bank. When this is clear, a RAM bank is selected.
 
 2.F.5. FAR JUMPS
 
-The YCPU is internally 16-bit, and thus can address only 16-bits of logical
-address space. When the MMU is active, this memory is comprised of four 'banks',
-each of 16384 bytes. Which banks of memory are placed in memory is determined
-by the MMU; as noted in 2.F.3., supra, a User may manipulate the MMU cache
-directly to place specific banks of memory within the logical address space.
+The YCPU is internally 16-bit, and can address only 16-bits of logical address
+space. When the MMU is active, this memory is comprised of four 'banks', each of
+16384 bytes. Which banks of memory are placed in memory is determined by the
+MMU. As noted in 2.F.3., supra, a User may manipulate the MMU cache using the
+MML/MMR/MMW/MMS instructions to load and save values from the MMU cache; this
+will change which banks are loaded within the logical address space.
 
-A user may also replace a bank in memory using a 'far jump'. Where a normal jump
+A User may also replace a bank in memory using a 'far jump'. Where a normal jump
 instruction sets only the PC register, a far jump will also switch a new bank of
 memory into the address space containing the new PC value. The addressing mode
 of the instruction will indicate where the processor will find the word
@@ -693,12 +694,12 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0001 1RRR   SUB                 ALU             R = R - M                     1  
 0010 0RRR   ADC                 ALU             R = R + M + C                 1  
 0010 1RRR   SBC                 ALU             R = R - M - (1 - C)           1  
-0011 0RRR   MUL                 ALU             R = R * M (16x16=32b)         4   
-0011 1RRR   DIV                 ALU             R = R / M                    32 
-0100 0RRR   MLI                 ALU             R = R * M (signed 16x16=32b)  4 
-0100 1RRR   DVI                 ALU             R = R / M (signed)           32 
-0101 0RRR   MOD                 ALU             R = R % M (modulus)          32 
-0101 1RRR   MDI                 ALU             R = R % M (modulus, signed)  32 
+0011 0RRR   MUL                 ALU             R = R * M (16x16=32b)         8   
+0011 1RRR   DIV                 ALU             R = R / M                    48 
+0100 0RRR   MLI                 ALU             R = R * M (signed 16x16=32b)  8 
+0100 1RRR   DVI                 ALU             R = R / M (signed)           48 
+0101 0RRR   MOD                 ALU             R = R % M (modulus)          48 
+0101 1RRR   MDI                 ALU             R = R % M (modulus, signed)  48 
 0110 0RRR   AND                 ALU             Bitwise and                   1 
 0110 1RRR   ORR                 ALU             Bitwise or                    1 
 0111 0RRR   EOR                 ALU             Bitwise exclusive or          1   
@@ -708,19 +709,19 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1000 1RRR   STO                 ALU             Store                         1 
 1001 0bbb   Bxx                 BRA             Branch operations             1
 1001 1bbb   Bxx                 BRA             Branch operations             1
-1010 0000   ASL                 SHF             Arithmetic Shift left         1
-1010 0001   LSL                 SHF             Logical Shift Left            1
-1010 0010   ROL                 SHF             Rotate Through-Carry Left     1
-1010 0011   RNL                 SHF             Rotate No-Carry Left          1
+1010 0000   ASL                 SHF             Arithmetic Shift left         4
+1010 0001   LSL                 SHF             Logical Shift Left            4
+1010 0010   ROL                 SHF             Rotate Through-Carry Left     2
+1010 0011   RNL                 SHF             Rotate No-Carry Left          2
 1010 0100   ASR                 SHF             Arithmetic Shift Right        4
 1010 0101   LSR                 SHF             Logical Shift Right           4
-1010 0110   ROR                 SHF             Rotate Through-Carry Right    1
-1010 0111   RNR                 SHF             Rotate No-Carry Right         1
+1010 0110   ROR                 SHF             Rotate Through-Carry Right    2
+1010 0111   RNR                 SHF             Rotate No-Carry Right         2
 1010 1000   BTT                 BTT             Test a bit                    2
 1010 1001   BTX                 BTT             Test a bit and change it      2
 1010 1010   BTC                 BTT             Test a bit and clear it       2
 1010 1011   BTS                 BTT             Test a bit and set it         2    
-1010 1100   FPx                 FPU             32-bit FPU operations         X 
+1010 1100   FPx                 FPU             32-bit FPU operations        XXX
 1010 1101   ---                 ---             UNDEFINED                     -
 1010 1110   SEF                 FLG             Set flag bit                  1
 1010 1111   CLF                 FLG             Clear flag bit                1
@@ -731,8 +732,8 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 011x   SET                 SET             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
-1011 1010   JMP         /       JMP             Jump                          1 
-1011 1011   JSR         /       JMP             Jump to Subroutine            2 
+1011 1010   JMP         /       JMP             Jump                          2 
+1011 1011   JSR         /       JMP             Jump to Subroutine            3 
 1011 1100   HWQ         X       HWQ             Hardware Bus Query            2
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
@@ -744,26 +745,28 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 
 ALU Bit Pattern
     FEDC BA98 7654 3210                             
-    rrrE AAAA OOOO ORRR
+    AAAA rrrE OOOO ORRR
         R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
-        r = Second Operand Register
+        r = Second Operand Register (can also be used as p, see below.)
         i = Index Register. See Note 1, below.
         s = Stack Offset. See Note 2, below.
         E = 8-bit Mode. See Note 3, below.
+        p = processor register. See Note 4, below.
     
-    rrrE AAAA OOOO ORRR     Addressing Mode     Example Syntax          Cycles
-    ...E 0000       RRR     Immediate           ADD R0, $1234           +1m
-    ...E 0001       RRR     Absolute            ADD R0, [$1234]         +2m
-    rrrE 0010       RRR     Register            ADD R0, R1              
-    rrrE 0011       RRR     Indirect            ADD R0, [R1]            +1m
-    rrrE 0100       RRR     Absolute Offset     ADD R0, [$1234,R1]      +2m
-                            Indirect Offset     ADD R0, [R1,$1234]      +2m
-    sssE 0101       RRR     Stack Offset        ADD R0, S[$00]          +1m
-    rrrE 0110       RRR     Indirect PostInc    ADD R0, [R1+]           +1m
-    rrrE 0111       RRR     Indirect PreDec     ADD R0, [-R1]           +1m
-    rrrE 1iii       RRR     Indirect Indexed    ADD R0, [r1,i2]         +1m       
+    AAAA rrrE OOOO ORRR     Addressing Mode     Example Syntax          Cycles
+    0000 000E       RRR     Immediate           LOD R0, $1234           +1m
+    0000 001E       RRR     Absolute            LOD R0, [$1234]         +2m
+    0001 ppp.       RRR     ProcReg             LOD R0, SP
+    0010 rrrE       RRR     Register            LOD R0, R1              
+    0011 rrrE       RRR     Indirect            LOD R0, [R1]            +1m
+    0100 rrrE       RRR     Absolute Offset     LOD R0, [$1234,R1]      +2m
+                            Indirect Offset     LOD R0, [R1,$1234]      +2m
+    0101 sssE       RRR     Stack Offset        LOD R0, S[$00]          +1m
+    0110 rrrE       RRR     Indirect PostInc    LOD R0, [R1+]           +1m
+    0111 rrrE       RRR     Indirect PreDec     LOD R0, [-R1]           +1m
+    1iii rrrE       RRR     Indirect Indexed    LOD R0, [r1,i2]         +1m
     
         Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
@@ -779,6 +782,17 @@ ALU Bit Pattern
                 STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
                 LOD.8   R0, $1234       Will raise an error during assembly, as
                                         $1234 is greater than an 8-bit value.
+        Note 4: The processor can also use a processor register as an operand.
+                Processor register indexes are as follows:
+                Index   Desc.                                   Supervisor only?
+                $00     FL register                                     N
+                $01     PC register                                     N
+                $02     PS register                                     Y
+                $03     P2 register                                     Y
+                $04     II register                                     Y
+                $05     IA register                                     Y
+                $06     USP                                             Y
+                $07     current Stack Pointer (USP / SSP)               N
                                         
     The ALU operating in 8-bit mode has the following modified behaviour:
         1.  Only the low 8-bits of the input registers are used.
@@ -845,7 +859,7 @@ HWQ Bit Pattern
     
 JMP Bit Pattern
     FEDC BA98 7654 3210 
-    rrrF AAAA OOOO OOOO
+    AAAA rrrF OOOO OOOO
         O = Opcode
         A = Addressing mode
         r = Source register
@@ -853,17 +867,17 @@ JMP Bit Pattern
         s = Stack Offset. See Note 2, below.
         F = Far Mode. See Note 3, below.
         
-    rrrF AAAA OOOO OOOO     Addressing Mode     Example Syntax          Cycles
-    ...F 0000               Immediate           JMP $1234               +1m
-    ...F 0001               Absolute            JMP [$1234]             +2m
-    rrrF 0010               Register            JMP R              
-    rrrF 0011               Indirect            JMP [R]                 +1m
-    rrrF 0100               Absolute Offset     JMP [$1234,R]           +2m
+    AAAA rrrF OOOO OOOO     Addressing Mode     Example Syntax          Cycles
+    0000 000F               Immediate           JMP $1234               +1m
+    0000 001F               Absolute            JMP [$1234]             +2m
+    0010 rrrF               Register            JMP R              
+    0011 rrrF               Indirect            JMP [R]                 +1m
+    0100 rrrF               Absolute Offset     JMP [$1234,R]           +2m
                             Indirect Offset     JMP [R,$1234]           +2m
-    sssF 0101               Stack Offset        JMP S[$00]              +1m
-    rrrF 0110               Indirect PostInc    JMP [R+]                +1m
-    rrrF 0111               Indirect PreDec     JMP [-R]                +1m
-    rrrF 1iii               Indirect Indexed    JMP [R,i]               +1m
+    0101 sssF               Stack Offset        JMP S[$00]              +1m
+    0110 rrrF               Indirect PostInc    JMP [R+]                +1m
+    0111 rrrF               Indirect PreDec     JMP [-R]                +1m
+    1iii rrrF               Indirect Indexed    JMP [R,i]               +1m
     
         Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
@@ -877,7 +891,7 @@ JMP Bit Pattern
                 change the PC, but will also change the logical memory space
                 within the bank of the upper address. This process is detailed
                 in 2.F.5., supra.
-				Far jumps are only available in Supervisor mode.
+                Far jumps are only available in Supervisor mode.
                 
                 Addressing Mode     Upper Address   Lower Address...    
                 Immediate           PC + 4          PC + 2
@@ -897,7 +911,7 @@ JMP Bit Pattern
                 JMP.F   R0      ; PC=R0 @ R1
                 JMP.F   R4      ; PC=R4 @ R5
                 JMP.F   R7      ; PC=R7 @ R0
-		
+        
     
 IMM Bit Pattern
     FEDC BA98 7654 3210
@@ -958,14 +972,17 @@ STK Bit Pattern < 1 / 2 >
             
 STK Bit Pattern < 2 / 2 >
     FEDC BA98 7654 3210                        
-    ...f cpus OOOO OOO1                                     Supervisor only?
+    fcp2 iaus OOOO OOO1                                     Supervisor only?
         O = Opcode
         f = push/pop FL register                                N
         c = push/pop PC register                                N
         p = push/pop PS register                                Y
+        2 = push/pop P2 register                                Y
+        i = push/pop II register                                Y
+        a = push/pop IA register                                Y
         u = push/pop USP                                        Y
         s = push/pop current Stack Pointer (USP / SSP)          N
-        
+
         
 ===========================[ 3.B. ALU Instructions ]============================
 Note: all ALU instructions support the .8 bitflag.
@@ -1468,14 +1485,14 @@ NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
     
 =========================[ 3.J. Stack Instructions ]============================
 The following registers can be specified for Stack Instructions:
-R0 - R7, A-C, I-J, X-Z, FL, PC, PS, SP, and USP. Specifying a register twice
-(R0 and A, R7 and SP) will result in only one value popped to or pushed from
+R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP, P2, II, and IA. Specifying a register
+twice (ex. R0 and A) will result in only one value popped to or pushed from
 that register.
 
 There are two separate operations for pop and two for pull, each addressing a
 different set of registers. The first operation pops or pulls the eight general
 purpose registers, R0-R7. The second operation pops or pulls specific purpose
-registers SP, Fl, PC, PS, and USP. 
+registers SP, Fl, PC, PS, USP, P2, II, and IA. 
 
 Two notes on pushing and pulling the stack pointers. First, 'SP' and 'USP' is
 the value of these stack pointers BEFORE the operation. Thus if SP is $1000 and
@@ -1509,7 +1526,7 @@ The processor sequentially loads values from the stack to the registers
 specified. Regardless of the order of the registers specified in the
 instruction, the registers are always loaded in the following order:
     Bit pattern 0: R7, R6, R5, R4, R3, R2, R1, R0
-    Bit pattern 1: FL, PC, PS, USP, SP
+    Bit pattern 1: FL, PC, PS, P2, II, IA, USP, SP
     
     
 PSH         Push values from registers to the Stack
@@ -1519,11 +1536,11 @@ the number of registers specified.
 Regardless of the order of the registers specified in the instruction, the
 values registers are always saved in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
-    Bit pattern 1: SP, USP, PS, PC, FL, P2, II, IA
-	
+    Bit pattern 1: SP, USP, IA, II, P2, PS, PC, FL
+    
 
-SFL			Stack flush
-Syntax:	SFL [$00-$FF]
+SFL         Stack flush
+Syntax: SFL [$00-$FF]
 Removes the indicated number of 2-byte words from the stack.
 
     
@@ -1576,8 +1593,8 @@ Loads a value from Rv into the Memory Management Cache at index Ra. See MMR for
 how value of Ra is interpreted.
 
 
-NOP			No effect, cycle count increases by 1.
-Syntax:	NOP
+NOP         No effect, cycle count increases by 1.
+Syntax: NOP
 Nothing happens. This is a macro for LOD R0, R0
 
 
