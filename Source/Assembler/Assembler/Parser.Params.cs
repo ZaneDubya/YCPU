@@ -15,6 +15,9 @@ namespace Ypsilon.Assembler
     {
         public ParsedOpcode ParseParam(string originalParam)
         {
+            if (originalParam == null)
+                return null;
+
             ParsedOpcode ParsedOpcode = new ParsedOpcode();
 
             // get rid of ALL white space!
@@ -25,6 +28,12 @@ namespace Ypsilon.Assembler
                 // Register: R0
                 ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
+            }
+            else if (m_ProcessorRegisters.ContainsKey(param))
+            {
+                // Processor Register: Pc
+                ParsedOpcode.OpcodeWord = (ushort)m_ProcessorRegisters[param];
+                ParsedOpcode.AddressingMode = AddressingMode.ProcessorRegister;
             }
             else if (isStackOffset(param))
             {

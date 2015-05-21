@@ -13,6 +13,7 @@ namespace Ypsilon.Assembler
         None,
         Immediate,
         Absolute,
+        ProcessorRegister,
         Register,
         Indirect,
         IndirectOffset,

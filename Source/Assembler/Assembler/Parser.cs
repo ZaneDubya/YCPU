@@ -140,13 +140,15 @@ namespace Ypsilon.Assembler
             switch (value)
             {
                 case "8":
+                    opcodeFlag &= ~OpcodeFlag.BitWidthsAll;
                     opcodeFlag = OpcodeFlag.BitWidth8;
                     return true;
                 case "16":
+                    opcodeFlag &= ~OpcodeFlag.BitWidthsAll;
                     opcodeFlag = OpcodeFlag.BitWidth16;
                     return true;
-                case "F":
-                    opcodeFlag = OpcodeFlag.FarJump;
+                case "f":
+                    opcodeFlag |= OpcodeFlag.FarJump;
                     return true;
                 default:
                     return false;

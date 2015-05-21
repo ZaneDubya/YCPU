@@ -15,6 +15,7 @@ namespace Ypsilon.Assembler
     {
         Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>> m_Opcodes;
         Dictionary<string, ushort> m_Registers;
+        Dictionary<string, ushort> m_ProcessorRegisters;
 
         void Initialize()
         {
@@ -135,15 +136,16 @@ namespace Ypsilon.Assembler
             m_Registers.Add("y", (ushort)YCPUReg.R6);
             m_Registers.Add("z", (ushort)YCPUReg.R7);
 
-            m_Registers.Add("fl", (ushort)YCPUReg.FL);
-            m_Registers.Add("ia", (ushort)YCPUReg.IA);
-            m_Registers.Add("ii", (ushort)YCPUReg.II);
-            m_Registers.Add("pc", (ushort)YCPUReg.PC);
-            m_Registers.Add("ps", (ushort)YCPUReg.PS);
-            m_Registers.Add("p2", (ushort)YCPUReg.P2);
-            m_Registers.Add("usp", (ushort)YCPUReg.USP);
-            m_Registers.Add("ssp", (ushort)YCPUReg.SSP);
-            m_Registers.Add("sp", (ushort)YCPUReg.SP);
+            m_ProcessorRegisters = new Dictionary<string, ushort>();
+
+            m_ProcessorRegisters.Add("fl", (ushort)YCPUReg.FL);
+            m_ProcessorRegisters.Add("pc", (ushort)YCPUReg.PC);
+            m_ProcessorRegisters.Add("ps", (ushort)YCPUReg.PS);
+            m_ProcessorRegisters.Add("p2", (ushort)YCPUReg.P2);
+            m_ProcessorRegisters.Add("ia", (ushort)YCPUReg.IA);
+            m_ProcessorRegisters.Add("ii", (ushort)YCPUReg.II);
+            m_ProcessorRegisters.Add("usp", (ushort)YCPUReg.USP);
+            m_ProcessorRegisters.Add("sp", (ushort)YCPUReg.SP);
         }
 
         enum YCPUReg : ushort
@@ -157,15 +159,14 @@ namespace Ypsilon.Assembler
             R6 = 0x0006,
             R7 = 0x0007,
 
-            FL = 0x0100,
-            IA = 0x0101,
-            II = 0x0102,
-            PC = 0x0103,
-            PS = 0x0104,
-            P2 = 0x0105,
-            SSP = 0x0106,
-            USP = 0x0107,
-            SP = 0x1000
+            FL = 0x0000,
+            PC = 0x0001,
+            PS = 0x0002,
+            P2 = 0x0003,
+            II = 0x0004,
+            IA = 0x0005,
+            USP = 0x0006,
+            SP = 0x0007,
         }
     }
 }

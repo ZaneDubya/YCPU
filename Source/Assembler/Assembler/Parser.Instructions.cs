@@ -365,28 +365,28 @@ namespace Ypsilon.Assembler
         {
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleMMU((ushort)0x00B5, param[0], param[1]);
+            return AssembleMMU((ushort)0x00B5, param[0], param[1], state);
         }
 
         ushort[] AssembleMMW(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 2);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleMMU((ushort)0x01B5, param[0], param[1]);
+            return AssembleMMU((ushort)0x01B5, param[0], param[1], state);
         }
 
         ushort[] AssembleMML(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x02B5, param[0], state);
+            return AssembleMMU((ushort)0x02B5, param[0], null, state, true);
         }
 
         ushort[] AssembleMMS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x03B5, param[0], state);
+            return AssembleMMU((ushort)0x03B5, param[0], null, state, true);
         }
         #endregion
 
@@ -459,16 +459,31 @@ namespace Ypsilon.Assembler
         #region Jump operations
         ushort[] AssembleJMP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
-            Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00BA, param[0], state);
+            if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
+            {
+                Sanity.RequireParamCountMinMax(param, 1, 2); // allow two params for immediate far jump.
+                return AssembleJMP((ushort)0x10BA, param[0], param.Length == 2 ? param[1] : null, state);
+            }
+            else
+            {
+                Sanity.RequireParamCountExact(param, 1);
+                return AssembleJMP((ushort)0x10BA, param[0], null, state);
+            }
         }
 
         ushort[] AssembleJSR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
-            Sanity.RequireParamCountExact(param, 1);
-            Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00BB, param[0], state);
+            if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
+            {
+                Sanity.RequireParamCountMinMax(param, 1, 2); // allow two params for immediate far jump.
+                return AssembleJMP((ushort)0x10BB, param[0], param.Length == 2 ? param[1] : null, state);
+            }
+            else
+            {
+                Sanity.RequireParamCountExact(param, 1);
+                return AssembleJMP((ushort)0x10BB, param[0], null, state);
+            }
         }
         #endregion
 
@@ -696,9 +711,10 @@ namespace Ypsilon.Assembler
             return m_Code.ToArray();
         }
 
-        ushort[] AssembleJMP(ushort opcode, string param1, ParserState state)
+        ushort[] AssembleJMP(ushort opcode, string param1, string param2, ParserState state)
         {
             ParsedOpcode p1 = ParseParam(param1);
+            ParsedOpcode p2 = ParseParam(param2);
 
             ushort addressingmode = 0x0000;
             switch (p1.AddressingMode)
@@ -739,27 +755,40 @@ namespace Ypsilon.Assembler
                     state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p1.LabelName);
                 m_Code.Add(p1.ImmediateWord);
             }
+            if (p2 != null && p2.HasImmediateWord)
+            {
+                if (p2.LabelName.Length > 0)
+                    state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p2.LabelName);
+                m_Code.Add(p2.ImmediateWord);
+            }
             return m_Code.ToArray();
         }
 
-        ushort[] AssembleMMU(ushort opcode, string param1, string param2)
+        ushort[] AssembleMMU(ushort opcode, string param1, string param2, ParserState state, bool singleParam = false)
         {
             // param1 = source register, MUST be register
-            // param2 = dest register, MUST be register
+            // param2 = dest register, MUST be register OR null
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
 
             if (p1.AddressingMode != AddressingMode.Register)
                 return null;
-            if (p2.AddressingMode != AddressingMode.Register)
+            if (p2.AddressingMode != AddressingMode.Register && !(singleParam &&  p2.AddressingMode == null))
                 return null;
 
             // Bit pattern is:
             // FEDC BA98 7654 3210
-            // RRRr rr.. OOOO OOOO
+            // RRRr rroo OOOO OOOO
 
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 10) | ((p2.OpcodeWord & 0x0007) << 13)));
+            if (singleParam)
+            {
+                m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13)));
+            }
+            else
+            {
+                m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 10) | ((p2.OpcodeWord & 0x0007) << 13)));
+            }
             return m_Code.ToArray();
         }
 

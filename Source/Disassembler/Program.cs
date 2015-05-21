@@ -14,14 +14,12 @@ namespace Ypsilon
             if (args.Length == 0)
             {
 #if DEBUG
-                args = new string[1] { "../../../../Tests/bld/AsmTstGn-0.asm" };
+                args = new string[1] { "../../../../Tests/bld/AsmTstGn-0.asm.bin" };
 #else
                 Console.WriteLine(errNoArguments);
                 return;
 #endif
             }
-
-            
 
             if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
             {
@@ -40,9 +38,9 @@ namespace Ypsilon
             Console.WriteLine(AssemblerResultMessages[(int)result]);
 
             if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
-                Console.WriteLine("File successfully written. Press any key to continue.");
+                Console.WriteLine(descFileSuccess);
             else
-                Console.WriteLine("Error while writing machine code. Press any key to continue.");
+                Console.WriteLine(errWritingCode);
 
             Console.ReadKey();
         }
@@ -83,7 +81,7 @@ namespace Ypsilon
                 return false;
 
             if (outPath == null)
-                outPath = inPath + ".bin";
+                outPath = inPath + ".asm";
 
             return true;
         }
@@ -132,8 +130,8 @@ namespace Ypsilon
         {
             // if filename is null or empty, default to "out.bin"
             filename = (filename == null || (filename.Trim() == string.Empty)) ?
-                "out.bin" : 
-                Path.GetFileNameWithoutExtension(filename) + ".bin";;
+                "out.bin" :
+                Path.GetFileNameWithoutExtension(filename) + ".bin"; ;
 
             // make sure that directory, if not empty, is postfixed with a slash.
             if (directory != string.Empty)
@@ -172,7 +170,7 @@ namespace Ypsilon
                 return false;
             }
 
-            
+
         }
 
         private enum AssemblerResult
@@ -193,5 +191,7 @@ namespace Ypsilon
         const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
         const string errParam = "yasm: Unknown parameter: {0}";
         const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
+        const string descFileSuccess = "File successfully written. Press any key to continue.";
+        const string errWritingCode = "Error while writing machine code. Press any key to continue.";
     }
 }

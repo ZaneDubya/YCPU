@@ -8,8 +8,9 @@ namespace Ypsilon.Assembler
     [Flags]
     enum OpcodeFlag
     {
-        BitWidth8 = 1,
-        BitWidth16 = 2,
-        FarJump = 4
+        BitWidth8 = 0x01,
+        BitWidth16 = 0x02,
+        BitWidthsAll = 0x0F,
+        FarJump = 0x10
     }
 }
