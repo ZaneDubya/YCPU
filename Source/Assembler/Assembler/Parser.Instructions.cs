@@ -145,9 +145,10 @@ namespace Ypsilon.Assembler
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
 
             ushort[] code = AssembleALU((ushort)0x0088, param[0], param[1], opcodeFlag, state);
-            int addressing = (code[0] & 0x0F00);
-            if ((addressing == 0x0000) || (addressing == 0x0200)) // no sto reg or sto immediate.
-                return null;
+            if ((code[0] & 0xFE00) == 0x0000) // no sto immediate
+                throw new Exception("Store register instructions not supported.");
+            else if ((code[0] & 0xF000) == 0x2000) // no sto immediate.
+                throw new Exception("Store immediate instructions not supported.");
             return code;
         }
         #endregion
@@ -462,13 +463,13 @@ namespace Ypsilon.Assembler
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
             {
-                Sanity.RequireParamCountMinMax(param, 1, 2); // allow two params for immediate far jump.
-                return AssembleJMP((ushort)0x10BA, param[0], param.Length == 2 ? param[1] : null, state);
+                Sanity.RequireParamCountMinMax(param, 1, 2);
+                return AssembleJMP((ushort)0x01BA, param[0], param.Length == 2 ? param[1] : null, state);
             }
             else
             {
                 Sanity.RequireParamCountExact(param, 1);
-                return AssembleJMP((ushort)0x10BA, param[0], null, state);
+                return AssembleJMP((ushort)0x00BA, param[0], null, state);
             }
         }
 
@@ -477,12 +478,12 @@ namespace Ypsilon.Assembler
             if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
             {
                 Sanity.RequireParamCountMinMax(param, 1, 2); // allow two params for immediate far jump.
-                return AssembleJMP((ushort)0x10BB, param[0], param.Length == 2 ? param[1] : null, state);
+                return AssembleJMP((ushort)0x01BB, param[0], param.Length == 2 ? param[1] : null, state);
             }
             else
             {
                 Sanity.RequireParamCountExact(param, 1);
-                return AssembleJMP((ushort)0x10BB, param[0], null, state);
+                return AssembleJMP((ushort)0x00BB, param[0], null, state);
             }
         }
         #endregion
@@ -529,29 +530,35 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x0000;
                     break;
                 case AddressingMode.Absolute:
-                    addressingmode = 0x0100;
-                    break;
-                case AddressingMode.Register:
                     addressingmode = 0x0200;
                     break;
+                case AddressingMode.ProcessorRegister:
+                    // can't use eightbit mode with proc regs...
+                    if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
+                        throw new Exception("ALU instructions with processor register operands do not support 8-bit mode.");
+                    addressingmode = 0x1000;
+                    break;
+                case AddressingMode.Register:
+                    addressingmode = 0x2000;
+                    break;
                 case AddressingMode.Indirect:
-                    addressingmode = 0x0300;
+                    addressingmode = 0x3000;
                     break;
                 case AddressingMode.IndirectOffset:
-                    addressingmode = 0x0400;
+                    addressingmode = 0x4000;
                     break;
                 case AddressingMode.StackAccess:
-                    addressingmode = 0x0500;
+                    addressingmode = 0x5000;
                     break;
                 case AddressingMode.IndirectPostInc:
-                    addressingmode = 0x0600;
+                    addressingmode = 0x6000;
                     break;
                 case AddressingMode.IndirectPreDec:
-                    addressingmode = 0x0700;
+                    addressingmode = 0x7000;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int r3 = (p2.OpcodeWord & 0x0700);
-                    addressingmode = (ushort)(0x0800 | r3);
+                    int index_register = (p2.OpcodeWord & 0x0700) << 4;
+                    addressingmode = (ushort)(0x8000 | index_register);
                     break;
                 default:
                     throw new Exception("Unknown addressing mode.");
@@ -559,12 +566,12 @@ namespace Ypsilon.Assembler
 
             ushort bitwidth = 0x0000;
             if (opcodeFlag == OpcodeFlag.BitWidth8)
-                bitwidth = 0x1000;
+                bitwidth = 0x0100;
 
             // FEDC BA98 7654 3210                             
-            // rrrE AAAA OOOO ORRR
+            // AAAA rrrE OOOO ORRR
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | addressingmode | bitwidth | (p1.OpcodeWord & 0x0007) | ((p2.OpcodeWord & 0x0007) << 13)));
+            m_Code.Add((ushort)(opcode | addressingmode | bitwidth | (p1.OpcodeWord & 0x0007) | ((p2.OpcodeWord & 0x0007) << 9)));
             if (p2.HasImmediateWord)
             {
                 if (p2.LabelName.Length > 0)
@@ -715,6 +722,18 @@ namespace Ypsilon.Assembler
         {
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
+            // sanity check - immediate jump must have two words, all others must have one.
+            if (p1.AddressingMode == AddressingMode.Immediate && ((opcode & 0x0100) == 0x0100))
+            {
+                if (p2 == null)
+                    throw new Exception("Immediate far jumps require two immedate words as parameters.");
+            }
+            else
+            {
+                if (p2 != null)
+                    throw new Exception("Bad number of parameters. Expected 1.");
+            }
+
 
             ushort addressingmode = 0x0000;
             switch (p1.AddressingMode)
@@ -725,16 +744,19 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x0000;
                     break;
                 case AddressingMode.Absolute:
-                    addressingmode = 0x0100;
+                    addressingmode = 0x0200;
                     break;
                 case AddressingMode.Register:
                     addressingmode = 0x2000;
                     break;
                 case AddressingMode.Indirect:
-                    addressingmode = 0x4000;
+                    addressingmode = 0x3000;
                     break;
                 case AddressingMode.IndirectOffset:
-                    addressingmode = 0x6000;
+                    addressingmode = 0x4000;
+                    break;
+                case AddressingMode.StackAccess:
+                    addressingmode = 0x5000;
                     break;
                 case AddressingMode.IndirectPostInc:
                     addressingmode = 0x8000;
@@ -743,12 +765,14 @@ namespace Ypsilon.Assembler
                     addressingmode = 0xA000;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int r3 = (p1.OpcodeWord & 0x0700);
-                    addressingmode = (ushort)(0xC000 + (r3 & 0x0300) + ((r3 & 0x0400) << 3));
+                    int index_register = (p1.OpcodeWord & 0x0700) << 4;
+                    addressingmode = (ushort)(0x8000 | index_register);
                     break;
+                default:
+                    throw new Exception("Addressing mode not usable with this instruction.");
             }
             m_Code.Clear();
-            m_Code.Add((ushort)(opcode | addressingmode | ((p1.OpcodeWord & 0x0007) << 13)));
+            m_Code.Add((ushort)(opcode | addressingmode | ((p1.OpcodeWord & 0x0007) << 9)));
             if (p1.HasImmediateWord)
             {
                 if (p1.LabelName.Length > 0)
@@ -771,9 +795,9 @@ namespace Ypsilon.Assembler
             ParsedOpcode p1 = ParseParam(param1);
             ParsedOpcode p2 = ParseParam(param2);
 
-            if (p1.AddressingMode != AddressingMode.Register)
+            if (p1 == null || p1.AddressingMode != AddressingMode.Register)
                 return null;
-            if (p2.AddressingMode != AddressingMode.Register && !(singleParam &&  p2.AddressingMode == null))
+            if (!(singleParam &&  p2 == null) && p2.AddressingMode != AddressingMode.Register)
                 return null;
 
             // Bit pattern is:
@@ -934,66 +958,20 @@ namespace Ypsilon.Assembler
             //                          FL, PC, PS, SP, USP, II, IA, P2
             foreach (string p in param)
             {
-                switch (p.ToLower())
+                ParsedOpcode op = ParseParam(p);
+                if (op == null || 
+                    ((op.AddressingMode != AddressingMode.Register) && (op.AddressingMode != AddressingMode.ProcessorRegister)))
+                    throw new Exception(string.Format("STK operation with unknown register '{0}'.", p));
+                else
                 {
-                    case "sp":
-                        flags1 |= 0x0101;
-                        break;
-                    case "usp":
-                        flags1 |= 0x0101;
-                        break;
-                    case "ps":
-                        flags1 |= 0x0401;
-                        break;
-                    case "pc":
-                        flags1 |= 0x0801;
-                        break;
-                    case "fl":
-                        flags1 |= 0x1001;
-                        break;
-                    case "p2":
-                        flags1 |= 0x2001;
-                        break;
-                    case "ii":
-                        flags1 |= 0x4001;
-                        break;
-                    case "ia":
-                        flags1 |= 0x8001;
-                        break;
-                    case "r0":
-                    case "a":
-                        flags0 |= 0x0100;
-                        break;
-                    case "r1":
-                    case "b":
-                        flags0 |= 0x0200;
-                        break;
-                    case "r2":
-                    case "c":
-                        flags0 |= 0x0400;
-                        break;
-                    case "r3":
-                    case "i":
-                        flags0 |= 0x0800;
-                        break;
-                    case "r4":
-                    case "j":
-                        flags0 |= 0x1000;
-                        break;
-                    case "r5":
-                    case "x":
-                        flags0 |= 0x2000;
-                        break;
-                    case "r6":
-                    case "y":
-                        flags0 |= 0x4000;
-                        break;
-                    case "r7":
-                    case "z":
-                        flags0 |= 0x8000;
-                        break;
-                    default:
-                        throw new Exception("STK instruction with non-existing register.");
+                    if (op.AddressingMode == AddressingMode.Register)
+                    {
+                        flags1 |= (ushort)(op.OpcodeWord << 8);
+                    }
+                    else if (op.AddressingMode == AddressingMode.ProcessorRegister)
+                    {
+                        flags1 |= (ushort)(0x0001 | (op.OpcodeWord << 8));
+                    }
                 }
             }
 

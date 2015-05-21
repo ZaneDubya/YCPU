@@ -54,6 +54,7 @@ namespace AsmTstGn
 
             AddressingMode[] modes = new AddressingMode[] {
                 AddressingMode.Immediate, AddressingMode.Absolute, 
+                AddressingMode.ProcessorRegister,
                 AddressingMode.Register, AddressingMode.Indirect,
                 AddressingMode.IndirectOffset, AddressingMode.StackAccess,
                 AddressingMode.IndirectPostInc, AddressingMode.IndirectPreDec,
@@ -76,6 +77,7 @@ namespace AsmTstGn
 
             AddressingMode[] modes = new AddressingMode[] {
                 AddressingMode.Immediate, AddressingMode.Absolute, 
+                // can't use .8 flag with processor registers.
                 AddressingMode.Register, AddressingMode.Indirect,
                 AddressingMode.IndirectOffset, AddressingMode.StackAccess,
                 AddressingMode.IndirectPostInc, AddressingMode.IndirectPreDec,
@@ -410,6 +412,11 @@ namespace AsmTstGn
                             case AddressingMode.Absolute:
                                 addr = immediate;
                                 sb.AppendLine(string.Format("{0} r{1}, [{2}]", instruction, r, addr));
+                                break;
+                            case AddressingMode.ProcessorRegister:
+                                string[] procRegs = new string[] { "fl", "pc", "ps", "p2", "ii", "ia", "sp", "usp" };
+                                for (int i = 0; i < 8; i++)
+                                    sb.AppendLine(string.Format("{0} r{1}, {2}", instruction, r, procRegs[i]));
                                 break;
                             case AddressingMode.Register:
                                 if (instruction == "sto" || instruction == "sto.8")

@@ -21,7 +21,7 @@ namespace Ypsilon.Assembler
             ParsedOpcode ParsedOpcode = new ParsedOpcode();
 
             // get rid of ALL white space!
-            string param = originalParam.Replace(" ", string.Empty).Trim();
+            string param = originalParam.Replace(" ", string.Empty).Trim().ToLower();
 
             if (m_Registers.ContainsKey(param))
             {
@@ -95,7 +95,7 @@ namespace Ypsilon.Assembler
                     if (m_Registers.ContainsKey(param0) && m_Registers.ContainsKey(param1))
                     {
                         // Register is both base and index: [R0,R1].
-                        ParsedOpcode.OpcodeWord = (ushort)(m_Registers[param0] | (m_Registers[param1] << 8));
+                        ParsedOpcode.OpcodeWord = (ushort)(m_Registers[param0] | ((m_Registers[param1])<< 8));
                         ParsedOpcode.AddressingMode = AddressingMode.IndirectIndexed;
                     }
                     else if (m_Registers.ContainsKey(param0) && CanDecodeLiteral(param1))
