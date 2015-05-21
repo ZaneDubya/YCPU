@@ -18,27 +18,27 @@ namespace AsmTstGn
 
             using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-0.asm"))
             {
-                file.WriteLine(generateALU());
+                file.Write(generateALU());
 
-                file.WriteLine(generateJMP());
-                file.WriteLine(generateJMP_Far());
+                file.Write(generateJMP());
+                file.Write(generateJMP_Far());
             }
             using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-1.asm"))
             {
-                file.WriteLine(generateAL8());
+                file.Write(generateAL8());
 
-                file.WriteLine(generateBRA());
-                file.WriteLine(generateSHF());
-                file.WriteLine(generateBTT());
-                file.WriteLine(generateFLG());
-                file.WriteLine(generateSTK());
-                file.WriteLine(generateSFL());
-                file.WriteLine(generateMMU());
-                file.WriteLine(generateSET());
-                file.WriteLine(generateIMM());
-                file.WriteLine(generateIMM2());
-                file.WriteLine(generateHWQ());
-                file.WriteLine(generateMISC());
+                file.Write(generateBRA());
+                file.Write(generateSHF());
+                file.Write(generateBTT());
+                file.Write(generateFLG());
+                file.Write(generateSTK());
+                file.Write(generateSFL());
+                file.Write(generateMMU());
+                file.Write(generateSET());
+                file.Write(generateIMM());
+                file.Write(generateIMM2());
+                file.Write(generateHWQ());
+                file.Write(generateMISC());
             }
         }
 
