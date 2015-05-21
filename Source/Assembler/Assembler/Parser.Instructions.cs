@@ -426,20 +426,6 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        #region Transfer registers
-        ushort[] AssembleTSR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            return AssembleXSR((ushort)0x00BA, param[0], param[1]);
-        }
-
-        ushort[] AssembleTRS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 2);
-            return AssembleXSR((ushort)0x00BB, param[0], param[1]);
-        }
-        #endregion
-
         #region Processor Functions
         ushort[] AssembleHWQ(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
@@ -475,14 +461,14 @@ namespace Ypsilon.Assembler
         {
             Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00C0, param[0], state);
+            return AssembleJMP((ushort)0x00BA, param[0], state);
         }
 
         ushort[] AssembleJSR(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 1);
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return AssembleJMP((ushort)0x00C1, param[0], state);
+            return AssembleJMP((ushort)0x00BB, param[0], state);
         }
         #endregion
 
@@ -898,7 +884,7 @@ namespace Ypsilon.Assembler
 
             if (p1.AddressingMode != AddressingMode.Immediate)
                 return null;
-            if ((p1.OpcodeWord < 1) || (p1.OpcodeWord > 256))
+            if ((p1.ImmediateWord < 1) || (p1.ImmediateWord > 256))
                 return null;
 
             // Bit pattern is:
@@ -916,7 +902,7 @@ namespace Ypsilon.Assembler
             // there MUST be 1 - 10 params.
             // params MUST be one of:   R0, R1, R2, R3, R4, R5, R6, R7
             //                          A, B, C, I, J, X, Y, Z
-            //                          FL, PC, PS, SP, and USP
+            //                          FL, PC, PS, SP, USP, II, IA, P2
             foreach (string p in param)
             {
                 switch (p.ToLower())
@@ -934,7 +920,16 @@ namespace Ypsilon.Assembler
                         flags1 |= 0x0801;
                         break;
                     case "fl":
-                        flags1 |= 0x1002;
+                        flags1 |= 0x1001;
+                        break;
+                    case "p2":
+                        flags1 |= 0x2001;
+                        break;
+                    case "ii":
+                        flags1 |= 0x4001;
+                        break;
+                    case "ia":
+                        flags1 |= 0x8001;
                         break;
                     case "r0":
                     case "a":
@@ -1022,56 +1017,6 @@ namespace Ypsilon.Assembler
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13) | ((p2.OpcodeWord & 0x0007) << 10) | (flag_type << 8)));
-            return m_Code.ToArray();
-        }
-
-        ushort[] AssembleXSR(ushort opcode, string param1, string param2)
-        {
-            // param1 = source/dest register, MUST be register
-            // param2 = special register, MUST be one of:
-            //          PC, SP, IA, II, PS, P2, USP, SSP
-            ParsedOpcode p1 = ParseParam(param1);
-            ParsedOpcode p2 = ParseParam(param2);
-            ushort special_index = 0x0000;
-            switch (param2)
-            {
-                case "pc":
-                    special_index = 0x0000;
-                    break;
-                case "sp":
-                    special_index = 0x0001;
-                    break;
-                case "ia":
-                    special_index = 0x0002;
-                    break;
-                case "ii":
-                    special_index = 0x0003;
-                    break;
-                case "ps":
-                    special_index = 0x0004;
-                    break;
-                case "p2":
-                    special_index = 0x0005;
-                    break;
-                case "usp":
-                    special_index = 0x0006;
-                    break;
-                case "ssp":
-                    special_index = 0x0007;
-                    break;
-                default:
-                    throw new Exception("Unknown XSR register.");
-            }
-
-            if (p1.AddressingMode != AddressingMode.Register)
-                return null;
-
-            // Bit pattern is:
-            // FEDC BA98 7654 3210
-            // RRRv vvvv OOOO OOOO
-
-            m_Code.Clear();
-            m_Code.Add((ushort)(opcode | ((p1.OpcodeWord & 0x0007) << 13) | (special_index << 8)));
             return m_Code.ToArray();
         }
     }

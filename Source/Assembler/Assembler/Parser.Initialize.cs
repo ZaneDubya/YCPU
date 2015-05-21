@@ -100,9 +100,6 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("adi", AssembleADI);
             m_Opcodes.Add("dec", AssembleDEC);
             m_Opcodes.Add("sbi", AssembleSBI);
-            // transfer special
-            m_Opcodes.Add("tsr", AssembleTSR);
-            m_Opcodes.Add("trs", AssembleTRS);
             // jump operations
             m_Opcodes.Add("jmp", AssembleJMP);
             m_Opcodes.Add("jsr", AssembleJSR);

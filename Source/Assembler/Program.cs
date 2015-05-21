@@ -16,7 +16,7 @@ namespace Ypsilon
             if (args.Length == 0)
             {
 #if DEBUG
-                args = new string[1] { "../../../../Tests/bld/AsmTstGn-BRA.asm" };
+                args = new string[1] { "../../../../Tests/bld/AsmTstGn-1.asm" };
 #else
                 Console.WriteLine(errNoArguments);
                 return;
