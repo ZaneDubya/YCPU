@@ -1547,8 +1547,8 @@ query the bus directly, or send a message to a hardware device.
 
 
 MML         Pushes 8 words of MMU cache data onto the stack.
-Syntax: MML Ra
-Reads the 8 word MMU cache and pushes it onto the stack. The lowest bit of Ra
+Syntax: MML Rv
+Reads the 8 word MMU cache and pushes it onto the stack. The lowest bit of Rv
 determines whether the user or supervisor MMU cache is loaded in this way; if
 the bit is clear, the user cache is loaded; if the bit is set, the supervisor
 is loaded.
@@ -1566,9 +1566,9 @@ register Rv. The value in Ra is interpreted as follows:
 
 
 MMS         Pulls 8 words from stack and write these to the MMU cache.
-Syntax: MMS Ra
+Syntax: MMS Rv
 Pulls 8 words from the stack and writes these to the MMU cache. As with MML, the
-lowest bit of Ra determines whether the user or supervisor MMU cache is loaded
+lowest bit of Rv determines whether the user or supervisor MMU cache is loaded
 in this way; if the bit is clear, the user cache is loaded; if the bit is set,
 the supervisor is loaded. Note that if the M processor status bit is set when
 this operation runs, the instructions the processor is operating on will almost

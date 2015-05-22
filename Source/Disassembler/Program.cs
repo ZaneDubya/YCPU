@@ -8,7 +8,7 @@ namespace Ypsilon
     {
         static void Main(string[] args)
         {
-            string inPath = "../../../../../Tests/bld/AsmTstGn-0.asm.bin";
+            string inPath = "../../../../../Tests/bld/AsmTstGn-1.asm.bin";
 
             if (tryDisassemble(inPath))
                 Console.WriteLine("Success!");

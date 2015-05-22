@@ -25,7 +25,7 @@ namespace Ypsilon.Hardware
                 else
                 {
                     s[i] = (opcode.Disassembler != null) ?
-                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out usesNextWord) :
+                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out usesNextWord).ToLower() :
                         opcode.Name;
                 }
                 address += (ushort)(usesNextWord ? 4 : 2);
@@ -35,67 +35,100 @@ namespace Ypsilon.Hardware
 
         private string DisassembleALU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
-            int addressingmode = (operand & 0x0F00) >> 8;
+            int addressingmode = (operand & 0xF000) >> 12;
             RegGPIndex regDest = (RegGPIndex)((operand & 0x0007));
-            RegGPIndex regSrc = (RegGPIndex)((operand & 0xE000) >> 13);
-            int index_bits = ((operand & 0x0700) >> 8);
+            RegGPIndex regSrc = (RegGPIndex)((operand & 0x0E00) >> 9);
+            bool isEightBit = (operand & 0x0100) != 0;
+            int regIndex = ((operand & 0x7000) >> 12);
 
             switch (addressingmode)
             {
-                case 0: // Immediate
-                case 1: // Absolute
-                    bool absolute = (operand & 0x0100) != 0;
+                case 0: // Immediate or Absolute
+                    bool absolute = (operand & 0x0200) != 0;
                     if (name == "STO" && absolute == false)
                     {
                         usesNextWord = false;
-                        return "NOP";
+                        return "???";
                     }
                     else
                     {
                         usesNextWord = true;
-                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", name, NameOfRegGP(regDest),
-                            nextword, absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
+                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", 
+                            name + (isEightBit ? ".8" : string.Empty), 
+                            NameOfRegGP(regDest),
+                            nextword, 
+                            absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
                     }
+                case 1: // Status Register
+                    usesNextWord = false;
+                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})", 
+                        name, 
+                        NameOfRegGP(regDest),
+                        NameOfRegSP((RegSPIndex)((int)regSrc)),
+                        R[(int)regSrc]);
+
                 case 2: // Register
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, {2}          (${3:X4})", name, NameOfRegGP(regDest),
+                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         R[(int)regSrc]);
+
                 case 3: // Indirect
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})", name, NameOfRegGP(regDest),
+                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         DebugReadMemory(R[(int)regSrc]));
+
                 case 4: // Indirect Offset (also Absolute Offset)
                     usesNextWord = true;
-                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})", name, NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)), nextword,
+                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)), 
+                        nextword,
                         DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
-                case 5:
+
+                case 5: // Stack offset
                     usesNextWord = true;
-                    return string.Format("{0,-8}{1}, S[${2:X2}]  (${3:X4})", name, NameOfRegGP(regDest), index_bits,
+                    return string.Format("{0,-8}{1}, S[${2:X1}]       (${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest), 
+                        (int)regSrc,
                         DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
+
                 case 6: // Indirect PostInc
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})", name, NameOfRegGP(regDest),
+                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         DebugReadMemory(R[(int)regSrc]));
+
                 case 7: // Indirect PreDec
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})", name, NameOfRegGP(regDest),
+                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         DebugReadMemory(R[(int)regSrc]));
+
                 default: // $8 - $F are Indirect Indexed
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})", name, NameOfRegGP(regDest),
+                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        NameOfRegGP((RegGPIndex)index_bits),
-                        DebugReadMemory((ushort)
-                            (R[(int)regSrc] + R[index_bits])));
+                        NameOfRegGP((RegGPIndex)regIndex),
+                        DebugReadMemory((ushort)(R[(int)regSrc] + R[regIndex])));
+
             }
         }
 
-        private string DisassembleBIT(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleBTT(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
             RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
@@ -319,39 +352,6 @@ namespace Ypsilon.Hardware
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
         }
 
-        private string DisassembleSWO(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C) >> 10);
-            int operation = (operand & 0x0300) >> 8;
-            string regD = string.Empty, regS = string.Empty;
-
-            switch (operation)
-            {
-                case 0x00: // src low octet -> dest low octet, clear dest upper 8 bits.
-                    regD = NameOfRegGP(destination) + ".L";
-                    regS = NameOfRegGP(source) + ".L";
-                    break;
-                case 0x01: // src high octect -> dest low octet, clear dest upper 8 bits.
-                    regD = NameOfRegGP(destination) + ".L";
-                    regS = NameOfRegGP(source) + ".H";
-                    break;
-                case 0x02: // src low octect -> dest low octet, preserves dest upper 8 bits.
-                    regD = NameOfRegGP(destination) + ".LP";
-                    regS = NameOfRegGP(source) + ".L";
-                    break;
-                case 0x03: // src low octect -> dest high octect, preserves dest lower 8 bits.
-                    regD = NameOfRegGP(destination) + ".HP";
-                    regS = NameOfRegGP(source) + ".L";
-                    break;
-                default:
-                    return "ERR";
-            }
-
-            return string.Format("{0,-8}{1}, {2}", name, regD, regS);
-        }
-
         private string NameOfRegGP(RegGPIndex register)
         {
             switch (register)
@@ -372,6 +372,31 @@ namespace Ypsilon.Hardware
                     return "R6";
                 case RegGPIndex.R7:
                     return "R7";
+                default:
+                    return "??";
+            }
+        }
+
+        private string NameOfRegSP(RegSPIndex register)
+        {
+            switch (register)
+            {
+                case RegSPIndex.FL:
+                    return "FL";
+                case RegSPIndex.PC:
+                    return "PC";
+                case RegSPIndex.PS:
+                    return "PS";
+                case RegSPIndex.P2:
+                    return "P2";
+                case RegSPIndex.II:
+                    return "II";
+                case RegSPIndex.IA:
+                    return "IA";
+                case RegSPIndex.USP:
+                    return "USP";
+                case RegSPIndex.SSP:
+                    return "SP";
                 default:
                     return "??";
             }

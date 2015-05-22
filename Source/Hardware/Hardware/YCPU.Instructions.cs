@@ -228,10 +228,10 @@ namespace Ypsilon.Hardware
             Opcodes[0xA6] = new YCPUInstruction("ROR", ROR, DisassembleSHF, 0);
             Opcodes[0xA7] = new YCPUInstruction("RNR", RNR, DisassembleSHF, 0);
 
-            Opcodes[0xA8] = new YCPUInstruction("BTT", BIT, DisassembleBIT, 1);
-            Opcodes[0xA9] = new YCPUInstruction("BTX", BTX, DisassembleBIT, 1);
-            Opcodes[0xAA] = new YCPUInstruction("BTC", BTC, DisassembleBIT, 1);
-            Opcodes[0xAB] = new YCPUInstruction("BTS", BTS, DisassembleBIT, 1);
+            Opcodes[0xA8] = new YCPUInstruction("BTT", BIT, DisassembleBTT, 1);
+            Opcodes[0xA9] = new YCPUInstruction("BTX", BTX, DisassembleBTT, 1);
+            Opcodes[0xAA] = new YCPUInstruction("BTC", BTC, DisassembleBTT, 1);
+            Opcodes[0xAB] = new YCPUInstruction("BTS", BTS, DisassembleBTT, 1);
             Opcodes[0xAC] = new YCPUInstruction("FPU", FPU, DisassembleFPU, 9);
             // 0xAD is undefined - space for future FPU expansion?
             Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, DisassembleFLG, 0);

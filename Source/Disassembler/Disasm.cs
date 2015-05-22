@@ -15,7 +15,7 @@ namespace Ypsilon
             LoadBinaryToCPU(reader, ycpu);
 
             string[] disassembled;
-            disassembled = ycpu.Disassemble(0x0000, 10000, false);
+            disassembled = ycpu.Disassemble(0x0000, 32000, false);
 
             return disassembled;
         }
