@@ -4,46 +4,64 @@ namespace Ypsilon.Hardware
 {
     partial class YCPU
     {
-        #region YCPU ALU (includes STO)
-        private void BitPatternALU(ushort operand, out ushort value, out RegGPIndex destination)
+        /// <summary>
+        /// Executes an ALU operation.
+        /// </summary>
+        /// <param name="operand">Input: machine code word</param>
+        /// <param name="value">Output: result value of operation</param>
+        /// <param name="destination">Output: index of general register result should be written to.</param>
+        void BitPatternALU(ushort operand, out ushort value, out RegGPIndex destination)
         {
-            // FEDC BA98 7654 3210                             
-            // rrrE AAAA OOOO ORRR
+            int addressingMode;
+            RegGPIndex source;
+            bool eightBitMode;
+            ushort address;
 
-            // R = destination register
-            destination = (RegGPIndex)(operand & 0x0007);
-            // r = source register
-            RegGPIndex source = (RegGPIndex)((operand & 0xE000) >> 13);
-            // E = 8-bit mode
-            bool eightBitMode = (operand & 0x1000) != 0;
-            // A = addressing mode
-            int addressingMode = (operand & 0x0F00) >> 8;
-
-            ushort nextword;
-            switch (addressingMode)
+            // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
+            //                                                         AAAA rrrE OOOO ORRR
+            addressingMode = (operand & 0xF000) >> 12;              // A = addressing mode
+            source = (RegGPIndex)((operand & 0x0E00) >> 9);         // r = source register
+            eightBitMode = (operand & 0x0100) != 0;                 // E = 8-bit mode
+            destination = (RegGPIndex)(operand & 0x0007);           // R = destination register
+            
+            switch (addressingMode) // will always be between 0x0 and 0xf
             {
-                case 0: // Immediate
-                    value = ReadMemInt16(PC, true);
+                case 0: // Immediate (r == 0) or Absolute (r == 1)
+                    if ((int)source == 0)
+                    {
+                        value = eightBitMode ? ReadMemInt8(PC, true) : ReadMemInt16(PC, true);
+                    }
+                    else
+                    {
+                        address = ReadMemInt16(PC, true);
+                        value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                    }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
-                case 1: // Absolute
-                    nextword = ReadMemInt16(PC, true);
-                    value = ReadMemInt16(nextword, false);
-                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+
+                case 1: // Processor Register
+                    value = ReadStatusRegister((RegSPIndex)source);
                     break;
+
                 case 2: // Register
                     value = R[(int)source];
                     break;
+
                 case 3: // Indirect
-                    value = ReadMemInt16(R[(int)source]);
+                    value = eightBitMode ? ReadMemInt8(R[(int)source]) : ReadMemInt16(R[(int)source]);
                     break;
-                case 4: // Absolute Offset OR Indirect Offset
-                    nextword = ReadMemInt16(PC, true);
-                    value = ReadMemInt16((ushort)(R[(int)source] + nextword), false);
+
+                case 4: // Absolute Offset AKA Indirect Offset
+                    address = (ushort)(R[(int)source] + ReadMemInt16(PC, true));
+                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
-                case 5: // Stack offset. Not coded.
-                    throw new Exception("Unimplemented stack offset ALU/LOD operation.");
+
+                case 5: // Stack offset.
+                    address = (ushort)(SP + (int)source * 2);
+                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                    break;
+
                 case 6: // Indirect PostInc.
                     if (eightBitMode)
                     {
@@ -56,6 +74,7 @@ namespace Ypsilon.Hardware
                         R[(int)source] += (ushort)2; // post increment by data size in bytes (16-bit = 2 bytes).
                     }
                     break;
+
                 case 7: // Indirect PreDec.
                     if (eightBitMode)
                     {
@@ -68,73 +87,100 @@ namespace Ypsilon.Hardware
                         value = ReadMemInt16(R[(int)source]);
                     }
                     break;
-                default: // $8-$F are Indirect Indexed operations.
-                    int index_bits = ((operand & 0x0700) >> 8);
-                    value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits]));
+
+                default: // addressing of 0x8 ~ 0xF is an Indirect Indexed operation.
+                    int indexRegister = ((operand & 0x7000) >> 12);
+                    address = (ushort)(R[(int)source] + R[indexRegister]);
+                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
                     break;
             }
-
-            if (eightBitMode)
-                value &= 0x00FF;
         }
 
-        private void BitPatternSTO(ushort operand, out ushort destAddress, out RegGPIndex source)
+        /// <summary>
+        /// Executes a STOre operation (same bit pattern as ALU, but writes a value from r0 to destination).
+        /// </summary>
+        /// <param name="operand">Input: machine code word</param>
+        /// <param name="destAddress">Output: memory address that is the destination of the operation</param>
+        /// <param name="source">Output: general register that is the source of the operation</param>
+        void BitPatternSTO(ushort operand, out ushort destAddress, out RegGPIndex source)
         {
-            // FEDC BA98 7654 3210                             
-            // rrrE AAAA OOOO ORRR
+            int addressingMode;
+            bool eightBitMode;
+            RegGPIndex addrRegister;
 
-            // R = source register
-            source = (RegGPIndex)(operand & 0x0007);
-            // r = r2 register
-            RegGPIndex r2 = (RegGPIndex)((operand & 0xE000) >> 13);
-            // E = 8-bit mode
-            bool eightBitMode = (operand & 0x1000) != 0;
-            // A = addressing mode
-            int addressingMode = (operand & 0x0F00) >> 8;
+            // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
+            //                                                         AAAA rrrE OOOO ORRR
+            addressingMode = (operand & 0xF000) >> 12;              // A = addressing mode
+            addrRegister = (RegGPIndex)((operand & 0x0E00) >> 9);   // r = address of destination register
+            eightBitMode = (operand & 0x0100) != 0;                 // E = 8-bit mode
+            source = (RegGPIndex)(operand & 0x0007);                // R = source register
 
-            ushort nextword;
-            switch (addressingMode)
+            switch (addressingMode) // will always be between 0x0 and 0xf
             {
-                case 0: // Immediate - no such addressing mode for STO.
-                    source = RegGPIndex.Error;
-                    destAddress = 0xffff;
-                    break;
-                case 1: // Absolute
-                    nextword = ReadMemInt16(PC, true);
-                    destAddress = nextword;
+                case 0: // Immediate (r == 0) or Absolute (r == 1)
+                    if ((int)addrRegister == 0)
+                    {
+                        // Immediate - no such addressing mode for STO.
+                        source = RegGPIndex.None;
+                        destAddress = 0;
+                        Interupt_UndefOpcode();
+                    }
+                    else
+                    {
+                        destAddress = ReadMemInt16(PC, true);
+                    }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
+
+                case 1: // Processor Register
+                    source = RegGPIndex.None;
+                    destAddress = 0;
+                    WriteStatusRegister((RegSPIndex)addrRegister, R[(int)source]);
+                    break;
+
                 case 2: // Register - no such addressing mode for STO.
-                    source = RegGPIndex.Error;
-                    destAddress = 0xffff;
+                    source = RegGPIndex.None;
+                    destAddress = 0;
+                    Interupt_UndefOpcode();
                     break;
+
                 case 3: // Indirect
-                    destAddress = R[(int)r2];
+                    destAddress = R[(int)addrRegister];
                     break;
-                case 4: // Absolute Offset OR Indirect Offset
-                    nextword = ReadMemInt16(PC, true);
-                    destAddress = (ushort)(R[(int)r2] + nextword);
+
+                case 4: // Absolute Offset AKA Indirect Offset
+                    destAddress = (ushort)(R[(int)addrRegister] + ReadMemInt16(PC, true));
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
-                case 5: // Stack offset. Not coded.
-                    throw new Exception("Unimplemented stack offset STO operation.");
+
+                case 5: // Stack offset
+                    destAddress = (ushort)(SP + (int)addrRegister * 2);
+                    break;
+
                 case 6: // Indirect PostInc.
-                    destAddress = R[(int)r2];
-                    R[(int)r2] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
+                    destAddress = R[(int)addrRegister];
+                    R[(int)addrRegister] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
                     break;
+
                 case 7: // Indirect PreDec.
-                    R[(int)r2] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
-                    destAddress = R[(int)r2];
+                    R[(int)addrRegister] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
+                    destAddress = R[(int)addrRegister];
                     break;
+
                 default: // $8-$F are Indirect Indexed operations.
-                    int index_bits = ((operand & 0x0700) >> 8);
-                    destAddress = ((ushort)(R[(int)source] + R[index_bits]));
+                    int indexRegister = ((operand & 0x7000) >> 12);
+                    destAddress = (ushort)(R[(int)source] + R[indexRegister]);
                     break;
             }
         }
-        #endregion
 
-        private void BitPatternBIT(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternBRA(ushort operand, out ushort value, out RegGPIndex destination)
+        {
+            destination = RegGPIndex.None; // not used
+            value = (ushort)((operand & 0xFF00) >> 7); // (shift 8 - 1) to multiply result by two, per spec.
+        }
+
+        void BitPatternBTT(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
@@ -144,99 +190,145 @@ namespace Ypsilon.Hardware
                 (ushort)((operand & 0x1E00) >> 9);
         }
 
-        private void BitPatternBRA(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternFLG(ushort operand, out ushort value, out RegGPIndex destination)
         {
-            destination = RegGPIndex.R0; // not used
-            value = (ushort)((operand & 0xFF00) >> 8);
-        }
-
-        private void BitPatternFLG(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            destination = RegGPIndex.R0; // unused
+            destination = RegGPIndex.None; // unused
             value = (ushort)((operand & 0xF000)); // flags to set
         }
 
-        private void BitPatternFPU(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternFPU(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             value = (ushort)((operand & 0x1C00) >> 10);
         }
 
-        private void BitPatternHWQ(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternHWQ(ushort operand, out ushort value, out RegGPIndex destination)
         {
-            destination = RegGPIndex.R0; // Unused.
+            destination = RegGPIndex.None; // Unused.
             value = (ushort)((operand & 0xFF00) >> 8);
         }
 
-        private void BitPatternINC(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternIMM(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             value = (ushort)(((operand & 0x1F00) >> 8) + 1);
         }
 
-        private void BitPatternJMP(ushort operand, out ushort value, out RegGPIndex destination)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="operand">Input: 16-bit machine code word</param>
+        /// <param name="value">Output: Value that PC should be set to</param>
+        /// <param name="unused">Output: Unused</param>
+        void BitPatternJMP(ushort operand, out ushort address, out RegGPIndex unused)
         {
-            int AddressMode = ((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
-            int index_bits = ((operand & 0x0300) >> 8);
-            destination = RegGPIndex.R0; // unused.
+            int addressingMode;
+            RegGPIndex source;
+            bool isFarJump;
+            ushort addressFar;
             ushort nextword;
 
-            switch (AddressMode)
-            {
-                case 0: // Immediate
-                    nextword = ReadMemInt16(PC, true);
-                    PC += 2; // advance PC two bytes because we're reading an immediate value.
-                    if ((operand & 0x0100) != 0x0000)
-                        nextword = ReadMemInt16(nextword, false);
-                    value = nextword;
+            // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
+            //                                                         AAAA rrrF OOOO ORRR
+            addressingMode = (operand & 0xF000) >> 12;              // A = addressing mode
+            source = (RegGPIndex)((operand & 0x0E00) >> 9);         // r = source register
+            isFarJump = (operand & 0x0100) != 0;                    // F = far jump mode
+            unused = RegGPIndex.None;
 
+            switch (addressingMode) // will always be between 0x0 and 0xf
+            {
+                case 0: // Immediate (r == 0) or Absolute (r == 1)
+                    if ((int)source == 0)
+                    {
+                        address = ReadMemInt16(PC, true);
+                        if (isFarJump)
+                        {
+                            PC += 2;
+                            addressFar = ReadMemInt16(PC, true);
+                        }
+                    }
+                    else
+                    {
+                        nextword = ReadMemInt16(PC, true);
+                        address = ReadMemInt16(nextword);
+                        if (isFarJump)
+                            addressFar = ReadMemInt16((ushort)(nextword + 2));
+                    }
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
-                case 1: // Register
-                    value = R[(int)source];
+
+                case 1: // DOES NOT EXIST
+                    address = PC;
+                    Interupt_UndefOpcode();
                     break;
-                case 2: // Indirect
-                    value = ReadMemInt16(R[(int)source]);
+
+                case 2: // Register
+                    address = R[(int)source];
+                    if (isFarJump)
+                        addressFar = R[(((int)source) + 1) & 0x0007];
                     break;
-                case 3: // Indirect Offset (also Absolute Offset)
+
+                case 3: // Indirect
+                    address = ReadMemInt16(R[(int)source]);
+                    if (isFarJump)
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + 2));
+                    break;
+
+                case 4: // Indirect Offset AKA Absolute Offset
                     nextword = ReadMemInt16(PC, true);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
-                    value = ReadMemInt16((ushort)(R[(int)source] + nextword));
+                    address = ReadMemInt16((ushort)(R[(int)source] + nextword));
+                    if (isFarJump)
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + nextword + 2));
                     break;
-                case 4: // Indirect PostInc
-                    value = ReadMemInt16(R[(int)source]);
+
+                case 5: // Stack offset
+                    int sp = SP + (int)source * 2;
+                    address = ReadMemInt16((ushort)sp);
+                    if (isFarJump)
+                        addressFar = ReadMemInt16((ushort)(sp + 2));
+                    break;
+
+                case 6: // Indirect PostInc
+                    address = ReadMemInt16(R[(int)source]);
                     R[(int)source] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
+                    if (isFarJump)
+                    {
+                        addressFar = ReadMemInt16(R[(int)source]);
+                        R[(int)source] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
+                    }
                     break;
-                case 5: // Indirect PreDec
+
+                case 7: // Indirect PreDec
                     R[(int)source] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-                    value = ReadMemInt16(R[(int)source]);
+                    address = ReadMemInt16(R[(int)source]);
+                    if (isFarJump)
+                    {
+                        R[(int)source] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
+                        addressFar = ReadMemInt16(R[(int)source]);
+                    }
                     break;
-                case 6: // Indirect Indexed
-                    value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits]));
-                    break;
-                case 7:
-                    value = ReadMemInt16((ushort)(R[(int)source] + R[index_bits + 4]));
-                    break;
-                default:
-                    // can't ever get here.
-                    value = 0xDEAD;
+
+                default: // Indirect Indexed
+                    int indexRegister = (operand & 0x7000) >> 12;
+                    address = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister]));
+                    if (isFarJump)
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister] + 2));
                     break;
             }
         }
 
-        private void BitPatternMMU(ushort operand, out ushort mmuIndex, out RegGPIndex regValue)
+        /// <summary>
+        /// Retrieves Ra and Rv from an MMU operand. These are BOTH register indexes.
+        /// </summary>
+        /// <param name="operand"></param>
+        void BitPatternMMU(ushort operand, out RegGPIndex regMMUIndex, out RegGPIndex regValue)
         {
             regValue = (RegGPIndex)((operand & 0xE000) >> 13);
-            mmuIndex = (ushort)((operand & 0x1C00) >> 10);
+            regMMUIndex = (RegGPIndex)((operand & 0x1C00) >> 10);
         }
 
-        private void BitPatternPSH(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            destination = RegGPIndex.R0; // unused
-            value = (ushort)(operand & 0xFF01);
-        }
-
-        private void BitPatternSET(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternSET(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             value = (ushort)((operand & 0x1F00) >> 8);
@@ -249,7 +341,7 @@ namespace Ypsilon.Hardware
             }
         }
 
-        private void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             if ((operand & 0x1000) == 0)
@@ -262,36 +354,10 @@ namespace Ypsilon.Hardware
             }
         }
 
-        private void BitPatternSWO(ushort operand, out ushort value, out RegGPIndex destination)
+        void BitPatternSTK(ushort operand, out ushort value, out RegGPIndex destination)
         {
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            RegGPIndex source = (RegGPIndex)((operand & 0x1C) >> 10);
-            int operation = (operand & 0x0300) >> 8;
-
-            switch (operation)
-            {
-                case 0x00: // src low octet -> dest low octet, clear dest upper 8 bits.
-                    value = (ushort)(R[(int)source] & 0x00FF);
-                    break;
-                case 0x01: // src high octect -> dest low octet, clear dest upper 8 bits.
-                    value = (ushort)((R[(int)source] & 0xFF00) >> 8);
-                    break;
-                case 0x02: // src low octect -> dest low octet, preserves dest upper 8 bits.
-                    value = (ushort)((R[(int)source] & 0x00FF) | (R[(int)destination] & 0xFF00));
-                    break;
-                case 0x03: // src low octect -> dest high octect, preserves dest lower 8 bits.
-                    value = (ushort)(((R[(int)source] & 0x00FF) << 8) | (R[(int)destination] & 0x00FF));
-                    break;
-                default:
-                    value = 0xDEAD;
-                    break;
-            }
-        }
-
-        private void BitPatternTSR(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            value = (ushort)(((operand & 0x1F00) >> 8));
+            destination = RegGPIndex.None; // unused
+            value = (ushort)(operand & 0xFF01);
         }
     }
 }

@@ -175,7 +175,7 @@ namespace Ypsilon.Hardware
             usesNextWord = false;
             RegGPIndex destination;
             ushort value;
-            BitPatternINC(operand, out value, out destination);
+            BitPatternIMM(operand, out value, out destination);
 
             return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
@@ -242,7 +242,7 @@ namespace Ypsilon.Hardware
         private string DisassembleMMU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            ushort RegMmuIndex;
+            RegGPIndex RegMmuIndex;
             RegGPIndex RegMmuValue;
             BitPatternMMU(operand, out RegMmuIndex, out RegMmuValue);
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP((RegGPIndex)RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
@@ -350,15 +350,6 @@ namespace Ypsilon.Hardware
             }
 
             return string.Format("{0,-8}{1}, {2}", name, regD, regS);
-        }
-
-        private string DisassembleTSR(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            RegGPIndex destination;
-            ushort value;
-            BitPatternTSR(operand, out value, out destination);
-            return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
 
         private string NameOfRegGP(RegGPIndex register)

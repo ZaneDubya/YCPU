@@ -27,9 +27,9 @@ namespace Ypsilon.Hardware
             m_Rom_CPU = new MemoryBank[m_Rom_CPU_Count];
             for (int i = 0; i < m_Rom_CPU_Count; i += 1)
                 m_Rom_CPU[i] = new MemoryBank();
-            m_MMU = new uint[0x10];
-            for (uint i = 0; i < 0x10; i++)
-                m_MMU[i] = i;
+            m_MMU = new uint[0x8];
+            for (uint i = 0; i < 0x8; i++)
+                m_MMU[i] = i % 4;
         }
 
         public delegate ushort ReadMemInt16Method(ushort address, bool execute = false);
@@ -280,42 +280,71 @@ namespace Ypsilon.Hardware
             }
         }
 
+        /// <summary>
+        /// Reads a word from the Memory Management Cache into a register.
+        /// The value in Ra is interpreted as follows:
+        /// $0000 - first word of user cache
+        /// ...
+        /// $0007 - last word of user cache
+        /// $0008 - first word of supervisor cache
+        /// ...
+        /// $000F - last word of supervisor cache  
+        /// </summary>
         private ushort MMU_Read(ushort index)
         {
-            int bank = (index & 0x001E) >> 1;
-            bool hiWord = (index & 0x0001) != 0;
-            if (hiWord)
-                return (ushort)(m_MMU[bank] >> 16);
+            int bankIndex = (index >> 1);
+            bool isHiWord = (index & 0x0001) != 0;
+
+            if (isHiWord)
+                return (ushort)(m_MMU[bankIndex] >> 16);
             else
-                return (ushort)(m_MMU[bank] & 0x0000FFFF);
+                return (ushort)(m_MMU[bankIndex] & 0x0000FFFF);
         }
 
+        /// <summary>
+        /// Writes a word to the Memory Management Cache from a register.
+        /// See MMR for how value of Ra is interpreted.
+        /// </summary>
         private void MMU_Write(ushort index, ushort value)
         {
-            int bank = (index & 0x001E) >> 1;
-            bool hiWord = (index & 0x0001) != 0;
-            if (hiWord)
-                m_MMU[bank] = (((m_MMU[bank]) & 0x0000FFFF) | (uint)(value << 16));
+            int bankIndex = (index >> 1);
+            bool isHiWord = (index & 0x0001) != 0;
+
+            if (isHiWord)
+                m_MMU[bankIndex] = (((m_MMU[bankIndex]) & 0x0000FFFF) | (uint)(value << 16));
             else
-                m_MMU[bank] = (((m_MMU[bank]) & 0xFFFF0000) | (uint)(value));
+                m_MMU[bankIndex] = (((m_MMU[bankIndex]) & 0xFFFF0000) | (uint)(value));
         }
 
-        private void MMU_LoadMemoryWithCacheData(ushort address)
+        /// <summary>
+        /// Pushes 8 words of MMU cache data onto the stack.
+        /// </summary>
+        /// <param name="regIndex">If bit 0 of this register are clear, user cache is pushed; bit set, superviser cache.</param>
+        private void MMU_PushCacheOntoStack(ushort value)
         {
-            for (ushort i = 0; i < 0x20; i += 1)
+            bool isSupervisor = (value & 0x01) != 0;
+            int mmuBase = (int)(isSupervisor ? 8 : 0);
+
+            for (int i = 0; i < 8; i++)
             {
-                ushort mmuWord = MMU_Read(i);
-                WriteMemInt16(address, mmuWord);
-                address += 2;
+                ushort mmuWord = MMU_Read((ushort)(i + mmuBase));
+                StackPush(mmuWord);
             }
         }
 
-        private void MMU_StoreCacheDataFromMemory(ushort address)
+        /// <summary>
+        /// Pulls 8 words from stack and write these to the MMU cache.
+        /// </summary>
+        /// <param name="regIndex">If bit 0 of this register are clear, user cache is pulled; bit set, superviser cache.</param>
+        private void MMU_PullCacheFromStack(ushort value)
         {
-            for (ushort i = 0; i < 0x20; i += 1)
+            bool isSupervisor = (value & 0x01) != 0;
+            int mmuBase = (int)(isSupervisor ? 8 : 0);
+
+            for (int i = 0; i < 8; i++)
             {
-                MMU_Write(i, ReadMemInt16(address));
-                address += 2;
+                ushort mmuWord = StackPop();
+                MMU_Write((ushort)(mmuBase - 1 - i), mmuWord);
             }
         }
 

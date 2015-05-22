@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace Ypsilon.Hardware
 {
     /// <summary>
@@ -131,7 +132,8 @@ namespace Ypsilon.Hardware
         public enum RegGPIndex
         {
             R0, R1, R2, R3, R4, R5, R6, R7,
-            Count, Error = 0xffff
+            Count,
+            None
         }
         private ushort[] R = new ushort[(int)RegGPIndex.Count];
         public ushort R0 { get { return R[0]; } }
@@ -150,6 +152,115 @@ namespace Ypsilon.Hardware
             FL, IA, II, PC, PS, P2, USP, SSP,
             Count
         }
+
+        ushort ReadStatusRegister(RegSPIndex index)
+        {
+            switch (index)
+            {
+                case RegSPIndex.FL:
+                    return m_FL;
+                case RegSPIndex.PC:
+                    return m_PC;
+                case RegSPIndex.PS:
+                    if (PS_S)
+                        return m_PS;
+                    else
+                    {
+                        Interrupt_UnPrivOpcode();
+                        return 0;
+                    }
+                case RegSPIndex.P2:
+                    if (PS_S)
+                        return m_P2;
+                    else
+                    {
+                        Interrupt_UnPrivOpcode();
+                        return 0;
+                    }
+                case RegSPIndex.II:
+                    if (PS_S)
+                        return m_II;
+                    else
+                    {
+                        Interrupt_UnPrivOpcode();
+                        return 0;
+                    }
+                case RegSPIndex.IA:
+                    if (PS_S)
+                        return m_IA;
+                    else
+                    {
+                        Interrupt_UnPrivOpcode();
+                        return 0;
+                    }
+                case RegSPIndex.USP:
+                    return m_USP;
+                case RegSPIndex.SSP:
+                    if (PS_S)
+                        return m_SSP;
+                    else
+                        return m_USP;
+                default:
+                    throw new Exception();
+            }
+        }
+
+        void WriteStatusRegister(RegSPIndex index, ushort value)
+        {
+            switch (index)
+            {
+                case RegSPIndex.FL:
+                    m_FL = value;
+                    break;
+
+                case RegSPIndex.PC:
+                    m_PC = value;
+                    break;
+
+                case RegSPIndex.PS:
+                    if (PS_S)
+                        m_PS = value;
+                    else
+                        Interrupt_UnPrivOpcode();
+                    break;
+
+                case RegSPIndex.P2:
+                    if (PS_S)
+                        m_P2 = value;
+                    else
+                        Interrupt_UnPrivOpcode();
+                    break;
+
+                case RegSPIndex.II:
+                    if (PS_S)
+                        m_II = value;
+                    else
+                        Interrupt_UnPrivOpcode();
+                    break;
+
+                case RegSPIndex.IA:
+                    if (PS_S)
+                        m_IA = value;
+                    else
+                        Interrupt_UnPrivOpcode();
+                    break;
+
+                case RegSPIndex.USP:
+                    m_USP = value;
+                    break;
+
+                case RegSPIndex.SSP:
+                    if (PS_S)
+                        m_SSP = value;
+                    else
+                        m_USP = value;
+                    break;
+
+                default:
+                    throw new Exception();
+            }
+        }
+
         #region FL
         private ushort m_FL = 0x0000;
         private const ushort c_FL_N = 0x8000, c_FL_Z = 0x4000, c_FL_C = 0x2000, c_FL_V = 0x1000;
