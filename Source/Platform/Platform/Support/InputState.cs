@@ -26,8 +26,8 @@ namespace Ypsilon.Platform.Support
             {
                 if (!m_EventsThisFrame[i].Handled && m_EventsThisFrame[i] is InputEventKeyboard)
                 {
-                    m_EventsThisFrame.RemoveAt(i);
                     InputEventKeyboard e = m_EventsThisFrame[i] as InputEventKeyboard;
+                    m_EventsThisFrame.RemoveAt(i);
                     keycode = (ushort)(((byte)(e.KeyCode)) |
                         ((e.Shift) ? ShiftDown : 0) |
                         ((e.Alt) ? AltDown : 0) |

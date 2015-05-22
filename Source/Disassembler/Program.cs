@@ -8,11 +8,9 @@ namespace Ypsilon
     {
         static void Main(string[] args)
         {
-            string inPath = "../../../../Tests/bld/AsmTstGn-0.asm.bin";
-            string outPath = inPath + ".asm";
+            string inPath = "../../../../../Tests/bld/AsmTstGn-0.asm.bin";
 
-            string[] disassembly;
-            if (tryDisassemble(inPath, out disassembly))
+            if (tryDisassemble(inPath))
                 Console.WriteLine("Success!");
             else
                 Console.WriteLine("Error. :(");
@@ -20,9 +18,10 @@ namespace Ypsilon
             Console.ReadKey();
         }
 
-        private static bool tryDisassemble(string inPath, out string[] disassembly)
+        private static bool tryDisassemble(string inPath)
         {
-            disassembly = null;
+            string[] disassembly = null;
+            string outPath = inPath + ".asm";
 
             if (File.Exists(inPath))
             {
@@ -31,6 +30,7 @@ namespace Ypsilon
                     Disasm disasm = new Disasm();
                     disassembly = disasm.Disassemble(reader);
                 }
+                File.WriteAllLines(outPath, disassembly);
                 return true;
             }
             else

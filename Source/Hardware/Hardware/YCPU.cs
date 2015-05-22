@@ -1,5 +1,5 @@
 ﻿
-namespace Ypsilon.Hardware.Processor
+namespace Ypsilon.Hardware
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
@@ -627,19 +627,6 @@ namespace Ypsilon.Hardware.Processor
             return value;
         }
         #endregion
-
-        /*public void LoadBinaryToMemory(string path, ushort address)
-        {
-            byte[] data = Platform.Common.GetBytesFromFile(path);
-            if (data != null)
-            {
-                for (int i = 0; i < data.Length; i += 1)
-                {
-                    WriteMemInt8((ushort)(address), data[i]);
-                    address += 1;
-                }
-            }
-        }*/
 
         private YRTC m_RTC;
         private YBUS m_Bus;

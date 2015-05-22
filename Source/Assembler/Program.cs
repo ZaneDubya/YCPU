@@ -8,20 +8,31 @@ namespace Ypsilon
     {
         static void Main(string[] args)
         {
-            string inPath, outPath, error;
-            string[] options;
-
             if (args.Length == 0)
             {
 #if DEBUG
-                args = new string[1] { "../../../../Tests/bld/AsmTstGn-1.asm" };
+                args = new string[] { 
+                    "../../../../Tests/bld/AsmTstGn-0.asm",
+                    "../../../../Tests/bld/AsmTstGn-1.asm",
+                    "../../../../Tests/rain.asm"};
+                for (int i = 0; i < args.Length; i++)
+                {
+                    doCompile(new string[] { args[i] });
+                }
+                return;
 #else
                 Console.WriteLine(errNoArguments);
                 return;
 #endif
             }
 
-            
+            doCompile(args);
+        }
+
+        private static void doCompile(string[] args)
+        {
+            string inPath, outPath, error;
+            string[] options;
 
             if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
             {

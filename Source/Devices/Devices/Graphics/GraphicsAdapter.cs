@@ -69,7 +69,7 @@ namespace Ypsilon.Devices.Graphics
             return MSG_ACK;
         }
 
-        public override void Display(IRenderer renderer)
+        public override void Display(IDeviceRenderer renderer)
         {
             switch (m_GraphicsMode)
             {

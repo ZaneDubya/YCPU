@@ -47,16 +47,16 @@
   <ItemGroup>
     <Compile Include="ADevice.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
-    <Compile Include="Hardware\Processor\YCPU.Benchmark.cs" />
-    <Compile Include="Hardware\Processor\YCPU.Memory.cs" />
+    <Compile Include="Hardware\YCPU.Disassemblers.cs" />
+    <Compile Include="Hardware\YCPU.Memory.cs" />
     <Compile Include="IInputProvider.cs" />
     <Compile Include="IMemoryBank.cs" />
-    <Compile Include="IRenderer.cs" />
+    <Compile Include="IDeviceRenderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Hardware\YBUS.cs" />
-    <Compile Include="Hardware\Processor\YCPU.cs" />
-    <Compile Include="Hardware\Processor\YCPU.BitPatterns.cs" />
-    <Compile Include="Hardware\Processor\YCPU.Instructions.cs" />
+    <Compile Include="Hardware\YCPU.cs" />
+    <Compile Include="Hardware\YCPU.Patterns.cs" />
+    <Compile Include="Hardware\YCPU.Instructions.cs" />
     <Compile Include="Hardware\YRTC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

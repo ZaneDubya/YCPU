@@ -35,7 +35,7 @@ namespace Ypsilon
 
         }
 
-        public virtual void Display(IRenderer renderer)
+        public virtual void Display(IDeviceRenderer renderer)
         {
 
         }

@@ -74,7 +74,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ResContent.resx</DependentUpon>
     </Compile>
-    <Compile Include="ServiceProvider.cs" />
+    <Compile Include="DeviceRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Platform\Content\Arial12.xnb" />

@@ -11,9 +11,9 @@ namespace Ypsilon.Platform
         Settings m_Settings;
         InputState m_Input;
         FPS m_FPS;
-        private Graphics.SpriteBatchExtended m_SBX;
+        private Graphics.ExtendedSpriteBatch m_SBX;
 
-        protected Graphics.SpriteBatchExtended SpriteBatch
+        protected Graphics.ExtendedSpriteBatch SpriteBatch
         {
             get { return m_SBX; }
         }
@@ -37,12 +37,10 @@ namespace Ypsilon.Platform
 
             m_Input = new Support.InputState();
             m_Input.Initialize(this.Window.Handle);
-            ServiceProvider.Register<InputState>(m_Input);
 
             m_FPS = new Support.FPS();
 
-            m_SBX = new Graphics.SpriteBatchExtended(this);
-            ServiceProvider.Register<Graphics.SpriteBatchExtended>(m_SBX);
+            m_SBX = new Graphics.ExtendedSpriteBatch(this);
 
             this.IsMouseVisible = true;
 
@@ -52,6 +50,8 @@ namespace Ypsilon.Platform
         protected override void Initialize()
         {
             base.Initialize();
+
+            m_SBX.Initialize();
         }
 
         protected override void LoadContent()

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Ypsilon.Hardware.Processor;
 
 namespace Ypsilon.Hardware
 {
@@ -39,7 +38,7 @@ namespace Ypsilon.Hardware
                 m_Devices[i].Update(input);
         }
 
-        public void Display(IRenderer renderer)
+        public void Display(IDeviceRenderer renderer)
         {
             for (int i = 0; i < m_Devices.Count; i += 1)
                 m_Devices[i].Display(renderer);

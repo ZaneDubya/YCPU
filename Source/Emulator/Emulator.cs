@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System.Threading;
-using Ypsilon.Hardware.Processor;
+using Ypsilon.Hardware;
 using Ypsilon.Platform.Input;
 using System.Diagnostics;
 using Ypsilon.Platform;
@@ -13,6 +13,7 @@ namespace Ypsilon
     {
         private YCPU m_CPU;
         private Stopwatch m_Stopwatch;
+        private IDeviceRenderer m_DeviceRenderer;
 
         private int m_LastRunMS;
         private long m_LastRunCycles;
@@ -26,8 +27,12 @@ namespace Ypsilon
         protected override void Initialize()
         {
             base.Initialize();
+
+            m_DeviceRenderer = new DeviceRenderer(SpriteBatch);
+
             Settings.Resolution = new Point(256, 192);
             Program.ShowConsoleWindow();
+
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -49,11 +54,6 @@ namespace Ypsilon
             {
                 m_LastConsoleUpdate += 150;
                 UpdateConsole();
-            }
-
-            if (m_Running && !m_Threaded)
-            {
-                m_CPU.Run(100000 / 60);
             }
 
             if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Escape, false, false, true))
@@ -87,20 +87,27 @@ namespace Ypsilon
                 StopCPU();
                 m_CPU.PS_R = true;
 #if DEBUG
-                // m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
+                LoadBinaryToCPU("../../../../Tests/rain.asm.bin", 0x0000);
 #else
-                // m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
+                LoadBinaryToCPU("../Tests/rain.asm.bin", 0x0000);
 #endif
                 m_CPU.Interrupt_Reset();
             }
 
-
-            m_CPU.BUS.Update(InputState);
+            if (m_Running)
+            {
+                if (!m_Threaded)
+                {
+                    m_CPU.Run(100000 / 60);
+                }
+                m_CPU.BUS.Update(InputState);
+            }
+            
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            m_CPU.BUS.Display(SpriteBatch);
+            m_CPU.BUS.Display(m_DeviceRenderer);
             base.Draw(gameTime);
         }
 
@@ -168,6 +175,19 @@ namespace Ypsilon
             m_CPU.BUS.AddDevice(new Ypsilon.Devices.Input.Keyboard(m_CPU.BUS));
         }
 
+        private void LoadBinaryToCPU(string path, ushort address)
+        {
+            byte[] data = Platform.Common.GetBytesFromFile(path);
+            if (data != null)
+            {
+                for (int i = 0; i < data.Length; i += 1)
+                {
+                    m_CPU.WriteMemInt8((ushort)(address), data[i]);
+                    address += 1;
+                }
+            }
+        }
+
         #region Console
         public void UpdateConsole()
         {
@@ -203,9 +223,9 @@ namespace Ypsilon
                 m_CPU.FL_N ? "N" : ".", m_CPU.FL_Z ? "Z" : ".", m_CPU.FL_C ? "C" : ".", m_CPU.FL_V ? "V" : "."));
 
             ConsoleWrite(2, r_y, "Disassembly");
-            /*string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
+            string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
             for (int i = 0; i < 21; i += 1)
-                ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));*/
+                ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 11, ">");
             ConsoleWrite(2, 23, string.Format("{0} Cycles total", m_CPU.Cycles));
             if (m_LastRunCycles != 0 && m_LastRunMS > 0)

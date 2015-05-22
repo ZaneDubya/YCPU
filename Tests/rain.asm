@@ -67,9 +67,9 @@ Setup:
     mmw     a, b
 
     ; enable mmu
-    tsr     a, ps
+    lod     a, ps
     orr     a, 0x4000   ; mmu bit is 0x4000
-    trs     a, ps
+    sto     a, ps
     rts
 .scend
 
