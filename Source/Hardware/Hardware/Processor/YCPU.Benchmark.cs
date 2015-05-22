@@ -1,5 +1,4 @@
-﻿//#define BENCHMARK
-
+﻿
 namespace Ypsilon.Hardware.Processor
 {
     partial class YCPU

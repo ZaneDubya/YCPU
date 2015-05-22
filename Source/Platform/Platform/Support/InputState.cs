@@ -1,13 +1,48 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using Ypsilon.Platform.Input;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+using Ypsilon;
 
 namespace Ypsilon.Platform.Support
 {
-    public class InputState
+    public class InputState : IInputProvider
     {
+        // YPSILON STUFF
+
+        private const ushort EventUp = 0x0100;
+        private const ushort EventDown = 0x0200;
+        private const ushort EventPress = 0x0300;
+
+        private const ushort CtrlDown = 0x1000;
+        private const ushort AltDown = 0x2000;
+        private const ushort ShiftDown = 0x4000;
+
+        public bool TryGetKeypress(out ushort keycode)
+        {
+            keycode = 0;
+            for (int i = 0; i < m_EventsThisFrame.Count; i++)
+            {
+                if (!m_EventsThisFrame[i].Handled && m_EventsThisFrame[i] is InputEventKeyboard)
+                {
+                    m_EventsThisFrame.RemoveAt(i);
+                    InputEventKeyboard e = m_EventsThisFrame[i] as InputEventKeyboard;
+                    keycode = (ushort)(((byte)(e.KeyCode)) |
+                        ((e.Shift) ? ShiftDown : 0) |
+                        ((e.Alt) ? AltDown : 0) |
+                        ((e.Control) ? CtrlDown : 0) |
+                        ((e.EventType == KeyboardEvent.Up) ? EventUp : 0) |
+                        ((e.EventType == KeyboardEvent.Down) ? EventDown : 0) |
+                        ((e.EventType == KeyboardEvent.Press) ? EventPress : 0));
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // BASE STUFF
+
         // Base WndProc
         WndProc m_WndProc;
 

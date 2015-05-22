@@ -1,6 +1,4 @@
 ﻿using Ypsilon.Hardware;
-using Ypsilon.Platform.Support;
-using Ypsilon.Platform.Input;
 
 namespace Ypsilon.Devices.Input
 {
@@ -82,27 +80,17 @@ namespace Ypsilon.Devices.Input
             return MSG_ACK;
         }
 
-        public override void Update(InputState input)
+        public override void Update(IInputProvider input)
         {
-            foreach (InputEventKeyboard e in input.GetKeyboardEvents())
+            ushort keycode;
+            while (input.TryGetKeypress(out keycode))
             {
-                if (m_GetOnlyPressEvents && e.EventType != KeyboardEvent.Press)
+                if (m_GetOnlyPressEvents && (keycode & EventPress) != EventPress)
                     continue;
-
                 if (m_CommandBuffer[0] < m_CommandBuffer.Length - 1)
                 {
-                    ushort e1 = (ushort)(((byte)(e.KeyCode)) |
-                        ((e.Shift) ? ShiftDown : 0) |
-                        ((e.Alt) ? AltDown : 0) |
-                        ((e.Control) ? CtrlDown : 0) |
-                        ((e.EventType == KeyboardEvent.Up) ? EventUp : 0) | 
-                        ((e.EventType == KeyboardEvent.Down) ? EventDown : 0) |
-                        ((e.EventType == KeyboardEvent.Press) ? EventPress : 0));
-                    
                     m_CommandBuffer[0]++;
-                    m_CommandBuffer[m_CommandBuffer[0]] = e1;
-
-                    e.Handled = true;
+                    m_CommandBuffer[m_CommandBuffer[0]] = keycode;
                 }
             }
         }

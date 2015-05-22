@@ -1,9 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
 
-namespace Ypsilon.Hardware.Processor
+namespace Ypsilon
 {
-    partial class YCPU
+    class Disasm
     {
+        public string[] Disassemble(BinaryReader reader)
+        {
+            List<string> disassembled = new List<string>();
+
+            while (reader.BaseStream.Position < reader.BaseStream.Length + 2)
+            {
+                ushort opcode = reader.ReadUInt16();
+            }
+
+            // trailing byte? must be a data byte.
+            while (reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                disassembled.Add(string.Format(".dat8 0x{0:X2}", reader.ReadByte()));
+            }
+
+            return disassembled.ToArray();
+        }
+
         public string[] Disassemble(ushort address, int begin, int count)
         {
             string[] s = new string[count];
@@ -410,5 +432,6 @@ namespace Ypsilon.Hardware.Processor
                     return "??";
             }
         }
+    }
     }
 }

@@ -7,6 +7,42 @@ namespace Ypsilon.Platform.Graphics
 {
     public class SpriteBatchExtended : DrawableGameComponent, IRenderer
     {
+        // YPSILON STUFF
+
+        Texture2D m_LEM_chr, m_LEM_pal;
+
+        public void RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
+        {
+            if (m_LEM_chr == null)
+            {
+                m_LEM_chr = new Texture2D(GraphicsDevice, 128, 32);
+                m_LEM_pal = new Texture2D(GraphicsDevice, 16, 1);
+            }
+
+            m_LEM_chr.SetData<uint>(chr);
+            m_LEM_pal.SetData<uint>(pal);
+
+            int current_word = 0;
+            for (int y = 0; y < 12; y += 1)
+            {
+                for (int x = 0; x < 32; x += 1)
+                {
+                    byte data0 = bank[current_word++];
+                    byte data1 = bank[current_word++];
+
+                    int character = data0 & 0x7F;
+                    GUIDrawSprite(m_LEM_chr, 
+                        new Rectangle(x * 8, y * 16, 8, 16),
+                        new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8),
+                        shader: Platform.Graphics.Shader.LEM1802,
+                        Palette0: (data1 & 0x0F),
+                        Palette1: (data1 & 0xF0) >> 4);
+                }
+            }
+        }
+
+        // BASE STUFF
+
         private Effect _effect;
 
         private Dictionary<TextureShader, List<VertexPositionTextureHueExtra>> _drawQueue;
@@ -15,18 +51,6 @@ namespace Ypsilon.Platform.Graphics
 
         private Vector3 _zOffset = new Vector3();
         public float ZOffset { set { _zOffset = new Vector3(0, 0, value); } }
-
-        private YTexture m_Palette_NES = null, m_Palette_LEM = null;
-        public YTexture Palette_NES
-        {
-            get { return m_Palette_NES; }
-            set { m_Palette_NES = value; }
-        }
-        public YTexture Palette_LEM
-        {
-            get { return m_Palette_LEM; }
-            set { m_Palette_LEM = value; }
-        }
 
         public SpriteBatchExtended(Game game)
             : base(game)
@@ -88,11 +112,6 @@ namespace Ypsilon.Platform.Graphics
 
             foreach (Shader shader in (Shader[]) Enum.GetValues(typeof(Shader)))
             {
-                if (shader == Shader.NES)
-                    _effect.Parameters["PALETTE"].SetValue(Palette_NES == null ? null : Palette_NES.m_Texture);
-                else if (shader == Shader.LEM1802)
-                    _effect.Parameters["PALETTE"].SetValue(Palette_LEM == null ? null : Palette_LEM.m_Texture);
-
                 _effect.CurrentTechnique.Passes[(int)shader].Apply();
 
                 IEnumerator<KeyValuePair<TextureShader, List<VertexPositionTextureHueExtra>>> iTexturesVertexes =
@@ -270,7 +289,7 @@ namespace Ypsilon.Platform.Graphics
 
         List<Vector4> m_GUIClipRect_Stack;
         Vector4 m_GUIClipRect = Vector4.Zero;
-        TextRenderer _textRenderer;
+
         public Rectangle GUIClipRect
         {
             set
@@ -306,7 +325,7 @@ namespace Ypsilon.Platform.Graphics
             m_GUIClipRect = new Vector4(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
-        public void GUIDrawSprite(YTexture texture, Rectangle destinationRectangle, 
+        public void GUIDrawSprite(Texture2D texture, Rectangle destinationRectangle, 
             Rectangle? sourceRectangle = null, Color? color = null, YSpriteEffect effects = YSpriteEffect.None, 
             Shader shader = Shader.Standard , int Palette0 = 0, int Palette1 = 0)
         {
@@ -383,12 +402,12 @@ namespace Ypsilon.Platform.Graphics
                     extra = new Vector2(Palette0, Palette1);
                     break;
             }
-            PreTransformedQuad q = new PreTransformedQuad(texture.m_Texture, dest, source, _zOffset.Z, color == null ? Color.White : color.Value, extra);
+            PreTransformedQuad q = new PreTransformedQuad(texture, dest, source, _zOffset.Z, color == null ? Color.White : color.Value, extra);
             _zOffset.Z += 1;
 
             List<VertexPositionTextureHueExtra> vertexList;
 
-            TextureShader key = new TextureShader(texture.m_Texture, shader);
+            TextureShader key = new TextureShader(texture, shader);
 
             if (_drawQueue.ContainsKey(key))
             {
@@ -413,20 +432,6 @@ namespace Ypsilon.Platform.Graphics
             {
                 vertexList.Add(q.Vertices[i]);
             }
-        }
-
-        public void GUIDrawString(SpriteFont font, string text, Vector2 location, Color? color = null)
-        {
-            if (_textRenderer == null)
-                _textRenderer = new TextRenderer(Game.GraphicsDevice, Support.Library.Content.Load<SpriteFont>("Arial12"));
-
-            Texture2D texture = _textRenderer.RenderText(text);
-            if (texture == null)
-                return;
-
-            YTexture t = YTexture.CreateFromTexture(texture);
-
-            GUIDrawSprite(t, new Rectangle((int)location.X, (int)location.Y, texture.Width, texture.Height), new Rectangle(0, 0, texture.Width, texture.Height), color == null ? Color.White : color.Value);
         }
 
         struct TextureShader

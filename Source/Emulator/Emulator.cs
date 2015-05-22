@@ -87,21 +87,21 @@ namespace Ypsilon
                 StopCPU();
                 m_CPU.PS_R = true;
 #if DEBUG
-                m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
+                // m_CPU.LoadBinaryToMemory("../../../../Tests/rain.s.bin", 0x0000);
 #else
-                m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
+                // m_CPU.LoadBinaryToMemory("../Tests/rain.s.bin", 0x0000);
 #endif
                 m_CPU.Interrupt_Reset();
             }
 
-            m_CPU.Update(InputState);
+
+            m_CPU.BUS.Update(InputState);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            m_CPU.Display(SpriteBatch);
+            m_CPU.BUS.Display(SpriteBatch);
             base.Draw(gameTime);
-            
         }
 
         private void RunCPU(int cycles)
@@ -203,9 +203,9 @@ namespace Ypsilon
                 m_CPU.FL_N ? "N" : ".", m_CPU.FL_Z ? "Z" : ".", m_CPU.FL_C ? "C" : ".", m_CPU.FL_V ? "V" : "."));
 
             ConsoleWrite(2, r_y, "Disassembly");
-            string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
+            /*string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
             for (int i = 0; i < 21; i += 1)
-                ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
+                ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));*/
             ConsoleWrite(0, 11, ">");
             ConsoleWrite(2, 23, string.Format("{0} Cycles total", m_CPU.Cycles));
             if (m_LastRunCycles != 0 && m_LastRunMS > 0)

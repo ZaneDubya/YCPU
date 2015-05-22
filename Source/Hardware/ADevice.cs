@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Ypsilon.Platform.Support;
-using Ypsilon.Hardware;
+﻿using Ypsilon.Hardware;
 
 namespace Ypsilon
 {
@@ -35,12 +30,12 @@ namespace Ypsilon
 
         }
 
-        public virtual void Update(InputState input)
+        public virtual void Update(IInputProvider input)
         {
 
         }
 
-        public virtual void Display(IRenderer spritebatch)
+        public virtual void Display(IRenderer renderer)
         {
 
         }

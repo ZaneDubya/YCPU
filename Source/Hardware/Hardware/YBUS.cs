@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Ypsilon.Platform.Support;
 using Ypsilon.Hardware.Processor;
-using Ypsilon.Platform;
 
 namespace Ypsilon.Hardware
 {
@@ -35,7 +33,7 @@ namespace Ypsilon.Hardware
             }
         }
 
-        public void Update(InputState input)
+        public void Update(IInputProvider input)
         {
             for (int i = 0; i < m_Devices.Count; i += 1)
                 m_Devices[i].Update(input);

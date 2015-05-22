@@ -46,7 +46,6 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IRenderer.cs" />
     <Compile Include="Platform\Common.cs" />
     <Compile Include="Platform\Graphics\YSpriteEffect.cs" />
     <Compile Include="Platform\Host.cs" />
@@ -75,6 +74,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ResContent.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServiceProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Platform\Content\Arial12.xnb" />
@@ -87,7 +87,12 @@
       <LastGenOutput>ResContent.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Hardware\Ypsilon.Hardware.csproj">
+      <Project>{fc4ded94-2256-43d1-9c43-d4af7d1bfece}</Project>
+      <Name>Ypsilon.Hardware</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

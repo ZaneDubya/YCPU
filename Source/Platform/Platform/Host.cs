@@ -37,11 +37,12 @@ namespace Ypsilon.Platform
 
             m_Input = new Support.InputState();
             m_Input.Initialize(this.Window.Handle);
+            ServiceProvider.Register<InputState>(m_Input);
 
             m_FPS = new Support.FPS();
 
             m_SBX = new Graphics.SpriteBatchExtended(this);
-            this.Components.Add(m_SBX);
+            ServiceProvider.Register<Graphics.SpriteBatchExtended>(m_SBX);
 
             this.IsMouseVisible = true;
 

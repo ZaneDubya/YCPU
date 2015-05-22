@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Ypsilon.Platform.Support;
-
+﻿
 namespace Ypsilon.Hardware.Processor
 {
     /// <summary>
@@ -130,24 +125,6 @@ namespace Ypsilon.Hardware.Processor
                 // we wait 1ms between each try so we don't lock this variable.
                 System.Threading.Thread.Sleep(1);
             }
-        }
-
-        /// <summary>
-        /// All devices receive an input event.
-        /// </summary>
-        /// <param name="input"></param>
-        public void Update(InputState input)
-        {
-            m_Bus.Update(input);
-        }
-
-        /// <summary>
-        /// All devices with a visual component will display to the spritebatch.
-        /// </summary>
-        /// <param name="spritebatch"></param>
-        public void Display(IRenderer renderer)
-        {
-            m_Bus.Display(renderer);
         }
 
         #region General Purpose Registers
@@ -651,7 +628,7 @@ namespace Ypsilon.Hardware.Processor
         }
         #endregion
 
-        public void LoadBinaryToMemory(string path, ushort address)
+        /*public void LoadBinaryToMemory(string path, ushort address)
         {
             byte[] data = Platform.Common.GetBytesFromFile(path);
             if (data != null)
@@ -662,7 +639,7 @@ namespace Ypsilon.Hardware.Processor
                     address += 1;
                 }
             }
-        }
+        }*/
 
         private YRTC m_RTC;
         private YBUS m_Bus;

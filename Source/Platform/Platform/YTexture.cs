@@ -44,22 +44,5 @@ namespace Ypsilon.Platform
         {
             get { return m_Texture.Width; }
         }
-
-        public void DrawLEM(IRenderer renderer, int x, int y, byte data0, byte data1)
-        {
-            int character = data0 & 0x007F;
-            renderer.GUIDrawSprite(this,
-                new Rectangle(x * 8, y * 16, 8, 16),
-                new Rectangle((character % 32) * 4, (character / 32) * 8, 4, 8),
-                shader: Platform.Graphics.Shader.LEM1802,
-                Palette0: (data1 & 0x0F),
-                Palette1: (data1 & 0xF0) >> 4);
-        }
-
-        public void Draw(IRenderer renderer, int x, int y)
-        {
-            renderer.GUIDrawSprite(this,
-                new Rectangle(x, y, this.Width, this.Height));
-        }
     }
 }
