@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.5a RC1
+Version 0.5b RC1
 
 =============================[ Table of Contents ]==============================
 
@@ -727,7 +727,7 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
-1011 0100   SFL                 SFL             Stack Flush                   1
+1011 0100   ---                 ---             UNDEFINED                      -
 1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
 1011 011x   SET                 SET             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
@@ -791,7 +791,7 @@ ALU Bit Pattern
                 $03     P2 register                                     Y
                 $04     II register                                     Y
                 $05     IA register                                     Y
-                $06     USP                                             Y
+                $06     USP                                             N
                 $07     current Stack Pointer (USP / SSP)               N
                                         
     The ALU operating in 8-bit mode has the following modified behaviour:
@@ -857,6 +857,13 @@ HWQ Bit Pattern
             $04     Gets RTC data in R0-R3.
                     See 2.H.1. for the format of the data. 
     
+IMM Bit Pattern
+    FEDC BA98 7654 3210
+    RRRv vvvv OOOO OOOO
+        O = Opcode
+        r = register to be incremented
+        v = value to increment register by (5-bit value + 1, range of $01-$20)
+    
 JMP Bit Pattern
     FEDC BA98 7654 3210 
     AAAA rrrF OOOO OOOO
@@ -911,14 +918,6 @@ JMP Bit Pattern
                 JMP.F   R0      ; PC=R0 @ R1
                 JMP.F   R4      ; PC=R4 @ R5
                 JMP.F   R7      ; PC=R7 @ R0
-        
-    
-IMM Bit Pattern
-    FEDC BA98 7654 3210
-    RRRv vvvv OOOO OOOO
-        O = Opcode
-        r = register to be incremented
-        v = value to increment register by (5-bit value + 1, range of $01-$20)
 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
@@ -945,12 +944,6 @@ SET Bit Pattern
             v = $00...$0A   : R = (2^(5+v)) Power of two constants 2^5 ~ 2^15.
             v = $0B...$1F   : R = ($FFE0 + v).
 
-SFL Bit Pattern
-    FEDC BA98 7654 3210
-    vvvv vvvv OOOO OOOO
-        O = Opcode
-        v = number of 16-bit values to flush from the stack, plus 1 (1 - 256)
-        
 SHF Bit Pattern
     FEDC BA98 7654 3210 
     rrrR ssss OOOO ODoo
@@ -980,7 +973,7 @@ STK Bit Pattern < 2 / 2 >
         2 = push/pop P2 register                                Y
         i = push/pop II register                                Y
         a = push/pop IA register                                Y
-        u = push/pop USP                                        Y
+        u = push/pop USP                                        N
         s = push/pop current Stack Pointer (USP / SSP)          N
 
         
@@ -1539,11 +1532,6 @@ values registers are always saved in the following order:
     Bit pattern 1: SP, USP, IA, II, P2, PS, PC, FL
     
 
-SFL         Stack flush
-Syntax: SFL [$00-$FF]
-Removes the indicated number of 2-byte words from the stack.
-
-    
 ===================[ 3.K. Processor Function Instructions ]=====================
 
 CLF         Clears bit(s) in the FL register.
@@ -1603,23 +1591,6 @@ Syntax: SEF [N][,C][,Z][,V]
 The specified bits are set in the FL register. Any combination of the
 possible bits may be specified in a single instruction.
 
-
-TRS         Loads a special register from a general purpose register.
-Syntax: TRS Rx, SR
-The value in special register SR is loaded into general purpose register Rx.
-    SR      Value       Result      Supervisor only?
-    PC      0x00        Rx = PC
-    SP      0x01        Rx = SP*
-    IA      0x02        Rx = IA     X
-    II      0x03        Rx = II     X
-    PS      0x04        Rx = PS     
-    P2      0x05        Rx = P2     X
-    USP     0x06        Rx = USP    X
-    SSP     0x07        Rx = SSP    X
-            0x08-0x1F   Undefined*  X
- * SP is the current stack pointer; SSP in supervisor mode and USP in user mode.
- * Undefined SR codes have no functionality, and are supervisor only.
-    
 
 
 SLP         Halts the processor until it receives an interrupt.

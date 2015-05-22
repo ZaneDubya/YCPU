@@ -170,11 +170,11 @@
   * MMU bit pattern changed.
   * MML/MMR/MMW/MMS instructions changed.
   * Index of HWQ/RTS/SLP/SWI changed.
-  * Got rid of JCX; it is an abomination.
-  * Got rid of JMU; it too is an abomination.
+  * Got rid of JCX; it is unnecessary.
+  * Got rid of JMU; it too is unnecessary.
   * Added easy instructions for switching context.
 0.5 RC1 05/18/2015
-  * Got rid of SWO; it also is an abomination.
+  * Got rid of SWO; it also is unnecessary.
   * Got rid of UnalignedEx. Processor should be able to execute unaligned; who
     care if it's slower?
   * Changed MMU Cache: now 256 devices, each with 256 banks. 1gig of physical
@@ -186,3 +186,8 @@
   * Got rid of TSR/TRS/XSR bit pattern. Again, abomination.
   * PSH/POP can now reference II, IA, P2, to replace XSR.
   * Clock can now tick, at most, every 1024 cycles.
+0x5a RC1 05/21/2015
+  * ALU instructions now support processor registers as sources
+    (destinations with STO)
+0x5b RC1 05/22/2015
+  * Got rid of SFL, it is unnecessary.
