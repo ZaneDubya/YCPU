@@ -133,9 +133,10 @@ namespace Ypsilon.Hardware
                     break;
 
                 case 1: // Processor Register
+                    WriteStatusRegister((RegSPIndex)addrRegister, R[(int)source]);
+                    // set source = none so calling function doesn't attempt to interpret this as well.
                     source = RegGPIndex.None;
                     destAddress = 0;
-                    WriteStatusRegister((RegSPIndex)addrRegister, R[(int)source]);
                     break;
 
                 case 2: // Register - no such addressing mode for STO.

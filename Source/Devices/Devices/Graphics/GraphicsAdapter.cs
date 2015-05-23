@@ -111,12 +111,12 @@ namespace Ypsilon.Devices.Graphics
             if (m_GraphicsMode != GraphicsMode.LEM1802)
             {
                 byte[] chrram_default = new byte[512];
-                System.Buffer.BlockCopy(m_Charset, 0, chrram_default, 0, 512);
+                System.Buffer.BlockCopy(c_DefaultCharset, 0, chrram_default, 0, 512);
                 for (int i = 0; i < 512; i += 1)
                     m_Bank[0x0800 + i] = chrram_default[i];
 
                 byte[] palram_default = new byte[32];
-                System.Buffer.BlockCopy(m_Palette, 0, palram_default, 0, 32);
+                System.Buffer.BlockCopy(c_DefaultPalette, 0, palram_default, 0, 32);
                 for (int i = 0; i < 32; i += 1)
                     m_Bank[0x0C00 + i] = palram_default[i];
 
@@ -145,7 +145,7 @@ namespace Ypsilon.Devices.Graphics
             }
         }
 
-        uint[] m_LEM_CHRRAM = new uint[128 * 32];
+        uint[] m_LEM_CHRRAM = new uint[0x80];
         uint[] m_LEM_PALRAM = new uint[0x10];
 
         private void Update_LEM_CHRRAM()
@@ -157,27 +157,7 @@ namespace Ypsilon.Devices.Graphics
             // byte 1, bit 0-3: 3210
             // byte 1, bit 4-7: 7654
             // ... same for bytes 2 and 3.
-            int data_index = 0;
-            for (int iTile = 0; iTile < 128; iTile += 1)
-            {
-                int y = (iTile / 32) * 8;
-                int x = (iTile % 32) * 4;
-                for (int i = 0; i < 4; i += 1)
-                {
-                    byte binary_data = m_Bank[0x0800 + data_index];
-                    data_index += 1;
-                    int bit_index = 0;
-                    for (int iY = 0; iY < 2; iY += 1)
-                    {
-                        for (int iX = 0; iX < 4; iX += 1)
-                        {
-                            bool bit = ((binary_data & (1 << bit_index)) != 0);
-                            bit_index += 1;
-                            m_LEM_CHRRAM[(y + i * 2 + iY) * 128 + (x + iX)] = (bit) ? 0xFFFFFFFF : 0xFF000000;
-                        }
-                    }
-                }
-            }
+            Buffer.BlockCopy(c_DefaultCharset, 0, m_LEM_CHRRAM, 0, 512);
         }
 
         private void Update_LEM_PALRAM()
@@ -196,11 +176,11 @@ namespace Ypsilon.Devices.Graphics
             LEM1802
         }
 
-        private static byte[] m_Palette = new byte[] {
+        private static byte[] c_DefaultPalette = new byte[] {
             0x00, 0x00, 0xDA, 0x0F, 0x90, 0x0F, 0x50, 0x08, 0x21, 0x03, 0xD8, 0x01, 0x90, 0x01, 0x42, 0x04, 
             0xEF, 0x06, 0x8F, 0x00, 0x6A, 0x00, 0x34, 0x02, 0x5F, 0x08, 0x0D, 0x01, 0xFF, 0x0F, 0x99, 0x09 };
 
-        private static byte[] m_Charset = new byte[] {
+        private static byte[] c_DefaultCharset = new byte[] {
             0x22, 0xE2, 0x00, 0x00, 0x22, 0xF2, 0x00, 0x00, 0x00, 0xF0, 0x22, 0x22, 0x22, 0xE2, 0x22, 0x22,
             0x00, 0xF0, 0x00, 0x00, 0x22, 0xF2, 0x22, 0x22, 0x22, 0x2E, 0x2E, 0x22, 0x55, 0xD5, 0x55, 0x55,
             0x55, 0x1D, 0x0F, 0x00, 0x00, 0x1F, 0x5D, 0x55, 0x55, 0x0D, 0x0F, 0x00, 0x00, 0x0F, 0x5D, 0x55,

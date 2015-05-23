@@ -8,7 +8,7 @@ namespace Ypsilon.Hardware
     {
         public MemoryBank()
         {
-            m_Data = new byte[0x1000];
+            m_Data = new byte[0x4000];
         }
 
         private bool m_ReadOnly = false;
@@ -22,8 +22,8 @@ namespace Ypsilon.Hardware
 
         public byte this[int i]
         {
-            get { return m_Data[i & 0x0FFF]; }
-            set { m_Data[i & 0x0FFF] = value; }
+            get { return m_Data[i & 0x3FFF]; }
+            set { m_Data[i & 0x3FFF] = value; }
         }
     }
 }

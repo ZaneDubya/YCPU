@@ -210,50 +210,50 @@ namespace Ypsilon.Hardware
             switch (index)
             {
                 case RegSPIndex.FL:
-                    m_FL = value;
+                    FL = value;
                     break;
 
                 case RegSPIndex.PC:
-                    m_PC = value;
+                    PC = value;
                     break;
 
                 case RegSPIndex.PS:
                     if (PS_S)
-                        m_PS = value;
+                        PS = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
                 case RegSPIndex.P2:
                     if (PS_S)
-                        m_P2 = value;
+                        P2 = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
                 case RegSPIndex.II:
                     if (PS_S)
-                        m_II = value;
+                        II = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
                 case RegSPIndex.IA:
                     if (PS_S)
-                        m_IA = value;
+                        IA = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
                 case RegSPIndex.USP:
-                    m_USP = value;
+                    USP = value;
                     break;
 
                 case RegSPIndex.SSP:
                     if (PS_S)
-                        m_SSP = value;
+                        SSP = value;
                     else
-                        m_USP = value;
+                        USP = value;
                     break;
 
                 default:
@@ -364,14 +364,13 @@ namespace Ypsilon.Hardware
         #endregion
         #region PS
         private ushort m_PS = 0x0000;
-        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000, c_PS_R = 0x1000;
+        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000;
         private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_E = 0x0100;
         private bool m_PS_S = false;
         public ushort PS
         {
             private set
             {
-                PS_R = (value & 0x1000) != 0;
                 PS_I = (value & 0x2000) != 0;
                 PS_M = (value & 0x4000) != 0;
                 PS_S = (value & 0x8000) != 0;
@@ -450,27 +449,6 @@ namespace Ypsilon.Hardware
                 else if (value == true)
                 {
                     m_PS |= c_PS_I;
-                }
-            }
-        }
-
-        public bool PS_R
-        {
-            get
-            {
-                return ((m_PS & c_PS_R) != 0);
-            }
-            set
-            {
-                if (value == false)
-                {
-                    m_PS &= unchecked((ushort)~c_PS_R);
-                    MMU_PS_R_Updated();
-                }
-                else if (value == true)
-                {
-                    m_PS |= c_PS_R;
-                    MMU_PS_R_Updated();
                 }
             }
         }
@@ -633,9 +611,7 @@ namespace Ypsilon.Hardware
         public void Interrupt_Reset()
         {
             m_RTC.DisableInterrupt();
-            bool r = PS_R;
             PS = 0x8000;
-            if (r) PS_R = true;
             IA = 0x0000;
             Interrupt(0x00);
         }

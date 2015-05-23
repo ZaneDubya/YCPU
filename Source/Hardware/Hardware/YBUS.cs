@@ -127,7 +127,7 @@ namespace Ypsilon.Hardware
             deviceIndex -= 1;
             if (deviceIndex >= m_Devices.Count)
                 return null;
-            return m_Devices[deviceIndex].GetMemoryBank((ushort)(bank_index & 0x0FFF));
+            return m_Devices[deviceIndex].GetMemoryBank((ushort)(bank_index & 0x00FF));
         }
     }
 }

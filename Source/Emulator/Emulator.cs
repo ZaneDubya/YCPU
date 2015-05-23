@@ -32,7 +32,6 @@ namespace Ypsilon
 
             Settings.Resolution = new Point(256, 192);
             Program.ShowConsoleWindow();
-
         }
 
         private double m_LastConsoleUpdate = 0;
@@ -85,7 +84,6 @@ namespace Ypsilon
             else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
                 StopCPU();
-                m_CPU.PS_R = true;
 #if DEBUG
                 LoadBinaryToCPU("../../../../Tests/rain.asm.bin", 0x0000);
 #else
@@ -215,7 +213,7 @@ namespace Ypsilon
 
             ConsoleWrite(70, r_y + 18, "PS Bits:");
             ConsoleWrite(70, r_y + 19, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
-                m_CPU.PS_S ? "S" : ".", m_CPU.PS_M ? "M" : ".", m_CPU.PS_I ? "I" : ".", m_CPU.PS_R ? "R" : ".",
+                m_CPU.PS_S ? "S" : ".", m_CPU.PS_M ? "M" : ".", m_CPU.PS_I ? "I" : ".", ".",
                 ".", ".", ".", "."));
 
             ConsoleWrite(70, r_y + 21, "FL Bits:");
@@ -223,10 +221,10 @@ namespace Ypsilon
                 m_CPU.FL_N ? "N" : ".", m_CPU.FL_Z ? "Z" : ".", m_CPU.FL_C ? "C" : ".", m_CPU.FL_V ? "V" : "."));
 
             ConsoleWrite(2, r_y, "Disassembly");
-            string[] disasm = m_CPU.Disassemble(m_CPU.PC, -9, 21);
+            string[] disasm = m_CPU.Disassemble(m_CPU.PC, 21, true);
             for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
-            ConsoleWrite(0, 11, ">");
+            ConsoleWrite(0, 2, ">");
             ConsoleWrite(2, 23, string.Format("{0} Cycles total", m_CPU.Cycles));
             if (m_LastRunCycles != 0 && m_LastRunMS > 0)
             {

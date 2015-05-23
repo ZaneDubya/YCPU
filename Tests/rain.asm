@@ -58,14 +58,22 @@ Setup:
     lod     c, $0000
     hwq     $02
     
-    ; set mmu to load graphics adaptor memory in bank $08
-    lod     a, $10      ; mmu cache index 16 (bank $08, word 0)
-    lod     b, $1000    ; device 01, bank 0
+    ; set mmu to load graphics adaptor memory in supervisor bank $02
+    lod     a, $0C      ; mmu cache index 8 (bank $02, word 0)
+    lod     b, $0100    ; device 01, bank 0
     mmw     a, b
     inc     a
-    lod     b, $0000    ; high bits of device 01, no features
+    lod     b, $0000    ; no protection enabled for this bank.
     mmw     a, b
 
+    ; set mmu bank 0 to cpu rom.
+    lod     a, $08
+    lod     b, $0080
+    mmw     a, b
+    inc     a
+    lod     b, $0000
+    mmw     a, b
+    
     ; enable mmu
     lod     a, ps
     orr     a, 0x4000   ; mmu bit is 0x4000

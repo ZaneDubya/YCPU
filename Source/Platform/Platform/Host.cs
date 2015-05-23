@@ -81,6 +81,7 @@ namespace Ypsilon.Platform
         {
             if (m_FPS.Update(gameTime))
                 this.Window.Title = string.Format("YCPU Host [{0} fps]", m_FPS.CurrentFPS);
+            m_SBX.Draw(gameTime);
             base.Draw(gameTime);
         }
 

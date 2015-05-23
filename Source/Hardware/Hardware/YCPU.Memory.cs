@@ -5,19 +5,19 @@ namespace Ypsilon.Hardware
     {
         #region Memory (RAM/ROM/MMU)
 
-        private IMemoryBank[] m_M = new IMemoryBank[0x10]; // the loaded memory banks.
+        private IMemoryBank[] m_M = new IMemoryBank[0x04]; // the loaded memory banks.
 
         // Internal Processor Memory and ROM banks.
         private MemoryBank[] m_Mem_CPU;
         private MemoryBank[] m_Rom_CPU;
-        private ushort m_Mem_CPU_Count = 0x0010;
+        private ushort m_Mem_CPU_Count = 0x0004;
         private ushort m_Rom_CPU_Count = 0x0001;
 
         // MMU Tables
         private uint[] m_MMU;
         private const uint c_MMUCache_P = 0x10000000, c_MMUCache_E = 0x20000000, c_MMUCache_W = 0x40000000, c_MMUCache_S = 0x80000000;
-        private const uint c_MMUCache_A = 0x08000000, c_MMUCache_Device = 0x000FF000, c_MMUCache_Bank = 0x00000FFF;
-        private const ushort c_MMUCache_Rom = 0x0800;
+        private const uint c_MMUCache_A = 0x08000000, c_MMUCache_Device = 0x0000FF00, c_MMUCache_Bank = 0x000000FF;
+        private const ushort c_MMUCache_Rom = 0x0080;
 
         public void InitializeMemory()
         {
@@ -44,7 +44,7 @@ namespace Ypsilon.Hardware
 
         private bool MMU_CheckRead(ushort address, bool execute)
         {
-            int bank = (address & 0xF000) >> 12;
+            int bank = (address & 0xC000) >> 14;
             uint mmu = m_MMU[bank];
 
             if ((mmu & c_MMUCache_P) != 0)
@@ -86,7 +86,7 @@ namespace Ypsilon.Hardware
 
         private bool MMU_CheckWrite(ushort address)
         {
-            int bank = (address & 0xF000) >> 12;
+            int bank = (address & 0xC000) >> 14;
             uint mmu = m_MMU[bank];
             // if not in supervisor mode and attempting to access supervisor memory...
             if (!PS_S && ((mmu & c_MMUCache_S) != 0))
@@ -121,7 +121,7 @@ namespace Ypsilon.Hardware
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
             // If the bank access is successful, return the value of the Int8 at this address, else return 0x00.
             if (MMU_CheckRead(address, execute))
-                return m_M[(address & 0xF000) >> 12][(address)];
+                return m_M[(address & 0xC000) >> 14][(address)];
             else
                 return 0x00;
         }
@@ -136,7 +136,7 @@ namespace Ypsilon.Hardware
                 byte byte0, byte1;
                 if (MMU_CheckRead(address, execute))
                 {
-                    int bank = (address & 0xF000) >> 12;
+                    int bank = (address & 0xC000) >> 14;
                     byte0 = m_M[bank][(address)];
                 }
                 else
@@ -148,7 +148,7 @@ namespace Ypsilon.Hardware
 
                 if (MMU_CheckRead(address, execute))
                 {
-                    int bank = (address & 0xF000) >> 12;
+                    int bank = (address & 0xC000) >> 14;
                     byte1 = m_M[bank][(address)];
                 }
                 else
@@ -164,7 +164,7 @@ namespace Ypsilon.Hardware
                 // If the bank access is successful, return the value of the Int16 at this address, else return 0x0000.
                 if (MMU_CheckRead(address, execute))
                 {
-                    int bank = (address & 0xF000) >> 12;
+                    int bank = (address & 0xC000) >> 14;
                     return (ushort)((m_M[bank][(address + 1)] << 8) | (m_M[bank][(address + 0)]));
                 }
                 else
@@ -178,7 +178,7 @@ namespace Ypsilon.Hardware
         {
             m_Cycles += 1;
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
-            int bank = (address & 0xF000) >> 12;
+            int bank = (address & 0xC000) >> 14;
             return m_M[bank][(address)];
         }
 
@@ -189,11 +189,11 @@ namespace Ypsilon.Hardware
                 m_Cycles += 2;
                 // This read is not 16-bit aligned. Two memory accesses needed.
                 byte byte0, byte1;
-                int bank = (address & 0xF000) >> 12;
+                int bank = (address & 0xC000) >> 14;
                 byte0 = m_M[bank][(address)];
 
                 address += 1;
-                bank = (address & 0xF000) >> 12;
+                bank = (address & 0xC000) >> 14;
                 byte1 = m_M[bank][(address)];
 
                 return (ushort)(byte1 << 8 + byte0);
@@ -202,7 +202,7 @@ namespace Ypsilon.Hardware
             {
                 m_Cycles += 1;
                 // This read is 16-bit aligned.. Only one memory access is needed.
-                int bank = (address & 0xF000) >> 12;
+                int bank = (address & 0xC000) >> 14;
                 return (ushort)((m_M[bank][address]) + (m_M[bank][address + 1] << 8));
             }
 
@@ -214,7 +214,7 @@ namespace Ypsilon.Hardware
             // If the bank access is successful, write the value of the Int8 to this address.
             if (MMU_CheckWrite(address))
             {
-                int bank = (address & 0xF000) >> 12;
+                int bank = (address & 0xC000) >> 14;
                 m_M[bank][(address)] = value;
             }
         }
@@ -229,12 +229,12 @@ namespace Ypsilon.Hardware
                 {
                     if (MMU_CheckWrite((ushort)(address + 1)))
                     {
-                        int bank = (address & 0xF000) >> 12;
+                        int bank = (address & 0xC000) >> 14;
                         m_M[bank][address] = (byte)(value & 0x00ff);
 
                         address += 1;
 
-                        bank = (address & 0xF000) >> 12;
+                        bank = (address & 0xC000) >> 14;
                         m_M[bank][address] = (byte)((value & 0xff00) >> 8);
                     }
                 }
@@ -244,7 +244,7 @@ namespace Ypsilon.Hardware
                 // 16-bit word aligned access. Only one memory access is needed.
                 if (MMU_CheckWrite(address))
                 {
-                    int bank = (address & 0xF000) >> 12;
+                    int bank = (address & 0xC000) >> 14;
                     m_M[bank][(address)] = (byte)(value & 0x00ff);
                     m_M[bank][(address + 1)] = (byte)((value & 0xff00) >> 8);
                 }
@@ -254,7 +254,7 @@ namespace Ypsilon.Hardware
         private void WriteMemInt8_MMUDisabled(ushort address, byte value)
         {
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
-            int bank = (address & 0xF000) >> 12;
+            int bank = (address & 0xC000) >> 14;
             m_M[bank][(address)] = value;
         }
 
@@ -263,18 +263,18 @@ namespace Ypsilon.Hardware
             if ((address & 0x0001) == 0x0001)
             {
                 // This write is not 16-bit aligned. Two memory accesses needed.
-                int bank = (address & 0xF000) >> 12;
+                int bank = (address & 0xC000) >> 14;
                 m_M[bank][address] = (byte)((value & 0xff00) >> 8);
 
                 address += 1;
 
-                bank = (address & 0xF000) >> 12;
+                bank = (address & 0xC000) >> 14;
                 m_M[bank][address] = (byte)(value & 0x00ff);
             }
             else
             {
                 // 16-bit word aligned access. Only one memory access is needed.
-                int bank = (address & 0xF000) >> 12;
+                int bank = (address & 0xC000) >> 14;
                 m_M[bank][address++] = (byte)(value & 0x00ff);
                 m_M[bank][address] = (byte)((value & 0xff00) >> 8); 
             }
@@ -355,8 +355,9 @@ namespace Ypsilon.Hardware
             WriteMemInt8 = WriteMemInt8_MMUDisabled;
             WriteMemInt16 = WriteMemInt16_MMUDisabled;
 
-            MMU_PS_R_Updated(); // set the first bank based on the r processor status bit.
-            for (int i = 0x01; i < 0x10; i += 1)
+            m_M[0] = m_Rom_CPU[0];
+
+            for (int i = 0x01; i < 0x04; i++)
             {
                 m_M[i] = m_Mem_CPU[i];
                 m_M[i].ReadOnly = false;
@@ -370,39 +371,33 @@ namespace Ypsilon.Hardware
             WriteMemInt8 = WriteMemInt8_MMUEnabled;
             WriteMemInt16 = WriteMemInt16_MMUEnabled;
 
-            for (int i = 0x00; i < 0x10; i += 1)
+            int mmuCacheBase = (PS_S) ? 4 : 0;
+            for (int i = mmuCacheBase; i < mmuCacheBase + 4; i++)
             {
-                ushort device = (ushort)((m_MMU[i] & c_MMUCache_Device) >> 12);
+                ushort device = (ushort)((m_MMU[i] & c_MMUCache_Device) >> 8);
                 ushort bank = (ushort)(m_MMU[i] & c_MMUCache_Bank);
-                if (device == 0) // select internal memory space
+                if (device == 0x00) // select internal memory space
                 {
                     if ((bank & c_MMUCache_Rom) == 0) // select internal ram
                     {
-                        m_M[i] = m_Mem_CPU[i % m_Mem_CPU_Count];
+                        m_M[i - mmuCacheBase] = m_Mem_CPU[i % m_Mem_CPU_Count];
                     }
                     else
                     {
-                        m_M[i] = m_Rom_CPU[i % m_Rom_CPU_Count];
+                        m_M[i - mmuCacheBase] = m_Rom_CPU[i % m_Rom_CPU_Count];
                     }
                 }
                 else
                 {
-                    m_M[i] = (IMemoryBank)m_Bus.GetMemoryBank(device, bank);
+                    m_M[i - mmuCacheBase] = (IMemoryBank)m_Bus.GetMemoryBank(device, bank);
                 }
             }
         }
 
-        private void MMU_PS_R_Updated()
-        {
-            if (!PS_M)
-                m_M[0x00] = (PS_R) ? m_Mem_CPU[0x00] : m_Rom_CPU[0x00];
-            m_M[0x00].ReadOnly = !PS_R;
-        }
-
         public void MMU_SwitchInHardwareBank(ushort mmuBankIndex, ushort deviceBusIndex, ushort deviceBankIndex)
         {
-            ushort w00 = (ushort)((deviceBankIndex & 0x0FFF) + ((deviceBusIndex & 0x000F) << 12));
-            ushort w01 = (ushort)((deviceBusIndex & 0x00F0) >> 4); // plus the five bits?
+            ushort w00 = (ushort)((deviceBankIndex & 0x00FF) + ((deviceBusIndex & 0x00FF) << 8));
+            ushort w01 = (ushort)0; // no protection.
 
             MMU_Write((ushort)(mmuBankIndex * 2), w00);
             MMU_Write((ushort)(mmuBankIndex * 2 + 1), w01);

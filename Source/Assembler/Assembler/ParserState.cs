@@ -84,6 +84,9 @@ namespace Ypsilon.Assembler
 
                 ushort label_address = (ushort)this.Scopes.LabelAddress(labelName, index);
                 int delta = label_address - index;
+                if ((delta & 0x00000001) != 00)
+                    throw new Exception(string.Format("Branch to label '{0}' is not word aligned.", labelName));
+                delta /= 2;
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
                     throw new Exception("Branch operation out of range.");
                 this.Code[index + 1] = (byte)((sbyte)delta);

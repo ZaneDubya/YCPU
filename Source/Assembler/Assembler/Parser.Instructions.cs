@@ -624,7 +624,7 @@ namespace Ypsilon.Assembler
             ParsedOpcode p1 = ParseParam(param1);
             // must be branching to a label or an immediate value between $7f and -$80
             if (p1.LabelName == string.Empty)
-                if (p1.ImmediateWord > 255)
+                if (p1.ImmediateWord > 511)
                     return null;
 
             m_Code.Clear();

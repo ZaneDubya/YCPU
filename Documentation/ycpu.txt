@@ -491,7 +491,8 @@ DDDD DDDD bbbb bbbb     SWEP A... .... ....
     A - Accessed flag:
         This bit is set every time this bank is written to.
     b - These bits determine the bank of memory that is mapped to this bank of
-        virtual address space.
+        virtual address space (note that the YCPU's ROM is indicated by setting
+        the high 'b' bit for device 0).
     D - These bits determine the device that the bank of memory if mapped from.
 
         

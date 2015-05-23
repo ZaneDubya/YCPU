@@ -215,7 +215,7 @@ namespace Ypsilon.Hardware
 
         private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
-            int addressingmode = ((operand & 0xE000) >> 13);
+            int addressingmode = ((operand & 0xF000) >> 12);
             RegGPIndex r_src = (RegGPIndex)((operand & 0x1C00) >> 10);
             int index_bits = ((operand & 0x0300) >> 8);
 
