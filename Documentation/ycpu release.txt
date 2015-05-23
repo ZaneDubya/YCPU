@@ -16,13 +16,13 @@ hardware bus that allows communication with up to 255 devices, including
 additional Random Access Modules, storage, communication links, input devices,
 printing and visual output devices, real- time clocks, and anything else our
 engineers and third parties can dream up. And these features only scratch the
-surface. Y100 is a super 16-bit CPU for the computers of Yesterday, Today, and
+surface. Y100 is an amazing 16-bit CPU for the computers of Yesterday, Today, &
 Tomorrow.
 
 Each Y100 comes with the following features:
     YCPU with 10Khz and 100Khz operation modes.
     64 kilobytes of on-chip RAM.
-    4-64 kilobytes of on-chip ROM.
+    16-64 kilobytes of on-chip ROM, configurable by the developer.
     Memory Management Unit.
     YBUS expandable to 255 Hardware Devices.
 
