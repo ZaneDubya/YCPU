@@ -19,14 +19,20 @@ Start:
         cmp     a, 0
         beq     _checkForKB
     
-        lod     b, $8200            ; yellow on blue
+        lod     b, $2800            ; yellow on blue
         lod     y, $7002            ; get first char
-        lod     c, a
-        jsr     WriteChars
-        asl     c, 1
-        add     x, c
-        
-        jmp     _checkForKB
+        _writeSingleChar:
+            lod     c, [y+]
+            and     c, 0x00ff
+            cmp     c, 0x0D
+            bne     _writeChar
+            baw     _writeSingleChar
+        _writeChar:
+            orr     c, b
+            sto     c, [x+]
+            dec     a
+            bne     _writeSingleChar
+        baw     _checkForKB
 .scend
 
 ; === GetKeyboardEvents =======================================================
@@ -95,10 +101,8 @@ ShowStartScreen:
     lod     x, $80D6            ; location in video memory
     lod     y, txtBootText
     lod     i, 3                ; count of lines to draw
-    lod     c, 10
     _writeLine:
         jsr WriteChars
-        add     y, 10           ; increment ten chars in txtBootText
         add     x, 64           ; increment one line in video memory (32 words)
         dec     i
         beq     _LastLine
@@ -110,23 +114,22 @@ ShowStartScreen:
     rts
 
 ; === WriteChars ==============================================================
-; Writes a string of chars to video memory.
+; Writes a null-terminated string of 8-bit chars to video memory.
 ; in:   b: color
-; in:   c: count of chars to write.
 ; in:   x: location to write to video memory.
-; in:   y: location to read 8-bit characters from.
+; in:   y: location to read 8-bit characters from. on exit, points to next byte after string.
 WriteChars:
 .scope
-    psh a, c, x, y              ; push a c x  to the stack
-    add c, y                    ; c = y + c
+    psh a, x                    ; push a x  to the stack
     _writeChar:                 ; copy c chars from y to x
         lod.8   a, [y+]
+        beq _return
         orr     a, b
         sto     a, [x+]
-        cmp     c, y
-        bne     _writeChar
-    pop a, c, x, y              ; pop a c x y from the stack
-    rts
+        baw     _writeChar
+    _return:
+        pop a, x                 ; pop a x from the stack
+        rts
 .scend
 
 ; === FillMemoryWords =========================================================
@@ -149,7 +152,7 @@ FillMemoryWords:
 
 ; boot up txt
 txtBootText:
-.dat8 "  \ |  ___"
-.dat8 "|\ \|  ___" 
-.dat8 "| \       "
-.dat8 "NYA ELEKTRISKA"
+.dat8 "  \\ |  ___", 0x00
+.dat8 "|\\ \\|  ___", 0x00
+.dat8 "| \\       ", 0x00
+.dat8 "NYA ELEKTRISKA", 0x00

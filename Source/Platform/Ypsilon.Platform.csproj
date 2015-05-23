@@ -39,6 +39,7 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -49,6 +50,7 @@
     <Compile Include="Platform\Common.cs" />
     <Compile Include="Platform\Host.cs" />
     <Compile Include="Platform\FPS.cs" />
+    <Compile Include="Platform\Input\KeyboardManager.cs" />
     <Compile Include="Platform\Input\InputState.cs" />
     <Compile Include="Platform\Input\Enums.cs" />
     <Compile Include="Platform\Input\InputEvent.cs" />
