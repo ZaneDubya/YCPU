@@ -149,7 +149,7 @@ namespace Ypsilon.Hardware
         #region Status Registers
         enum RegSPIndex
         {
-            FL, IA, II, PC, PS, P2, USP, SSP,
+            FL, PC, PS, P2, II, IA, USP, SSP,
             Count
         }
 

@@ -1517,7 +1517,7 @@ POP         Pop values from the Stack into registers
 Syntax: Pop Rx[,Rx,Rx...]
 The processor sequentially loads values from the stack to the registers
 specified. Regardless of the order of the registers specified in the
-instruction, the registers are always loaded in the following order:
+instruction, the registers are always popped in the following order:
     Bit pattern 0: R7, R6, R5, R4, R3, R2, R1, R0
     Bit pattern 1: FL, PC, PS, P2, II, IA, USP, SP
     
@@ -1527,7 +1527,7 @@ Syntax: Pop Rx[,Rx,Rx...]
 The processor sequentially saves a number of values from the stack equal to
 the number of registers specified.
 Regardless of the order of the registers specified in the instruction, the
-values registers are always saved in the following order:
+values registers are always pushed in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
     Bit pattern 1: SP, USP, IA, II, P2, PS, PC, FL
     

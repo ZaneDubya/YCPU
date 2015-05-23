@@ -29,11 +29,11 @@ namespace Ypsilon.Assembler
                 ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                 ParsedOpcode.AddressingMode = AddressingMode.Register;
             }
-            else if (m_ProcessorRegisters.ContainsKey(param))
+            else if (m_StatusRegisters.ContainsKey(param))
             {
                 // Processor Register: Pc
-                ParsedOpcode.OpcodeWord = (ushort)m_ProcessorRegisters[param];
-                ParsedOpcode.AddressingMode = AddressingMode.ProcessorRegister;
+                ParsedOpcode.OpcodeWord = (ushort)m_StatusRegisters[param];
+                ParsedOpcode.AddressingMode = AddressingMode.StatusRegister;
             }
             else if (isStackOffset(param))
             {

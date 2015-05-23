@@ -32,7 +32,6 @@ namespace AsmTstGn
                 file.Write(generateBTT());
                 file.Write(generateFLG());
                 file.Write(generateSTK());
-                file.Write(generateSFL());
                 file.Write(generateMMU());
                 file.Write(generateSET());
                 file.Write(generateIMM());
@@ -54,7 +53,7 @@ namespace AsmTstGn
 
             AddressingMode[] modes = new AddressingMode[] {
                 AddressingMode.Immediate, AddressingMode.Absolute, 
-                AddressingMode.ProcessorRegister,
+                AddressingMode.StatusRegister,
                 AddressingMode.Register, AddressingMode.Indirect,
                 AddressingMode.IndirectOffset, AddressingMode.StackAccess,
                 AddressingMode.IndirectPostInc, AddressingMode.IndirectPreDec,
@@ -156,20 +155,7 @@ namespace AsmTstGn
 
             StringBuilder sb = new StringBuilder();
             generateInstructions1p(sb, ins, modes, "r0, r1, r2, r3, r4, r5, r6, r7" );
-            generateInstructions1p(sb, ins, modes, "fl, pc, ps, usp, sp, ii, ia, p2");
-            return sb.ToString();
-        }
-
-        static string generateSFL()
-        {
-            string[] ins = new string[] { 
-                "sfl" };
-
-            AddressingMode[] modes = new AddressingMode[] {
-                AddressingMode.Immediate };
-
-            StringBuilder sb = new StringBuilder();
-            generateInstructions1p(sb, ins, modes, "$21");
+            generateInstructions1p(sb, ins, modes, "fl, pc, ps, p2, ii, ia, usp, sp");
             return sb.ToString();
         }
 

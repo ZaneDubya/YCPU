@@ -15,7 +15,7 @@ namespace Ypsilon.Assembler
     {
         Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>> m_Opcodes;
         Dictionary<string, ushort> m_Registers;
-        Dictionary<string, ushort> m_ProcessorRegisters;
+        Dictionary<string, ushort> m_StatusRegisters;
 
         void Initialize()
         {
@@ -87,7 +87,7 @@ namespace Ypsilon.Assembler
             // stack operations
             m_Opcodes.Add("psh", AssemblePSH);
             m_Opcodes.Add("pop", AssemblePOP);
-            m_Opcodes.Add("sfl", AssembleSFL);
+            // sfl used to be here :(
             
             // MMU operations
             m_Opcodes.Add("mmr", AssembleMMR);
@@ -136,16 +136,16 @@ namespace Ypsilon.Assembler
             m_Registers.Add("y", (ushort)YCPUReg.R6);
             m_Registers.Add("z", (ushort)YCPUReg.R7);
 
-            m_ProcessorRegisters = new Dictionary<string, ushort>();
+            m_StatusRegisters = new Dictionary<string, ushort>();
 
-            m_ProcessorRegisters.Add("fl", (ushort)YCPUReg.FL);
-            m_ProcessorRegisters.Add("pc", (ushort)YCPUReg.PC);
-            m_ProcessorRegisters.Add("ps", (ushort)YCPUReg.PS);
-            m_ProcessorRegisters.Add("p2", (ushort)YCPUReg.P2);
-            m_ProcessorRegisters.Add("ia", (ushort)YCPUReg.IA);
-            m_ProcessorRegisters.Add("ii", (ushort)YCPUReg.II);
-            m_ProcessorRegisters.Add("usp", (ushort)YCPUReg.USP);
-            m_ProcessorRegisters.Add("sp", (ushort)YCPUReg.SP);
+            m_StatusRegisters.Add("fl", (ushort)YCPUReg.FL);
+            m_StatusRegisters.Add("pc", (ushort)YCPUReg.PC);
+            m_StatusRegisters.Add("ps", (ushort)YCPUReg.PS);
+            m_StatusRegisters.Add("p2", (ushort)YCPUReg.P2);
+            m_StatusRegisters.Add("ia", (ushort)YCPUReg.IA);
+            m_StatusRegisters.Add("ii", (ushort)YCPUReg.II);
+            m_StatusRegisters.Add("usp", (ushort)YCPUReg.USP);
+            m_StatusRegisters.Add("sp", (ushort)YCPUReg.SP);
         }
 
         enum YCPUReg : ushort

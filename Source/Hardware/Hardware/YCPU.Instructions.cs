@@ -237,10 +237,10 @@ namespace Ypsilon.Hardware
             Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, DisassembleFLG, 0);
             Opcodes[0xAF] = new YCPUInstruction("CLF", CLF, DisassembleFLG, 0);
 
-            Opcodes[0xB0] = new YCPUInstruction("PSH", PSH, DisassemblePSH, 0);
-            Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, DisassemblePSH, 0);
-            Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassemblePSH, 0);
-            Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassemblePSH, 0);
+            Opcodes[0xB0] = new YCPUInstruction("PSH", PSH, DisassembleSTK, 0);
+            Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, DisassembleSTK, 0);
+            Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
+            Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             // 0xB4 is undefined. Used to be SFL.
             Opcodes[0xB5] = new YCPUInstruction("MMU", MMU, DisassembleMMU, 0);
             Opcodes[0xB6] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
@@ -1216,15 +1216,21 @@ namespace Ypsilon.Hardware
             }
             else
             {
-                if ((value & 0x0100) != 0)
+                if ((value & 0x8000) != 0)
                     StackPush(SP);
-                if ((value & 0x0200) != 0)
+                if ((value & 0x4000) != 0)
                     StackPush(USP);
+                if ((value & 0x2000) != 0)
+                    StackPush(IA);
+                if ((value & 0x1000) != 0)
+                    StackPush(II);
+                if ((value & 0x0800) != 0)
+                    StackPush(P2);
                 if ((value & 0x0400) != 0)
                     StackPush(PS);
-                if ((value & 0x0800) != 0)
-                    StackPush(PC);
-                if ((value & 0x1000) != 0)
+                if ((value & 0x0200) != 0)
+                    StackPush(PC); 
+                if ((value & 0x0100) != 0)
                     StackPush(FL);
             }
         }
@@ -1255,16 +1261,21 @@ namespace Ypsilon.Hardware
             }
             else
             {
-
-                if ((value & 0x1000) != 0)
+                if ((value & 0x0100) != 0)
                     FL = StackPop();
-                if ((value & 0x0800) != 0)
+                if ((value & 0x0200) != 0)
                     PC = StackPop();
                 if ((value & 0x0400) != 0)
                     PS = StackPop();
-                if ((value & 0x0200) != 0)
+                if ((value & 0x0800) != 0)
+                    P2 = StackPop();
+                if ((value & 0x1000) != 0)
+                    II = StackPop();
+                if ((value & 0x2000) != 0)
+                    IA = StackPop();
+                if ((value & 0x4000) != 0)
                     USP = StackPop();
-                if ((value & 0x0100) != 0)
+                if ((value & 0x8000) != 0)
                     SP = StackPop();
             }
         }

@@ -132,12 +132,12 @@ namespace Ypsilon.Hardware
         {
             usesNextWord = false;
             RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            bool as_register = ((operand & 0x0100) != 0);
+            bool as_register = ((operand & 0x1000) != 0);
             ushort value = (as_register) ?
-                (ushort)(R[((operand & 0x1C00) >> 10)] & 0x000F) :
-                (ushort)((operand & 0x1E00) >> 9);
+                (ushort)((operand & 0x0700) >> 8) :
+                (ushort)((operand & 0x0F00) >> 8);
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), as_register ?
-                string.Format("{0,-8}(${1:X1})", NameOfRegGP(destination), value) :
+                string.Format("{0,-8}(${1:X1})", NameOfRegGP((RegGPIndex)value), R[value]) :
                 string.Format("${0:X1}", value));
         }
 
@@ -287,7 +287,7 @@ namespace Ypsilon.Hardware
             return string.Format(name);
         }
 
-        private string DisassemblePSH(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
             string flags = "{0}{1}{2}{3}{4}{5}{6}{7}";
@@ -306,14 +306,14 @@ namespace Ypsilon.Hardware
             else
             {
                 flags = string.Format(flags,
-                    ((operand & 0x1000) != 0) ? "FL " : string.Empty,
-                    ((operand & 0x0800) != 0) ? "PC " : string.Empty,
+                    ((operand & 0x8000) != 0) ? "SP " : string.Empty,
+                    ((operand & 0x4000) != 0) ? "USP " : string.Empty,
+                    ((operand & 0x2000) != 0) ? "IA " : string.Empty,
+                    ((operand & 0x1000) != 0) ? "II " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "P2 " : string.Empty,
                     ((operand & 0x0400) != 0) ? "PS " : string.Empty,
-                    ((operand & 0x0200) != 0) ? "USP " : string.Empty,
-                    ((operand & 0x0100) != 0) ? "SP " : string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty);
+                    ((operand & 0x0200) != 0) ? "PC " : string.Empty,
+                    ((operand & 0x0100) != 0) ? "FL " : string.Empty);
             }
             if (flags == string.Empty)
                 flags = "<NONE>";

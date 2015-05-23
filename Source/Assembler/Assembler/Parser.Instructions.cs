@@ -352,13 +352,6 @@ namespace Ypsilon.Assembler
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return AssembleSTK(0x00B2, param, true);
         }
-
-        ushort[] AssembleSFL(string[] param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Sanity.RequireParamCountExact(param, 1);
-            // base opcode is 0x00B4, high byte is number of stack inst to flush, + 1
-            return AssembleSFL(0x00B4, param[0]);
-        }
         #endregion
 
         #region MMU
@@ -502,7 +495,7 @@ namespace Ypsilon.Assembler
         ushort[] AssembleNOP(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Sanity.RequireParamCountExact(param, 0);
-            return new ushort[] { (ushort)0x0280 }; // LOD R0, R0
+            return new ushort[] { (ushort)0x2080 }; // LOD R0, R0
         }
         #endregion
 
@@ -532,10 +525,10 @@ namespace Ypsilon.Assembler
                 case AddressingMode.Absolute:
                     addressingmode = 0x0200;
                     break;
-                case AddressingMode.ProcessorRegister:
+                case AddressingMode.StatusRegister:
                     // can't use eightbit mode with proc regs...
                     if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
-                        throw new Exception("ALU instructions with processor register operands do not support 8-bit mode.");
+                        throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
                     addressingmode = 0x1000;
                     break;
                 case AddressingMode.Register:
@@ -617,8 +610,8 @@ namespace Ypsilon.Assembler
 
             ushort s_bits = 0x0000;
             if (p2.AddressingMode == AddressingMode.Immediate)
-                s_bits = (ushort)(p2.OpcodeWord << 8);
-            if (p2.AddressingMode == AddressingMode.Register)
+                s_bits = (ushort)(p2.ImmediateWord << 8);
+            else if (p2.AddressingMode == AddressingMode.Register)
                 s_bits = (ushort)((0x1000) | (p2.OpcodeWord << 8));
 
             m_Code.Clear();
@@ -960,17 +953,17 @@ namespace Ypsilon.Assembler
             {
                 ParsedOpcode op = ParseParam(p);
                 if (op == null || 
-                    ((op.AddressingMode != AddressingMode.Register) && (op.AddressingMode != AddressingMode.ProcessorRegister)))
+                    ((op.AddressingMode != AddressingMode.Register) && (op.AddressingMode != AddressingMode.StatusRegister)))
                     throw new Exception(string.Format("STK operation with unknown register '{0}'.", p));
                 else
                 {
                     if (op.AddressingMode == AddressingMode.Register)
                     {
-                        flags1 |= (ushort)(op.OpcodeWord << 8);
+                        flags0 |= (ushort)(1 << (op.OpcodeWord + 8));
                     }
-                    else if (op.AddressingMode == AddressingMode.ProcessorRegister)
+                    else if (op.AddressingMode == AddressingMode.StatusRegister)
                     {
-                        flags1 |= (ushort)(0x0001 | (op.OpcodeWord << 8));
+                        flags1 |= (ushort)(1 << (op.OpcodeWord + 8));
                     }
                 }
             }
@@ -980,7 +973,7 @@ namespace Ypsilon.Assembler
             if (general_first && (flags0 != 0))
                 m_Code.Add((ushort)(opcode | flags0));
             if (flags1 != 0)
-                m_Code.Add((ushort)(opcode | flags1));
+                m_Code.Add((ushort)(opcode | flags1 | 0x0001));
             if (!general_first && (flags0 != 0))
                 m_Code.Add((ushort)(opcode | flags0));
 
