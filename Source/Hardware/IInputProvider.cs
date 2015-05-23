@@ -3,6 +3,6 @@ namespace Ypsilon
 {
     public interface IInputProvider
     {
-        bool TryGetKeypress(out ushort keycode);
+        bool TryGetKeypress(out ushort keycode, bool pressEventsOnly);
     }
 }

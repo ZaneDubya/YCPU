@@ -19,7 +19,7 @@ namespace Ypsilon.Platform.Support
         private const ushort AltDown = 0x2000;
         private const ushort ShiftDown = 0x4000;
 
-        public bool TryGetKeypress(out ushort keycode)
+        public bool TryGetKeypress(out ushort keycode, bool pressEventsOnly)
         {
             keycode = 0;
             for (int i = 0; i < m_EventsThisFrame.Count; i++)

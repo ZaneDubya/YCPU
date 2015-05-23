@@ -93,9 +93,9 @@ namespace Ypsilon.Assembler
                 string valStr = data.Trim();
                 if (valStr.IndexOf('"') > -1)
                 {
-                    string asciiLine = data.Replace("\"", string.Empty);
-                    foreach (char c in asciiLine)
+                    for (int i = 1; i < valStr.Length - 1; i++)
                     {
+                        char c = valStr[i];
                         switch (dataType)
                         {
                             case DataFieldTypes.Int8:

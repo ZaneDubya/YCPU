@@ -83,7 +83,7 @@ namespace Ypsilon.Devices.Input
         public override void Update(IInputProvider input)
         {
             ushort keycode;
-            while (input.TryGetKeypress(out keycode))
+            while (input.TryGetKeypress(out keycode, m_GetOnlyPressEvents))
             {
                 if (m_GetOnlyPressEvents && (keycode & EventPress) != EventPress)
                     continue;
