@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
-using Ypsilon.Platform.Graphics;
 using Microsoft.Xna.Framework;
 using Ypsilon.Hardware;
 
@@ -15,6 +14,8 @@ namespace Ypsilon
 
         Texture2D m_LEM;
         uint[] m_LEM_Data;
+
+        SpriteBatch m_SpriteBatch;
 
         public void RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
         {
@@ -48,14 +49,12 @@ namespace Ypsilon
                 }
             }
             m_LEM.SetData<uint>(m_LEM_Data);
-            m_SpriteBatch.GUIDrawSprite(m_LEM, new Rectangle(0, 0, 256, 192));
+            m_SpriteBatch.Draw(m_LEM, new Rectangle(0, 0, 256, 192), Color.White);
         }
 
         // BASE STUFF
 
-        private ExtendedSpriteBatch m_SpriteBatch;
-
-        public DeviceRenderer(ExtendedSpriteBatch spriteBatch)
+        public DeviceRenderer(SpriteBatch spriteBatch)
         {
             m_SpriteBatch = spriteBatch;
         }

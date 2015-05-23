@@ -108,7 +108,7 @@ namespace Ypsilon.Platform
         public BinaryFileWriter(Stream strm, bool prefixStr)
         {
             PrefixStrings = prefixStr;
-            m_Encoding = Support.Library.UTF8;
+            m_Encoding = Library.UTF8;
             m_Buffer = new byte[BufferSize];
             m_File = strm;
         }
@@ -118,7 +118,7 @@ namespace Ypsilon.Platform
             PrefixStrings = prefixStr;
             m_Buffer = new byte[BufferSize];
             m_File = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None);
-            m_Encoding = Support.Library.UTF8WithEncoding;
+            m_Encoding = Library.UTF8WithEncoding;
         }
 
         public void Flush()
@@ -277,7 +277,7 @@ namespace Ypsilon.Platform
 
         public override void Write(IPAddress value)
         {
-            Write(Support.Library.GetLongAddressValue(value));
+            Write(Library.GetLongAddressValue(value));
         }
 
         public override void Write(TimeSpan value)
@@ -606,7 +606,7 @@ namespace Ypsilon.Platform
 
             m_File = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None);
             m_Mem = new MemoryStream(BufferSize + 1024);
-            m_Bin = new BinaryWriter(m_Mem, Support.Library.UTF8WithEncoding);
+            m_Bin = new BinaryWriter(m_Mem, Library.UTF8WithEncoding);
         }
 
         private void Enqueue(MemoryStream mem)
@@ -662,7 +662,7 @@ namespace Ypsilon.Platform
             {
                 Enqueue(m_Mem);
                 m_Mem = new MemoryStream(BufferSize + 1024);
-                m_Bin = new BinaryWriter(m_Mem, Support.Library.UTF8WithEncoding);
+                m_Bin = new BinaryWriter(m_Mem, Library.UTF8WithEncoding);
                 m_LastPos = 0;
             }
         }
@@ -679,7 +679,7 @@ namespace Ypsilon.Platform
                     Enqueue(m_Mem);
 
                 m_Mem = value;
-                m_Bin = new BinaryWriter(m_Mem, Support.Library.UTF8WithEncoding);
+                m_Bin = new BinaryWriter(m_Mem, Library.UTF8WithEncoding);
                 m_LastPos = 0;
                 m_CurPos = m_Mem.Length;
                 m_Mem.Seek(0, SeekOrigin.End);
@@ -702,7 +702,7 @@ namespace Ypsilon.Platform
 
         public override void Write(IPAddress value)
         {
-            m_Bin.Write(Support.Library.GetLongAddressValue(value));
+            m_Bin.Write(Library.GetLongAddressValue(value));
             OnWrite();
         }
 

@@ -47,15 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Platform\Common.cs" />
-    <Compile Include="Platform\Graphics\YSpriteEffect.cs" />
     <Compile Include="Platform\Host.cs" />
-    <Compile Include="Platform\Graphics\ExtendedSpriteBatch.cs" />
-    <Compile Include="Platform\Graphics\PreTransformedQuad.cs" />
-    <Compile Include="Platform\Graphics\TextRenderer.cs" />
-    <Compile Include="Platform\Graphics\TextureBaker.cs" />
-    <Compile Include="Platform\Graphics\VertexPositionTextureExtra.cs" />
-    <Compile Include="Platform\Support\FPS.cs" />
-    <Compile Include="Platform\Support\InputState.cs" />
+    <Compile Include="Platform\FPS.cs" />
+    <Compile Include="Platform\Input\InputState.cs" />
     <Compile Include="Platform\Input\Enums.cs" />
     <Compile Include="Platform\Input\InputEvent.cs" />
     <Compile Include="Platform\Input\InputEventKeyboard.cs" />
@@ -64,28 +58,11 @@
     <Compile Include="Platform\Input\MessageHook.cs" />
     <Compile Include="Platform\Input\NativeMethods.cs" />
     <Compile Include="Platform\Input\WndProc.cs" />
-    <Compile Include="Platform\Support\Library.cs" />
+    <Compile Include="Platform\Library.cs" />
     <Compile Include="Platform\Serialization\Serialization.cs" />
-    <Compile Include="Platform\Support\Settings.cs" />
-    <Compile Include="Platform\YTexture.cs" />
+    <Compile Include="Platform\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResContent.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ResContent.resx</DependentUpon>
-    </Compile>
     <Compile Include="DeviceRenderer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Platform\Content\Arial12.xnb" />
-    <None Include="Platform\Content\Shaders\NES_PTHE.xnb" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ResContent.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>ResContent.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hardware\Ypsilon.Hardware.csproj">

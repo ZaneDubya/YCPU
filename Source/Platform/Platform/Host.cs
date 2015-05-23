@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Ypsilon.Platform.Support;
+using Microsoft.Xna.Framework.Graphics;
+using Ypsilon.Platform.Input;
 
 namespace Ypsilon.Platform
 {
@@ -11,12 +12,8 @@ namespace Ypsilon.Platform
         Settings m_Settings;
         InputState m_Input;
         FPS m_FPS;
-        private Graphics.ExtendedSpriteBatch m_SBX;
-
-        protected Graphics.ExtendedSpriteBatch SpriteBatch
-        {
-            get { return m_SBX; }
-        }
+        
+        protected SpriteBatch m_SpriteBatch;
 
         protected InputState InputState
         {
@@ -35,34 +32,36 @@ namespace Ypsilon.Platform
             m_Graphics.PreferredBackBufferWidth = 640;
             m_Graphics.PreferredBackBufferHeight = 480;
 
-            m_Input = new Support.InputState();
-            m_Input.Initialize(this.Window.Handle);
-
-            m_FPS = new Support.FPS();
-
-            m_SBX = new Graphics.ExtendedSpriteBatch(this);
-
             this.IsMouseVisible = true;
-
-            Library.Content = new ResourceContentManager(Services, ResContent.ResourceManager);
         }
 
         protected override void Initialize()
         {
             base.Initialize();
 
-            m_SBX.Initialize();
-        }
+            m_Settings = Library.Settings = new Settings();
 
-        protected override void LoadContent()
-        {
-            m_Settings = new Settings();
-            Library.Initialize(m_Settings, m_Graphics.GraphicsDevice, m_Input);
+            m_FPS = new FPS();
+
+            m_Input = new Input.InputState();
+            m_Input.Initialize(this.Window.Handle);
+
+            m_SpriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         protected override void UnloadContent()
         {
-            m_SBX.Dispose();
+            m_SpriteBatch.Dispose();
+        }
+
+        protected object Create<T>()
+        {
+            switch (typeof(T).ToString())
+            {
+                case "Ypsilon.DeviceRenderer":
+                    return new DeviceRenderer(m_SpriteBatch);
+            }
+            return null;
         }
 
         protected override void Update(GameTime gameTime)
@@ -73,26 +72,35 @@ namespace Ypsilon.Platform
                 handleUpdates();
 
             base.Update(gameTime);
-
-            m_SBX.ResetGuiClipRect();
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
             if (m_FPS.Update(gameTime))
                 this.Window.Title = string.Format("YCPU Host [{0} fps]", m_FPS.CurrentFPS);
-            m_SBX.Draw(gameTime);
-            base.Draw(gameTime);
+
+            GraphicsDevice.Clear(Color.Black);
+            m_SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+            OnDraw(gameTime);
+            m_SpriteBatch.End();
+            GraphicsDevice.Textures[0] = null;
+            
+        }
+
+        protected virtual void OnDraw(GameTime gameTime)
+        {
+
         }
 
         private void handleUpdates()
         {
             Settings.Setting s;
-            while ((s = m_Settings.NextUpdate()) != Support.Settings.Setting.None)
+            while ((s = m_Settings.NextUpdate()) != Settings.Setting.None)
             {
                 switch (s)
                 {
-                    case Support.Settings.Setting.Resolution:
+                    case Settings.Setting.Resolution:
                         m_Graphics.PreferredBackBufferWidth = m_Settings.Resolution.X;
                         m_Graphics.PreferredBackBufferHeight = m_Settings.Resolution.Y;
                         m_Graphics.ApplyChanges();

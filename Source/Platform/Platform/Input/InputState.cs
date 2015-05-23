@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Ypsilon.Platform.Input;
 using Ypsilon;
 
-namespace Ypsilon.Platform.Support
+namespace Ypsilon.Platform.Input
 {
     public class InputState : IInputProvider
     {

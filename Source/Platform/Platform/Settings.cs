@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-namespace Ypsilon.Platform.Support
+namespace Ypsilon.Platform
 {
     public class Settings
     {

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Diagnostics;
 using System.Threading;
 using Ypsilon.Hardware;
-using Ypsilon.Platform.Input;
-using System.Diagnostics;
 using Ypsilon.Platform;
+using Ypsilon.Platform.Input;
 
 namespace Ypsilon
 {
@@ -14,9 +13,6 @@ namespace Ypsilon
         private YCPU m_CPU;
         private Stopwatch m_Stopwatch;
         private IDeviceRenderer m_DeviceRenderer;
-
-        private int m_LastRunMS;
-        private long m_LastRunCycles;
 
         public Emulator()
             : base()
@@ -28,7 +24,7 @@ namespace Ypsilon
         {
             base.Initialize();
 
-            m_DeviceRenderer = new DeviceRenderer(SpriteBatch);
+            m_DeviceRenderer = (DeviceRenderer)Create<DeviceRenderer>();
 
             Settings.Resolution = new Point(256, 192);
             Program.ShowConsoleWindow();
@@ -37,6 +33,8 @@ namespace Ypsilon
         private double m_LastConsoleUpdate = 0;
         private bool m_Running = false;
         private bool m_Threaded = false;
+        private int m_LastRunMS;
+        private long m_LastRunCycles;
 
         protected override void Update(GameTime gameTime)
         {
@@ -103,10 +101,9 @@ namespace Ypsilon
             
         }
 
-        protected override void Draw(GameTime gameTime)
+        protected override void OnDraw(GameTime gameTime)
         {
             m_CPU.BUS.Display(m_DeviceRenderer);
-            base.Draw(gameTime);
         }
 
         private void RunCPU(int cycles)

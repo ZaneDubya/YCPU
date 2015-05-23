@@ -5,42 +5,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ypsilon.Platform.Support
+namespace Ypsilon.Platform
 {
     internal static class Library
     {
-        private static Settings m_Settings;
-        private static GraphicsDevice m_Graphics;
-        private static InputState m_Input;
-        private static ContentManager m_Content;
-
-        public static void Initialize(Settings settings, GraphicsDevice graphics, InputState input)
+        public static Settings Settings
         {
-            m_Settings = settings;
-            m_Graphics = graphics;
-            m_Input = input;
-        }
-
-        public static ContentManager Content
-        {
-            get
-            {
-                return m_Content;
-            }
-            set
-            {
-                m_Content = value;
-            }
-        }
-
-        public static InputState Input
-        {
-            get { return m_Input; }
-        }
-
-        internal static Texture2D CreateTexture(int w, int h)
-        {
-            return new Texture2D(m_Graphics, w, h);
+            get;
+            set;
         }
 
         private static Random m_Random;
@@ -51,21 +23,13 @@ namespace Ypsilon.Platform.Support
             return m_Random.Next(a, b + 1);
         }
 
-        internal static uint[] RandomTile()
-        {
-            uint[] data = new uint[64];
-            for (int i = 0; i < 64; i++)
-                data[i] = (uint)Random(0, 3);
-            return data;
-        }
-
         internal static Matrix ProjectionMatrixScreen
         {
             get
             {
                 return Matrix.CreateOrthographicOffCenter(0f,
-                    m_Settings.Resolution.X,
-                    m_Settings.Resolution.Y,
+                    Settings.Resolution.X,
+                    Settings.Resolution.Y,
                     0f, -20000f, 20000f);
             }
         }

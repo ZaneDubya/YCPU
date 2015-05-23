@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Ypsilon.Platform.Support
+namespace Ypsilon.Platform
 {
     internal class FPS
     {
