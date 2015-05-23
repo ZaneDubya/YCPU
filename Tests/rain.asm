@@ -19,8 +19,8 @@ Start:
         cmp     a, 0
         beq     _checkForKB
     
-        lod     b, $8280            ; yellow on blue
-        lod     y, $9002
+        lod     b, $8200            ; yellow on blue
+        lod     y, $7002            ; get first char
         lod     c, a
         jsr     WriteChars
         asl     c, 1
@@ -30,17 +30,17 @@ Start:
 .scend
 
 ; === GetKeyboardEvents =======================================================
-; gets all keyboard events, copies to $9000.
+; gets all keyboard events, copies to $7000.
 ; returns: a is number of keyboard events.
 GetKeyboardEvents:
 .scope
     psh     b, c
     lod     a, $0002
     lod     b, $0001
-    lod     c, $9000
+    lod     c, $7000
     hwq     $02
     
-    lod     a, [$9000]
+    lod     a, [$7000]
     pop     b, c
     rts
 .scend
@@ -91,7 +91,7 @@ ShowStartScreen:
     jsr     FillMemoryWords
     
     ; write logo in center of screen.
-    lod     b, $8280            ; yellow on blue
+    lod     b, $8200            ; yellow on blue
     lod     x, $80D6            ; location in video memory
     lod     y, txtBootText
     lod     i, 3                ; count of lines to draw
