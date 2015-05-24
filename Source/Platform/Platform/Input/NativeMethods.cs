@@ -1,18 +1,13 @@
-﻿/********************************************************
- * 
- *  NativeMethods.cs
- *  
- *  (C) Copyright 2009 Jeff Boulanger. All rights reserved. 
- *  Used in UltimaXNA with permission.
- *  
- ********************************************************/
-
+﻿#region Usings
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Runtime.InteropServices;
+using Ypsilon.Platform.Input.Windows;
+#endregion
 
-namespace Ypsilon.Platform.Input
+namespace Ypsilon.Platform
 {
-    public static class NativeConstants
+    internal static class NativeConstants
     {
         public const int WM_NULL = 0x00;
         public const int WM_CREATE = 0x01;
@@ -301,7 +296,7 @@ namespace Ypsilon.Platform.Input
         // old methods ...
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
         public static extern int MultiByteToWideChar(int CodePage, int dwFlags, byte[] lpMultiByteStr, int cchMultiByte, char[] lpWideCharStr, int cchWideChar);
-       
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern short GetKeyState(int keyCode);
 
@@ -326,9 +321,17 @@ namespace Ypsilon.Platform.Input
         public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
 
         [DllImport("user32.dll", EntryPoint = "TranslateMessage")]
-        public extern static bool TranslateMessage(ref Message m);
+        public static extern bool TranslateMessage(ref Message m);
 
         [DllImport("user32.dll")]
-        public extern static uint GetWindowThreadProcessId(IntPtr window, IntPtr module);
+        public static extern uint GetWindowThreadProcessId(IntPtr window, IntPtr module);
+
+        [DllImport("Kernel32")]
+        private unsafe static extern int _lread(SafeFileHandle hFile, void* lpBuffer, int wBytes);
+
+        public static unsafe void Read(SafeFileHandle ptr, void* buffer, int length)
+        {
+            _lread(ptr, buffer, length);
+        }
     }
 }

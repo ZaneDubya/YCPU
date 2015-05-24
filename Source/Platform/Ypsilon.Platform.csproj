@@ -48,19 +48,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Platform\Common.cs" />
+    <Compile Include="Platform\DpiManager.cs" />
     <Compile Include="Platform\Host.cs" />
     <Compile Include="Platform\FPS.cs" />
-    <Compile Include="Platform\Input\KeyboardManager.cs" />
-    <Compile Include="Platform\Input\InputState.cs" />
-    <Compile Include="Platform\Input\Enums.cs" />
-    <Compile Include="Platform\Input\InputEvent.cs" />
-    <Compile Include="Platform\Input\InputEventKeyboard.cs" />
-    <Compile Include="Platform\Input\InputEventMouse.cs" />
-    <Compile Include="Platform\Input\Message.cs" />
-    <Compile Include="Platform\Input\MessageHook.cs" />
-    <Compile Include="Platform\Input\NativeMethods.cs" />
-    <Compile Include="Platform\Input\WndProc.cs" />
+    <Compile Include="Platform\Input\ActionBinder.cs" />
+    <Compile Include="Platform\Input\InputManager.cs" />
+    <Compile Include="Platform\Input\Windows\Enums.cs" />
+    <Compile Include="Platform\Input\Windows\InputEvent.cs" />
+    <Compile Include="Platform\Input\Windows\InputEventKB.cs" />
+    <Compile Include="Platform\Input\Windows\InputEventM.cs" />
+    <Compile Include="Platform\Input\Windows\Message.cs" />
+    <Compile Include="Platform\Input\Windows\MessageHook.cs" />
+    <Compile Include="Platform\Input\Windows\WndProc.cs" />
     <Compile Include="Platform\Library.cs" />
+    <Compile Include="Platform\Input\NativeMethods.cs" />
     <Compile Include="Platform\Serialization\Serialization.cs" />
     <Compile Include="Platform\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -72,6 +73,7 @@
       <Name>Ypsilon.Hardware</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -10,12 +10,12 @@ namespace Ypsilon.Platform
     {
         GraphicsDeviceManager m_Graphics;
         Settings m_Settings;
-        InputState m_Input;
+        InputManager m_Input;
         FPS m_FPS;
         
         protected SpriteBatch m_SpriteBatch;
 
-        protected InputState InputState
+        protected InputManager InputState
         {
             get { return m_Input; }
         }
@@ -43,8 +43,7 @@ namespace Ypsilon.Platform
 
             m_FPS = new FPS();
 
-            m_Input = new Input.InputState();
-            m_Input.Initialize(this.Window.Handle);
+            m_Input = new InputManager(this.Window.Handle);
 
             m_SpriteBatch = new SpriteBatch(GraphicsDevice);
         }
@@ -66,7 +65,7 @@ namespace Ypsilon.Platform
 
         protected override void Update(GameTime gameTime)
         {
-            m_Input.Update(gameTime);
+            m_Input.Update(gameTime.TotalGameTime.TotalMilliseconds, gameTime.ElapsedGameTime.TotalMilliseconds);
 
             if (m_Settings.HasUpdates)
                 handleUpdates();

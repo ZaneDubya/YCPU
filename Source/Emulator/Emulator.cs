@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Ypsilon.Hardware;
 using Ypsilon.Platform;
-using Ypsilon.Platform.Input;
+using Ypsilon.Platform.Input.Windows;
 
 namespace Ypsilon
 {
@@ -53,33 +53,33 @@ namespace Ypsilon
                 UpdateConsole();
             }
 
-            if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Escape, false, false, true))
+            if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.Escape, false, false, true))
             {
                 this.Exit();
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.R, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.R, false, false, true))
             {
                 StartCPU(false);
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.T, false, false, true))
             {
                 StartCPU(true);
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.B, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.B, false, false, true))
             {
                 StopCPU();
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.N, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.N, false, false, true))
             {
                 StopCPU();
                 m_CPU.RunOneInstruction();
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.M, false, false, true))
             {
                 StopCPU();
                 m_CPU.Run(100);
             }
-            else if (InputState.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
+            else if (InputState.HandleKeyboardEvent(KeyboardEventType.Press, WinKeys.L, false, false, true))
             {
                 StopCPU();
 #if DEBUG

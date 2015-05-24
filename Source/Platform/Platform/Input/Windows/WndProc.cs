@@ -10,10 +10,10 @@
 using System;
 using Microsoft.Xna.Framework.Input;
 
-namespace Ypsilon.Platform.Input
+namespace Ypsilon.Platform.Input.Windows
 {
-    internal delegate void MouseEventHandler(InputEventMouse e);
-    internal delegate void KeyboardEventHandler(InputEventKeyboard e);
+    public delegate void MouseEventHandler(InputEventMouse e);
+    public delegate void KeyboardEventHandler(InputEventKeyboard e);
 
     /// <summary>
     /// Provides an asyncronous Input Event system that can be used to monitor Keyboard and Mouse events.
@@ -42,14 +42,6 @@ namespace Ypsilon.Platform.Input
             }
         }
 
-        public KeyboardState KeyboardState
-        {
-            get
-            {
-                return Keyboard.GetState();
-            }
-        }
-
         /// <summary>
         /// Gets the currently pressed Modifier keys, Control, Alt, Shift
         /// </summary>
@@ -59,17 +51,17 @@ namespace Ypsilon.Platform.Input
             {
                 WinKeys keys = WinKeys.None;
 
-                if (NativeMethods.GetKeyState(0x10) < 0)
+                if (NativeMethods.GetKeyState((int)WinKeys.ShiftKey) < 0)
                 {
                     keys |= WinKeys.Shift;
                 }
 
-                if (NativeMethods.GetKeyState(0x11) < 0)
+                if (NativeMethods.GetKeyState((int)WinKeys.ControlKey) < 0)
                 {
                     keys |= WinKeys.Control;
                 }
 
-                if (NativeMethods.GetKeyState(0x12) < 0)
+                if (NativeMethods.GetKeyState((int)WinKeys.Menu) < 0)
                 {
                     keys |= WinKeys.Alt;
                 }
@@ -275,8 +267,8 @@ namespace Ypsilon.Platform.Input
             invokeMouseMove(new InputEventMouse(MouseEvent.Move,
                 translateWParamIntoMouseButtons(Message.SignedLowWord(message.WParam)),
                 0, 
-                Message.SignedLowWord(message.LParam), 
-                Message.SignedHighWord(message.LParam),
+                message.Point.X, 
+                message.Point.Y,
                 (int)(long)message.WParam,
                 ModifierKeys
                 ));
@@ -329,44 +321,49 @@ namespace Ypsilon.Platform.Input
         {
             // HandleKeyBindings();
             // KeyPressEventArgs keyPressEventArgs = null;
-            InputEventKeyboard InputEventCKB = null;
 
             if ((message.Id == NativeConstants.WM_CHAR) || (message.Id == NativeConstants.WM_SYSCHAR))
             {
                 // Is this extra information necessary?
                 // wm_(sys)char: http://msdn.microsoft.com/en-us/library/ms646276(VS.85).aspx
 
-                InputEventCKB = new InputEventKeyboard(KeyboardEvent.Press,
+                InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Press,
                     (WinKeys)(int)(long)message.WParam,
                     (int)(long)message.LParam,
                     ModifierKeys
                     );
                 IntPtr zero = (IntPtr)0;// (char)((ushort)((long)message.WParam));
-                invokeChar(InputEventCKB);
+                invokeChar(e);
             }
             else
             {
                 // wm_(sys)keydown: http://msdn.microsoft.com/en-us/library/ms912654.aspx
                 // wm_(sys)keyup: http://msdn.microsoft.com/en-us/library/ms646281(VS.85).aspx
-                InputEventCKB = new InputEventKeyboard(KeyboardEvent.Up,
-                    (WinKeys)(int)(long)message.WParam,
-                    (int)(long)message.LParam,
-                    ModifierKeys
-                    );
+
 
                 if ((message.Id == NativeConstants.WM_KEYDOWN) || (message.Id == NativeConstants.WM_SYSKEYDOWN))
                 {
-                    invokeKeyDown(InputEventCKB);
+                    InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Down,
+                        (WinKeys)(int)(long)message.WParam,
+                        (int)(long)message.LParam,
+                        ModifierKeys
+                        );
+                    invokeKeyDown(e);
                 }
                 else if ((message.Id == NativeConstants.WM_KEYUP) || (message.Id == NativeConstants.WM_SYSKEYUP))
                 {
-                    invokeKeyUp(InputEventCKB);
+                    InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Up,
+                        (WinKeys)(int)(long)message.WParam,
+                        (int)(long)message.LParam,
+                        ModifierKeys
+                        );
+                    invokeKeyUp(e);
                 }
             }
         }
 
-        internal event MouseEventHandler MouseWheel, MouseMove, MouseDown, MouseUp;
-        internal event KeyboardEventHandler KeyUp, KeyDown, KeyChar;
+        public event MouseEventHandler MouseWheel, MouseMove, MouseDown, MouseUp;
+        public event KeyboardEventHandler KeyUp, KeyDown, KeyChar;
 
         /// <summary>
         /// Raises the MouseWheel event. Override this method to add code to handle when a mouse wheel is turned
