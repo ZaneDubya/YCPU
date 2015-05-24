@@ -55,8 +55,8 @@
     <Compile Include="Platform\Input\InputManager.cs" />
     <Compile Include="Platform\Input\Windows\Enums.cs" />
     <Compile Include="Platform\Input\Windows\InputEvent.cs" />
-    <Compile Include="Platform\Input\Windows\InputEventKB.cs" />
-    <Compile Include="Platform\Input\Windows\InputEventM.cs" />
+    <Compile Include="Platform\Input\Windows\InputEventKeyboard.cs" />
+    <Compile Include="Platform\Input\Windows\InputEventMouse.cs" />
     <Compile Include="Platform\Input\Windows\Message.cs" />
     <Compile Include="Platform\Input\Windows\MessageHook.cs" />
     <Compile Include="Platform\Input\Windows\WndProc.cs" />

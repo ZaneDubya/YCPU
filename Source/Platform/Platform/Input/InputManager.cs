@@ -15,27 +15,52 @@ namespace Ypsilon.Platform.Input
         private const ushort EventUp = 0x0100;
         private const ushort EventDown = 0x0200;
         private const ushort EventPress = 0x0300;
+        private const ushort EventASCII = 0x0400;
 
         private const ushort CtrlDown = 0x1000;
         private const ushort AltDown = 0x2000;
         private const ushort ShiftDown = 0x4000;
 
-        public bool TryGetKeypress(out ushort keycode, bool pressEventsOnly)
+        public bool TryGetKeyboardEvent(out ushort eventCode)
         {
-            keycode = 0;
+            eventCode = 0;
             for (int i = 0; i < m_EventsThisFrame.Count; i++)
             {
                 if (!m_EventsThisFrame[i].Handled && m_EventsThisFrame[i] is InputEventKeyboard)
                 {
                     InputEventKeyboard e = m_EventsThisFrame[i] as InputEventKeyboard;
                     m_EventsThisFrame.RemoveAt(i);
-                    keycode = (ushort)(((byte)(e.KeyCode)) |
+
+                    ushort bitsKeycode = (byte)e.KeyCode;
+                    ushort bitsEvent = 0;
+
+                    switch (e.EventType)
+                    {
+                        case KeyboardEventType.Up:
+                            bitsEvent = EventUp;
+                            break;
+                        case KeyboardEventType.Down:
+                            bitsEvent = EventDown;
+                            break;
+                        case KeyboardEventType.Press:
+                            if (e.EventType == KeyboardEventType.Press && e.KeyChar != '\0')
+                            {
+                                bitsEvent = EventASCII;
+                                bitsKeycode = (byte)e.KeyChar;
+                            }
+                            else
+                            {
+                                bitsEvent = EventPress;
+                            }
+                            break;
+                    }
+
+                    eventCode = (ushort)(
+                        bitsKeycode |
+                        bitsEvent |
                         ((e.Shift) ? ShiftDown : 0) |
                         ((e.Alt) ? AltDown : 0) |
-                        ((e.Control) ? CtrlDown : 0) |
-                        ((e.EventType == KeyboardEventType.Up) ? EventUp : 0) |
-                        ((e.EventType == KeyboardEventType.Down) ? EventDown : 0) |
-                        ((e.EventType == KeyboardEventType.Press) ? EventPress : 0));
+                        ((e.Control) ? CtrlDown : 0));
                     return true;
                 }
             }
@@ -346,7 +371,7 @@ namespace Ypsilon.Platform.Input
             }
             else
             {
-                pressEvent.OverrideKeyChar(e.KeyCode);
+                pressEvent.WM_CHAR(e);
             }
         }
 

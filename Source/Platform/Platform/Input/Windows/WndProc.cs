@@ -328,7 +328,7 @@ namespace Ypsilon.Platform.Input.Windows
                 // wm_(sys)char: http://msdn.microsoft.com/en-us/library/ms646276(VS.85).aspx
 
                 InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Press,
-                    (WinKeys)(int)(long)message.WParam,
+                    (int)(long)message.WParam,
                     (int)(long)message.LParam,
                     ModifierKeys
                     );
@@ -344,7 +344,7 @@ namespace Ypsilon.Platform.Input.Windows
                 if ((message.Id == NativeConstants.WM_KEYDOWN) || (message.Id == NativeConstants.WM_SYSKEYDOWN))
                 {
                     InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Down,
-                        (WinKeys)(int)(long)message.WParam,
+                        (int)(long)message.WParam,
                         (int)(long)message.LParam,
                         ModifierKeys
                         );
@@ -353,7 +353,7 @@ namespace Ypsilon.Platform.Input.Windows
                 else if ((message.Id == NativeConstants.WM_KEYUP) || (message.Id == NativeConstants.WM_SYSKEYUP))
                 {
                     InputEventKeyboard e = new InputEventKeyboard(KeyboardEventType.Up,
-                        (WinKeys)(int)(long)message.WParam,
+                        (int)(long)message.WParam,
                         (int)(long)message.LParam,
                         ModifierKeys
                         );

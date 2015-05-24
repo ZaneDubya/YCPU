@@ -63,7 +63,7 @@ namespace Ypsilon.Platform.Input
             {
                 for (int i = 0; i < m_Actions.Count; i++)
                 {
-                    if (m_Actions[i].MatchesInput(BindingDevice.Keyboard, e.KeyCodeInt))
+                    if (m_Actions[i].MatchesInput(BindingDevice.Keyboard, (int)e.KeyCode))
                     {
                         m_Actions[i].ReceiveKeyboardEvent(e.EventType);
                         e.Handled = true;

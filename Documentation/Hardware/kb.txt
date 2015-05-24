@@ -1,6 +1,6 @@
 Keyboard
 
-DeviceType:     2 (Keyboard)
+DeviceType:     0x0002 (Keyboard)
 ManufacturerID: 0
 DeviceID:       0
 DeviceRevision: 0
@@ -30,5 +30,8 @@ Format of keyboard events:
         S = shift down
         A = alt down
         C = ctrl down
-        E = event type (1 = up, 2 = down, 3 = press)
-        K = keyboard char (ASCII-ish)
+        E = event type (1 = up, 2 = down, 3 = press, 4 = ascii press)
+        K = key-code.
+            k is ASCII if the event type is 4, otherwise, a virtual key code.
+            VKs are detailed at https://msdn.microsoft.com/en-us/library/ms927178.aspx.
+        

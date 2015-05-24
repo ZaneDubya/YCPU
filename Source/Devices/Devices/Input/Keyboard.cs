@@ -33,6 +33,7 @@ namespace Ypsilon.Devices.Input
         private const ushort EventUp = 0x0100;
         private const ushort EventDown = 0x0200;
         private const ushort EventPress = 0x0300;
+        private const ushort EventAscii = 0x0400;
 
         private const ushort CtrlDown = 0x1000;
         private const ushort AltDown = 0x2000;
@@ -83,9 +84,9 @@ namespace Ypsilon.Devices.Input
         public override void Update(IInputProvider input)
         {
             ushort keycode;
-            while (input.TryGetKeypress(out keycode, m_GetOnlyPressEvents))
+            while (input.TryGetKeyboardEvent(out keycode))
             {
-                if (m_GetOnlyPressEvents && (keycode & EventPress) != EventPress)
+                if (m_GetOnlyPressEvents && ((keycode & 0x0F00) == EventUp) || ((keycode & 0x0F00) == EventDown))
                     continue;
                 if (m_CommandBuffer[0] < m_CommandBuffer.Length - 1)
                 {
