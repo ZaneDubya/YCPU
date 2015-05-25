@@ -53,20 +53,26 @@ namespace Ypsilon.Hardware
                     else
                     {
                         usesNextWord = true;
-                        return string.Format("{0,-8}{1}, {3}${2:X4}{4}", 
-                            name + (isEightBit ? ".8" : string.Empty), 
+                        string disasm = string.Format("{0,-8}{1}, {3}${2:X4}{4}",
+                            name + (isEightBit ? ".8" : string.Empty),
                             NameOfRegGP(regDest),
-                            nextword, 
+                            nextword,
                             absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
+                        if (showMemoryContents)
+                            disasm = AppendMemoryContents(disasm, absolute ? DebugReadMemory(nextword) : nextword);
+                        return disasm;
                     }
                 case 1: // Status Register
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})", 
-                        name, 
-                        NameOfRegGP(regDest),
-                        NameOfRegSP((RegSPIndex)((int)regSrc)),
-                        R[(int)regSrc]);
-
+                    {
+                        string disasm = string.Format("{0,-8}{1}, {2,-12}",
+                            name,
+                            NameOfRegGP(regDest),
+                            NameOfRegSP((RegSPIndex)((int)regSrc)));
+                        if (showMemoryContents)
+                            disasm = AppendMemoryContents(disasm, ReadStatusRegister((RegSPIndex)regSrc));
+                        return disasm;
+                    }
                 case 2: // Register
                     usesNextWord = false;
                     return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
@@ -350,6 +356,13 @@ namespace Ypsilon.Hardware
             else
                 value = NameOfRegGP((RegGPIndex)((operand & 0x0700) >> 8));
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
+        }
+
+        private string AppendMemoryContents(string disasm, ushort mem)
+        {
+            int len = disasm.Length;
+            disasm = string.Format("{0}{1}(${2:X4})", disasm, new string(' ', 24 - len), mem);
+            return disasm;
         }
 
         private string NameOfRegGP(RegGPIndex register)
