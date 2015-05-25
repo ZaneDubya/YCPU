@@ -18,16 +18,25 @@ namespace AsmTstGn
 
             using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-0.asm"))
             {
+                file.WriteLine("; ALU instructions");
+                file.WriteLine("Begin:");
+
                 file.Write(generateALU());
 
                 file.Write(generateJMP());
                 file.Write(generateJMP_Far());
+
+                file.WriteLine("Jmp Begin");
             }
+
             using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-1.asm"))
             {
+                file.WriteLine("; ALU.8 and other instructions");
+                file.WriteLine("Begin:");
+
                 file.Write(generateAL8());
 
-                file.Write(generateBRA());
+                
                 file.Write(generateSHF());
                 file.Write(generateBTT());
                 file.Write(generateFLG());
@@ -36,6 +45,16 @@ namespace AsmTstGn
                 file.Write(generateSET());
                 file.Write(generateIMM());
                 file.Write(generateIMM2());
+
+                file.WriteLine("Jmp Begin");
+            }
+
+            using (file = new System.IO.StreamWriter("..\\..\\..\\..\\bld\\AsmTstGn-2.asm"))
+            {
+                file.WriteLine("; instructions that change state");
+                file.Write(generateBRA());
+                file.Write(generateJMP());
+                file.Write(generateJMP_Far());
                 file.Write(generateHWQ());
                 file.Write(generateMISC());
             }
@@ -399,7 +418,7 @@ namespace AsmTstGn
                                 addr = immediate;
                                 sb.AppendLine(string.Format("{0} r{1}, [{2}]", instruction, r, addr));
                                 break;
-                            case AddressingMode.ProcessorRegister:
+                            case AddressingMode.StatusRegister:
                                 string[] procRegs = new string[] { "fl", "pc", "ps", "p2", "ii", "ia", "sp", "usp" };
                                 for (int i = 0; i < 8; i++)
                                     sb.AppendLine(string.Format("{0} r{1}, {2}", instruction, r, procRegs[i]));

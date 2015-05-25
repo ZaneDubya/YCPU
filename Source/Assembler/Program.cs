@@ -14,6 +14,7 @@ namespace Ypsilon
                 args = new string[] { 
                     "../../../../Tests/bld/AsmTstGn-0.asm",
                     "../../../../Tests/bld/AsmTstGn-1.asm",
+                    "../../../../Tests/bld/AsmTstGn-2.asm",
                     "../../../../Tests/rain.asm"};
                 for (int i = 0; i < args.Length; i++)
                 {
