@@ -83,9 +83,9 @@ namespace Ypsilon
             {
                 StopCPU();
 #if DEBUG
-                LoadBinaryToCPU("../../../../Tests/rain.asm.bin", 0x0000);
+                LoadBinaryToCPU("../../../../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
 #else
-                LoadBinaryToCPU("../Tests/rain.asm.bin", 0x0000);
+                LoadBinaryToCPU("../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
 #endif
                 m_CPU.Interrupt_Reset();
             }
