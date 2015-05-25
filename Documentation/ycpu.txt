@@ -733,14 +733,14 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
-1011 0100   ---                 ---             UNDEFINED                      -
+1011 0100   ---                 ---             UNDEFINED                     -
 1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
 1011 011x   SET                 SET             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
 1011 1010   JMP         /       JMP             Jump                          2 
 1011 1011   JSR         /       JMP             Jump to Subroutine            3 
-1011 1100   HWQ         X       HWQ             Hardware Bus Query            2
+1011 1100   HWQ         X       HWQ             Hardware Bus Query            4
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
 1011 1111   RTI         X       ---             Return from Interrupt         4 
