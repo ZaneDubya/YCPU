@@ -10,9 +10,9 @@ Behaviour:
     HWQ $02:
     R1  R2?     Message
     $00 Y       Set mode based on R2. 
-                    R2 = $00, get only press events.
-                    R2 = $01, get press, up, and down events.
-                    R2 = other values, no effect, return MSG_ERROR.
+                    Default: get only press events, where possible translated to ASCII.
+                    R2 & $01 = get press, up, and down events.
+                    R2 & $02 = do not translate presses to ASCII.
                 All pending events cleared. Returns MSG_ACK
                 
     $01 Y       Get pending events. Memory at [R2] set as follows:
