@@ -582,12 +582,18 @@ namespace Ypsilon.Hardware
         #region Supervisor Mode
         private void Mode_SupervisorMode()
         {
-
+            if (PS_M)
+                MMU_Enable();
+            else
+                MMU_Disable();
         }
 
         private void Mode_UserMode()
         {
-
+            if (PS_M)
+                MMU_Enable();
+            else
+                MMU_Disable();
         }
         #endregion
 

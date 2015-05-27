@@ -434,7 +434,7 @@ namespace Ypsilon.Hardware
                     {
                         m_Mem[i - mmuCacheBase] = m_Mem_CPU[i % m_Mem_CPU_Count];
                     }
-                    else
+                    else // select internal rom
                     {
                         m_Mem[i - mmuCacheBase] = m_Rom_CPU[i % m_Rom_CPU_Count];
                     }
