@@ -614,7 +614,7 @@ The clock provides time data with the following precision:
     Second:  6 bits (0-59)
     M.Sec.: 12 bits (0-1000)
     
-This data is saved to R0-R3 upon calling HWQ $04, in this format:
+This data is saved to R0-R3 upon calling HWQ $80, in this format:
 
                                                     FEDC BA98 7654 3210
                     R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
@@ -629,12 +629,11 @@ frequency of which can be specified. When the RTC interrupt is enabled, the RTC
 will raise the CLOCK interrupt at an interval which is specified by the
 processor. The RESET interrupt disables the RTC.
 
-The processor can set the desired interrupt interval by calling HWQ $03, with an
-input value in R0. If R0 is $FFFF, the interrupt will be disabled. Otherwise, 
-the CLOCK interrupt will be raised at a rate of (2 ^ (R0)) times per second.
-
-Note that the maximum tick rate is capped at (cpu speed / 1024), so a 131khz 
-ycpu can tick, at most, 128 times per second.
+The processor can set the desired interrupt interval with the HWQ instruction,
+with a value indicating the desired interrupt frequency in R0. If R0 is $FFFF,
+the interrupt will be disabled. Otherwise,  the CLOCK interrupt will be raised
+at a rate of (2 ^ (R0)) times per second, capped to a maximum of cpu frequency
+divided by 1024.
 
 
 === 2.I. Switching Context =====================================================
@@ -859,10 +858,11 @@ HWQ Bit Pattern
             $02     Bus Device Message. Send a message to device at bus index =
                     R0, with parameters in R1-R2, and possibly in memory if a
                     register is a pointer. See 2.C., Infra.
-            $03     Set RTC data based on the value of R0.
+            $80     Gets time data from RTC.
+                    See 2.H.1. for the format of the time data. 
+            $81     Set RTC interrupt based on the value of R0.
                     See 2.H.2. for the input format of R0.
-            $04     Gets RTC data in R0-R3.
-                    See 2.H.1. for the format of the data. 
+            
     
     
 IMM Bit Pattern
