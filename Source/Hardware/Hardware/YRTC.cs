@@ -5,24 +5,27 @@ namespace Ypsilon.Hardware
     class YRTC
     {
         private long m_NextTickAtCycle = 0;
-        private long m_TickRate = 0;
+        private long m_CyclesPerTick = 0;
 
         public bool IsEnabled = false;
 
-        public void SetTickRate(ushort value, long cycle)
+        public ushort SetTickRate(ushort value, long cycle)
         {
-            if (value == 0xFFFF)
+            if (value == 0x0000)
             {
                 DisableInterrupt();
+                return 0;
             }
             else
             {
                 IsEnabled = true;
-                m_TickRate = (long)(Math.Pow(2, value));
-                if (m_TickRate > 1024)
-                    m_TickRate = 1024;
-                m_NextTickAtCycle = 0;
-                IRQ(cycle);
+                double tickHz = (double)value;
+                double maxHz = YCPU.ClockRateHz / 1024d;
+                if (tickHz > maxHz)
+                    tickHz = maxHz;
+                m_CyclesPerTick = (int)(YCPU.ClockRateHz / tickHz);
+                m_NextTickAtCycle = cycle + m_CyclesPerTick;
+                return (ushort)tickHz;
             }
         }
 
@@ -35,7 +38,7 @@ namespace Ypsilon.Hardware
         {
             if (cycle >= m_NextTickAtCycle)
             {
-                m_NextTickAtCycle += m_TickRate;
+                m_NextTickAtCycle += m_CyclesPerTick;
                 return true;
             }
             else

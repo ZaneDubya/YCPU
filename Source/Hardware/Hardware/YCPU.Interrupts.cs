@@ -9,13 +9,11 @@ namespace Ypsilon.Hardware
     {
         private void Interrupt(ushort interrupt_number)
         {
-            interrupt_number &= 0x000F;
             // If this is not a reset interrupt, we should save PS and PC.
             if (interrupt_number != 0x00)
             {
                 ushort ps = PS;
                 PS_S = true;
-                PS_M = false;
                 PS_Q = (interrupt_number == 0x0C);
                 StackPush(ps);
                 // rewind the instruction if this is an error interrupt ($02 - $07)
@@ -24,7 +22,7 @@ namespace Ypsilon.Hardware
                 else
                     StackPush(PC);
             }
-            PC = ReadMemInt16((ushort)(IA + interrupt_number));
+            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2));
             m_Cycles += 31;
         }
 

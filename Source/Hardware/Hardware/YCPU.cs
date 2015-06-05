@@ -7,6 +7,8 @@ namespace Ypsilon.Hardware
     /// </summary>
     public partial class YCPU
     {
+        public const int ClockRateHz = 102400;
+
         /// <summary>
         /// The hardware bus, which hosts all hardware devices.
         /// </summary>
@@ -61,6 +63,11 @@ namespace Ypsilon.Hardware
                 {
                     PC += 2;
                     
+                    // Execute Memory[PC] and increment the cycle counter:
+                    YCPUInstruction opcode = Opcodes[word & 0x00FF];
+                    opcode.Opcode(word);
+                    m_Cycles += opcode.Cycles;
+
                     // Check for hardware interrupt:
                     if (PS_I && !PS_Q && m_Bus.IRQ)
                         Interrupt_HWI();
@@ -68,11 +75,6 @@ namespace Ypsilon.Hardware
                     // Check for RTC interrupt:
                     if (m_RTC.IsEnabled && m_RTC.IRQ(m_Cycles))
                         Interrupt_Clock();
-                    
-                    // Execute Memory[PC] and increment the cycle counter:
-                    YCPUInstruction opcode = Opcodes[word & 0x00FF];
-                    opcode.Opcode(word);
-                    m_Cycles += opcode.Cycles;
 
                     // Check to see if we've exceeded our cycle target:
                     if (m_Cycles >= cycles_target)

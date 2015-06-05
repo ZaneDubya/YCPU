@@ -630,10 +630,13 @@ will raise the CLOCK interrupt at an interval which is specified by the
 processor. The RESET interrupt disables the RTC.
 
 The processor can set the desired interrupt interval with the HWQ instruction,
-with a value indicating the desired interrupt frequency in R0. If R0 is $FFFF,
+with a value indicating the desired interrupt frequency in R0. If R0 is $0000,
 the interrupt will be disabled. Otherwise,  the CLOCK interrupt will be raised
-at a rate of (2 ^ (R0)) times per second, capped to a maximum of cpu frequency
-divided by 1024.
+at a frequency of R0 hz, capped to a maximum of cpu frequency divided by 1024.
+
+After this operation, R0 will be set to the actual CLOCK frequency. A programmer
+can thus request a high CLOCK rate, and be informed of the actual CLOCK rate by
+examining R0.
 
 
 === 2.I. Switching Context =====================================================

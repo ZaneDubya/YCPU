@@ -2,12 +2,44 @@
 ; Expects Graphics Device in bus index 1 and Keyboard in bus index 2
 
 ; === Interrupt table =========================================================
-.dat16 Start,  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+.dat16 Start,  Clock, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 .dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+
+; === Clock ===================================================================
+Clock:
+.scope
+    psh r0, r1, r2, r3, fl      ; save register contents    
+    hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
+    lod     r0, $0000           ; Ensure the result is clear
+    lod     r1, $000a
+    and     r2, $003f
+    _getTens:
+        cmp     r2, r1
+        buf     _getOnes
+        add     r0, $0010
+        sub     r2, r1
+        baw     _getTens
+    _getOnes:
+        add     r0, r2
+    _writeToScreen:
+        lod     r2, $8104
+        lod     r1, r0
+        asr     r0, 4
+        and     r1, $000f
+        add     r1, $2830
+        sto     r1, [-r2]
+        lod     r1, r0
+        add     r1, $2830
+        sto     r1, [-r2]
+    pop r0, r1, r2, r3, fl
+    rti
+.scend
 
 ; === Start ===================================================================
 Start:
 .scope
+    lod     r0, 100
+    hwq     $81
     ;set up devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen

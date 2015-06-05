@@ -25,6 +25,7 @@ namespace Ypsilon.Hardware
         public void InitializeMemory()
         {
             m_Mem = new IMemoryBank[0x04];
+            m_MMU = new uint[8];
 
             m_Mem_CPU = new MemoryBank[m_Mem_CPU_Count];
             for (int i = 0; i < m_Mem_CPU_Count; i += 1)

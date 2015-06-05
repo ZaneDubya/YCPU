@@ -83,7 +83,7 @@ namespace Ypsilon
             {
                 StopCPU();
 #if DEBUG
-                LoadBinaryToCPU("../../../../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
+                LoadBinaryToCPU("../../../../Tests/rain.asm.bin", 0x0000);
 #else
                 LoadBinaryToCPU("../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
 #endif
@@ -94,7 +94,7 @@ namespace Ypsilon
             {
                 if (!m_Threaded)
                 {
-                    m_CPU.Run(100000 / 60);
+                    m_CPU.Run(YCPU.ClockRateHz / 60);
                 }
                 m_CPU.BUS.Update(InputState);
             }

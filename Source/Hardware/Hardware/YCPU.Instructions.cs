@@ -557,7 +557,7 @@ namespace Ypsilon.Hardware
             }
             else
             {
-                if ((operand & 0x1000) != 0) // eight bit mode
+                if ((operand & 0x0100) != 0) // eight bit mode
                     WriteMemInt8(dest_address, (byte)R[(int)source]);
                 else
                     WriteMemInt16(dest_address, R[(int)source]);
@@ -944,15 +944,15 @@ namespace Ypsilon.Hardware
                         R[(int)RegGPIndex.R1],
                         R[(int)RegGPIndex.R2]);
                     break;
-                case 0x03:
-                    m_RTC.SetTickRate(R[(int)RegGPIndex.R0], m_Cycles);
-                    break;
-                case 0x04:
+                case 0x80:
                     ushort[] rtc_data = m_RTC.GetData();
                     R[(int)RegGPIndex.R0] = rtc_data[0];
                     R[(int)RegGPIndex.R1] = rtc_data[1];
                     R[(int)RegGPIndex.R2] = rtc_data[2];
                     R[(int)RegGPIndex.R3] = rtc_data[3];
+                    break;
+                case 0x81:
+                    R[(int)RegGPIndex.R0] = m_RTC.SetTickRate(R[(int)RegGPIndex.R0], m_Cycles);
                     break;
                 default:
                     // fail silently.
