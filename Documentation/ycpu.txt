@@ -33,8 +33,9 @@ Version 0.5b RC1
 ### 1. Introduction ############################################################
 
 The YCPU Specification describes an imaginary processor with a comprehensive
-instruction set and features that make it powerful and easy to program for. A
-modular hardware bus allows flexibility in extending the system.
+instruction set and features that make it powerful and easy to program for. The
+specification is released to the public domain, and can be used in derivative
+works without permission.
 
 
 === 1.A. Public Domain Dedication ==============================================
@@ -55,26 +56,30 @@ http://creativecommons.org/about/cc0
 
 The YCPU is a 16-bit imaginary processor. The processor includes features
 intended to ease the development of software, including a comprehensive
-instruction set, support for 32-bit floating point operations, a MMU that allows
-switching 4 16 kilobyte banks within the 16-bit logical address space, a real
-time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
-modes with separate stack pointers.
+instruction set, eight general purpose registers that can be used as data or
+address registers and are, with one small exception, completely orthogonal;
+support for 32-bit floating point operations, a MMU that allows read/write/
+execute protection and bank switching of 4 16 kilobyte banks within the 16-bit
+logical address space, a real time clock, a hardware bus that supports up to 255
+devices, and Supervisor/User modes with different privileges and stack pointers.
 
 
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
 
 Internally, all registers and cache words are 16-bit. All logical addresses are
-16-bit, and thus an instruction can only address 64 kilobytes of memory at any
-time. Any multi-byte values are stored in little-endian format. For most
-instructions, the only addressable unit of memory is a 16-bit word.
+16-bit, and thus instructions can only address 64 kilobytes of memory at any
+time. Any multi-byte values are stored in little-endian format.
 
+--- 2.2. INSTRUCTION WIDTH: 16-BIT ---------------------------------------------
+
+For most instructions, the only addressable unit of memory is a 16-bit word.
 8-bit operations are supported for any instruction which uses the "ALU" bit
 pattern: Load, Store, Add, Subtract, Multiply, Divide, Bitwise And, Bitwise Or,
 Bitwise Not, Bitwise Exclusive Or, Compare, and Negate. When executing 8-bit
 operations in registers, the upper 8-bits of memory are cleared and ignored.
 When executing an 8-bit STOre operation, the processor will store only one byte,
 and the second byte in the 16-bit word in memory will not be affected. When
-executing an 8-bit LOaD operation, the processor will load only the lower byte
+executing an 8-bit load operation, the processor will load only the lower byte
 at the address, and the upper 8-bits of the destination register will be
 cleared.
 
@@ -84,7 +89,7 @@ which has a 32-bit result, with the upper 16 bits of the result stored in R0,
 and FPU instructions, which deal with 32-bit data).
 
 
---- 2.2. MEMORY ACCESS ---------------------------------------------------------
+--- 2.3. MEMORY ACCESS ---------------------------------------------------------
 
 For 16-bit memory access, access is quickest when aligned to 2-byte boundaries,
 and slower when accesses are unaligned. Thus, memory accesses from $0000 and
@@ -95,42 +100,48 @@ For 8-bit access, the YCPU loads only one 8-bit value. A single 8-bit load is
 as fast as a 16-bit load.
 
 
---- 2.3. ON-CHIP HARDWARE ------------------------------------------------------
+--- 2.4. ON-CHIP HARDWARE ------------------------------------------------------
+
 All models of the YCPU are guaranteed to have 4 x 16kb of internal RAM on board.
 The YCPU will also have a variable amount of ROM on chip, depending on the
-model of the YCPU. The YCPU can determine how much RAM/ROM is available by
-querying 'Hardware Device 0' on the Hardware Bus.
+model of the YCPU and the needs of the processor distributor. Generally, this
+ROM will consist of a basic input/output system that will bootstrap the system
+and prepare it to load other programs. The YCPU can determine how much RAM/ROM
+is available by querying 'Hardware Device 0' on the Hardware Bus.
 
 
 === 2.A. Registers =============================================================
-General Purpose Registers: R0-R7 (Also commonly named A,B,C,I,J,X,Y, and Z).
-Flags register: FL
-Interrupt Address: IA
-IRQ Index: II
-Program Counter: PC
-Processor Status: PS, P2
-Stack Pointer SP, consists of USP or SSP.
+
+    R0-R7: General Purpose Registers (also commonly named A,B,C,I,J,X,Y, and Z)
+    FL: Flags register
+    IA: Interrupt Address
+    II: IRQ Index
+    PC: Program Counter
+    PS: Processor Status
+    P2: Processor Bank Fault Address
+    SP: Stack Pointer. The YCPU has separate stack pointers for user mode (USP)
+        and supervisor mode (SSP). See 2.A.2.
 
 
 --- 2.A.1. GENERAL PURPOSE REGISTERS -------------------------------------------
 
 The processor has 8 general purpose 16-bit registers, which can be referenced as
 R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
-used as both data and address registers, are interchangeable, and are directly
-referenced and modified by most instructions.
+used as both data and address registers, are completely interchangeable
+(orthogonal), and are directly referenced and modified by most instructions.
 
-R0 is also used for the high 16-bits of the result of the 16x16b=32b operation:
-
-    * R0 is set to the high 16-bits of the result of the MUL and MLI opcodes.
-      If R0 is also the src/dest register, then the high 16-bits are lost, and
-      R0 will contain the low 16-bits after the instruction completes.
+There is one exception to general purpose register interchangeability: R0 is the
+destination of the high 16-bits of the result of MUL (multiply) and MLI (signed
+multiply) operations, which have 32-bit results. If R0 is also the src/dest
+register, then the high 16-bits are lost, and R0 will contain the low 16-bits
+after the instruction completes.
 
 
 --- 2.A.2. PROCESSOR STATUS REGISTERS ------------------------------------------
 
-The processor also has eight specific purpose 16-bit registers. Unlike the
-general purpose registers, these are not accessible by most instructions.
-The eight specific purpose registers are FL, IA, II, PC, PS, P2, SSP, and USP.
+The processor has eight processor status 16-bit registers. Unlike the general
+purpose registers, these are not accessible by most instructions. The eight
+processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
 
     FL: The FLag register. This register contains flags that are set by ALU
         operations.
@@ -168,9 +179,9 @@ The eight specific purpose registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         decremented before a stack value is pushed onto the stack, and is
         incremented after a stack value is popped from the stack. Thus the
         grows downward from its initial address, and should be initialized to
-        an address at (Stack Bottom + 1).
-            Stack push is internally implemented as: STO Rn, [-SP]
-            Stack pop is internally implemented as:  LOD Rn, [SP+]
+        an address at (Stack Bottom + 1). Example: If SP is set to $0000, the
+        first pushed value will be at $ffff, and the first pulled value will
+        be read from $0000.
         
         The processor has two different stack pointers - the Supervisor Stack
         Pointer, or SSP, is used while the processor is in Supervisor mode, and
@@ -691,9 +702,9 @@ Each instruction is represented by an 8-bit opcode within the low octet of a
 16-bit program word. The program word can be followed by 1, or in rare cases,
 two immediate word values.
 
-There are 67 undefined opcodes: STO Immediate (0x00A8), STO Register (0x00AA),
-0x00AD, and 0x00C0 through 0x00FF inclusive. Undefined opcodes will raise the
-'undefined' interrupt on execution.
+There are 68 undefined opcodes: STO Immediate (0x00A8), STO Register (0x00AA),
+0x00AD, 0x00B4, and 0x00C0 through 0x00FF inclusive. Undefined opcodes will
+raise the 'undefined' interrupt on execution.
 
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
@@ -1509,7 +1520,7 @@ that register.
 
 There are two separate operations for pop and two for pull, each addressing a
 different set of registers. The first operation pops or pulls the eight general
-purpose registers, R0-R7. The second operation pops or pulls specific purpose
+purpose registers, R0-R7. The second operation pops or pulls processor status
 registers SP, Fl, PC, PS, USP, P2, II, and IA. 
 
 Two notes on pushing and pulling the stack pointers. First, 'SP' and 'USP' is
