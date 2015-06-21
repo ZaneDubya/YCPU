@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F2711253-F674-44AC-90DC-6EA4C271680B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ypsilon</RootNamespace>
+    <AssemblyName>EmulatorLib</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ADevice.cs" />
+    <Compile Include="Assembler\AddressingMode.cs" />
+    <Compile Include="Assembler\DataFieldTypes.cs" />
+    <Compile Include="Assembler\LineSearch.cs" />
+    <Compile Include="Assembler\OpcodeFlag.cs" />
+    <Compile Include="Assembler\Optimizations.cs" />
+    <Compile Include="Assembler\ParsedOpcode.cs" />
+    <Compile Include="Assembler\Parser.cs" />
+    <Compile Include="Assembler\Parser.Data.cs" />
+    <Compile Include="Assembler\Parser.Includes.cs" />
+    <Compile Include="Assembler\Parser.Initialize.cs" />
+    <Compile Include="Assembler\Parser.Instructions.cs" />
+    <Compile Include="Assembler\Parser.Labels.cs" />
+    <Compile Include="Assembler\Parser.Output.cs" />
+    <Compile Include="Assembler\Parser.Params.cs" />
+    <Compile Include="Assembler\Parser.Pragmas.cs" />
+    <Compile Include="Assembler\ParserState.cs" />
+    <Compile Include="Assembler\Sanity.cs" />
+    <Compile Include="Assembler\Scopes.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="Devices\Graphics\GraphicsAdapter.cs" />
+    <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
+    <Compile Include="Devices\Input\Keyboard.cs" />
+    <Compile Include="Emulator.cs" />
+    <Compile Include="Hardware\MemoryBank.cs" />
+    <Compile Include="Hardware\YBUS.cs" />
+    <Compile Include="Hardware\YCPU.cs" />
+    <Compile Include="Hardware\YCPU.Disassemblers.cs" />
+    <Compile Include="Hardware\YCPU.Instructions.cs" />
+    <Compile Include="Hardware\YCPU.Interrupts.cs" />
+    <Compile Include="Hardware\YCPU.Memory.cs" />
+    <Compile Include="Hardware\YCPU.Patterns.cs" />
+    <Compile Include="Hardware\YRTC.cs" />
+    <Compile Include="IDeviceRenderer.cs" />
+    <Compile Include="IInputProvider.cs" />
+    <Compile Include="IMemoryBank.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceRegistry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
