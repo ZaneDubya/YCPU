@@ -36,26 +36,22 @@ namespace Ypsilon.Assembler
             return true;
         }
 
-        public bool AddLabel(string label, int address, bool local)
+        public bool AddLabel(string label, int address)
         {
-            if (local)
+            Scope scope = LastOpenScope();
+            if (scope == m_Global)
             {
-                Scope scope = LastOpenScope();
-                if (scope == m_Global)
+                if (!m_Global.AddLabel(label, address))
                 {
-                    return AddLabel(label, address, false);
-                }
-                if (!scope.AddLabel(label, address))
-                {
-                    throw new Exception(string.Format("Label '{0}' already exists within the {1} scope.", label, (scope == m_Global) ? "global" : "current local"));
+                    throw new Exception(string.Format("Label '{0}' already exists within the global scope.", label));
                 }
                 return true;
             }
             else
             {
-                if (!m_Global.AddLabel(label, address))
+                if (!scope.AddLabel(label, address))
                 {
-                    throw new Exception(string.Format("Label '{0}' already exists within the global scope.", label));
+                    throw new Exception(string.Format("Label '{0}' already exists within the {1} scope.", label, (scope == m_Global) ? "global" : "current local"));
                 }
                 return true;
             }

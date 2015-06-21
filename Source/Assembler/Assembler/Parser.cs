@@ -19,10 +19,11 @@ namespace Ypsilon.Assembler
             Initialize();
         }
 
-        public byte[] Parse(string[] lines, string workingDirectory)
+        public byte[] Parse(string code, string workingDirectory)
         {
             ParserState state = new ParserState();
             state.WorkingDirectory = workingDirectory;
+            string[] lines = code.Split('\n');
 
             int indexOfCurrentLine = 0;
 
@@ -75,11 +76,10 @@ namespace Ypsilon.Assembler
         {
             line = line.Trim();
 
-            if (RegEx.MatchLabel(line) || RegEx.MatchLabelLocal(line))
+            if (LineSearch.MatchLabel(line))
             {
-                bool local = RegEx.MatchLabelLocal(line);
                 // parse label and determine if there is anything else to parse on this line.
-                int remaiderLineContentIndex = ParseLabel(line, local, state);
+                int remaiderLineContentIndex = ParseLabel(line, state);
                 if (remaiderLineContentIndex <= 0)
                     return;
                 // if there is something left to parse, trim it and then interpret it as its own line.

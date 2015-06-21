@@ -40,11 +40,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="ADevice.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
     <Compile Include="Hardware\YCPU.Disassemblers.cs" />

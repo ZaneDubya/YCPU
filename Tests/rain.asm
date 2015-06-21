@@ -13,15 +13,15 @@ Clock:
     lod     r0, $0000           ; Ensure the result is clear
     lod     r1, $000a
     and     r2, $003f
-    _getTens:
+    getTens:
         cmp     r2, r1
-        buf     _getOnes
+        buf     getOnes
         add     r0, $0010
         sub     r2, r1
-        baw     _getTens
-    _getOnes:
+        baw     getTens
+    getOnes:
         add     r0, r2
-    _writeToScreen:
+    writeToScreen:
         lod     r2, $8104
         lod     r1, r0
         asr     r0, 4
@@ -46,25 +46,25 @@ Start:
     jsr     ShowStartScreen
     
     lod     x, $8000
-    _checkForKB:
+    checkForKB:
         jsr     GetKeyboardEvents
         cmp     a, 0
-        beq     _checkForKB
+        beq     checkForKB
     
         lod     b, $2800            ; yellow on blue
         lod     y, $7002            ; get first char
-        _writeSingleChar:
+        writeSingleChar:
             lod     c, [y+]
             and     c, 0x00ff
             cmp     c, 0x0D
-            bne     _writeChar
-            baw     _writeSingleChar
-        _writeChar:
+            bne     writeChar
+            baw     writeSingleChar
+        writeChar:
             orr     c, b
             sto     c, [x+]
             dec     a
-            bne     _writeSingleChar
-        baw     _checkForKB
+            bne     writeSingleChar
+        baw     checkForKB
 .scend
 
 ; === GetKeyboardEvents =======================================================
@@ -133,13 +133,13 @@ ShowStartScreen:
     lod     x, $80D6            ; location in video memory
     lod     y, txtBootText
     lod     i, 3                ; count of lines to draw
-    _writeLine:
+    writeLine:
         jsr WriteChars
         add     x, 64           ; increment one line in video memory (32 words)
         dec     i
-        beq     _LastLine
-        bne     _writeLine
-    _lastLine:
+        beq     LastLine
+        bne     writeLine
+    lastLine:
         add     x, $3C ; skip line, left 4 chars
         add     c, 4
         jsr     WriteChars
@@ -153,13 +153,13 @@ ShowStartScreen:
 WriteChars:
 .scope
     psh a, x                    ; push a x  to the stack
-    _writeChar:                 ; copy c chars from y to x
+    writeChar:                 ; copy c chars from y to x
         lod.8   a, [y+]
-        beq _return
+        beq return
         orr     a, b
         sto     a, [x+]
-        baw     _writeChar
-    _return:
+        baw     writeChar
+    return:
         pop a, x                 ; pop a x from the stack
         rts
 .scend
@@ -174,10 +174,10 @@ FillMemoryWords:
     psh c, x                    ; save c and x
     asl c, 1                    ; c = count of bytes
     add c, x                    ; c = first address after all bytes are written
-    _copyWord:
+    copyWord:
         sto     b, [x+]         ; save word in b to [x], x = x + 2
         cmp     x, c            ; if x
-        bne     _copyWord
+        bne     copyWord
     pop c, x                    ; restore c and x
     rts
 .scend

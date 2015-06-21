@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembler", "Assembler\Assembler.csproj", "{1BC3B61E-B269-42E6-9C9F-BC9762A96E6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ypsilon.Platform", "Platform\Ypsilon.Platform.csproj", "{AACF1738-A2F8-4783-BBFF-2163B5187830}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -17,10 +15,6 @@ Global
 		{1BC3B61E-B269-42E6-9C9F-BC9762A96E6F}.Debug|x86.Build.0 = Debug|x86
 		{1BC3B61E-B269-42E6-9C9F-BC9762A96E6F}.Release|x86.ActiveCfg = Release|x86
 		{1BC3B61E-B269-42E6-9C9F-BC9762A96E6F}.Release|x86.Build.0 = Release|x86
-		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Debug|x86.ActiveCfg = Debug|x86
-		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Debug|x86.Build.0 = Debug|x86
-		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Release|x86.ActiveCfg = Release|x86
-		{AACF1738-A2F8-4783-BBFF-2163B5187830}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,30 +6,37 @@
  * This code is licensed under the MIT License
  * =============================================================== */
 
-using System.Text.RegularExpressions;
-
 namespace Ypsilon.Assembler
 {
-    class RegEx
+    class LineSearch
     {
-        private static Regex m_Regex_Label = new Regex("(^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*:)|(^:[A-Za-z0-9]*(?:_[A-Za-z0-9]+)*)");
-        private static Regex m_Regex_Label_local = new Regex("(^[_][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*:)");
-
         public static bool MatchLabel(string line)
         {
-            return (m_Regex_Label.IsMatch(line));
+            string trimmed = line.TrimStart();
+            if (trimmed.Length == 0)
+                return false;
+            if (!char.IsLetter(trimmed[0]))
+                return false;
+            for (int i = 1; i < trimmed.Length; i++)
+                if (trimmed[i] == ':')
+                    return true;
+                else if (!char.IsLetterOrDigit(trimmed[i]))
+                    return false;
+            return false;
         }
 
-        public static bool MatchLabelLocal(string line)
-        {
-            return (m_Regex_Label_local.IsMatch(line));
-        }
-
-        private static Regex m_Regex_Pragmas = new Regex(@"(^\.\b(target|alu_width|advance|alias|checkpc|dat8|dat16|incbin|include|macro|macend|org|require|reserve|scope|scend|data|text)\b)");
+        private static string m_Pragmas = "target|alu_width|advance|alias|checkpc|dat8|dat16|incbin|include|macro|macend|org|require|reserve|scope|scend|data|text";
 
         public static bool MatchPragma(string line)
         {
-            return (m_Regex_Pragmas.IsMatch(line));
+            string trimmed = line.TrimStart();
+            if (trimmed.Length == 0)
+                return false;
+            if (trimmed[0] != '.')
+                return false;
+            if (m_Pragmas.Contains(trimmed.Substring(1)))
+                return true;
+            return false;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Ypsilon.Assembler;
 
 namespace Ypsilon
 {
@@ -12,22 +13,31 @@ namespace Ypsilon
             {
 #if DEBUG
                 args = new string[] { 
-                    "../../../../Tests/bld/AsmTstGn-0.asm",
-                    "../../../../Tests/bld/AsmTstGn-1.asm",
-                    "../../../../Tests/bld/AsmTstGn-2.asm",
-                    "../../../../Tests/rain.asm"};
+                    /*"../../Tests/bld/AsmTstGn-0.asm",
+                    "../../Tests/bld/AsmTstGn-1.asm",*/
+                    "../../Tests/rain.asm"};
                 for (int i = 0; i < args.Length; i++)
                 {
                     doCompile(new string[] { args[i] });
                 }
                 return;
 #else
-                Console.WriteLine(errNoArguments);
+                StdOutWriteLine(errNoArguments);
                 return;
 #endif
             }
 
             doCompile(args);
+        }
+
+        static void StdOutWriteLine(string line)
+        {
+            Console.WriteLine(line);
+        }
+
+        static ConsoleKeyInfo StdInReadKey()
+        {
+            return Console.ReadKey();
         }
 
         private static void doCompile(string[] args)
@@ -37,7 +47,7 @@ namespace Ypsilon
 
             if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
             {
-                Console.WriteLine(string.Format(errArguments, error));
+                StdOutWriteLine(string.Format(errArguments, error));
                 return;
             }
             else
@@ -45,18 +55,25 @@ namespace Ypsilon
                 // check for options?
             }
 
-            Console.WriteLine(string.Format(descAssembler, inPath, outPath));
+            StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
 
             byte[] machineCode;
-            AssemblerResult result = tryAssemble(inPath, out machineCode);
-            Console.WriteLine(AssemblerResultMessages[(int)result]);
+            string errorMessage;
 
-            if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
-                Console.WriteLine("File successfully written. Press any key to continue.");
+            if (TryAssemble(inPath, out machineCode, out errorMessage))
+            {
+                StdOutWriteLine("Assembly file compiled.");
+                if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
+                    StdOutWriteLine("File written. Press any key to continue.");
+                else
+                    StdOutWriteLine("Error writing machine code. Press any key to continue.");
+            }
             else
-                Console.WriteLine("Error while writing machine code. Press any key to continue.");
+            {
+                StdOutWriteLine(string.Format("Error compiling assembly file: {0}", errorMessage));
+            }
 
-            Console.ReadKey();
+            StdInReadKey();
         }
 
         private static bool tryReadArguments(string[] args, out string inPath, out string outPath, out string[] options, out string error)
@@ -100,7 +117,7 @@ namespace Ypsilon
             return true;
         }
 
-        private static string[] getFileContents(string in_path)
+        private static string getFileContents(string in_path)
         {
             if (!File.Exists(in_path))
             {
@@ -115,29 +132,31 @@ namespace Ypsilon
 
             if (in_code == string.Empty)
                 return null;
-
-            string[] lines = in_code.Split('\n');
-            return lines;
+            return in_code;
         }
 
-        private static AssemblerResult tryAssemble(string in_path, out byte[] machineCode)
+        public static bool TryAssemble(string pathToAsmFile, out byte[] machineCode, out string errorMessage)
         {
             machineCode = null;
+            errorMessage = null; 
 
-            string[] lines = getFileContents(in_path);
-            if (lines == null)
-                return AssemblerResult.EmptyDocument;
+            string asmFileContents = getFileContents(pathToAsmFile);
+            if (asmFileContents == null)
+            {
+                errorMessage = "Input assembly file does not exist or is empty.";
+                return false;
+            }
 
-            Assembler.Parser parser = new Assembler.Parser();
-            machineCode = parser.Parse(lines, Path.GetDirectoryName(in_path));
+            Parser parser = new Parser();
+            machineCode = parser.Parse(asmFileContents, Path.GetDirectoryName(pathToAsmFile));
 
             if (machineCode == null)
             {
-                Console.WriteLine(parser.MessageOutput);
-                return AssemblerResult.ParseError;
+                errorMessage = parser.MessageOutput;
+                return false;
             }
 
-            return AssemblerResult.Success;
+            return true;
         }
 
         private static bool tryWriteMachineCode(byte[] machineCode, string directory, string filename)
@@ -186,20 +205,6 @@ namespace Ypsilon
 
             
         }
-
-        private enum AssemblerResult
-        {
-            Success,
-            EmptyDocument,
-            ParseError
-        }
-
-        private static string[] AssemblerResultMessages = new string[3]
-        {
-            "Successfully compiled input file.",
-            "Nothing to compile.",
-            "Parser error."
-        };
 
         const string errNoArguments = "yasm: No input specified.";
         const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";

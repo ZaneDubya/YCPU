@@ -14,7 +14,7 @@ namespace Ypsilon.Assembler
     {
         bool ParsePragma(string line, string opcode, string[] tokens, ParserState state)
         {
-            if (RegEx.MatchPragma(opcode.ToLower()))
+            if (LineSearch.MatchPragma(opcode.ToLower()))
             {
                 switch (opcode.ToLower())
                 {

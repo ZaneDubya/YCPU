@@ -19,7 +19,7 @@ namespace Ypsilon.Assembler
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
-            byte[] data = Ypsilon.Platform.Common.GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
+            byte[] data = Common.GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
             if (data == null)
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 
