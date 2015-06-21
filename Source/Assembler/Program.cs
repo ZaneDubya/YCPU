@@ -7,6 +7,11 @@ namespace Ypsilon
 {
     class Program
     {
+        const string errNoArguments = "yasm: No input specified.";
+        const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
+        const string errParam = "yasm: Unknown parameter: {0}";
+        const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
+
         static void Main(string[] args)
         {
             if (args.Length == 0)
@@ -18,7 +23,7 @@ namespace Ypsilon
                     "../../Tests/rain.asm"};
                 for (int i = 0; i < args.Length; i++)
                 {
-                    doCompile(new string[] { args[i] });
+                    compileFromArgs(new string[] { args[i] });
                 }
                 return;
 #else
@@ -26,21 +31,13 @@ namespace Ypsilon
                 return;
 #endif
             }
-
-            doCompile(args);
+            else
+            {
+                compileFromArgs(args);
+            }
         }
 
-        static void StdOutWriteLine(string line)
-        {
-            Console.WriteLine(line);
-        }
-
-        static ConsoleKeyInfo StdInReadKey()
-        {
-            return Console.ReadKey();
-        }
-
-        private static void doCompile(string[] args)
+        private static void compileFromArgs(string[] args)
         {
             string inPath, outPath, error;
             string[] options;
@@ -152,7 +149,7 @@ namespace Ypsilon
 
             if (machineCode == null)
             {
-                errorMessage = parser.MessageOutput;
+                errorMessage = parser.ErrorMsg;
                 return false;
             }
 
@@ -206,9 +203,14 @@ namespace Ypsilon
             
         }
 
-        const string errNoArguments = "yasm: No input specified.";
-        const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
-        const string errParam = "yasm: Unknown parameter: {0}";
-        const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
+        static void StdOutWriteLine(string line)
+        {
+            Console.WriteLine(line);
+        }
+
+        static ConsoleKeyInfo StdInReadKey()
+        {
+            return Console.ReadKey();
+        }
     }
 }

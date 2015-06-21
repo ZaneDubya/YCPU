@@ -7,6 +7,7 @@
  * =============================================================== */
 
 using System;
+using System.IO;
 
 namespace Ypsilon.Assembler
 {
@@ -19,7 +20,7 @@ namespace Ypsilon.Assembler
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
-            byte[] data = Common.GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
+            byte[] data = GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
             if (data == null)
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 
@@ -43,6 +44,19 @@ namespace Ypsilon.Assembler
             for (int i = 0; i < length; i++)
                 state.Code.Add(data[i + begin]);
             return true;
+        }
+
+        byte[] GetBytesFromFile(string path)
+        {
+            try
+            {
+                byte[] data = File.ReadAllBytes(path);
+                return data;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

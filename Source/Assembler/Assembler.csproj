@@ -37,29 +37,18 @@
     <StartupObject>Ypsilon.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assembler\AddressingMode.cs" />
-    <Compile Include="Assembler\DataFieldTypes.cs" />
-    <Compile Include="Assembler\OpcodeFlag.cs" />
-    <Compile Include="Assembler\Optimizations.cs" />
-    <Compile Include="Assembler\Parser.Data.cs" />
-    <Compile Include="Assembler\Parser.Includes.cs" />
-    <Compile Include="Assembler\Parser.Initialize.cs" />
-    <Compile Include="Assembler\Parser.Instructions.cs" />
-    <Compile Include="Assembler\Parser.Labels.cs" />
-    <Compile Include="Assembler\Parser.Pragmas.cs" />
-    <Compile Include="Assembler\ParserState.cs" />
-    <Compile Include="Assembler\Sanity.cs" />
-    <Compile Include="Assembler\Scopes.cs" />
-    <Compile Include="Assembler\ParsedOpcode.cs" />
-    <Compile Include="Assembler\Parser.cs" />
-    <Compile Include="Assembler\Parser.Params.cs" />
-    <Compile Include="Assembler\Regex.cs" />
-    <Compile Include="Commons.cs" />
+    <Compile Include="Common.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assembler\Parser.Output.cs" />
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\AssemblerLib\AssemblerLib.csproj">
+      <Project>{a7698214-1c24-45cb-9c4c-cab5ab4892ac}</Project>
+      <Name>AssemblerLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

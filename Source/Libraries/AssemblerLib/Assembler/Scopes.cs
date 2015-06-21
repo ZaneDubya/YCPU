@@ -19,26 +19,26 @@ namespace Ypsilon.Assembler
         public Scopes()
         {
             m_Scopes = new List<Scope>();
-            m_Global = new Scope(0);
+            m_Global = new Scope(0, 0);
         }
 
-        public void ScopeOpen(int address)
+        public void ScopeOpen(int address, int line)
         {
-            m_Scopes.Add(new Scope(address));
+            m_Scopes.Add(new Scope(address, line));
         }
 
         public bool ScopeClose(int address)
         {
-            Scope scope = LastOpenScope();
+            Scope scope = GetLastOpenScope();
             if (scope == m_Global || scope == null)
                 return false;
-            scope.End = address - 1;
+            scope.EndAddress = address - 1;
             return true;
         }
 
         public bool AddLabel(string label, int address)
         {
-            Scope scope = LastOpenScope();
+            Scope scope = GetLastOpenScope();
             if (scope == m_Global)
             {
                 if (!m_Global.AddLabel(label, address))
@@ -69,7 +69,7 @@ namespace Ypsilon.Assembler
             for (int i = 0; i < m_Scopes.Count; i++)
             {
                 if (m_Scopes[i].ContainsAddress(from_address) && m_Scopes[i].ContainsLabel(label))
-                    if ((scope_match == null) || (m_Scopes[i].Begin >= scope_match.Begin))
+                    if ((scope_match == null) || (m_Scopes[i].StartAddress >= scope_match.StartAddress))
                         scope_match = m_Scopes[i];
             }
 
@@ -78,7 +78,7 @@ namespace Ypsilon.Assembler
             return -1;
         }
 
-        private Scope LastOpenScope()
+        public Scope GetLastOpenScope()
         {
             for (int i = m_Scopes.Count - 1; i >= 0; i--)
             {
@@ -88,36 +88,38 @@ namespace Ypsilon.Assembler
             return m_Global;
         }
 
-        public bool OpenScopes()
+        public bool TryGetOpenScope(out Scope scope)
         {
-            Scope scope = LastOpenScope();
+            scope = GetLastOpenScope();
             if (scope == m_Global)
                 return false;
             return true;
         }
 
 
-        private class Scope
+        public class Scope
         {
-            public int Begin = -1;
-            public int End = -1;
+            public int StartAddress = -1;
+            public int EndAddress = -1;
+            public int StartLine = -1;
 
-            private Dictionary<string, ushort> m_LabelAddressDictionary;
+            Dictionary<string, ushort> m_LabelAddressDictionary;
 
             public bool IsOpen
             {
-                get { return End == -1; }
+                get { return EndAddress == -1; }
             }
 
-            public Scope(int begin)
+            public Scope(int beginAddress, int beginLine)
             {
-                Begin = begin;
+                StartAddress = beginAddress;
+                StartLine = beginLine;
                 m_LabelAddressDictionary = new Dictionary<string, ushort>();
             }
 
             public bool ContainsAddress(int address)
             {
-                return ((Begin <= address) && (End >= address));
+                return ((StartAddress <= address) && (EndAddress >= address));
             }
 
             public bool AddLabel(string label, int address)
@@ -142,7 +144,7 @@ namespace Ypsilon.Assembler
 
             public override string ToString()
             {
-                return string.Format("{0}~{1}, {2} labels", Begin, End, m_LabelAddressDictionary.Count);
+                return string.Format("{0}~{1}, {2} labels", StartAddress, EndAddress, m_LabelAddressDictionary.Count);
             }
         }
     }

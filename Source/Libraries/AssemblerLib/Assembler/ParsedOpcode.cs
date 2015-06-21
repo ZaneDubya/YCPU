@@ -6,7 +6,6 @@
  * This code is licensed under the MIT License
  * =============================================================== */
 
-
 namespace Ypsilon.Assembler
 {
     public class ParsedOpcode

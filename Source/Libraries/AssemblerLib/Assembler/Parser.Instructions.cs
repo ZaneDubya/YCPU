@@ -481,10 +481,6 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        
-
-        
-
         #region Macros: RTS, NOP
         ushort[] AssembleRTS(string[] param, OpcodeFlag opcodeFlag, ParserState state)
         {

@@ -10,19 +10,25 @@ namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
-        public string MessageOutput
+        public string ErrorMsg
         {
             get;
-            set;
+            private set;
+        }
+
+        public int ErrorLine
+        {
+            get;
+            private set;
         }
 
         void AddMessageLine(string input)
         {
-            if (MessageOutput == null)
-                MessageOutput = string.Empty;
+            if (ErrorMsg == null)
+                ErrorMsg = string.Empty;
             else
-                MessageOutput += "\r\n";
-            MessageOutput += input;
+                ErrorMsg += "\n";
+            ErrorMsg += input;
         }
     }
 }

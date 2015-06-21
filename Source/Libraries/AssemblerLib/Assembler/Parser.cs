@@ -39,21 +39,36 @@ namespace Ypsilon.Assembler
 
                 try
                 {
-                    AssembleLine(currentLine, state);
+                    AssembleLine(indexOfCurrentLine, currentLine, state);
                 }
                 catch (Exception ex)
                 {
-                    AddMessageLine(string.Format("Line {0}: {1}", indexOfCurrentLine, ex.Message));
+                    AddMessageLine(string.Format("Line {0}: {1}.", indexOfCurrentLine, ex.Message));
+                    ErrorLine = indexOfCurrentLine;
                     return null;
                 }
             }
 
             // check for open scopes...
-            if (state.Scopes.OpenScopes())
-                throw new Exception("Unclosed scope.");
+            Scopes.Scope openScope;
+            if (state.Scopes.TryGetOpenScope(out openScope))
+            {
+                AddMessageLine(string.Format("Unclosed scope beginning at line {0}.", openScope.StartLine));
+                ErrorLine = openScope.StartLine;
+                return null;
+            }
 
             // pass 2: update all labels.
-            state.UpdateLabelReferences();
+            try
+            {
+                state.UpdateLabelReferences();
+            }
+            catch (Exception ex)
+            {
+                AddMessageLine(string.Format("Error while updating labels. {0}", ex.Message));
+                ErrorLine = indexOfCurrentLine;
+                return null;
+            }
 
             // return the assembled code!
             return state.Code.ToArray();
@@ -72,7 +87,7 @@ namespace Ypsilon.Assembler
             return clearedLine;
         }
 
-        void AssembleLine(string line, ParserState state)
+        void AssembleLine(int lineIndex, string line, ParserState state)
         {
             line = line.Trim();
 
@@ -91,7 +106,7 @@ namespace Ypsilon.Assembler
             string[] tokens = this.Tokenize(line);
             string opcode = tokens[0].Trim();
 
-            if (ParsePragma(line, opcode, tokens, state))
+            if (ParsePragma(lineIndex, line, opcode, tokens, state))
             {
                 // Successfully parsed a pragma, no need to continue with this line.
                 return;

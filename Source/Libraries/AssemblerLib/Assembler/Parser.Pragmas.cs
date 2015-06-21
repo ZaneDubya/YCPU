@@ -12,7 +12,7 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        bool ParsePragma(string line, string opcode, string[] tokens, ParserState state)
+        bool ParsePragma(int lineIndex, string line, string opcode, string[] tokens, ParserState state)
         {
             if (LineSearch.MatchPragma(opcode.ToLower()))
             {
@@ -60,7 +60,7 @@ namespace Ypsilon.Assembler
                         break;
                     case ".scope":
                     case "{":
-                        state.Scopes.ScopeOpen(state.Code.Count);
+                        state.Scopes.ScopeOpen(state.Code.Count, lineIndex);
                         return true;
                     case ".scend":
                     case "}":

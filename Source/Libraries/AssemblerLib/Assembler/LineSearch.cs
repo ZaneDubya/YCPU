@@ -20,7 +20,7 @@ namespace Ypsilon.Assembler
             for (int i = 1; i < trimmed.Length; i++)
                 if (trimmed[i] == ':')
                     return true;
-                else if (!char.IsLetterOrDigit(trimmed[i]))
+                else if (!char.IsLetterOrDigit(trimmed[i]) && !(trimmed[i] == '_'))
                     return false;
             return false;
         }

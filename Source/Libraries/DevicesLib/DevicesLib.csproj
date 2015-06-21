@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ypsilon</RootNamespace>
-    <AssemblyName>YDevices</AssemblyName>
+    <AssemblyName>DevicesLib</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -32,20 +32,15 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
     <Compile Include="Devices\Input\Keyboard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hardware\Ypsilon.Hardware.csproj">
+    <ProjectReference Include="..\HardwareLib\HardwareLib.csproj">
       <Project>{fc4ded94-2256-43d1-9c43-d4af7d1bfece}</Project>
-      <Name>Ypsilon.Hardware</Name>
+      <Name>HardwareLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
