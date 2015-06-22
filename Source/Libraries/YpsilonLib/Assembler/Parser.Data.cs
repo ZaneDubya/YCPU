@@ -163,7 +163,9 @@ namespace Ypsilon.Assembler
         {
             List<string> dataFields = new List<string>();
 
-            foreach (var field in line.Split(','))
+            List<string> linesplit = Common.SplitString(line, ',');
+
+            foreach (var field in linesplit)
             {
                 if (field.Trim() == string.Empty) continue;
                 if (dataFields.Count == 0)

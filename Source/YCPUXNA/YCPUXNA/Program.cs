@@ -5,7 +5,7 @@ namespace YCPUXNA
 {
     class Program
     {
-        static string[] s_DefaultArgs = new string[] { "-emu", "../../Tests/rain.asm" };
+        static string[] s_DefaultArgs = new string[] { "-asm", "../../Tests/rain.asm" };
         const string errNoArguments = "YCPUXNA: No input specified.";
 
         // default entry point
