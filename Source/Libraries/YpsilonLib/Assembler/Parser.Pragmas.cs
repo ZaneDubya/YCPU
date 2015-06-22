@@ -14,60 +14,70 @@ namespace Ypsilon.Assembler
     {
         bool ParsePragma(int lineIndex, string line, string opcode, string[] tokens, ParserState state)
         {
-            if (LineSearch.MatchPragma(opcode.ToLower()))
+            string pragma = opcode.ToLower();
+            if (LineSearch.MatchPragma(pragma))
             {
-                switch (opcode.ToLower())
+                if (pragma == ".dat8")
                 {
-                    case ".dat8":
-                        ParseData8(line.Replace(".dat8", string.Empty), state);
-                        return true;
-
-                    case ".dat16":
-                        ParseData16(line.Replace(".dat16", string.Empty), state);
-                        return true;
-
-                    case ".advance":
-
-                        break;
-                    case ".alias":
-
-                        break;
-                    case ".checkpc":
-
-                        break;
-                    case ".org":
-
-                        break;
-
-                    case ".incbin":
-                        return IncludeBinary(tokens, state);
-
-                    case ".include":
-
-                        break;
-                    case ".macro":
-
-                        break;
-                    case ".macend":
-
-                        break;
-
-                    case ".require":
-
-                        break;
-                    case ".reserve":
-
-                        break;
-                    case ".scope":
-                    case "{":
-                        state.Scopes.ScopeOpen(state.Code.Count, lineIndex);
-                        return true;
-                    case ".scend":
-                    case "}":
-                        return state.Scopes.ScopeClose(state.Code.Count);
-                    default:
-                        throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
+                    ParseData8(line.Replace(".dat8", string.Empty), state);
+                    return true;
                 }
+                else if (pragma == ".dat16")
+                {
+                    ParseData16(line.Replace(".dat16", string.Empty), state);
+                    return true;
+                }
+                else if (pragma == ".advance")
+                {
+
+                }
+                else if (pragma == ".alias")
+                {
+
+                }
+                else if (pragma == ".checkpc")
+                {
+
+                }
+                else if (pragma == ".org")
+                {
+
+                }
+                else if (pragma == ".incbin")
+                {
+                    return IncludeBinary(tokens, state);
+                }
+                else if (pragma == ".include")
+                {
+
+                }
+                else if (pragma == ".macro")
+                {
+
+                }
+                else if (pragma == ".macend")
+                {
+
+                }
+                else if (pragma == ".require")
+                {
+
+                }
+                else if (pragma == ".reserve")
+                {
+
+                }
+                else if (pragma == ".scope" || pragma == "{")
+                {
+                    state.Scopes.ScopeOpen(state.Code.Count, lineIndex);
+                    return true;
+                }
+                else if (pragma == ".scend" || pragma == "}")
+                {
+                    return state.Scopes.ScopeClose(state.Code.Count);
+                }
+
+                throw new Exception(string.Format("Unimplemented pragma in line {0}", line));
             }
             return false;
         }
