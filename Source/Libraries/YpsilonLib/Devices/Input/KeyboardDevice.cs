@@ -2,7 +2,7 @@
 
 namespace Ypsilon.Devices.Input
 {
-    public class Keyboard : ADevice
+    public class KeyboardDevice : ADevice
     {
         protected override ushort DeviceType
         {
@@ -21,7 +21,7 @@ namespace Ypsilon.Devices.Input
             get { return 0x0000; }
         }
 
-        public Keyboard(YBUS bus)
+        public KeyboardDevice(YBUS bus)
             : base(bus)
         {
             m_CommandBuffer = new ushort[16];

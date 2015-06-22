@@ -81,7 +81,7 @@ namespace Ypsilon
             CPU.BUS.Reset();
 
             CPU.BUS.AddDevice(new Ypsilon.Devices.Graphics.GraphicsAdapter(CPU.BUS));
-            CPU.BUS.AddDevice(new Ypsilon.Devices.Input.Keyboard(CPU.BUS));
+            CPU.BUS.AddDevice(new Ypsilon.Devices.Input.KeyboardDevice(CPU.BUS));
         }
 
         public void LoadBinaryToCPU(string path, ushort address)

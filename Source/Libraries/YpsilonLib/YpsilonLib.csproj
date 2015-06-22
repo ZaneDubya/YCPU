@@ -54,7 +54,7 @@
     <Compile Include="Common.cs" />
     <Compile Include="Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Devices\Graphics\MemoryBankLEM.cs" />
-    <Compile Include="Devices\Input\Keyboard.cs" />
+    <Compile Include="Devices\Input\KeyboardDevice.cs" />
     <Compile Include="Emulator.cs" />
     <Compile Include="Hardware\MemoryBank.cs" />
     <Compile Include="Hardware\YBUS.cs" />
