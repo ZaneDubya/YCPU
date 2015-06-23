@@ -13,6 +13,7 @@ namespace Ypsilon.Assembler
 {
     class ParserState
     {
+        public Parser Parser;
         public Dictionary<ushort, string> Branches { get; private set; }
         public Dictionary<ushort, string> Labels { get; private set; }
         public Dictionary<ushort, string> DataFields { get; private set; }
@@ -21,8 +22,9 @@ namespace Ypsilon.Assembler
 
         public string WorkingDirectory;
 
-        public ParserState()
+        public ParserState(Parser parser)
         {
+            Parser = parser;
             Branches = new Dictionary<ushort, string>();
             Labels = new Dictionary<ushort, string>();
             DataFields = new Dictionary<ushort, string>();
@@ -41,7 +43,7 @@ namespace Ypsilon.Assembler
         {
             foreach (ushort index in this.Labels.Keys)
             {
-                string labelName = this.Labels[index].ToLower();
+                string labelName = this.Labels[index].ToLowerInvariant();
 
                 if (!this.Scopes.ContainsLabel(labelName, index))
                 {
@@ -58,7 +60,7 @@ namespace Ypsilon.Assembler
         {
             foreach (ushort key in this.DataFields.Keys)
             {
-                string labelName = this.DataFields[key].ToLower();
+                string labelName = this.DataFields[key].ToLowerInvariant();
 
                 if (this.Scopes.ContainsLabel(labelName, key) != true)
                 {

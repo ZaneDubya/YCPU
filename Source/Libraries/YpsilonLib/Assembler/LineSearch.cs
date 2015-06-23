@@ -12,7 +12,7 @@ namespace Ypsilon.Assembler
     {
         public static bool MatchLabel(string line)
         {
-            string trimmed = line.TrimStart();
+            string trimmed = line.Trim();
             if (trimmed.Length == 0)
                 return false;
             if (!char.IsLetter(trimmed[0]))
@@ -29,7 +29,7 @@ namespace Ypsilon.Assembler
 
         public static bool MatchPragma(string line)
         {
-            string trimmed = line.TrimStart();
+            string trimmed = line.Trim();
             if (trimmed.Length == 0)
                 return false;
             if (trimmed[0] != '.')

@@ -32,7 +32,7 @@ namespace YCPUXNA
 
             Program.StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
 
-            byte[] machineCode;
+            List<byte> machineCode;
             string errorMessage;
 
             if (TryAssemble(inPath, out machineCode, out errorMessage))
@@ -110,7 +110,7 @@ namespace YCPUXNA
             return in_code;
         }
 
-        public bool TryAssemble(string pathToAsmFile, out byte[] machineCode, out string errorMessage)
+        public bool TryAssemble(string pathToAsmFile, out List<byte> machineCode, out string errorMessage)
         {
             machineCode = null;
             errorMessage = null;
@@ -134,7 +134,7 @@ namespace YCPUXNA
             return true;
         }
 
-        private bool tryWriteMachineCode(byte[] machineCode, string directory, string filename)
+        private bool tryWriteMachineCode(List<byte> machineCode, string directory, string filename)
         {
             // if filename is null or empty, default to "out.bin"
             filename = (filename == null || (filename.Trim() == string.Empty)) ?

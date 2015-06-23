@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Ypsilon
 {
@@ -26,24 +23,22 @@ namespace Ypsilon
         {
             List<string> values = new List<string>();
 
-            int currentPosition = 0;
             int lastPosition = 0;
 
-            do
+            for (int i = 0; i < s.Length; i++)
             {
-
-                do
+                if (separators.Contains(s[i]))
                 {
-                    if (separators.Contains(s[currentPosition]))
-                        break;
-                    ;
-                } while (++currentPosition < s.Length);
+                    string ss = s.Substring(lastPosition, i - lastPosition);
+                    if (ss != string.Empty)
+                        values.Add(s.Substring(lastPosition, i - lastPosition));
 
-                values.Add(s.Substring(lastPosition, currentPosition - lastPosition));
+                    lastPosition = i + 1;
+                }
+            }
 
-                lastPosition = ++currentPosition;
-
-            } while (currentPosition < s.Length);
+            if (s.Length != lastPosition)
+                values.Add(s.Substring(lastPosition, s.Length - lastPosition));
 
             return values;
         }

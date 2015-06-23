@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ypsilon.Assembler
 {
@@ -19,33 +18,42 @@ namespace Ypsilon.Assembler
             Initialize();
         }
 
-        public byte[] Parse(string code, string workingDirectory)
+        public List<byte> Parse(string code, string workingDirectory)
         {
-            ParserState state = new ParserState();
+            ParserState state = new ParserState(this);
             state.WorkingDirectory = workingDirectory;
             List<string> lines = Common.SplitString(code, '\n');
 
             int indexOfCurrentLine = 0;
 
             // pass 1: assemble the assembly file into machine code
-            foreach (var line in lines)
+            for (int i = 0; i < lines.Count; i++)
             {
+                string line = lines[i];
                 indexOfCurrentLine++;
 
                 // trim whitespace at tail/end and discard empty lines
-                string currentLine = StripComments(line).Trim();
-                if (currentLine.Length == 0 || currentLine[0] == ';')
-                    continue;
-
-                try
+                string stripped = StripComments(line);
+                if (stripped == null || stripped.Length == 0)
                 {
-                    AssembleLine(indexOfCurrentLine, currentLine, state);
+                    // do nothing, empty line
                 }
-                catch (Exception ex)
+                else
                 {
-                    AddMessageLine(string.Format("Line {0}: {1}.", indexOfCurrentLine, ex.Message));
-                    ErrorLine = indexOfCurrentLine;
-                    return null;
+                    string currentLine = stripped.Trim();
+                    if (currentLine.Length == 0 || currentLine[0] == ';')
+                        continue;
+
+                    try
+                    {
+                        AssembleLine(indexOfCurrentLine, currentLine, state);
+                    }
+                    catch (Exception ex)
+                    {
+                        AddMessageLine(string.Format("Line {0}: {1}.", indexOfCurrentLine, ex.Message));
+                        ErrorLine = indexOfCurrentLine;
+                        return null;
+                    }
                 }
             }
 
@@ -71,9 +79,14 @@ namespace Ypsilon.Assembler
             }
 
             // return the assembled code!
-            return state.Code.ToArray();
+            return state.Code;
         }
 
+        /// <summary>
+        /// Strip comments from line. If line is empty, returns empty string.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         string StripComments(string line)
         {
             string clearedLine = line;
@@ -103,8 +116,9 @@ namespace Ypsilon.Assembler
                     return;
             }
 
-            string[] tokens = this.Tokenize(line);
-            string opcode = tokens[0].Trim();
+            List<string> tokens = this.Tokenize(line);
+            string opcode = tokens[0];
+            opcode = opcode.Trim();
 
             if (ParsePragma(lineIndex, line, opcode, tokens, state))
             {
@@ -115,7 +129,7 @@ namespace Ypsilon.Assembler
             OpcodeFlag opcodeFlag = OpcodeFlag.BitWidth16; // default to operating on 16 bits
 
             // Look for flags on operands (xxx.yyy, where y is the flag).
-            if (opcode.Contains('.') && (opcode.IndexOf('.') > 1) && (opcode.Length - opcode.IndexOf('.') - 1 > 0))
+            if (opcode.IndexOf('.') != -1 && (opcode.IndexOf('.') > 1) && (opcode.Length - opcode.IndexOf('.') - 1 > 0))
             {
                 // opcode has a flag
                 string flag = opcode.Substring(opcode.IndexOf('.') + 1);
@@ -125,29 +139,42 @@ namespace Ypsilon.Assembler
             }
 
             // get the assembler for this opcode. If no assembler exists, throw error.
-            Func<string[], OpcodeFlag, ParserState, ushort[]> assembler;
-            if (!m_Opcodes.TryGetValue(opcode.ToLower(), out assembler))
+            Func<List<string>, OpcodeFlag, ParserState, List<ushort>> assembler;
+            if (m_Opcodes.ContainsKey(opcode.ToLowerInvariant()))
+            {
+                assembler = m_Opcodes[opcode.ToLowerInvariant()];
+            }
+            else
             {
                 throw new Exception(string.Format("Undefined command in line {0}", line));
             }
 
             // get the parameters
             List<string> param = new List<string>();
-            for (int i = 1; i < tokens.Length; i++)
+            for (int i = 1; i < tokens.Count; i++)
                 param.Add(tokens[i].Trim());
 
             // pass the params to the opcode's assembler. If no output, throw error.
-            ushort[] code = assembler(param.ToArray(), opcodeFlag, state);
+            List<ushort> code = assembler(param, opcodeFlag, state);
             if (code == null)
                 throw new Exception(string.Format("Error assembling line {0}", line));
 
             // add the output of the assembler to the machine code output. 
-            for (int i = 0; i < code.Length; i++)
+            for (int i = 0; i < code.Count; i++)
             {
                 ushort this_opcode = code[i];
                 state.Code.Add((byte)(this_opcode & 0x00ff));
                 state.Code.Add((byte)((this_opcode & 0xff00) >> 8));
             }
+        }
+
+        bool GetOpcodeAssembler(string opcode, out Func<List<string>, OpcodeFlag, ParserState, List<ushort>> assembler)
+        {
+            assembler = null;
+            if (m_Opcodes.TryGetValue(opcode.ToLowerInvariant(), out assembler))
+                return true;
+            else
+                return false;
         }
 
         bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
@@ -170,16 +197,30 @@ namespace Ypsilon.Assembler
             }
         }
 
-        string[] Tokenize(string data)
+        List<string> Tokenize(string data)
         {
             List<string> tokens = Common.SplitString(data, new[] { ' ', '\t', ',' });
             for (int i = 0; i < tokens.Count - 1; i++)
-                if (((tokens[i].Length > 0) && (tokens[i + 1].Length > 0)) && (tokens[i][0] == '[') && (tokens[i + 1][tokens[i + 1].Length - 1] == ']'))
+            {
+                string token = tokens[i];
+                string nextToken = tokens[i + 1];
+                if (((token.Length > 0) && (nextToken.Length > 0)) && (token[0] == '[') && (nextToken[nextToken.Length - 1] == ']'))
                 {
                     tokens[i] = tokens[i] + ',' + tokens[i + 1];
                     tokens[i + 1] = string.Empty;
                 }
-            return tokens.Where(t => t.Trim() != string.Empty).ToArray();
+            }
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i] == string.Empty)
+                {
+                    tokens.RemoveAt(i);
+                    i -= 1;
+                }
+            }
+
+            return tokens;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Ypsilon.Hardware
                 else
                 {
                     s[i] = (opcode.Disassembler != null) ?
-                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out usesNextWord).ToLower() :
+                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out usesNextWord).ToLowerInvariant() :
                         opcode.Name;
                 }
                 address += (ushort)(usesNextWord ? 4 : 2);
@@ -323,7 +323,7 @@ namespace Ypsilon.Hardware
             }
             if (flags == string.Empty)
                 flags = "<NONE>";
-            if (name.ToLower() == "pop" && (flags.Trim() == "PC"))
+            if (name.ToLowerInvariant() == "pop" && (flags.Trim() == "PC"))
                 return "RTS";
             return string.Format("{0,-8}{1}", name, flags);
         }

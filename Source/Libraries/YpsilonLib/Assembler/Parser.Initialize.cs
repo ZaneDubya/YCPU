@@ -13,7 +13,7 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>> m_Opcodes;
+        Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>> m_Opcodes;
         Dictionary<string, ushort> m_Registers;
         Dictionary<string, ushort> m_StatusRegisters;
 
@@ -25,7 +25,7 @@ namespace Ypsilon.Assembler
 
         void InitOpcodeDictionary()
         {
-            m_Opcodes = new Dictionary<string, Func<string[], OpcodeFlag, ParserState, ushort[]>>();
+            m_Opcodes = new Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>>();
 
             // alu instructions
             m_Opcodes.Add("cmp", AssembleCMP);

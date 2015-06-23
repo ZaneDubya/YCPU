@@ -1,18 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
     static class Sanity
     {
-        public static void RequireParamCountExact(string[] param, int count)
+        public static void RequireParamCountExact(List<string> param, int count)
         {
-            if (param.Length != count)
+            if (param.Count != count)
                 throw new Exception(string.Format("Bad param count, expected {0}.", count));
         }
 
-        public static void RequireParamCountMinMax(string[] param, int min, int max)
+        public static void RequireParamCountMinMax(List<string> param, int min, int max)
         {
-            if ((param.Length < min) || (param.Length > max))
+            if ((param.Count < min) || (param.Count > max))
                 throw new Exception(string.Format("Bad param count, expected {0}-{1}.", min, max));
         }
 

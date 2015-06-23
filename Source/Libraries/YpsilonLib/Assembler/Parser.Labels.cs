@@ -17,7 +17,7 @@ namespace Ypsilon.Assembler
             int colon_pos = line.IndexOf(':');
             string labelName = line.Substring(0, colon_pos);
 
-            if (!state.Scopes.AddLabel(labelName.Trim().ToLower(), state.Code.Count))
+            if (!state.Scopes.AddLabel(labelName.Trim().ToLowerInvariant(), state.Code.Count))
                 throw new Exception(string.Format("Error adding label '{0}'.", labelName));
             return colon_pos + 1;
         }

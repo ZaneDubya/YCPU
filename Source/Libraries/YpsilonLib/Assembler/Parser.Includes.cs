@@ -8,14 +8,15 @@
 
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        bool IncludeBinary(string[] tokens, ParserState state)
+        bool IncludeBinary(List<string> tokens, ParserState state)
         {
-            if (tokens.Length == 1)
+            if (tokens.Count == 1)
                 throw new Exception(string.Format("No file specified for .incbin pragma.", tokens[1]));
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
@@ -25,16 +26,16 @@ namespace Ypsilon.Assembler
                 throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
 
             int begin = 0, length = data.Length;
-            if (tokens.Length >= 3)
+            if (tokens.Count >= 3)
                 if (!Int32.TryParse(tokens[2], out begin))
                     throw new Exception(string.Format("Third paramter for incbin must be numeric."));
 
-            if (tokens.Length == 3)
+            if (tokens.Count == 3)
             {
                 length = length - begin;
             }
 
-            if (tokens.Length == 4)
+            if (tokens.Count == 4)
                 if (!Int32.TryParse(tokens[3], out length))
                     throw new Exception(string.Format("Fourth paramter for incbin must be numeric."));
 

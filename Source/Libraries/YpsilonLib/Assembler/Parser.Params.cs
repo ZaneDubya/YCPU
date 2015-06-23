@@ -7,7 +7,6 @@
  * =============================================================== */
 
 using System;
-using System.Linq;
 
 namespace Ypsilon.Assembler
 {
@@ -21,7 +20,7 @@ namespace Ypsilon.Assembler
             ParsedOpcode ParsedOpcode = new ParsedOpcode();
 
             // get rid of ALL white space!
-            string param = originalParam.Replace(" ", string.Empty).Trim().ToLower();
+            string param = originalParam.Replace(" ", string.Empty).Trim().ToLowerInvariant();
 
             if (m_Registers.ContainsKey(param))
             {
@@ -86,7 +85,7 @@ namespace Ypsilon.Assembler
                     }
                     ParsedOpcode.AddressingMode = AddressingMode.IndirectPreDec;
                 }
-                else if (param.Contains(','))
+                else if (param.IndexOf(',') != -1)
                 {
                     // Indexed; can be [R0,$0000], [$0000,R0], or [R0,R1].
                     string param0 = param.Substring(0, param.IndexOf(',')).Trim(); // base operand
@@ -147,6 +146,7 @@ namespace Ypsilon.Assembler
         bool TryParseLiteralParameter(ParsedOpcode parsedOpcode, string originalParam)
         {
             ushort? literalValue = null;
+            ushort value;
 
             string param = originalParam;
 
@@ -179,15 +179,15 @@ namespace Ypsilon.Assembler
                     }
                 }
             }
-            else if (param.Trim().All(x => char.IsDigit(x)))
+            else if (ushort.TryParse(param, out value))
             {
                 // format 1234
-                literalValue = Convert.ToUInt16(param, 10);
+                literalValue = value;
             }
-            else if ((param[0] == '-') && (param.Substring(1).Trim().All(x => char.IsDigit(x))))
+            else if ((param[0] == '-') && (ushort.TryParse(param.Substring(1), out value)))
             {
                 // format -1234
-                literalValue = (ushort)(0 - Convert.ToInt16(param.Substring(1, param.Length - 1), 10));
+                literalValue = (ushort)(0 - value);
             }
             else
             {
@@ -231,7 +231,7 @@ namespace Ypsilon.Assembler
 
         bool isStackOffset(string param)
         {
-            if (param[0].ToString().ToUpper() == "S" && 
+            if (param[0].ToString().ToUpperInvariant() == "S" && 
                 param.Length >= 4 && param[1] == '[' && 
                 param[param.Length - 1] == ']')
                 return true;

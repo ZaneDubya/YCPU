@@ -7,14 +7,15 @@
  * =============================================================== */
 
 using System;
+using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        bool ParsePragma(int lineIndex, string line, string opcode, string[] tokens, ParserState state)
+        bool ParsePragma(int lineIndex, string line, string opcode, List<string> tokens, ParserState state)
         {
-            string pragma = opcode.ToLower();
+            string pragma = opcode.ToLowerInvariant();
             if (LineSearch.MatchPragma(pragma))
             {
                 if (pragma == ".dat8")

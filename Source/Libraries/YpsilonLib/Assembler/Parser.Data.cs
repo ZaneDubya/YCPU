@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ypsilon.Assembler
 {
@@ -87,7 +86,7 @@ namespace Ypsilon.Assembler
                 {
                     if (isEscaped)
                     {
-                        switch (char.ToLower(c))
+                        switch (char.ToLowerInvariant(c))
                         {
                             case '0':
                                 field += (char)(0x00);
@@ -165,8 +164,10 @@ namespace Ypsilon.Assembler
 
             List<string> linesplit = Common.SplitString(line, ',');
 
-            foreach (var field in linesplit)
+            for (int i = 0; i < linesplit.Count; i++)
             {
+                string field = linesplit[i];
+
                 if (field.Trim() == string.Empty) continue;
                 if (dataFields.Count == 0)
                 {
@@ -207,8 +208,10 @@ namespace Ypsilon.Assembler
 
         private void GenerateMachineCodeForDataFields(IList<string> dataFields, DataFieldTypes dataType, ParserState state)
         {
-            foreach (string field in dataFields)
+            for (int j = 0; j < dataFields.Count; j++)
             {
+                string field = dataFields[j];
+
                 if (field == string.Empty)
                     continue;
 
@@ -241,9 +244,9 @@ namespace Ypsilon.Assembler
                     {
                         val = Convert.ToUInt32(valField.Substring(2, valField.Length - 2), 16);
                     }
-                    else if (valField.All(x => char.IsDigit(x)))
+                    else if (uint.TryParse(valField, out val))
                     {
-                        val = Convert.ToUInt32(valField, 10);
+                        val = uint.Parse(valField); // do this twice? just to have something in the if statement...
                     }
                     else
                     {
