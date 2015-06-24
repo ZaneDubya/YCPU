@@ -19,7 +19,7 @@ namespace Ypsilon
             }
         }
 
-        public static List<string> SplitString(string s, params char[] separators)
+        public static List<string> SplitString(string s, params string[] separators)
         {
             List<string> values = new List<string>();
 
@@ -27,13 +27,17 @@ namespace Ypsilon
 
             for (int i = 0; i < s.Length; i++)
             {
-                if (separators.Contains(s[i]))
+                for (int j = 0; j < separators.Length; j++)
                 {
-                    string ss = s.Substring(lastPosition, i - lastPosition);
-                    if (ss != string.Empty)
-                        values.Add(s.Substring(lastPosition, i - lastPosition));
+                    if (s[i] == (int)separators[j][0])
+                    {
+                        string ss = s.Substring(lastPosition, i - lastPosition);
+                        if (ss != string.Empty)
+                            values.Add(s.Substring(lastPosition, i - lastPosition));
 
-                    lastPosition = i + 1;
+                        lastPosition = i + 1;
+                        break;
+                    }
                 }
             }
 

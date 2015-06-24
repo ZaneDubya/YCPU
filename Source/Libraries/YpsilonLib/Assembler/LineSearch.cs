@@ -18,9 +18,9 @@ namespace Ypsilon.Assembler
             if (!char.IsLetter(trimmed[0]))
                 return false;
             for (int i = 1; i < trimmed.Length; i++)
-                if (trimmed[i] == ':')
+                if (trimmed.IndexOf(':') == i)
                     return true;
-                else if (!char.IsLetterOrDigit(trimmed[i]) && !(trimmed[i] == '_'))
+                else if (!char.IsLetterOrDigit(trimmed[i]) && !(trimmed.IndexOf('_') == i))
                     return false;
             return false;
         }

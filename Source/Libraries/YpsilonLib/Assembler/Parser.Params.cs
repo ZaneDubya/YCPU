@@ -65,7 +65,7 @@ namespace Ypsilon.Assembler
                     ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                     ParsedOpcode.AddressingMode = AddressingMode.Indirect;
                 }
-                else if (param[param.Length - 1] == '+')
+                else if (param.IndexOf('+') == param.Length - 1)
                 {
                     // Indirect Post-Increment: [R0+]
                     param = param.Substring(0, param.Length - 1);
@@ -75,7 +75,7 @@ namespace Ypsilon.Assembler
                     }
                     ParsedOpcode.AddressingMode = AddressingMode.IndirectPostInc;
                 }
-                else if (param[0] == '-')
+                else if (param.IndexOf('-') == 0)
                 {
                     // Indirect Pre-Decrement: [-R0]
                     param = param.Substring(1, param.Length - 1);
@@ -156,7 +156,7 @@ namespace Ypsilon.Assembler
             if (param.Contains("0x"))
             {
                 // format: 0x12EF or -0x12EF
-                if (param[0] == '-')
+                if (param.IndexOf('-') == 0)
                 {
                     try
                     {
@@ -184,7 +184,7 @@ namespace Ypsilon.Assembler
                 // format 1234
                 literalValue = value;
             }
-            else if ((param[0] == '-') && (ushort.TryParse(param.Substring(1), out value)))
+            else if ((param.IndexOf('-') == 0) && (ushort.TryParse(param.Substring(1), out value)))
             {
                 // format -1234
                 literalValue = (ushort)(0 - value);
@@ -232,8 +232,8 @@ namespace Ypsilon.Assembler
         bool isStackOffset(string param)
         {
             if (param[0].ToString().ToUpperInvariant() == "S" && 
-                param.Length >= 4 && param[1] == '[' && 
-                param[param.Length - 1] == ']')
+                param.Length >= 4 && param.IndexOf('[') == 1 && 
+                param.IndexOf(']') == param.Length - 1)
                 return true;
             else
                 return false;

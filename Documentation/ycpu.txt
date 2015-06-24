@@ -736,10 +736,10 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 0101   LSR                 SHF             Logical Shift Right           4
 1010 0110   ROR                 SHF             Rotate Through-Carry Right    2
 1010 0111   RNR                 SHF             Rotate No-Carry Right         2
-1010 1000   BTT                 BTT             Test a bit                    2
-1010 1001   BTX                 BTT             Test a bit and change it      2
-1010 1010   BTC                 BTT             Test a bit and clear it       2
-1010 1011   BTS                 BTT             Test a bit and set it         2    
+1010 1000   BTT                 BTI             Test a bit                    2
+1010 1001   BTX                 BTI             Test a bit and change it      2
+1010 1010   BTC                 BTI             Test a bit and clear it       2
+1010 1011   BTS                 BTI             Test a bit and set it         2    
 1010 1100   FPx                 FPU             32-bit FPU operations        XXX
 1010 1101   ---                 ---             UNDEFINED                     -
 1010 1110   SEF                 FLG             Set flag bit                  1
@@ -748,12 +748,12 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 001x   POP                 STK             Pop from stack                1 
 1011 0100   ---                 ---             UNDEFINED                     -
 1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
-1011 011x   SET                 SET             Set register to value         1
+1011 011x   SET                 SEI             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
-1011 1010   JMP         /       JMP             Jump                          2 
-1011 1011   JSR         /       JMP             Jump to Subroutine            3 
-1011 1100   HWQ         X       HWQ             Hardware Bus Query            4
+1011 1010   JMP         /       JMI             Jump                          2 
+1011 1011   JSR         /       JMI             Jump to Subroutine            3 
+1011 1100   HWQ         X       HWI             Hardware Bus Query            4
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
 1011 1111   RTI         X       ---             Return from Interrupt         4 
@@ -823,7 +823,7 @@ ALU Bit Pattern
             following byte is skipped (the entire 16 bits of offsets and
             absolute values are still used).
 
-BTT Bit Pattern
+BTI Bit Pattern
     FEDC BA98 7654 3210
     rrrR ssss OOOO OOOO
         O = Opcode
@@ -856,7 +856,7 @@ FPU Bit Pattern
         R = general purpose register used as address for Rx
         
         
-HWQ Bit Pattern
+HWI Bit Pattern
     FEDC BA98 7654 3210
     iiii iiii OOOO OOOO
         O = Opcode
@@ -887,7 +887,7 @@ IMM Bit Pattern
         v = value to increment register by (5-bit value + 1, range of $01-$20)
     
     
-JMP Bit Pattern
+JMI Bit Pattern
     FEDC BA98 7654 3210 
     AAAA rrrF OOOO OOOO
         O = Opcode
@@ -956,7 +956,7 @@ MMU Bit Pattern
         R = Rv
 
 
-SET Bit Pattern
+SEI Bit Pattern
     FEDC BA98 7654 3210
     RRRv vvvv OOOO OOOA
         O = Opcode

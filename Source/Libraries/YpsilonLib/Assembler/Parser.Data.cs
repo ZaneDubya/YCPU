@@ -27,7 +27,7 @@ namespace Ypsilon.Assembler
                     if (inDoubleQuote)
                     {
                         inDoubleQuote = false;
-                        dataFields.Add('\"' + field);
+                        dataFields.Add("\"" + field);
                         field = string.Empty;
                     }
                     else
@@ -40,7 +40,7 @@ namespace Ypsilon.Assembler
                     if (inSingleQuote)
                     {
                         inSingleQuote = false;
-                        dataFields.Add('\"' + field);
+                        dataFields.Add("\"" + field);
                         field = string.Empty;
                     }
                     else
@@ -54,7 +54,7 @@ namespace Ypsilon.Assembler
                     {
                         if (isEscaped)
                         {
-                            field += '\\';
+                            field += "\\";
                             isEscaped = false;
                         }
                         else
@@ -71,7 +71,7 @@ namespace Ypsilon.Assembler
                 {
                     if (inDoubleQuote || inSingleQuote)
                     {
-                        field += ',';
+                        field += ",";
                     }
                     else
                     {
@@ -162,7 +162,7 @@ namespace Ypsilon.Assembler
         {
             List<string> dataFields = new List<string>();
 
-            List<string> linesplit = Common.SplitString(line, ',');
+            List<string> linesplit = Common.SplitString(line, ",");
 
             for (int i = 0; i < linesplit.Count; i++)
             {
@@ -215,7 +215,7 @@ namespace Ypsilon.Assembler
                 if (field == string.Empty)
                     continue;
 
-                if (field[0] == '\"')
+                if (field.IndexOf('\"') == 0)
                 {
                     for (int i = 1; i < field.Length; i++)
                     {
