@@ -7,13 +7,16 @@ This repository also hosts software which emulates the YCPU platform. This softw
 
 Source Tree
 ----
-**Assembler** - Assembles YASM files into binaries.  
-**Documentation** - Specifications describing the YCPU and related hardware devices.  
-**Emulator** - Emulates the YCPU using the Hardware and Platform libraries.  
-**Hardware** - Class library, implentation of the YCPU and hardware devices.  
-**Platform** - Class library, XNA platform for hosting YCPU on the Win32/.NET platform.  
-**Resources** - Resource files (images, palettes, shaders) that are included in Platform.  
-**Tests** - Example YASM files that can be assembled by the Assembler.
+- Documentation - Specifications describing the YCPU and ancillary emulated hardware devices. 
+- Source - Source code for the library and supporting projects.
+  - YCPU
+    - Assembler - Assembles YASM files into binaries.  
+    - Emulator - Emulates the YCPU using the Hardware and Platform libraries.  
+    - Hardware - Class library, implentation of the YCPU and hardware devices.  
+    - Platform - Class library, XNA platform for hosting YCPU on the Win32/.NET platform.  
+  - YCPUResources - Resource files (images, palettes, shaders) that are included in Platform.  
+  - YCPUXNA - Example project providing a YCPU emulator, plus monitor and keyboard, in XNA.
+- Tests - Example YASM files that can be assembled by the Assembler.
 
 Thanks To:
 ----
