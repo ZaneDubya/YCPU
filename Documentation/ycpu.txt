@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.5b RC1
+Version 0.5c RC1
 
 ### Table of Contents ##########################################################
 
@@ -300,15 +300,18 @@ priority over devices in higher index slots.
 An interrupt may also be triggered by the SWI opcode. In this case, the
 processor will raise the 'software interrupt' interrupt vector, and the code
 at that interrupt must determine what function has been requested, based on the
-contents of the registers. Like hardware interrupts, software interrupts will
-not be acknowledged by the CPU if the I status bit is clear, but will be called
-regardless of the status of the Q status bit, allowing interrupts to call other
-interrupts.
+contents of the registers.
 
+Unlike hardware interrupts, software interrupts will be acknowledged by the CPU
+if the I status bit is clear. This allows the processor to respond to software
+interrupts even when within an existing software interrupt.
+
+Also unlike hardware interrupts, software interrupts will be acknowledged
+regardless of the status of the Q status bit
     
 --- 2.D.3. OTHER INTERRUPTS ----------------------------------------------------
 
-The processor can also raise interrupts on its own, in response to error
+The processor can also raise interrupts on its own in response to error
 states. These interrupts are named and described in the Interrupt Vector Table,
 below.
 
@@ -339,13 +342,15 @@ It then executes the following sequence:
 --- 2.D.5. RETURNING FROM AN INTERRUPT -----------------------------------------
 
 When an interrupt handler ends, it should call RTI, which restores the values of
-PS and PC. If an interrupt handler modifies a register or changes the MMU cache,
-it should save the state of the registers and/or cache before doing so, and
-restore the same before returning from the interrupt handler.
+PS and PC from the stack. If an interrupt handler modifies a register or changes
+the MMU cache, it should save the state of the registers and/or cache before
+doing so, and restore the same before returning from the interrupt handler.
+
+Note that PC bits Q, U, W, and E are cleared on RTI af
 
 The RTI instruction follows this sequence:
     1.  Pop PC, PS from the Stack.
-        Note that PC bits Q, U, W, and E are cleared on RTI.
+        PC bits Q, U, W, and E are cleared.
     2.  Execution Continues.
     
 
@@ -445,10 +450,14 @@ target is another register, the lower 8 bits of memory are stored, and the high
 --- 2.E.2. POST-INCREMENT AND PRE-DECREMENT VALUES -----------------------------
 
 When using post-increment and pre-decrement, the value of the register is
-changed by the byte-size of the data operated on by the instruction. Thus:
+changed by one, except when working with LOD and STO operations. In these cases,
+the value of the register is changed by the byte-size of the data operated on by
+the instruction. Thus:
 
-    LOD.8   R0, [R1+]           ; will post-decrement R1 by '1'.
-    LOD.16  R0, [R1+]           ; will post-decrement R1 by '2'.
+    ADD.8   R0, [R1+]           ; will post-increment R1 by '1'.
+    LOD.8   R0, [R1+]           ; will post-increment R1 by '1'.
+    ADD.8   R0  [R1+]           ; will post-increment R1 by '1'.
+    LOD.16  R0, [R1+]           ; will post-increment R1 by '2'.
 
 
 === 2.F. Memory Management =====================================================
@@ -522,11 +531,11 @@ The MMU has access to 30 bits of physical address space. A physical address is:
 'b' is the 8-bit index of the device bank mapped to that 16kb bank.
 'D' is the 8-bit hardware bus index that the bank is taken from.
 
-The 10 'b' bits reference a bank of RAM or ROM from a device on the hardware
+The 8 'b' bits reference a bank of RAM or ROM from a device on the hardware
 bus. The 8 ‘D’ bits are a 8-bit hardware bus index. Because no hardware device
 can have more than 2^8 = 256 banks, each bank can host no more than 4
-megabytes of memory, and the MMU as a whole can most no more than 2^30 bytes =
-1024 megabytes of memory.
+megabytes of memory, and the MMU as a whole can address no more than
+2^30 bytes = 1024 megabytes of memory.
 
 Note that when selecting memory banks from processor space (device index 0), the
 high bit of the bank selection index (bit 7 of bank/device select) indicates a
@@ -538,16 +547,16 @@ ROM bank. When this is clear, a RAM bank is selected.
 The YCPU is internally 16-bit, and can address only 16-bits of logical address
 space. When the MMU is active, this memory is comprised of four 'banks', each of
 16384 bytes. Which banks of memory are placed in memory is determined by the
-MMU. As noted in 2.F.3., supra, a User may manipulate the MMU cache using the
+MMU. As noted in 2.F.3., supra, a program may manipulate the MMU cache using the
 MML/MMR/MMW/MMS instructions to load and save values from the MMU cache; this
 will change which banks are loaded within the logical address space.
 
-A User may also replace a bank in memory using a 'far jump'. Where a normal jump
-instruction sets only the PC register, a far jump will also switch a new bank of
-memory into the address space containing the new PC value. The addressing mode
-of the instruction will indicate where the processor will find the word
-describing which Device and which Bank will occupy the address space containing
-the new address of the PC.
+A running program may also replace a bank in memory using a 'far jump'. Where a
+normal jump instruction sets only the PC register, a far jump will also switch a
+new bank of memory into the address space containing the new PC value. The
+addressing mode of the instruction will indicate where the processor will find
+the word describing which Device and which Bank will occupy the address space
+containing the new address of the PC.
 
 An example of a far jump with immediate addressing will help illustrate how this
 works. Note that 'immediate addressing' indicates that the processor uses the
@@ -581,7 +590,10 @@ Note 1: far jumps will clear all flags in the upper word for the MMU cache entry
         containing that bank.
 Note 2: 'far jumps' are only accessible from Supervisor mode. If the processor
         attempts to execute a 'far jump' while in user mode, the processor will
-        raise an 'UnprivOpcode' exception.
+        raise an 'UnprivOpcode' exception. Thus, these instructions could still
+        be used while in User mode; the processor interrupt would have to 'trap'
+        these instructions. Alternatively, user programs could use a SWI
+        instruction for the same purpose.
 Note 3: when the MMU is disabled, a far jump will still set the lower word for 
         the MMU cache entry for the specified bank, but (because the MMU is
         disabled) the address space will remain unchanged.
@@ -605,8 +617,8 @@ in the following known state:
     PC <- [InterruptTable[$0]]      ; Execute 'RESET' interrupt code.
 
 Because Memory Banking is disabled, the processor's virtual address space is set
-up as follows: $0000-$3FFF is processor ROM, and $4000-$FFFF is processor RAM.
-This is discussed in further detail in 2.F.1., supra.
+up as follows: $0000-$3FFF is processor ROM bank 0, and $4000-$FFFF is processor
+RAM. This is discussed in further detail in 2.F.1., supra.
     
 
 === 2.H. The Real Time Clock ===================================================
@@ -617,7 +629,7 @@ powered down. The processor can query the RTC for the current time.
 --- 2.H.1. RTC Date/Time data --------------------------------------------------
 
 The clock provides time data with the following precision:
-    Year:    8 bits (0-255)
+    Year:    7 bits (0-99)
     Month:   4 bits (0-11)
     Day:     5 bits (0-31)
     Hour:    5 bits (0-23)
@@ -628,10 +640,14 @@ The clock provides time data with the following precision:
 This data is saved to R0-R3 upon calling HWQ $80, in this format:
 
                                                     FEDC BA98 7654 3210
-                    R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
+                    R0: 8 bits Year, 4 bits Month   .YYY YYYY .... MMMM
                     R1: 5 bits Day, 5 bits Hour     ...D DDDD ...h hhhh
                     R2: 6 bits Min, 6 bits Second   ..mm mmmm ..ss ssss
                     R3: 16 bits Tick                tttt tttt tttt tttt
+                    
+The original epoch for this device is 1 January 1900 at Midnight. This device
+will 'roll over' at 1 Janaury 2000. YpsilonTech accepts no responsibility for
+programs which cannot handle this roll over.
                     
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
     
