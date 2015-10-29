@@ -32,10 +32,10 @@ Version 0.5c RC1
 
 ### 1. Introduction ############################################################
 
-The YCPU Specification describes an imaginary processor with a comprehensive
-instruction set and features that make it powerful and easy to program for. The
-specification is released to the public domain, and can be used in derivative
-works without permission.
+The YCPU Specification describes a processor with a comprehensive instruction
+set and features that make a processor built to the specification powerful yet
+easy to program for. The specification is released to the public domain, and can
+be used in derivative works without permission.
 
 
 === 1.A. Public Domain Dedication ==============================================
@@ -54,21 +54,21 @@ http://creativecommons.org/about/cc0
 
 ### 2. Hardware Information ####################################################
 
-The YCPU is a 16-bit imaginary processor. The processor includes features
-intended to ease the development of software, including a comprehensive
-instruction set, eight general purpose registers that can be used as data or
-address registers and are, with one small exception, completely orthogonal;
-support for 32-bit floating point operations, a MMU that allows read/write/
-execute protection and bank switching of 4 16 kilobyte banks within the 16-bit
-logical address space, a real time clock, a hardware bus that supports up to 255
-devices, and Supervisor/User modes with different privileges and stack pointers.
+The YCPU is a 16-bit processor. The processor includes features intended to ease
+the development of software, including a comprehensive instruction set, eight
+general purpose registers that can be used as data or address registers and are,
+with one small exception, completely orthogonal; support for 32-bit floating
+point operations, a MMU that allows read/write/execute protection and bank
+switching of 4 16 kilobyte banks within the 16-bit logical address space, a real
+time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
+modes with different privileges and stack pointers.
 
 
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
 
-Internally, all registers and cache words are 16-bit. All logical addresses are
-16-bit, and thus instructions can only address 64 kilobytes of memory at any
-time. Any multi-byte values are stored in little-endian format.
+Internally, all registers and cache words are 16-bit, and all logical addresses
+are likewise 16-bit. Thus instructions can only address 64 kilobytes of memory
+at any time. All multi-word values are stored in little-endian format.
 
 --- 2.2. INSTRUCTION WIDTH: 16-BIT ---------------------------------------------
 
@@ -302,12 +302,11 @@ processor will raise the 'software interrupt' interrupt vector, and the code
 at that interrupt must determine what function has been requested, based on the
 contents of the registers.
 
-Unlike hardware interrupts, software interrupts will be acknowledged by the CPU
-if the I status bit is clear. This allows the processor to respond to software
-interrupts even when within an existing software interrupt.
-
-Also unlike hardware interrupts, software interrupts will be acknowledged
+Unlike hardware interrupts, software interrupts will be acknowledged
 regardless of the status of the Q status bit
+
+The I status bit only applies to hardware interrupts, and thus software
+interrupts will be acknowledged by the CPU if the I status bit is clear. 
     
 --- 2.D.3. OTHER INTERRUPTS ----------------------------------------------------
 
@@ -346,7 +345,8 @@ PS and PC from the stack. If an interrupt handler modifies a register or changes
 the MMU cache, it should save the state of the registers and/or cache before
 doing so, and restore the same before returning from the interrupt handler.
 
-Note that PC bits Q, U, W, and E are cleared on RTI af
+Note that on RTI, PS bits are restored to the value they had prior to the
+interrupt.
 
 The RTI instruction follows this sequence:
     1.  Pop PC, PS from the Stack.
@@ -426,8 +426,8 @@ Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
 Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
 Stack Offset        S[$0-$7]    Stack[Offset]       // Offset limited to 0-7
-Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented.
-Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented.
+Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented. (See 2.E.2.)
+Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented. (See 2.E.2.)
 Indirect Indexed    [Rx,Rx]     Mem[R+R]
 
 --- 2.E.1. BIT WIDTH OF INSTRCTIONS --------------------------------------------
@@ -450,13 +450,12 @@ target is another register, the lower 8 bits of memory are stored, and the high
 --- 2.E.2. POST-INCREMENT AND PRE-DECREMENT VALUES -----------------------------
 
 When using post-increment and pre-decrement, the value of the register is
-changed by one, except when working with LOD and STO operations. In these cases,
-the value of the register is changed by the byte-size of the data operated on by
-the instruction. Thus:
+changed the value of the register is changed by the byte-size of the data
+operated on by the instruction. Thus:
 
     ADD.8   R0, [R1+]           ; will post-increment R1 by '1'.
     LOD.8   R0, [R1+]           ; will post-increment R1 by '1'.
-    ADD.8   R0  [R1+]           ; will post-increment R1 by '1'.
+    ADD.8   R0  [R1+]           ; will post-increment R1 by '2'.
     LOD.16  R0, [R1+]           ; will post-increment R1 by '2'.
 
 
@@ -477,9 +476,19 @@ address space is mapped as follows:
     $8000-$BFFF : Internal RAM Bank $02
     $C000-$FFFF : Internal RAM Bank $03
 
-    
+The equivalent MMU register values would be as follows:
+
+    $00 : $0080                 ; bank hi bit for device zero selects ROM banks.
+    $01 : $0000
+    $02 : $0001
+    $03 : $0000
+    $04 : $0002
+    $05 : $0000
+    $06 : $0003
+    $07 : $0000
+
 --- 2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED -------------------------------
-    
+
 While the 'M' status bit in PC is set, the MMU is enabled, and will translate
 memory references to physical addresses. It does so by dividing the processor's
 virtual address space into 4 banks of 16 kilobytes each. The high two bits of
@@ -648,9 +657,9 @@ This data is saved to R0-R3 upon calling HWQ $80, in this format:
 The original epoch for this device is 1 January 1900 at Midnight. This device
 will 'roll over' at 1 Janaury 2000. YpsilonTech accepts no responsibility for
 programs which cannot handle this roll over.
-                    
+
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
-    
+
 The RTC also provides a CLOCK interrupt, which can be enabled, disabled, and the
 frequency of which can be specified. When the RTC interrupt is enabled, the RTC
 will raise the CLOCK interrupt at an interval which is specified by the
