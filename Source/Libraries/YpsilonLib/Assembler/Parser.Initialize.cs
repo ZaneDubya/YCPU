@@ -76,11 +76,6 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("btx", AssembleBTX);
             m_Opcodes.Add("btc", AssembleBTC);
             m_Opcodes.Add("bts", AssembleBTS);
-            // fpu operations. not implemented.
-            m_Opcodes.Add("fpa", null);
-            m_Opcodes.Add("fps", null);
-            m_Opcodes.Add("fpm", null);
-            m_Opcodes.Add("fpd", null);
             // flag operations
             m_Opcodes.Add("sef", AssembleSEF);
             m_Opcodes.Add("clf", AssembleCLF);

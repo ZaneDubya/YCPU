@@ -1,5 +1,5 @@
-YCPU Specification
-Version 0.5c RC1
+﻿YCPU Specification
+Version 0.6 RC2
 
 ### Table of Contents ##########################################################
 
@@ -21,12 +21,11 @@ Version 0.5c RC1
         3.C.        Bit Shifting Instructions
         3.D.        Bit Testing Instructions
         3.E.        Branch Instructions
-        3.F.        FPU Operations
-        3.G.        Immediate Instructions
-        3.H.        Interrupt Instructions
-        3.I.        Jump & Call Instructions
-        3.J.        Stack Instructions
-        3.K.        Processor Function Instructions
+        3.F.        Immediate Instructions
+        3.G.        Interrupt Instructions
+        3.H.        Jump & Call Instructions
+        3.I.        Stack Instructions
+        3.J.        Processor Function Instructions
         4.      History
 
 
@@ -85,8 +84,7 @@ cleared.
 
 For all other instructions there is no support for 8-bit maths. All other
 instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
-which has a 32-bit result, with the upper 16 bits of the result stored in R0,
-and FPU instructions, which deal with 32-bit data).
+which has a 32-bit result with the upper 16 bits of the result stored in R0).
 
 
 --- 2.3. MEMORY ACCESS ---------------------------------------------------------
@@ -369,7 +367,9 @@ $1  Clock           Raised when the processor's Real Time Clock ticks. The tick
 $2  DivideByZero    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
 $3  FPUError        Raised when the processor executes a floating point
-                    operation that fails due to bad input.
+                    operation that fails due to bad input. Note that the YCPU
+                    does not contain a FPU in its default configuration, and
+                    this interrupt will never be called.
 $4  StackFault      Raised when the processor executes a Pull opcode with SP 
                     equal to the high-value limit of the Stack, or the processor 
                     executes a Push opcode with SP equal to the low-value limit 
@@ -765,8 +765,7 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1001   BTX                 BTI             Test a bit and change it      2
 1010 1010   BTC                 BTI             Test a bit and clear it       2
 1010 1011   BTS                 BTI             Test a bit and set it         2    
-1010 1100   FPx                 FPU             32-bit FPU operations        XXX
-1010 1101   ---                 ---             UNDEFINED                     -
+1010 110x   ---                 ---             UNDEFINED                     -
 1010 1110   SEF                 FLG             Set flag bit                  1
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
@@ -871,15 +870,6 @@ FLG Bit Pattern
         Z = Zero flag bit
         C = Carry flag bit
         V = oVerflow flag bit
-        
-FPU Bit Pattern
-    FEDC BA98 7654 3210
-    RRRr rroo OOOO OOOO
-        O = Opcode
-        o = Sub-opcode, 00: Add, 01: Subtract, 10: Multiply, 11: Divide 
-        r = general purpose register used as address for Ry
-        R = general purpose register used as address for Rx
-        
         
 HWI Bit Pattern
     FEDC BA98 7654 3210
@@ -1364,111 +1354,8 @@ is shifted left by 1 (multiplied by 2) to allow for an effective range of -128 t
       110 = Undefined                                                       ....
       111 = BAW, Branch always                                              ....
 
-    
-=== 3.F. FPU Instructions ======================================================
 
-This section describes the four FPU Instructions, which allow direct operations
-on single precision (32-bit) floating point numbers. The number format used is
-the IEEE 754-1985 'Single', which specifies a number having:
-    1 Sign bit
-    8 Exponent bits
-    24 Fraction bits (23 explicitly stored)
-    
-These numbers are stored in memory as little-endian:
-    
-    Word $00___________     Word $01___________
-    FDEC BA98 7654 3210     FDEC BA98 7654 3210
-    ssss ssss ssss ssss     SEEE EEEE Esss ssss
-    
-    
-3.F.1. FRACTION BITS
-The implicit binary radix decimal is to the left of the fraction, so that the
-value in the fraction is always less than 1 in magnitude. Normalization would
-cause the first bit to the right of the radix point to be 1, such that the
-fractional value is always between 0.5 and 1.0. Therefore this bit need not be
-represented directly, thus achieving an extra 1 bit of fraction.
-
-
-3.F.2. EXPONENT BITS
-The 8-bit Exponent bits (bits 14 to 7 of the high word) allow exponent values
-between -128 and 127.
-
-If the actual value of the exponent is equal to -128, meaning a total value,
-including the fraction, of less than 2^-128, the floating point will be assumed
-to be zero, regardless of the sign or fraction bits. The hardware will generate
-a clean zero value, consisting of a 32-bit word of all zeros.
-
-
-3.F.3. FPU REGISTERS
-
-There are no pre-assigned registers for Floating Point operations. Two general
-purpose registers (r0-r7) are used as pointers to specify addresses in virtual
-memory. The contents of this register is used to locate the floating point
-operands and result as follows:
-
-    [Rx]    = B operand, low 16-bits
-    [Rx+1]  = B operand, high 16-bits
-    [Ry]    = A operand, low 16-bits
-    [Ry+1]  = A operand, high 16-bits
-
-After the operation, the result is stored on the stack as follows:
-    [SP]    = Result, low 16-bits
-    [SP+1]  = Result, high 16-bits.
-    
-    
-3.F.4. FLOATING POINT ERRORS
-
-Should an error occur (ex. divide by zero), the processor will raise the
-FPUERROR interrupt. The Flags register will be set as follows:
-    N [Negative] Clear.
-    Z [Zero] Clear.
-    C [Carry] Set if divide by zero, clear otherwise.
-    V [Overflow] Clear.
-    
-    
-3.F.5. FLOATING POINT INSTRUCTIONS
-
-FPA Floating-Point Addition
-The processor adds two 32-bit floating point numbers.
-Syntax:     FPA [Rx], [Ry]
-Operation:  FP.{[Rx],[Rx+1]} + FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
-    N [Negative] Set if result is < 0, clear otherwise.
-    Z [Zero] Set if result is == 0, clear otherwise.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
-
-    
-FPD Floating-Point Division
-The processor divides 32-bit floating point number [Rx] by [Ry].
-Syntax:     FPD [Rx], [Ry]
-Operation:  FP.{[Rx],[Rx+1]} / FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
-    N [Negative] Set if result is < 0, clear otherwise.
-    Z [Zero] Set if result is == 0, clear otherwise.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
-
-    
-FPM Floating-Point Multiplication
-The processor multiplies two 32-bit floating point numbers.
-Syntax:     FPM [Rx], [Ry]
-Operation:  FP.{[Rx],[Rx+1]} * FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
-    N [Negative] Set if result is < 0, clear otherwise.
-    Z [Zero] Set if result is == 0, clear otherwise.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
-
-    
-FPS Floating-Point Subtraction
-The processor subtracts 32-bit floating point number [Ry] from [Rx].
-Syntax:     FPS [Rx], [Ry]
-Operation:  FP.{[Rx],[Rx+1]} - FP.{[Ry],[Ry+1]} -> FP.{[SP],[SP+1]}
-    N [Negative] Set if result is < 0, clear otherwise.
-    Z [Zero] Set if result is == 0, clear otherwise.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
-
-
-=== 3.G. Immediate Instructions ================================================
+=== 3.F. Immediate Instructions ================================================
     
 ADI         Add immediate value to register, carry is ignored.
 Operation:  Rx + M -> Rx, C
@@ -1506,7 +1393,7 @@ M is a 5-bit value + 1, for a range of ($01-$20).
     V [Overflow] Set if sign bit (bit 15) is incorrect.
     
     
-=== 3.H. Interrupt Instructions ================================================
+=== 3.G. Interrupt Instructions ================================================
 
 RTI         Return from Interrupt
 Returns from an interrupt.
@@ -1518,7 +1405,7 @@ Raises SOFTWARE INTERRUPT.
 See 2.D.4. for a description of this opcode's function.
     
     
-=== 3.I. Jump & Call Instructions ==============================================
+=== 3.H. Jump & Call Instructions ==============================================
 
 JMP         Unconditional Jump to new address.
     1. PC is set to the value of M.
@@ -1537,7 +1424,7 @@ NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
     2. Execution continues.
     
     
-=== 3.J. Stack Instructions ====================================================
+=== 3.I. Stack Instructions ====================================================
 The following registers can be specified for Stack Instructions:
 R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP, P2, II, and IA. Specifying a register
 twice (ex. R0 and A) will result in only one value popped to or pushed from
@@ -1593,7 +1480,7 @@ values registers are always pushed in the following order:
     Bit pattern 1: SP, USP, IA, II, P2, PS, PC, FL
     
 
-=== 3.K. Processor Function Instructions =======================================
+=== 3.J. Processor Function Instructions =======================================
 
 CLF         Clears bit(s) in the FL register.
 Syntax: CLF [N][,C][,Z][,V]

@@ -20,7 +20,6 @@ namespace YCPUXNA
         private Emulator m_Emulator;
 
         private double m_LastConsoleUpdate = 0;
-        private bool m_Running = false;
 
         public Emu()
         {

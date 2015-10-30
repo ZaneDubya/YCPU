@@ -232,8 +232,7 @@ namespace Ypsilon.Hardware
             Opcodes[0xA9] = new YCPUInstruction("BTX", BTX, DisassembleBTT, 1);
             Opcodes[0xAA] = new YCPUInstruction("BTC", BTC, DisassembleBTT, 1);
             Opcodes[0xAB] = new YCPUInstruction("BTS", BTS, DisassembleBTT, 1);
-            Opcodes[0xAC] = new YCPUInstruction("FPU", FPU, DisassembleFPU, 9);
-            // 0xAD is undefined - space for future FPU expansion?
+            // 0xAC and 0xAD are undefined.
             Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, DisassembleFLG, 0);
             Opcodes[0xAF] = new YCPUInstruction("CLF", CLF, DisassembleFLG, 0);
 
@@ -841,76 +840,6 @@ namespace Ypsilon.Hardware
                 FL_C = false;
             if ((operand & 0x1000) != 0)
                 FL_V = false;
-        }
-        #endregion
-
-        #region FPU Instructions
-        private void FPU(ushort operand)
-        {
-            ushort value;
-            RegGPIndex destination, source;
-            BitPatternFPU(operand, out value, out destination);
-            source = (RegGPIndex)value;
-            int operation = (operand & 0x0300) >> 8;
-            float[] operands = FPU_GetOperands(destination, source);
-            float result;
-            switch (operation)
-            {
-                case 0x00:
-                    result = operands[0] + operands[1];
-                    break;
-                case 0x01:
-                    result = operands[0] - operands[1];
-                    break;
-                case 0x02:
-                    result = operands[0] * operands[1];
-                    break;
-                case 0x03:
-                    if (operands[1] == 0.0f)
-                    {
-                        Interrupt_FPUError();
-                        return;
-                    }
-                    result = operands[0] / operands[1];
-                    break;
-                default:
-                    return;
-            }
-            ushort[] result_words = FPU_GetWordsFromFloat(result);
-            StackPush(result_words[0]);
-            StackPush(result_words[1]);
-
-            FL_N = result < 0;
-            FL_Z = (result == 0);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
-        }
-        private float[] FPU_GetOperands(RegGPIndex dest, RegGPIndex src)
-        {
-            ushort addr_dest = R[(int)dest];
-            ushort addr_src = R[(int)src];
-            ushort[] m = new ushort[4];
-            // get the address of the first operand.
-            m[0] = ReadMemInt16(addr_dest);
-            addr_dest += 2;
-            m[1] = ReadMemInt16(addr_dest);
-
-            // get the address of the second operand.
-            m[2] = ReadMemInt16(addr_src);
-            addr_src += 2;
-            m[3] = ReadMemInt16(addr_src);
-
-            // copy the data into local memory as floats so the host processor can work on them.
-            float[] f = new float[2];
-            Buffer.BlockCopy(m, 0, f, 0, 8);
-            return f;
-        }
-        private ushort[] FPU_GetWordsFromFloat(float value)
-        {
-            ushort[] result = new ushort[2];
-            float[] value_f = new float[1] { value };
-            Buffer.BlockCopy(value_f, 0, result, 0, 4);
-            return result;
         }
         #endregion
 

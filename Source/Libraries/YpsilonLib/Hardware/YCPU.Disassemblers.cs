@@ -167,38 +167,6 @@ namespace Ypsilon.Hardware
             return string.Format("{0,-8}{1}", name, flags);
         }
 
-        private string DisassembleFPU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            RegGPIndex destination;
-            ushort source;
-            BitPatternFPU(operand, out source, out destination);
-            int operation = (operand & 0x0300) >> 8;
-            string op_name = string.Empty;
-
-            switch (operation)
-            {
-                case 0x00:
-                    op_name = "FPA";
-                    break;
-                case 0x01:
-                    op_name = "FPS";
-                    break;
-                case 0x02:
-                    op_name = "FPM";
-                    break;
-                case 0x03:
-                    op_name = "FPD";
-                    break;
-                default:
-                    return "ERR";
-            }
-
-            float[] operands = FPU_GetOperands(destination, (RegGPIndex)source);
-
-            return string.Format("{0,-8}[{1}], [{2}]  {3:E3},{4:E3}", op_name, NameOfRegGP(destination), NameOfRegGP((RegGPIndex)source), operands[0], operands[1]);
-        }
-
         private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;

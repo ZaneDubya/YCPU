@@ -197,12 +197,6 @@ namespace Ypsilon.Hardware
             value = (ushort)((operand & 0xF000)); // flags to set
         }
 
-        void BitPatternFPU(ushort operand, out ushort value, out RegGPIndex destination)
-        {
-            destination = (RegGPIndex)((operand & 0xE000) >> 13);
-            value = (ushort)((operand & 0x1C00) >> 10);
-        }
-
         void BitPatternHWQ(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.None; // Unused.

@@ -320,8 +320,6 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        // FPU instructions would go here. Not currently implemented.
-
         #region Set flags
         List<ushort> AssembleSEF(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
