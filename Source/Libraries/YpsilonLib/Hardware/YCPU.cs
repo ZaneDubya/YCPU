@@ -7,7 +7,7 @@ namespace Ypsilon.Hardware
     /// </summary>
     public partial class YCPU
     {
-        public const int ClockRateHz = 102400;
+        public const int ClockRateHz = 102400; // 100khz
 
         /// <summary>
         /// The hardware bus, which hosts all hardware devices.
