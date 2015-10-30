@@ -38,9 +38,7 @@ Clock:
 ; === Start ===================================================================
 Start:
 .scope
-    lod     r0, 100
-    hwq     $81
-    ;set up devices, mmu, etc.
+    ;set up clock interrupt, devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen
     jsr     ShowStartScreen
@@ -86,6 +84,9 @@ GetKeyboardEvents:
 ; === Setup ===================================================================
 Setup:
 .scope
+    ; set up clock interrupt - tick at 100hz
+    lod     r0, 100
+    hwq     $81
     ; set up devices
     lod     a, $0001    ; set graphics adapter to LEM mode.
     lod     b, $0000

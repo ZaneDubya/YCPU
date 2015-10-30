@@ -51,7 +51,7 @@ namespace Ypsilon.Hardware
         {
             ushort[] info = new ushort[0x04];
             DateTime now = DateTime.Now;
-            byte year = (byte)(now.Year - 2000);
+            byte year = (byte)(now.Year - 1900);
             byte month = (byte)(now.Month);
             byte day = (byte)(now.Day);
             byte hour = (byte)(now.Hour);
