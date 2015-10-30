@@ -33,8 +33,8 @@ Version 0.6 RC2
 
 The YCPU Specification describes a processor with a comprehensive instruction
 set and features that make a processor built to the specification powerful yet
-easy to program for. The specification is released to the public domain, and can
-be used in derivative works without permission.
+easy to wrote software for. The specification is released to the public domain,
+and can be used in derivative works without permission.
 
 
 === 1.A. Public Domain Dedication ==============================================
@@ -104,7 +104,7 @@ All models of the YCPU are guaranteed to have 4 x 16kb of internal RAM on board.
 The YCPU will also have a variable amount of ROM on chip, depending on the
 model of the YCPU and the needs of the processor distributor. Generally, this
 ROM will consist of a basic input/output system that will bootstrap the system
-and prepare it to load other programs. The YCPU can determine how much RAM/ROM
+and prepare it to load other software. The YCPU can determine how much RAM/ROM
 is available by querying 'Hardware Device 0' on the Hardware Bus.
 
 
@@ -184,7 +184,7 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         The processor has two different stack pointers - the Supervisor Stack
         Pointer, or SSP, is used while the processor is in Supervisor mode, and
         the User Stack Pointer, or USP, is used while the processor is not in
-        Supervisor mode. Thus, a program running in User mode can ruin the
+        Supervisor mode. Thus, software running in User mode can ruin the
         stack, and the Supervisor mode stack will remain untouched. 
 
         
@@ -224,7 +224,7 @@ Possible hardware Devices can include input (keyboard, mouse, touch), storage
 (disk, hard drive), networking, RAM, ROM, and interfaces for other hardware
 Devices not directly connected to the Hardware Bus.
 
-Device Index 0 on the Hardware Bus refers to the YCPU itself. A program can
+Device Index 0 on the Hardware Bus refers to the YCPU itself. Software can
 retrieve information about the YCPU by using the Hardware Query instruction to
 query the Device at Index 0.
 
@@ -235,7 +235,7 @@ device is reading or writing memory, the processor is stalled.
 
 --- 2.C.1. INTERACTING WITH HARDWARE --------------------------------------------
 
-A program interacts with hardware using the HWQ (HardWare Query) instruction.
+Software interacts with hardware using the HWQ (HardWare Query) instruction.
 This instruction accepts one operand, a 8-bit 'operation index'. Calling HWQ
 operation $00 will query the Bus for the number of devices connected, and
 the YCPU will save this value in R0. The YCPU can also determine what device is
@@ -249,7 +249,7 @@ be set as follows:
         R2: Device ID
         R3: Device Flags
         
-A program can send messages to a Bus Device by calling HWQ operation $02. This
+Software can send messages to a Bus Device by calling HWQ operation $02. This
 will send a two-word message, consisting of the words in R1 and R2, to the
 Hardware Device in Bus Slot R0. If there is no hardware device in this Bus Slot,
 there will be no effect. If there is an active Hardware Device in this Bus Slot,
@@ -265,7 +265,7 @@ one of several results will occur:
     
     If the device requires access to main memory, the processor will be halted
     while the device reads/writes to memory. Generally, the memory read to will
-    be based on the contents of R1 and R2. A program can send more than two
+    be based on the contents of R1 and R2. Software can send more than two
     parameters to a device by using R1 or R2 as a pointer to memory. When the
     device has completed its operation, it will set R0 to "MSG_ACK" ($0001).
     
@@ -556,11 +556,11 @@ ROM bank. When this is clear, a RAM bank is selected.
 The YCPU is internally 16-bit, and can address only 16-bits of logical address
 space. When the MMU is active, this memory is comprised of four 'banks', each of
 16384 bytes. Which banks of memory are placed in memory is determined by the
-MMU. As noted in 2.F.3., supra, a program may manipulate the MMU cache using the
+MMU. As noted in 2.F.3., supra, software may manipulate the MMU cache using the
 MML/MMR/MMW/MMS instructions to load and save values from the MMU cache; this
 will change which banks are loaded within the logical address space.
 
-A running program may also replace a bank in memory using a 'far jump'. Where a
+Running software may also replace a bank in memory using a 'far jump'. Where a
 normal jump instruction sets only the PC register, a far jump will also switch a
 new bank of memory into the address space containing the new PC value. The
 addressing mode of the instruction will indicate where the processor will find
@@ -601,8 +601,8 @@ Note 2: 'far jumps' are only accessible from Supervisor mode. If the processor
         attempts to execute a 'far jump' while in user mode, the processor will
         raise an 'UnprivOpcode' exception. Thus, these instructions could still
         be used while in User mode; the processor interrupt would have to 'trap'
-        these instructions. Alternatively, user programs could use a SWI
-        instruction for the same purpose.
+        these instructions. Alternatively, software running in User mode could use
+        a SWI instruction for the same purpose.
 Note 3: when the MMU is disabled, a far jump will still set the lower word for 
         the MMU cache entry for the specified bank, but (because the MMU is
         disabled) the address space will remain unchanged.
@@ -638,7 +638,7 @@ powered down. The processor can query the RTC for the current time.
 --- 2.H.1. RTC Date/Time data --------------------------------------------------
 
 The clock provides time data with the following precision:
-    Year:    7 bits (0-99)
+    Year:    8 bits (0-255)
     Month:   4 bits (0-11)
     Day:     5 bits (0-31)
     Hour:    5 bits (0-23)
@@ -655,8 +655,10 @@ This data is saved to R0-R3 upon calling HWQ $80, in this format:
                     R3: 16 bits Tick                tttt tttt tttt tttt
                     
 The original epoch for this device is 1 January 1900 at Midnight. This device
-will 'roll over' at 1 Janaury 2000. YpsilonTech accepts no responsibility for
-programs which cannot handle this roll over.
+will 'roll over' at 1 Janaury 2156. YpsilonTech offers technical assistance at
+exceptionally reasonable rates to companies who wish their software to
+gracefully handle this roll-over. YpsilonTech accepts no responsibility for
+software written without this assistance, and thus experience a "Y2156" bug.
 
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
 
@@ -670,7 +672,7 @@ with a value indicating the desired interrupt frequency in R0. If R0 is $0000,
 the interrupt will be disabled. Otherwise,  the CLOCK interrupt will be raised
 at a frequency of R0 hz, capped to a maximum of cpu frequency divided by 1024.
 
-After this operation, R0 will be set to the actual CLOCK frequency. A programmer
+After this operation, R0 will be set to the actual CLOCK frequency. Software
 can thus request a high CLOCK rate, and be informed of the actual CLOCK rate by
 examining R0.
 
@@ -712,7 +714,7 @@ entering the interrupt, the stack looks like this:
 
 Switching context from supervisor to supervisor is more difficult, as modifying
 the active MMU cache will change the instruction that PC is operating on. It is
-advised that the programmer either disable the MMU as part of this operation,
+advised that the software either disable the MMU as part of this operation,
 or lay out the banks of memory in such a way that when changing banks, the 
 context changing sequence will go on interrupted (the same sequence of context
 changing might be used in all banks).
@@ -1319,7 +1321,7 @@ Operation:  !Rx{B} -> Rx{B}, Z, C
   
 === 3.E. Branch Operations =====================================================
 
-Branch instructions allow a program to change the PC relative to its current
+Branch instructions allow software to change the PC relative to its current
 value. Each branch instruction includes a signed byte value (the offset) in its
 bit pattern:
 
