@@ -126,6 +126,10 @@ namespace YCPUXNA
                 m_Emulator.LoadBinaryToCPU("../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
 #endif
             }
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.T, false, false, true))
+            {
+                m_Emulator.CPU.Interrupt_Reset();
+            }
 
             m_Emulator.Update(frameMS);
         }
@@ -160,10 +164,10 @@ namespace YCPUXNA
             ConsoleWrite(70, r_y + 19, "ps bits:");
             ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_I ? "I" : ".", ".",
-                ".", ".", ".", "."));
+                cpu.PS_Q ? "Q" : ".", cpu.PS_U ? "U" : ".", cpu.PS_W ? "W" : ".", cpu.PS_E ? "E" : "."));
 
             ConsoleWrite(70, r_y + 22, "fl bits:");
-            ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3} ....",
+            ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3}",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
             ConsoleWrite(70, r_y + 25, "Memory management:");
@@ -186,10 +190,10 @@ namespace YCPUXNA
             }
             else
             {
-                ConsoleWrite(70, r_y + 26, "$00 $80 .... ....");
-                ConsoleWrite(70, r_y + 27, "$00 $01 .... ....");
-                ConsoleWrite(70, r_y + 28, "$00 $02 .... ....");
-                ConsoleWrite(70, r_y + 29, "$00 $03 .... ....");
+                ConsoleWrite(70, r_y + 26, "$00 $80 .... .");
+                ConsoleWrite(70, r_y + 27, "$00 $01 .... .");
+                ConsoleWrite(70, r_y + 28, "$00 $02 .... .");
+                ConsoleWrite(70, r_y + 29, "$00 $03 .... .");
             }
 
             // disassembly
@@ -205,6 +209,7 @@ namespace YCPUXNA
             ConsoleWrite(2, 27, "Ctrl-B: Break.");
             ConsoleWrite(2, 28, "Ctrl-N: Run one instruction.");
             ConsoleWrite(2, 29, "Ctrl-M: Run approximately 100 cycles.");
+            ConsoleWrite(2, 30, "Ctrl-T: Reset interrupt.");
         }
 
         private void ConsoleWrite(int x, int y, string s)
@@ -218,7 +223,7 @@ namespace YCPUXNA
         {
             ushort cache0 = cpu.MMU_Read((ushort)(index * 2));
             ushort cache1 = cpu.MMU_Read((ushort)(index * 2 + 1));
-            return string.Format("${0:X2} ${1:X2} {2}{3}{4}{5} {6}...",
+            return string.Format("${0:X2} ${1:X2} {2}{3}{4}{5} {6}",
                     cache0 >> 8, cache0 & 0x00ff,
                     (cache1 & 0x8000) != 0 ? "S" : ".",
                     (cache1 & 0x8000) != 0 ? "W" : ".",
