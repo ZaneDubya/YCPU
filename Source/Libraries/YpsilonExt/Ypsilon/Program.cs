@@ -10,7 +10,7 @@ namespace Ypsilon
         /// </summary>
         static void Main(string[] args)
         {
-            using (Display.Vectors.RoundLineDemo game = new Display.Vectors.RoundLineDemo())
+            using (RoundLineDemo game = new RoundLineDemo())
             {
                 game.Run();
             }

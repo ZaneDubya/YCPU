@@ -63,7 +63,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Display\Vectors\VectorDisc.cs" />
     <Compile Include="Display\Vectors\VectorRoundLine.cs" />
-    <Compile Include="Display\Vectors\RoundLineDemo.cs" />
+    <Compile Include="RoundLineDemo.cs" />
     <Compile Include="Display\Vectors\VectorManager.cs" />
     <Compile Include="Display\Vectors\VectorUtility.cs" />
     <Compile Include="Display\Vectors\VectorVertex.cs" />

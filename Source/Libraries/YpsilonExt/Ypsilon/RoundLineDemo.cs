@@ -10,9 +10,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Ypsilon.Display.Vectors;
 #endregion
 
-namespace Ypsilon.Display.Vectors
+namespace Ypsilon
 {
     /// <summary>
     /// Main "game" type
@@ -147,7 +148,10 @@ namespace Ypsilon.Display.Vectors
             if (zoomOut)
                 cameraZoom *= 0.995f;
 
-            viewMatrix = Matrix.CreateTranslation(-cameraX, -cameraY, 0) * Matrix.CreateScale(1.0f / cameraZoom, 1.0f / cameraZoom, 1.0f);
+            viewMatrix = Matrix.CreateTranslation(-cameraX, -cameraY, -1) * Matrix.CreateScale(1.0f / cameraZoom, 1.0f / cameraZoom, 1.0f);
+
+            //viewMatrix = 
+            projMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, 1.7777f, 1, 100f);
 
             if (keyboardState.IsKeyDown(Keys.PageUp))
                 m_LineManager.BlurThreshold += 0.01f;
