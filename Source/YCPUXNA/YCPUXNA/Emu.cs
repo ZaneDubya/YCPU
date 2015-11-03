@@ -6,6 +6,7 @@ using Ypsilon.Hardware;
 using YCPUXNA.ServiceProviders.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace YCPUXNA
 {
@@ -13,6 +14,7 @@ namespace YCPUXNA
     {
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatch m_SpriteBatch;
+        private List<ITexture> m_DeviceTextures;
 
         private InputService m_InputProvider;
         private DeviceRenderService m_DeviceRenderer;
@@ -21,13 +23,16 @@ namespace YCPUXNA
         private Display.Curses m_Curses;
 
         private double m_LastConsoleUpdate = 0;
+        private const int c_ConsoleWidth = 128;
+        private const int c_ConsoleHeight = 64;
+        private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
 
         public Emu()
         {
             m_Graphics = new GraphicsDeviceManager(this);
             m_Graphics.IsFullScreen = false;
-            m_Graphics.PreferredBackBufferWidth = 1280;
-            m_Graphics.PreferredBackBufferHeight = 720;
+            m_Graphics.PreferredBackBufferWidth = c_ConsoleWidth * 8;
+            m_Graphics.PreferredBackBufferHeight = c_ConsoleHeight * 8;
 
             this.IsMouseVisible = true;
         }
@@ -42,7 +47,7 @@ namespace YCPUXNA
             m_DeviceRenderer = (DeviceRenderService)ServiceRegistry.Register<IDeviceRenderer>(new DeviceRenderService(m_SpriteBatch));
 
             m_Emulator = new Emulator();
-            m_Curses = new Display.Curses(GraphicsDevice, 160, 90);
+            m_Curses = new Display.Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight);
         }
 
         protected override void UnloadContent()
@@ -61,12 +66,25 @@ namespace YCPUXNA
 
         protected override void Draw(GameTime gameTime)
         {
+            // render the devices
+            if (m_DeviceTextures == null)
+                m_DeviceTextures = new List<ITexture>();
+            m_DeviceTextures.Clear();
+            m_Emulator.Draw(m_DeviceTextures);
+
+            // draw the emulator.
             base.Draw(gameTime);
 
             GraphicsDevice.Clear(Color.Black);
             m_SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
-            //m_Curses.Render(m_SpriteBatch);
-            m_Emulator.Draw();
+            m_Curses.Render(m_SpriteBatch);
+
+            for (int i = 0; i < m_DeviceTextures.Count; i++)
+            {
+                m_SpriteBatch.Draw((m_DeviceTextures[i] as YTexture).Texture,
+                    new Rectangle(80 * 8, 1 * 8, m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
+            }
+
             m_SpriteBatch.End();
             GraphicsDevice.Textures[0] = null;
         }
@@ -74,9 +92,9 @@ namespace YCPUXNA
         private void UpdateEmulator(double frameMS)
         {
             m_LastConsoleUpdate += frameMS;
-            if (m_LastConsoleUpdate > 200)
+            if (m_LastConsoleUpdate > c_ConsoleUpdateMS)
             {
-                m_LastConsoleUpdate -= 200;
+                m_LastConsoleUpdate -= c_ConsoleUpdateMS;
                 UpdateConsole();
             }
 
@@ -115,9 +133,8 @@ namespace YCPUXNA
         #region Console
         public void UpdateConsole()
         {
+            m_Curses.Clear();
             YCPU cpu = m_Emulator.CPU;
-
-            Console.Title = "YCPU Emulator";
 
             int r_y = 1;
             ConsoleWrite(70, r_y, "Registers");
@@ -154,12 +171,19 @@ namespace YCPUXNA
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(0, 2, ">");
             ConsoleWrite(2, 23, string.Format("{0} Cycles total", cpu.Cycles));
+
+            ConsoleWrite(2, 25, "Ctrl-L: Load debug console program.");
+            ConsoleWrite(2, 26, "Ctrl-R: Run at 10 khz.");
+            ConsoleWrite(2, 27, "Ctrl-B: Break.");
+            ConsoleWrite(2, 28, "Ctrl-N: Run one instruction.");
+            ConsoleWrite(2, 29, "Ctrl-M: Run approximately 100 cycles.");
         }
 
         private void ConsoleWrite(int x, int y, string s)
         {
-            Console.SetCursorPosition(x, y);
-            Console.Write(s);
+            m_Curses.WriteString(x, y, s);
+            // Console.SetCursorPosition(x, y);
+            // Console.Write(s);
         }
         #endregion
     }

@@ -39,11 +39,11 @@ namespace Ypsilon.Hardware
                 m_Devices[i].Update(input);
         }
 
-        public void Display()
+        public void Display(List<ITexture> textures)
         {
             IDeviceRenderer renderer = ServiceRegistry.GetService<IDeviceRenderer>();
-            for (int i = 0; i < m_Devices.Count; i += 1)
-                m_Devices[i].Display(renderer);
+            for (int i = 0; i < m_Devices.Count; i++)
+                m_Devices[i].Display(i, textures, renderer);
         }
 
         public ushort DevicesConnected

@@ -13,7 +13,7 @@ namespace YCPUXNA.ServiceProviders
 
         SpriteBatch m_SpriteBatch;
 
-        public void RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
+        public ITexture RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
         {
             if (m_LEM == null)
             {
@@ -45,7 +45,8 @@ namespace YCPUXNA.ServiceProviders
                 }
             }
             m_LEM.SetData<uint>(m_LEM_Data);
-            m_SpriteBatch.Draw(m_LEM, new Rectangle(0, 0, 256, 192), Color.White);
+
+            return new YTexture(m_LEM);
         }
 
         // BASE STUFF

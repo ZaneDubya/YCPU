@@ -31,6 +31,24 @@ namespace YCPUXNA.Display
             rand.NextBytes(m_CharBuffer);
         }
 
+        public void Clear()
+        {
+            Array.Clear(m_CharBuffer, 0, m_CharBuffer.Length);
+        }
+
+        public void WriteString(int x, int y, string s)
+        {
+            int begin = y * m_Width + x;
+            if (begin >= m_CharBuffer.Length)
+                return;
+            if (begin + s.Length >= m_CharBuffer.Length)
+                s = s.Substring(0, m_CharBuffer.Length - begin);
+            for (int i = 0; i < s.Length; i++)
+            {
+                m_CharBuffer[begin + i] = (byte)s[i];
+            }
+        }
+
         public void Render(SpriteBatch spriteBatch)
         {
             for (int y = 0; y < m_Height; y++)

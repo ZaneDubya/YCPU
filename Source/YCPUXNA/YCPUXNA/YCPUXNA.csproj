@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Asm.cs" />
+    <Compile Include="StdConsole.cs" />
     <Compile Include="Display\Curses.cs" />
     <Compile Include="Display\Monitor.cs" />
     <Compile Include="Dsm.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="ServiceProviders\InputService.cs" />
     <Compile Include="ServiceProviders\Input\InputEvent.cs" />
     <Compile Include="ServiceProviders\Input\InputEventKeyboard.cs" />
+    <Compile Include="ServiceProviders\YTexture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\XnaInput151\XnaInput151.csproj">

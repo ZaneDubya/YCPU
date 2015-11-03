@@ -69,7 +69,7 @@ namespace Ypsilon.Devices.Graphics
             return MSG_ACK;
         }
 
-        public override void Display(IDeviceRenderer renderer)
+        public override void Display(int busIndex, List<ITexture> textures, IDeviceRenderer renderer)
         {
             switch (m_GraphicsMode)
             {
@@ -78,7 +78,12 @@ namespace Ypsilon.Devices.Graphics
                     return;
                 case GraphicsMode.LEM1802:
                     Update_LEM();
-                    renderer.RenderLEM(m_Bank, m_LEM_CHRRAM, m_LEM_PALRAM);
+                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEM_CHRRAM, m_LEM_PALRAM);
+                    if (texture != null)
+                    {
+                        texture.DeviceBusIndex = busIndex;
+                        textures.Add(texture);
+                    }
                     return;
             }
         }
