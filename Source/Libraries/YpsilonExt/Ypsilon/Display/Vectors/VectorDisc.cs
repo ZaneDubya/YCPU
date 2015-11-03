@@ -12,10 +12,10 @@ namespace Ypsilon.Display.Vectors
     /// <summary>
     /// A "degenerate" RoundLine where both endpoints are equal
     /// </summary>
-    public class RoundDisc : RoundLine
+    public class VectorDisc : VectorRoundLine
     {
-        public RoundDisc(Vector2 p) : base(p, p) { }
-        public RoundDisc(float x, float y) : base(x, y, x, y) { }
+        public VectorDisc(Vector2 p) : base(p, p) { }
+        public VectorDisc(float x, float y) : base(x, y, x, y) { }
         public Vector2 Pos
         {
             get

@@ -19,17 +19,15 @@ namespace Ypsilon.Display.Vectors
     /// </summary>
     public class RoundLineDemo : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        RoundLineManager roundLineManager;
-        List<RoundLine> blueRoundLines = new List<RoundLine>();
-        List<RoundLine> greenRoundLines = new List<RoundLine>();
+        GraphicsDeviceManager m_Graphics;
+        VectorManager m_LineManager;
+        List<VectorRoundLine> lines = new List<VectorRoundLine>();
         Matrix viewMatrix;
         Matrix projMatrix;
         float cameraX = 0;
         float cameraY = 0;
         float cameraZoom = 300;
-        RoundDisc dude = new RoundDisc(0, 0);
+        VectorDisc dude = new VectorDisc(0, 0);
         bool aButtonDown = false;
         int roundLineTechniqueIndex = 0;
         string[] roundLineTechniqueNames;
@@ -37,39 +35,31 @@ namespace Ypsilon.Display.Vectors
 
         public RoundLineDemo()
         {
-            graphics = new GraphicsDeviceManager(this);
+            m_Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
+            m_Graphics.PreferredBackBufferWidth = 1280;
+            m_Graphics.PreferredBackBufferHeight = 720;
         }
-
 
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            m_LineManager = new VectorManager();
+            m_LineManager.Init(GraphicsDevice, Content);
+            roundLineTechniqueNames = m_LineManager.TechniqueNames;
 
-            roundLineManager = new RoundLineManager();
-            roundLineManager.Init(GraphicsDevice, Content);
-            roundLineTechniqueNames = roundLineManager.TechniqueNames;
-
-            float rho = 100;
-            bool blue = false;
             for (float y = -2000; y <= 2000; y += 200)
             {
-                for (float x = -1000; x <= 1000; x += 200)
+                for (float x = -2000; x <= 2000; x += 200)
                 {
-                    blue = !blue;
                     for (float deg = 0; deg < 360; deg += 10)
                     {
                         float theta = MathHelper.ToRadians(deg);
+                        float rho = 100;
                         float x1 = rho * (float)Math.Cos(theta);
                         float y1 = rho * (float)Math.Sin(theta);
-
-                        if (blue)
-                            blueRoundLines.Add(new RoundLine(x, y, x + x1, y + y1));
-                        else
-                            greenRoundLines.Add(new RoundLine(x, y, x + x1, y + y1));
+                        
+                        lines.Add(new VectorRoundLine(x, y, x + x1, y + y1));
                     }
                 }
             }
@@ -86,8 +76,8 @@ namespace Ypsilon.Display.Vectors
             // Projection matrix ignores Z and just squishes X or Y to balance the upcoming viewport stretch
             float projScaleX;
             float projScaleY;
-            float width = graphics.GraphicsDevice.Viewport.Width;
-            float height = graphics.GraphicsDevice.Viewport.Height;
+            float width = m_Graphics.GraphicsDevice.Viewport.Width;
+            float height = m_Graphics.GraphicsDevice.Viewport.Height;
             if (width > height)
             {
                 // Wide window
@@ -100,6 +90,9 @@ namespace Ypsilon.Display.Vectors
                 projScaleX = 1.0f;
                 projScaleY = width / height;
             }
+
+            // projMatrix = Matrix.CreatePerspective(projScaleX, projScaleY, 1.0f, 100f);
+
             projMatrix = Matrix.CreateScale(projScaleX, projScaleY, 0.0f);
             projMatrix.M43 = 0.5f;
         }
@@ -108,16 +101,13 @@ namespace Ypsilon.Display.Vectors
         protected override void Update(GameTime gameTime)
         {
             KeyboardState keyboardState = Keyboard.GetState();
-            GamePadState gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            if (gamePadState.Buttons.Back == ButtonState.Pressed ||
-                keyboardState.IsKeyDown(Keys.Escape))
+            if (keyboardState.IsKeyDown(Keys.Escape))
             {
                 this.Exit();
             }
 
-            if (gamePadState.Buttons.A == ButtonState.Pressed ||
-                keyboardState.IsKeyDown(Keys.A))
+            if (keyboardState.IsKeyDown(Keys.A))
             {
                 if (!aButtonDown)
                 {
@@ -132,13 +122,13 @@ namespace Ypsilon.Display.Vectors
                 aButtonDown = false;
             }
 
-            float leftX = gamePadState.ThumbSticks.Left.X;
+            float leftX = 0;
             if (keyboardState.IsKeyDown(Keys.Left))
                 leftX -= 1.0f;
             if (keyboardState.IsKeyDown(Keys.Right))
                 leftX += 1.0f;
 
-            float leftY = gamePadState.ThumbSticks.Left.Y;
+            float leftY = 0;
             if (keyboardState.IsKeyDown(Keys.Up))
                 leftY += 1.0f;
             if (keyboardState.IsKeyDown(Keys.Down))
@@ -147,10 +137,8 @@ namespace Ypsilon.Display.Vectors
             float dx = leftX * 0.01f * cameraZoom;
             float dy = leftY * 0.01f * cameraZoom;
 
-            bool zoomIn = gamePadState.Buttons.RightShoulder == ButtonState.Pressed ||
-                keyboardState.IsKeyDown(Keys.Z);
-            bool zoomOut = gamePadState.Buttons.LeftShoulder == ButtonState.Pressed ||
-                keyboardState.IsKeyDown(Keys.X);
+            bool zoomIn = keyboardState.IsKeyDown(Keys.Z);
+            bool zoomOut = keyboardState.IsKeyDown(Keys.X);
 
             cameraX += dx;
             cameraY += dy;
@@ -162,16 +150,15 @@ namespace Ypsilon.Display.Vectors
             viewMatrix = Matrix.CreateTranslation(-cameraX, -cameraY, 0) * Matrix.CreateScale(1.0f / cameraZoom, 1.0f / cameraZoom, 1.0f);
 
             if (keyboardState.IsKeyDown(Keys.PageUp))
-                roundLineManager.BlurThreshold *= 1.001f;
+                m_LineManager.BlurThreshold += 0.01f;
             if (keyboardState.IsKeyDown(Keys.PageDown))
-                roundLineManager.BlurThreshold /= 1.001f;
+                m_LineManager.BlurThreshold -= 0.01f;
 
-            if (roundLineManager.BlurThreshold > 1)
-                roundLineManager.BlurThreshold = 1;
+            if (m_LineManager.BlurThreshold > 1)
+                m_LineManager.BlurThreshold = 1;
 
             base.Update(gameTime);
         }
-
 
         protected override void Draw(GameTime gameTime)
         {
@@ -179,20 +166,19 @@ namespace Ypsilon.Display.Vectors
 
             GraphicsDevice.Clear(Color.DarkGray);
 
-            roundLineManager.NumLinesDrawn = 0;
+            m_LineManager.NumLinesDrawn = 0;
 
-            float lineRadius = 4;
-            roundLineManager.BlurThreshold = roundLineManager.ComputeBlurThreshold(lineRadius, viewProjMatrix,
+            float lineRadius = 1;
+            m_LineManager.BlurThreshold = m_LineManager.ComputeBlurThreshold(lineRadius, viewProjMatrix, 
                 GraphicsDevice.PresentationParameters.BackBufferWidth);
 
             float time = (float)gameTime.TotalGameTime.TotalSeconds;
             string curTechniqueName = roundLineTechniqueNames[roundLineTechniqueIndex];
 
-            roundLineManager.Draw(blueRoundLines, lineRadius, Color.Blue, viewProjMatrix, time, curTechniqueName);
-            roundLineManager.Draw(greenRoundLines, lineRadius, Color.Green, viewProjMatrix, time, curTechniqueName);
+            m_LineManager.Draw(lines, lineRadius, Color.Blue, viewProjMatrix, time, curTechniqueName);
 
             dude.Pos = new Vector2(cameraX, cameraY);
-            roundLineManager.Draw(dude, 8, Color.Red, viewProjMatrix, time, "Tubular");
+            m_LineManager.Draw(dude, 8, Color.Red, viewProjMatrix, time, "Standard"); // changed from Tubular
 
             base.Draw(gameTime);
         }

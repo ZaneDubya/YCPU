@@ -17,7 +17,7 @@ namespace Ypsilon.Display.Vectors
     /// You don't need to include this file in your program if
     /// you only want basic RoundLine drawing functionality.
     /// </summary>
-    public partial class RoundLine
+    /*public partial class VectorRoundLine
     {
         /// <summary>
         /// Distance squared from an arbitrary point p to the "virtual" 
@@ -180,10 +180,10 @@ namespace Ypsilon.Display.Vectors
             // line's valid range (0 to 1 is on the line).
             p0 -= this.P0;
             p1 -= this.P0;
-            p0 = Rotate(p0, -this.Theta);
-            p1 = Rotate(p1, -this.Theta);
-            p0.X *= 1.0f / this.Rho;
-            p1.X *= 1.0f / this.Rho;
+            p0 = Rotate(p0, -this.Angle);
+            p1 = Rotate(p1, -this.Angle);
+            p0.X *= 1.0f / this.Length;
+            p1.X *= 1.0f / this.Length;
 
             // y = a + bt, where a = p0.y and b is p1.y-p0.y
             // find t where y = +- dist
@@ -263,11 +263,11 @@ namespace Ypsilon.Display.Vectors
         /// Given a bunch of lines (lineList), find all lines that are within referenceRadius 
         /// of referencePos and add them to nearbyLineList.
         /// </summary>
-        public void FindNearbyLines(List<RoundLine> lineList, List<RoundLine> nearbyLineList, float globalLineRadius, Vector2 referencePos, float referenceRadius)
+        public void FindNearbyLines(List<VectorRoundLine> lineList, List<VectorRoundLine> nearbyLineList, float globalLineRadius, Vector2 referencePos, float referenceRadius)
         {
             nearbyLineList.Clear();
 
-            foreach (RoundLine line in lineList)
+            foreach (VectorRoundLine line in lineList)
             {
                 float totalDistance;
                 totalDistance = referenceRadius + globalLineRadius;
@@ -282,13 +282,13 @@ namespace Ypsilon.Display.Vectors
         /// of referencePos, clip them to the (referencePos, referenceRadius) disc, and add 
         /// them to nearbyLineList.
         /// </summary>
-        static public void FindNearbyLinesWithClipping(List<RoundLine> lineList, List<RoundLine> nearbyLineList, float globalLineRadius, Vector2 referencePos, float referenceRadius)
+        static public void FindNearbyLinesWithClipping(List<VectorRoundLine> lineList, List<VectorRoundLine> nearbyLineList, float globalLineRadius, Vector2 referencePos, float referenceRadius)
         {
             nearbyLineList.Clear();
 
             Vector2 C = referencePos;
             float r = referenceRadius;
-            foreach (RoundLine line in lineList)
+            foreach (VectorRoundLine line in lineList)
             {
                 Vector2 A = line.P0;
                 Vector2 B = line.P1;
@@ -318,7 +318,7 @@ namespace Ypsilon.Display.Vectors
                         newP0 = Vector2.Lerp(A, B, u2);
                     if (0 <= u1 && u1 <= 1)
                         newP1 = Vector2.Lerp(A, B, u1);
-                    nearbyLineList.Add(new RoundLine(newP0, newP1));
+                    nearbyLineList.Add(new VectorRoundLine(newP0, newP1));
                 }
             }
         }
@@ -329,10 +329,10 @@ namespace Ypsilon.Display.Vectors
         /// currentPos/discRadius, and find the minimum distance.  This value will be negative
         /// if the disc intersects any of the lines.
         /// </summary>
-        public float MinDistanceSquaredDeviation(List<RoundLine> lineList, Vector2 currentPos, float lineRadius, float discRadius)
+        public float MinDistanceSquaredDeviation(List<VectorRoundLine> lineList, Vector2 currentPos, float lineRadius, float discRadius)
         {
             float minDeviation = float.MaxValue;
-            foreach (RoundLine line in lineList)
+            foreach (VectorRoundLine line in lineList)
             {
                 float minDist2 = (lineRadius + discRadius) * (lineRadius + discRadius);
                 float curDist2 = line.DistanceSquaredPointToVirtualLine(currentPos);
@@ -349,7 +349,7 @@ namespace Ypsilon.Display.Vectors
         /// to proposedPos, handle intersections and wall sliding and set finalPos to the 
         /// position that the disc should move to.
         /// </summary>
-        public void CollideAndSlide(List<RoundLine> lineList, Vector2 currentPos, Vector2 proposedPos, float lineRadius, float discRadius, out Vector2 finalPos)
+        public void CollideAndSlide(List<VectorRoundLine> lineList, Vector2 currentPos, Vector2 proposedPos, float lineRadius, float discRadius, out Vector2 finalPos)
         {
             Vector2 oldPos = currentPos;
             Vector2 oldTarget = proposedPos;
@@ -363,8 +363,8 @@ namespace Ypsilon.Display.Vectors
 
                 // Find minimum "t" at which we collide with a line
                 float minT = 1.0f; // Parametric "t" of the closest collision
-                RoundLine minTLine = null; // The line which causes closest collision
-                foreach (RoundLine line in lineList)
+                VectorRoundLine minTLine = null; // The line which causes closest collision
+                foreach (VectorRoundLine line in lineList)
                 {
                     float tMinThisLine;
                     float minDist = lineRadius + discRadius;
@@ -497,13 +497,13 @@ namespace Ypsilon.Display.Vectors
                     {
                         Vector2 closestP;
                         float d2 = minTLine.DistanceSquaredPointToVirtualLine(newPos, out closestP);
-                        RoundLine connectionLine = new RoundLine(newPos, closestP);
+                        VectorRoundLine connectionLine = new VectorRoundLine(newPos, closestP);
                         Vector2 lineNormal = (newPos - closestP);
                         lineNormal.Normalize();
 
                         // create a normal to the above line
                         // (which would thus be a tangent to minTLine)
-                        float theta = connectionLine.Theta;
+                        float theta = connectionLine.Angle;
                         theta += MathHelper.PiOver2;
                         Vector2 newPoint = new Vector2(newPos.X + (float)Math.Cos(theta), newPos.Y + (float)Math.Sin(theta));
 
@@ -551,5 +551,5 @@ namespace Ypsilon.Display.Vectors
             finalPos = oldPos;
             Debug.Assert(MinDistanceSquaredDeviation(lineList, finalPos, lineRadius, discRadius) >= 0);
         }
-    }
+    }*/
 }

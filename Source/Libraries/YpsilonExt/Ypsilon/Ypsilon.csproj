@@ -61,12 +61,12 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Display\Vectors\RoundDisc.cs" />
-    <Compile Include="Display\Vectors\RoundLine.cs" />
+    <Compile Include="Display\Vectors\VectorDisc.cs" />
+    <Compile Include="Display\Vectors\VectorRoundLine.cs" />
     <Compile Include="Display\Vectors\RoundLineDemo.cs" />
-    <Compile Include="Display\Vectors\RoundLineManager.cs" />
-    <Compile Include="Display\Vectors\RoundLineUtils.cs" />
-    <Compile Include="Display\Vectors\RoundLineVertex.cs" />
+    <Compile Include="Display\Vectors\VectorManager.cs" />
+    <Compile Include="Display\Vectors\VectorUtility.cs" />
+    <Compile Include="Display\Vectors\VectorVertex.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\YpsilonContent\YpsilonContent.contentproj">

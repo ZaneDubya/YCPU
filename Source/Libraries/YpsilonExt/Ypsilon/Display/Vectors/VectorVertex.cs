@@ -6,14 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Ypsilon.Display.Vectors
 {
     // A vertex type for drawing RoundLines, including an instance index
-    struct RoundLineVertex : IVertexType
+    struct VectorVertex : IVertexType
     {
         public Vector3 pos;
         public Vector2 rhoTheta;
         public Vector2 scaleTrans;
         public float index;
 
-        public RoundLineVertex(Vector3 pos, Vector2 norm, Vector2 tex, float index)
+        public VectorVertex(Vector3 pos, Vector2 norm, Vector2 tex, float index)
         {
             this.pos = pos;
             this.rhoTheta = norm;
