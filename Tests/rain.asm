@@ -84,7 +84,7 @@ GetKeyboardEvents:
 ; === Setup ===================================================================
 Setup:
 .scope
-    ; set up clock interrupt - tick at 100hz
+    ; enable clock interrupt - tick at 100hz
     lod     r0, 100
     hwq     $81
     ; set up devices
@@ -113,10 +113,16 @@ Setup:
     lod     b, $0000
     mmw     a, b
     
-    ; enable mmu
+    ; enable mmu. bank 0 is cpu rom 0, bank 1 is cpu ram 0, bank 2 is graphics adapter bank 0, bank 3 is cpu ram 0.
     lod     a, ps
     orr     a, 0x4000   ; mmu bit is 0x4000
     sto     a, ps
+    
+    ; debug - test that memory banks have been correctly set - r1 should equal r0.
+    lod     r0, $feed
+    sto     r0, [$4000]
+    lod     r1, [$c000]
+
     rts
 .scend
 

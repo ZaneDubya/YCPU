@@ -343,7 +343,7 @@ namespace Ypsilon.Hardware
         /// ...
         /// $000F - last word of supervisor cache  
         /// </summary>
-        private ushort MMU_Read(ushort index)
+        public ushort MMU_Read(ushort index)
         {
             int bankIndex = (index >> 1);
             bool isHiWord = (index & 0x0001) != 0;
@@ -433,11 +433,11 @@ namespace Ypsilon.Hardware
                 {
                     if ((bank & c_MMUCache_ProcessorRom) == 0) // select internal ram
                     {
-                        m_Mem[i - mmuCacheBase] = m_Mem_CPU[i % m_Mem_CPU_Count];
+                        m_Mem[i - mmuCacheBase] = m_Mem_CPU[bank % m_Mem_CPU_Count];
                     }
                     else // select internal rom
                     {
-                        m_Mem[i - mmuCacheBase] = m_Rom_CPU[i % m_Rom_CPU_Count];
+                        m_Mem[i - mmuCacheBase] = m_Rom_CPU[(bank & 0x7f) % m_Rom_CPU_Count];
                     }
                 }
                 else
