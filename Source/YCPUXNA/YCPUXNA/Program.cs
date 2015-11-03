@@ -6,7 +6,7 @@ namespace YCPUXNA
     class Program
     {
         static string[] s_DefaultArgs = new string[] { "-emu", "../../Tests/rain.asm" };
-        const string errNoArguments = "YCPUXNA: No input specified. Select an option\n" + 
+        const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" + 
             "    1. Assemble default 'rain.asm' file.\n    2. Disassemble default 'rain.asm.bin' file.\n" + 
             "    3. Run emulator!\n    4. Exit.";
 
