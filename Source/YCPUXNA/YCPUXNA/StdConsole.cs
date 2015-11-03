@@ -33,7 +33,7 @@ namespace YCPUXNA
 
         public static ConsoleKeyInfo StdInReadKey()
         {
-            return Console.ReadKey();
+            return Console.ReadKey(true);
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]

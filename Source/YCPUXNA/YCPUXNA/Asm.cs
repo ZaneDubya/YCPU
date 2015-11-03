@@ -10,10 +10,10 @@ namespace YCPUXNA
         const string errParam = "yasm: Unknown parameter: {0}";
         const string errEmptyInput = "yasm: Input assembly file does not exist or is empty.";
         const string errAssembling = "yasm: Error assembling input file: {0}";
-        const string errWritingOutput = "yasm: Error writing machine code. Press any key to continue.";
+        const string errWritingOutput = "yasm: Error writing machine code. Press any key to exit.";
         const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
         const string descSuccess = "yasm: Input file successfully assembled.";
-        const string descFileWrittenPressKey = "yasm: File written. Press any key to continue.";
+        const string descFileWrittenPressKey = "yasm: File written. Press any key to exit.";
 
         public void AssembleFromArgs(string[] args)
         {

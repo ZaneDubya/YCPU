@@ -13,7 +13,7 @@ namespace YCPUXNA
                 return false;
 
             string inPath = args[1];
-            string outPath = inPath + "asm";
+            string outPath = inPath + ".disasm";
 
             if (File.Exists(inPath))
             {
