@@ -38,6 +38,9 @@ Clock:
 ; === Start ===================================================================
 Start:
 .scope
+    ; set stack pointer to $0000.
+    lod     a, $0000
+    sto     a, sp
     ;set up clock interrupt, devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen
