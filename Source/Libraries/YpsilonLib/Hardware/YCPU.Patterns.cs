@@ -215,7 +215,7 @@ namespace Ypsilon.Hardware
         /// <param name="operand">Input: 16-bit machine code word</param>
         /// <param name="value">Output: Value that PC should be set to</param>
         /// <param name="unused">Output: Unused</param>
-        void BitPatternJMP(ushort operand, out ushort address, out RegGPIndex unused)
+        void BitPatternJMI(ushort operand, out ushort address, out RegGPIndex unused)
         {
             int addressingMode;
             RegGPIndex source;

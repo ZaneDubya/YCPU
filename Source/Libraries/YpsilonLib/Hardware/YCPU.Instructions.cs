@@ -906,7 +906,7 @@ namespace Ypsilon.Hardware
         {
             ushort value;
             RegGPIndex unused;
-            BitPatternJMP(operand, out value, out unused);
+            BitPatternJMI(operand, out value, out unused);
             PC = value;
         }
 
@@ -914,7 +914,7 @@ namespace Ypsilon.Hardware
         {
             ushort value;
             RegGPIndex unused;
-            BitPatternJMP(operand, out value, out unused);
+            BitPatternJMI(operand, out value, out unused);
             StackPush(PC);
             PC = value;
         }
