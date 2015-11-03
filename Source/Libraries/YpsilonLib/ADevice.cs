@@ -1,4 +1,5 @@
 ﻿using Ypsilon.Hardware;
+using System.Collections.Generic;
 
 namespace Ypsilon
 {
@@ -35,7 +36,7 @@ namespace Ypsilon
 
         }
 
-        public virtual void Display(IDeviceRenderer renderer)
+        public virtual void Display(int busIndex, List<ITexture> textures, IDeviceRenderer renderer)
         {
 
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Ypsilon.Hardware;
+using System.Collections.Generic;
 
 namespace Ypsilon
 {
@@ -36,9 +37,9 @@ namespace Ypsilon
             
         }
 
-        public void Draw()
+        public void Draw(List<ITexture> textures)
         {
-            CPU.BUS.Display();
+            CPU.BUS.Display(textures);
         }
 
         public void RunCPU(int cycles)

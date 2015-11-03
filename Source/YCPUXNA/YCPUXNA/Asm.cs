@@ -22,7 +22,7 @@ namespace YCPUXNA
 
             if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
             {
-                Program.StdOutWriteLine(string.Format(errArguments, error));
+                StdConsole.StdOutWriteLine(string.Format(errArguments, error));
                 return;
             }
             else
@@ -30,25 +30,25 @@ namespace YCPUXNA
                 // check for options?
             }
 
-            Program.StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
+            StdConsole.StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
 
             List<byte> machineCode;
             string errorMessage;
 
             if (TryAssemble(inPath, out machineCode, out errorMessage))
             {
-                Program.StdOutWriteLine(descSuccess);
+                StdConsole.StdOutWriteLine(descSuccess);
                 if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
-                    Program.StdOutWriteLine(descFileWrittenPressKey);
+                    StdConsole.StdOutWriteLine(descFileWrittenPressKey);
                 else
-                    Program.StdOutWriteLine(errWritingOutput);
+                    StdConsole.StdOutWriteLine(errWritingOutput);
             }
             else
             {
-                Program.StdOutWriteLine(string.Format(errAssembling, errorMessage));
+                StdConsole.StdOutWriteLine(string.Format(errAssembling, errorMessage));
             }
 
-            Program.StdInReadKey();
+            StdConsole.StdInReadKey();
         }
 
         private bool tryReadArguments(string[] args, out string inPath, out string outPath, out string[] options, out string error)
