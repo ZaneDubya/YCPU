@@ -215,12 +215,10 @@ namespace Ypsilon.Hardware
         /// <param name="operand">Input: 16-bit machine code word</param>
         /// <param name="value">Output: Value that PC should be set to</param>
         /// <param name="unused">Output: Unused</param>
-        void BitPatternJMI(ushort operand, out ushort address, out RegGPIndex unused)
+        void BitPatternJMI(ushort operand, out ushort address, out ushort addressFar, out bool isFarJump)
         {
             int addressingMode;
             RegGPIndex source;
-            bool isFarJump;
-            ushort addressFar;
             ushort nextword;
 
             // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
@@ -228,7 +226,7 @@ namespace Ypsilon.Hardware
             addressingMode = (operand & 0xF000) >> 12;              // A = addressing mode
             source = (RegGPIndex)((operand & 0x0E00) >> 9);         // r = source register
             isFarJump = (operand & 0x0100) != 0;                    // F = far jump mode
-            unused = RegGPIndex.None;
+            addressFar = 0;
 
             switch (addressingMode) // will always be between 0x0 and 0xf
             {

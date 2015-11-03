@@ -904,17 +904,17 @@ namespace Ypsilon.Hardware
         #region JMP Instructions
         private void JMP(ushort operand)
         {
-            ushort value;
-            RegGPIndex unused;
-            BitPatternJMI(operand, out value, out unused);
+            ushort value, farValue;
+            bool isFar;
+            BitPatternJMI(operand, out value, out farValue, out isFar);
             PC = value;
         }
 
         private void JSR(ushort operand)
         {
-            ushort value;
-            RegGPIndex unused;
-            BitPatternJMI(operand, out value, out unused);
+            ushort value, farValue;
+            bool isFar;
+            BitPatternJMI(operand, out value, out farValue, out isFar);
             StackPush(PC);
             PC = value;
         }
