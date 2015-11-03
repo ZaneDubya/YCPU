@@ -136,8 +136,9 @@ namespace YCPUXNA
             m_Curses.Clear();
             YCPU cpu = m_Emulator.CPU;
 
-            int r_y = 1;
-            ConsoleWrite(70, r_y, "Registers");
+            // registers - general purpose, then system.
+            int r_y = 2;
+            ConsoleWrite(70, r_y - 1, "Registers");
             ConsoleWrite(70, r_y + 1, string.Format("R0: ${0:X4}", cpu.R0));
             ConsoleWrite(70, r_y + 2, string.Format("R1: ${0:X4}", cpu.R1));
             ConsoleWrite(70, r_y + 3, string.Format("R2: ${0:X4}", cpu.R2));
@@ -147,29 +148,30 @@ namespace YCPUXNA
             ConsoleWrite(70, r_y + 7, string.Format("R6: ${0:X4}", cpu.R6));
             ConsoleWrite(70, r_y + 8, string.Format("R7: ${0:X4}", cpu.R7));
 
-            ConsoleWrite(70, r_y + 9, string.Format("FL: ${0:X4}", cpu.FL));
-            ConsoleWrite(70, r_y + 10, string.Format("IA: ${0:X4}", cpu.IA));
-            ConsoleWrite(70, r_y + 11, string.Format("II: ${0:X4}", cpu.II));
-            ConsoleWrite(70, r_y + 12, string.Format("PC: ${0:X4}", cpu.PC));
-            ConsoleWrite(70, r_y + 13, string.Format("PS: ${0:X4}", cpu.PS));
-            ConsoleWrite(70, r_y + 14, string.Format("P2: ${0:X4}", cpu.P2));
-            ConsoleWrite(69, r_y + 15, string.Format("USP: ${0:X4}", cpu.USP));
-            ConsoleWrite(69, r_y + 16, string.Format("SSP:*${0:X4}", cpu.SSP));
+            ConsoleWrite(70, r_y + 10, string.Format("FL: ${0:X4}", cpu.FL));
+            ConsoleWrite(70, r_y + 11, string.Format("IA: ${0:X4}", cpu.IA));
+            ConsoleWrite(70, r_y + 12, string.Format("II: ${0:X4}", cpu.II));
+            ConsoleWrite(70, r_y + 13, string.Format("PC: ${0:X4}", cpu.PC));
+            ConsoleWrite(70, r_y + 14, string.Format("PS: ${0:X4}", cpu.PS));
+            ConsoleWrite(70, r_y + 15, string.Format("P2: ${0:X4}", cpu.P2));
+            ConsoleWrite(69, r_y + 16, string.Format("USP: ${0:X4}", cpu.USP));
+            ConsoleWrite(69, r_y + 17, string.Format("SSP:*${0:X4}", cpu.SSP));
 
-            ConsoleWrite(70, r_y + 18, "PS Bits:");
-            ConsoleWrite(70, r_y + 19, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
+            ConsoleWrite(70, r_y + 19, "PS Bits:");
+            ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_I ? "I" : ".", ".",
                 ".", ".", ".", "."));
 
-            ConsoleWrite(70, r_y + 21, "FL Bits:");
-            ConsoleWrite(70, r_y + 22, string.Format("{0}{1}{2}{3} ....",
+            ConsoleWrite(70, r_y + 22, "FL Bits:");
+            ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3} ....",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
-            ConsoleWrite(2, r_y, "Disassembly");
+            // disassembly
+            ConsoleWrite(2, r_y - 1, "Disassembly");
             string[] disasm = cpu.Disassemble(cpu.PC, 21, true);
             for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
-            ConsoleWrite(0, 2, ">");
+            ConsoleWrite(1, 3, ">");
             ConsoleWrite(2, 23, string.Format("{0} Cycles total", cpu.Cycles));
 
             ConsoleWrite(2, 25, "Ctrl-L: Load debug console program.");
