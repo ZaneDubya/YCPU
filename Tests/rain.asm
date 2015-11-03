@@ -97,6 +97,9 @@ Setup:
     lod     c, $0000
     hwq     $02
     
+    ; prepare supervisor bank registers in mmu. This is more complicated than it has to be -
+    ; a series of 'lod a, lod b, mmu' instructions would work as well. I'm just testing instructions.
+
     ; set mmu to load graphics adaptor memory in supervisor bank $02
     lod     a, $0C      ; mmu cache index 8 (bank $02, word 0)
     lod     b, $0100    ; device 01, bank 0
@@ -104,24 +107,32 @@ Setup:
     inc     a
     lod     b, $0000    ; no protection enabled for this bank.
     mmw     a, b
-
     ; set mmu bank 0 to cpu rom.
     lod     a, $08
     lod     b, $0080
     mmw     a, b
     inc     a
-    lod     b, $0000
+    lod     b, $0000    ; no protection enabled for this bank.
+    mmw     a, b
+    ; set mmu bank 1 to cpu ram bank 1
+    inc     a
+    lod     b, $0001
+    mmw     a, b
+    inc     a
+    lod     b, $0000    ; no protection enabled for this bank.
+    mmw     a, b
+    ; set mmu bank 3 to cpu ram bank 3
+    adi     a, 3
+    lod     b, $0003
+    mmw     a, b
+    inc     a
+    lod     b, $0000    ; no protection enabled for this bank.
     mmw     a, b
     
-    ; enable mmu. bank 0 is cpu rom 0, bank 1 is cpu ram 0, bank 2 is graphics adapter bank 0, bank 3 is cpu ram 0.
+    ; enable mmu by setting 'm' bit in PS.
     lod     a, ps
-    orr     a, 0x4000   ; mmu bit is 0x4000
+    orr     a, 0x4000   ; mmu enable bit is 0x4000
     sto     a, ps
-    
-    ; debug - test that memory banks have been correctly set - r1 should equal r0.
-    lod     r0, $feed
-    sto     r0, [$4000]
-    lod     r1, [$c000]
 
     rts
 .scend
