@@ -1,21 +1,23 @@
 The YCPU Specification
 ====
 
-The YCPU Specification describes a virtual 8/16-bit processor with a comprehensive instruction set and features that make it both easy to program for and easy to emulate. The [specification document](https://github.com/ZaneDubya/YCPU/blob/master/Documentation/ycpu.txt "YCPU Specification Document") is released to the public domain, and anyone may use it for any purpose without permission or attribution.
+The YCPU Specification describes a virtual 16-bit processor with a comprehensive instruction set and features that make it both easy to program for and easy to emulate. The [specification document](https://github.com/ZaneDubya/YCPU/blob/master/Documentation/ycpu.txt "YCPU Specification Document") is released to the public domain, and anyone may use it for any purpose without permission or attribution.
 
-This repository also hosts software which emulates the YCPU platform. This software is written in C#, and may be reused under the terms of the MIT license.
+This repository also hosts software which assembles and disassembles YCPU programs, and emulates the YCPU platform. This software is written in C# and uses the XNA framework, and may be reused under the terms of the MIT license.
 
 Source Tree
 ----
-- Documentation - Specifications describing the YCPU and ancillary emulated hardware devices. 
-- Source - Source code for the library and supporting projects.
-  - YCPU
+- Documentation - Specifications describing the YCPU and auxiliary emulated hardware devices.
+- Resources - Binary resource files that are used by the YCPU's auxiliary emulated hardware devices.
+  - Import - contains raw resource files - a palette and charset for the LEM display device.
+  - Export - contains binary resource files - 'compiled' versions of files from Import folder.
+  - ResourceBuilder - C# program that builds the resource files.
+- Source - Source code for the emulator, assembler, and disassembler.
+  - Libraries - Class library that describes the YCPU, auxiliary hardware, emulator, assembler, and disassembler.
     - Assembler - Assembles YASM files into binaries.  
-    - Emulator - Emulates the YCPU using the Hardware and Platform libraries.  
-    - Hardware - Class library, implentation of the YCPU and hardware devices.  
-    - Platform - Class library, XNA platform for hosting YCPU on the Win32/.NET platform.  
-  - YCPUResources - Resource files (images, palettes, shaders) that are included in Platform.  
-  - YCPUXNA - Example project providing a YCPU emulator, plus monitor and keyboard, in XNA.
+    - Devices - Implementation of the auxiliary hardware devices. 
+    - Hardware - Implementation of the YCPU.  
+  - YCPUXNA - XNA platform for hosting YCPU emulator/assembler/disassember on the Win/.NET platform.  
 - Tests - Example YASM files that can be assembled by the Assembler.
 
 Thanks To:
