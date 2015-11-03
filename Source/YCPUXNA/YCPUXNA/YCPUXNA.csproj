@@ -75,7 +75,6 @@
     <Compile Include="Asm.cs" />
     <Compile Include="StdConsole.cs" />
     <Compile Include="Display\Curses.cs" />
-    <Compile Include="Display\Monitor.cs" />
     <Compile Include="Dsm.cs" />
     <Compile Include="Emu.cs" />
     <Compile Include="Program.cs" />
