@@ -139,32 +139,58 @@ namespace YCPUXNA
             // registers - general purpose, then system.
             int r_y = 2;
             ConsoleWrite(70, r_y - 1, "Registers");
-            ConsoleWrite(70, r_y + 1, string.Format("R0: ${0:X4}", cpu.R0));
-            ConsoleWrite(70, r_y + 2, string.Format("R1: ${0:X4}", cpu.R1));
-            ConsoleWrite(70, r_y + 3, string.Format("R2: ${0:X4}", cpu.R2));
-            ConsoleWrite(70, r_y + 4, string.Format("R3: ${0:X4}", cpu.R3));
-            ConsoleWrite(70, r_y + 5, string.Format("R4: ${0:X4}", cpu.R4));
-            ConsoleWrite(70, r_y + 6, string.Format("R5: ${0:X4}", cpu.R5));
-            ConsoleWrite(70, r_y + 7, string.Format("R6: ${0:X4}", cpu.R6));
-            ConsoleWrite(70, r_y + 8, string.Format("R7: ${0:X4}", cpu.R7));
+            ConsoleWrite(70, r_y + 1, string.Format("r0: ${0:X4}", cpu.R0));
+            ConsoleWrite(70, r_y + 2, string.Format("r1: ${0:X4}", cpu.R1));
+            ConsoleWrite(70, r_y + 3, string.Format("r2: ${0:X4}", cpu.R2));
+            ConsoleWrite(70, r_y + 4, string.Format("r3: ${0:X4}", cpu.R3));
+            ConsoleWrite(70, r_y + 5, string.Format("r4: ${0:X4}", cpu.R4));
+            ConsoleWrite(70, r_y + 6, string.Format("r5: ${0:X4}", cpu.R5));
+            ConsoleWrite(70, r_y + 7, string.Format("r6: ${0:X4}", cpu.R6));
+            ConsoleWrite(70, r_y + 8, string.Format("r7: ${0:X4}", cpu.R7));
 
-            ConsoleWrite(70, r_y + 10, string.Format("FL: ${0:X4}", cpu.FL));
-            ConsoleWrite(70, r_y + 11, string.Format("IA: ${0:X4}", cpu.IA));
-            ConsoleWrite(70, r_y + 12, string.Format("II: ${0:X4}", cpu.II));
-            ConsoleWrite(70, r_y + 13, string.Format("PC: ${0:X4}", cpu.PC));
-            ConsoleWrite(70, r_y + 14, string.Format("PS: ${0:X4}", cpu.PS));
-            ConsoleWrite(70, r_y + 15, string.Format("P2: ${0:X4}", cpu.P2));
-            ConsoleWrite(69, r_y + 16, string.Format("USP: ${0:X4}", cpu.USP));
-            ConsoleWrite(69, r_y + 17, string.Format("SSP:*${0:X4}", cpu.SSP));
+            ConsoleWrite(70, r_y + 10, string.Format("fl: ${0:X4}", cpu.FL));
+            ConsoleWrite(70, r_y + 11, string.Format("ia: ${0:X4}", cpu.IA));
+            ConsoleWrite(70, r_y + 12, string.Format("ii: ${0:X4}", cpu.II));
+            ConsoleWrite(70, r_y + 13, string.Format("pc: ${0:X4}", cpu.PC));
+            ConsoleWrite(70, r_y + 14, string.Format("ps: ${0:X4}", cpu.PS));
+            ConsoleWrite(70, r_y + 15, string.Format("p2: ${0:X4}", cpu.P2));
+            ConsoleWrite(69, r_y + 16, string.Format("usp: ${0:X4}", cpu.USP));
+            ConsoleWrite(69, r_y + 17, string.Format("ssp:*${0:X4}", cpu.SSP));
 
-            ConsoleWrite(70, r_y + 19, "PS Bits:");
+            ConsoleWrite(70, r_y + 19, "ps bits:");
             ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_I ? "I" : ".", ".",
                 ".", ".", ".", "."));
 
-            ConsoleWrite(70, r_y + 22, "FL Bits:");
+            ConsoleWrite(70, r_y + 22, "fl bits:");
             ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3} ....",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
+
+            ConsoleWrite(70, r_y + 25, "Memory management:");
+            if (cpu.PS_M)
+            {
+                if (!cpu.PS_S)
+                {
+                    ConsoleWrite(70, r_y + 26, ConsoleCreateMMUStatusString(cpu, 0));
+                    ConsoleWrite(70, r_y + 27, ConsoleCreateMMUStatusString(cpu, 1));
+                    ConsoleWrite(70, r_y + 28, ConsoleCreateMMUStatusString(cpu, 2));
+                    ConsoleWrite(70, r_y + 29, ConsoleCreateMMUStatusString(cpu, 3));
+                }
+                else
+                {
+                    ConsoleWrite(70, r_y + 26, ConsoleCreateMMUStatusString(cpu, 4));
+                    ConsoleWrite(70, r_y + 27, ConsoleCreateMMUStatusString(cpu, 5));
+                    ConsoleWrite(70, r_y + 28, ConsoleCreateMMUStatusString(cpu, 6));
+                    ConsoleWrite(70, r_y + 29, ConsoleCreateMMUStatusString(cpu, 7));
+                }
+            }
+            else
+            {
+                ConsoleWrite(70, r_y + 26, "$00 $80 .... ....");
+                ConsoleWrite(70, r_y + 27, "$00 $01 .... ....");
+                ConsoleWrite(70, r_y + 28, "$00 $02 .... ....");
+                ConsoleWrite(70, r_y + 29, "$00 $03 .... ....");
+            }
 
             // disassembly
             ConsoleWrite(2, r_y - 1, "Disassembly");
@@ -186,6 +212,20 @@ namespace YCPUXNA
             m_Curses.WriteString(x, y, s);
             // Console.SetCursorPosition(x, y);
             // Console.Write(s);
+        }
+
+        private string ConsoleCreateMMUStatusString(YCPU cpu, int index)
+        {
+            ushort cache0 = cpu.MMU_Read((ushort)(index * 2));
+            ushort cache1 = cpu.MMU_Read((ushort)(index * 2 + 1));
+            return string.Format("${0:X2} ${1:X2} {2}{3}{4}{5} {6}...",
+                    cache0 >> 8, cache0 & 0x00ff,
+                    (cache1 & 0x8000) != 0 ? "S" : ".",
+                    (cache1 & 0x8000) != 0 ? "W" : ".",
+                    (cache1 & 0x8000) != 0 ? "E" : ".",
+                    (cache1 & 0x8000) != 0 ? "P" : ".",
+                    (cache1 & 0x8000) != 0 ? "A" : "."
+                    );
         }
         #endregion
     }
