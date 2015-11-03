@@ -18,6 +18,7 @@ namespace YCPUXNA
         private DeviceRenderService m_DeviceRenderer;
 
         private Emulator m_Emulator;
+        private Display.Curses m_Curses;
 
         private double m_LastConsoleUpdate = 0;
 
@@ -25,8 +26,8 @@ namespace YCPUXNA
         {
             m_Graphics = new GraphicsDeviceManager(this);
             m_Graphics.IsFullScreen = false;
-            m_Graphics.PreferredBackBufferWidth = 256;
-            m_Graphics.PreferredBackBufferHeight = 192;
+            m_Graphics.PreferredBackBufferWidth = 1280;
+            m_Graphics.PreferredBackBufferHeight = 720;
 
             this.IsMouseVisible = true;
         }
@@ -41,6 +42,7 @@ namespace YCPUXNA
             m_DeviceRenderer = (DeviceRenderService)ServiceRegistry.Register<IDeviceRenderer>(new DeviceRenderService(m_SpriteBatch));
 
             m_Emulator = new Emulator();
+            m_Curses = new Display.Curses(GraphicsDevice, 160, 90);
         }
 
         protected override void UnloadContent()
@@ -62,7 +64,8 @@ namespace YCPUXNA
             base.Draw(gameTime);
 
             GraphicsDevice.Clear(Color.Black);
-            m_SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+            m_SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+            //m_Curses.Render(m_SpriteBatch);
             m_Emulator.Draw();
             m_SpriteBatch.End();
             GraphicsDevice.Textures[0] = null;
