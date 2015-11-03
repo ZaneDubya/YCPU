@@ -501,7 +501,9 @@ namespace Ypsilon.Assembler
             ParsedOpcode p2 = ParseParam(param2);
 
             if (p1.AddressingMode != AddressingMode.Register)
-                return null;
+            {
+                throw new Exception("ALU instruction first operand must be a general purpose register");
+            }
             
             ushort addressingmode = 0x0000;
             switch (p2.AddressingMode)
