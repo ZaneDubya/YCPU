@@ -12,6 +12,10 @@ namespace YCPUXNA
 {
     class Emu : Game
     {
+        private const int c_ConsoleWidth = 128;
+        private const int c_ConsoleHeight = 64;
+        private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
+
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatch m_SpriteBatch;
         private List<ITexture> m_DeviceTextures;
@@ -23,9 +27,6 @@ namespace YCPUXNA
         private Display.Curses m_Curses;
 
         private double m_LastConsoleUpdate = 0;
-        private const int c_ConsoleWidth = 128;
-        private const int c_ConsoleHeight = 64;
-        private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
 
         public Emu()
         {
