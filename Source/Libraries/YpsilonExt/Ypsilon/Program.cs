@@ -10,7 +10,7 @@ namespace Ypsilon
         /// </summary>
         static void Main(string[] args)
         {
-            using (RoundLineDemo game = new RoundLineDemo())
+            using (NewGame game = new NewGame())
             {
                 game.Run();
             }

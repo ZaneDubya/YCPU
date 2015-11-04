@@ -49,7 +49,7 @@ namespace Ypsilon
             m_LineManager.Init(GraphicsDevice, Content);
             roundLineTechniqueNames = m_LineManager.TechniqueNames;
 
-            for (float y = -2000; y <= 2000; y += 200)
+            /*for (float y = -2000; y <= 2000; y += 200)
             {
                 for (float x = -2000; x <= 2000; x += 200)
                 {
@@ -63,7 +63,7 @@ namespace Ypsilon
                         lines.Add(new VectorRoundLine(x, y, x + x1, y + y1));
                     }
                 }
-            }
+            }*/
 
             Create2DProjectionMatrix();
         }
