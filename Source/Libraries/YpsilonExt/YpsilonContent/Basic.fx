@@ -1,5 +1,6 @@
 float4x4 ProjectionMatrix;
 float4x4 WorldMatrix;
+float4x4 ViewMatrix;
 float2 Viewport;
 
 sampler Texture;
@@ -23,7 +24,10 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
 	VertexShaderOutput output;
 
-	output.Position = mul(mul(input.Position, WorldMatrix), ProjectionMatrix);
+	float4x4 preViewProjection = mul(ViewMatrix, ProjectionMatrix);
+		float4x4 preWorldViewProjection = mul(WorldMatrix, preViewProjection);
+		output.Position = mul(input.Position, preWorldViewProjection);
+
 	// Half pixel offset for correct texel centering.
 	output.Position.x -= 0.5 / Viewport.x;
 	output.Position.y += 0.5 / Viewport.y;

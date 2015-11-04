@@ -59,6 +59,7 @@ namespace Ypsilon
             _spriteBatch.Vectors.DrawPolygon(
                 new VectorPolygon(new Vector3[] {
                     new Vector3(10, 10, 10), new Vector3(20, 20, 20), new Vector3(10, 50, 50) }, true), Color.Azure);
+            _spriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
             base.Draw(gameTime);
         }
     }

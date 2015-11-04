@@ -22,32 +22,31 @@ namespace Ypsilon.Graphics
     /// </summary>
     public class VectorRenderer
     {
-        GraphicsDevice _graphics;
-        ContentManager _content;
-        Effect _effect;
+        GraphicsDevice m_Graphics;
+        Effect m_Effect;
 
-        const int _maxPrimitives = 0x1000;
-        VertexPositionColorTexture[] vertices;
-        Texture2D _texture;
-        short[] _indices;
-        int currentIndex;
-        int lineCount;
+        private const int c_MaxPrimitives = 0x1000;
+        private VertexPositionColorTexture[] m_WorldVertices, m_ScreenVertices;
+        private Texture2D m_Texture;
+        private short[] m_Indices;
+        private int m_CurrentIndex;
+        private int m_LineCount;
 
         public VectorRenderer(GraphicsDevice g, ContentManager c)
         {
-            _graphics = g;
-            _content = c;
-            _effect = _content.Load<Effect>("Basic");
+            m_Graphics = g;
+            m_Effect = c.Load<Effect>("Basic");
 
             Color[] data = new Color[] { Color.White };
-            _texture = new Texture2D(_graphics, 1, 1);
-            _texture.SetData<Color>(data);
+            m_Texture = new Texture2D(m_Graphics, 1, 1);
+            m_Texture.SetData<Color>(data);
 
             // create the vertex and indices array
-            this.vertices = new VertexPositionColorTexture[_maxPrimitives * 2];
-            _indices = createIndexBuffer(_maxPrimitives);
-            currentIndex = 0;
-            lineCount = 0;
+            m_WorldVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
+            m_ScreenVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
+            m_Indices = createIndexBuffer(c_MaxPrimitives);
+            m_CurrentIndex = 0;
+            m_LineCount = 0;
         }
 
         private short[] createIndexBuffer(int primitiveCount)
@@ -103,13 +102,13 @@ namespace Ypsilon.Graphics
         /// <param name="end">The ending vertex.</param>
         public void DrawLine(VertexPositionColorTexture start, VertexPositionColorTexture end)
         {
-            if (lineCount >= _maxPrimitives)
+            if (m_LineCount >= c_MaxPrimitives)
                 throw new Exception("Raster graphics count has exceeded limit.");
 
-            vertices[currentIndex++] = start;
-            vertices[currentIndex++] = end;
+            m_WorldVertices[m_CurrentIndex++] = start;
+            m_WorldVertices[m_CurrentIndex++] = end;
 
-            lineCount++;
+            m_LineCount++;
         }
 
 
@@ -138,76 +137,66 @@ namespace Ypsilon.Graphics
             int length = polygon.Points.Length + ((polygon.IsClosed) ? 0 : -1);
             for (int i = 0; i < length; i += step)
             {
-                if (lineCount >= _maxPrimitives)
+                if (m_LineCount >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit.");
 
-                vertices[currentIndex].Position = polygon.Points[i % polygon.Points.Length];
-                vertices[currentIndex++].Color = color;
-                vertices[currentIndex].Position = polygon.Points[(i + 1) % polygon.Points.Length];
-                vertices[currentIndex++].Color = color;
-                lineCount++;
+                m_WorldVertices[m_CurrentIndex].Position = polygon.Points[i % polygon.Points.Length];
+                m_WorldVertices[m_CurrentIndex++].Color = color;
+                m_WorldVertices[m_CurrentIndex].Position = polygon.Points[(i + 1) % polygon.Points.Length];
+                m_WorldVertices[m_CurrentIndex++].Color = color;
+                m_LineCount++;
             }
-        }
-
-        public void DrawCircle(Vector2 origin, float radius, float z, Color color)
-        {
-            int numPoints = 20;
-            float radiansPerPoint = (Utility.Pi * 2) / numPoints;
-            Vector3[] points = new Vector3[numPoints];
-            for (int i = 0; i < numPoints; i++)
-            {
-                points[i] = new Vector3(
-                    origin.X + (float)Math.Cos(radiansPerPoint * i) * radius,
-                    origin.Y + (float)Math.Sin(radiansPerPoint * i) * radius,
-                    z);
-            }
-            DrawPolygon(new VectorPolygon(points, true), color);
         }
 
         public void Render_WorldSpace(Vector2 rotation, float zoom)
         {
             // if we don't have any vertices, then we can exit early
-            if (currentIndex == 0)
+            if (m_CurrentIndex == 0)
                 return;
 
             float zOffset = (zoom > 1000) ? (zoom - 1000) : 0;
 
-            Matrix projection = Matrix.CreateRotationY(rotation.X) * Matrix.CreateRotationX(rotation.Y) * Matrix.CreateTranslation(0, 0, -zOffset) * Utility.ProjectionMatrixWorld;
-            _effect.Parameters["ProjectionMatrix"].SetValue(projection);
-            _effect.Parameters["WorldMatrix"].SetValue(Matrix.CreateScale(zoom * .99f));
-            _effect.Parameters["Viewport"].SetValue(new Vector2(_graphics.Viewport.Width, _graphics.Viewport.Height));
+            // Matrix projection = Matrix.CreateRotationY(rotation.X) * Matrix.CreateRotationX(rotation.Y) * Matrix.CreateTranslation(0, 0, -zOffset) * Utility.ProjectionMatrixWorld;
 
-            _effect.CurrentTechnique.Passes[0].Apply();
+            Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, m_Graphics.Viewport.AspectRatio, 1.0f, 300.0f);
+            Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
 
-            _graphics.Textures[0] = _texture;
-            _graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, vertices, 0, currentIndex, _indices, 0, lineCount);
+            m_Effect.Parameters["ProjectionMatrix"].SetValue(projection);
+            m_Effect.Parameters["ViewMatrix"].SetValue(view);
+            m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
+            m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
 
-            currentIndex = 0;
-            lineCount = 0;
+            m_Effect.CurrentTechnique.Passes[0].Apply();
+
+            m_Graphics.Textures[0] = m_Texture;
+            m_Graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
+
+            m_CurrentIndex = 0;
+            m_LineCount = 0;
         }
 
         public void Render_ViewportSpace()
         {
             // if we don't have any vertices, then we can exit early
-            if (currentIndex == 0)
+            if (m_CurrentIndex == 0)
                 return;
 
-            _graphics.BlendState = BlendState.AlphaBlend;
-            _graphics.DepthStencilState = DepthStencilState.Default;
-            _graphics.SamplerStates[0] = SamplerState.PointClamp;
-            _graphics.RasterizerState = RasterizerState.CullNone;
+            m_Graphics.BlendState = BlendState.AlphaBlend;
+            m_Graphics.DepthStencilState = DepthStencilState.Default;
+            m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
+            m_Graphics.RasterizerState = RasterizerState.CullNone;
 
-            _effect.Parameters["ProjectionMatrix"].SetValue(Utility.ProjectionMatrixScreen);
-            _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
-            _effect.Parameters["Viewport"].SetValue(new Vector2(_graphics.Viewport.Width, _graphics.Viewport.Height));
+            m_Effect.Parameters["ProjectionMatrix"].SetValue(Utility.ProjectionMatrixScreen);
+            m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
+            m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
 
-            _effect.CurrentTechnique.Passes[0].Apply();
+            m_Effect.CurrentTechnique.Passes[0].Apply();
 
-            _graphics.Textures[0] = _texture;
-            _graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, vertices, 0, currentIndex, _indices, 0, lineCount);
+            m_Graphics.Textures[0] = m_Texture;
+            m_Graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
 
-            currentIndex = 0;
-            lineCount = 0;
+            m_CurrentIndex = 0;
+            m_LineCount = 0;
         }
     }
 }
