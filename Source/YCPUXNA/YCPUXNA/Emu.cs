@@ -7,6 +7,7 @@ using YCPUXNA.ServiceProviders.Input;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using YCPUXNA.Display;
 
 namespace YCPUXNA
 {
@@ -24,7 +25,7 @@ namespace YCPUXNA
         private DeviceRenderService m_DeviceRenderer;
 
         private Emulator m_Emulator;
-        private Display.Curses m_Curses;
+        private Curses m_Curses;
 
         private double m_LastConsoleUpdate = 0;
 
