@@ -204,14 +204,14 @@ namespace YCPUXNA
             for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(1, 3, ">");
-            ConsoleWrite(2, 23, string.Format("{0} Cycles total", cpu.Cycles));
+            ConsoleWrite(2, 25, string.Format("{0} Cycles total", cpu.Cycles));
 
-            ConsoleWrite(2, 25, "Ctrl-L: Load debug console program.");
-            ConsoleWrite(2, 26, "Ctrl-R: Run at 10 khz.");
-            ConsoleWrite(2, 27, "Ctrl-B: Break.");
-            ConsoleWrite(2, 28, "Ctrl-N: Run one instruction.");
-            ConsoleWrite(2, 29, "Ctrl-M: Run approximately 100 cycles.");
-            ConsoleWrite(2, 30, "Ctrl-T: Reset interrupt.");
+            ConsoleWrite(2, 27, "Ctrl-L: Load debug console program.");
+            ConsoleWrite(2, 28, "Ctrl-R: Run at 10 khz.");
+            ConsoleWrite(2, 29, "Ctrl-B: Break.");
+            ConsoleWrite(2, 30, "Ctrl-N: Run one instruction.");
+            ConsoleWrite(2, 31, "Ctrl-M: Run approximately 100 cycles.");
+            ConsoleWrite(2, 32, "Ctrl-T: Reset interrupt.");
         }
 
         private void ConsoleWrite(int x, int y, string s)
