@@ -5,6 +5,8 @@ The YCPU Specification describes a virtual 16-bit processor with a comprehensive
 
 This repository also hosts software which assembles and disassembles YCPU programs, and emulates the YCPU platform. This software is written in C# and uses the XNA framework, and may be reused under the terms of the MIT license.
 
+[Screen shot of running emulator](https://cloud.githubusercontent.com/assets/7041719/10925570/e8225910-8254-11e5-8e47-71cb18d6be40.png)
+
 Source Tree
 ----
 - Documentation - Specifications describing the YCPU and auxiliary emulated hardware devices.
