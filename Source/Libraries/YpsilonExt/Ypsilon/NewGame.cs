@@ -8,9 +8,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using Ypsilon.Display.Vectors;
 using Ypsilon.Graphics;
 #endregion
 
@@ -19,7 +16,8 @@ namespace Ypsilon
     public class NewGame : Game
     {
         private GraphicsDeviceManager m_Graphics;
-        private SpriteBatchExtended _spriteBatch;
+        private SpriteBatchExtended m_SpriteBatch;
+        private Entities.Entity m_Entity;
 
         public NewGame()
         {
@@ -35,31 +33,29 @@ namespace Ypsilon
 
         protected override void Initialize()
         {
-            Components.Add(_spriteBatch = new Graphics.SpriteBatchExtended(this));
+            Components.Add(m_SpriteBatch = new Graphics.SpriteBatchExtended(this));
 
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-
+            m_Entity = new Entities.Entity();
         }
 
         protected override void Update(GameTime gameTime)
         {
             KeyboardState keyboardState = Keyboard.GetState();
-
+            m_Entity.Update();
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
-            _spriteBatch.DrawTitleSafeAreas();
-            _spriteBatch.Vectors.DrawPolygon(
-                new VectorPolygon(new Vector3[] {
-                    new Vector3(10, 10, 10), new Vector3(20, 20, 20), new Vector3(10, 50, 50) }, true), Color.Azure);
-            _spriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
+            m_SpriteBatch.DrawTitleSafeAreas();
+            m_SpriteBatch.Vectors.DrawPolygon(m_Entity.WorldVertices(Entities.Position3D.Zero), true, Color.White, false);
+            m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
             base.Draw(gameTime);
         }
     }

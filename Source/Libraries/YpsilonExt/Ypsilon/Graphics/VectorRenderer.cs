@@ -111,17 +111,6 @@ namespace Ypsilon.Graphics
             m_LineCount++;
         }
 
-
-        /// <summary>
-        /// Draws the given polygon.
-        /// </summary>
-        /// <param name="polygon">The polygon to render.</param>
-        /// <param name="color">The color to use when drawing the polygon.</param>
-        public void DrawPolygon(VectorPolygon polygon, Color color)
-        {
-            DrawPolygon(polygon, color, false);
-        }
-
         /// <summary>
         /// Draws the given polygon.
         /// </summary>
@@ -146,6 +135,15 @@ namespace Ypsilon.Graphics
                 m_WorldVertices[m_CurrentIndex++].Color = color;
                 m_LineCount++;
             }
+        }
+
+        public void DrawPolygon(Vector3[] polygon, bool isClosed, Color color, bool dashed)
+        {
+            if (polygon == null)
+                return;
+
+            VectorPolygon poly = new VectorPolygon(polygon, isClosed);
+            DrawPolygon(poly, color, dashed);
         }
 
         public void Render_WorldSpace(Vector2 rotation, float zoom)
