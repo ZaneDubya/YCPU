@@ -1,12 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Ypsilon.Entities.Geometry;
 
 namespace Ypsilon.Entities
 {
     class Entity
     {
-        public Quaternion RotationQ = Quaternion.Identity;
+        private IRotator m_Rotator;
+
         public Position3D Position = Position3D.Zero;
 
         public Vector3[] ModelVertices;
@@ -25,9 +27,10 @@ namespace Ypsilon.Entities
         public Entity()
         {
             SetUpVertices();
+            m_Rotator = new Rotator2D();
         }
 
-        public void Update()
+        public void Update(double gameSeconds)
         {
             float updownRotation = 0.0f;
             float leftrightRotation = 0.0f;
@@ -42,14 +45,11 @@ namespace Ypsilon.Entities
             if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
                 leftrightRotation = 0.025f;
 
-            Quaternion zaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(-1, 0, 0), updownRotation);
-            Quaternion xaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(0, -1, 0), leftrightRotation);
-            RotationQ *= zaxisRotation * xaxisRotation;
+            m_Rotator.Rotate(updownRotation, leftrightRotation, gameSeconds);
 
             // move forward
             float moveSpeed = 0.1f;
-            Vector3 rotatedVector = Vector3.Transform(new Vector3(0, 1, 0), RotationQ);
-            Position += moveSpeed * rotatedVector;
+            Position += moveSpeed * m_Rotator.Forward;
         }
 
         private void SetUpVertices()
@@ -63,7 +63,7 @@ namespace Ypsilon.Entities
 
         private Matrix CreateWorldMatrix(Position3D worldSpaceCenter)
         {
-            Matrix rotMatrix = Matrix.CreateFromQuaternion(RotationQ);
+            Matrix rotMatrix = m_Rotator.RotationMatrix; // Matrix.CreateFromQuaternion(RotationQ);
 
             Vector3 forward = rotMatrix.Forward;
             forward.Normalize();

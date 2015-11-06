@@ -46,7 +46,7 @@ namespace Ypsilon
         protected override void Update(GameTime gameTime)
         {
             KeyboardState keyboardState = Keyboard.GetState();
-            m_Entity.Update();
+            m_Entity.Update(gameTime.TotalGameTime.TotalSeconds);
             base.Update(gameTime);
         }
 
