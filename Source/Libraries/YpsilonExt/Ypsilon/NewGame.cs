@@ -9,6 +9,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Ypsilon.Graphics;
+using Ypsilon.Entities;
+using System;
+using System.Collections.Generic;
 #endregion
 
 namespace Ypsilon
@@ -17,7 +20,8 @@ namespace Ypsilon
     {
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
-        private Entities.Entity m_Entity;
+        private List<Ship> m_Entities;
+        private Ship m_Player;
 
         public NewGame()
         {
@@ -40,13 +44,22 @@ namespace Ypsilon
 
         protected override void LoadContent()
         {
-            m_Entity = new Entities.Entity();
+            m_Entities = new List<Ship>();
+            m_Entities.Add(m_Player = new Ship());
+
+            Random r = new Random();
+            for (int i = 0; i < 100; i++)
+            {
+                Ship ship = new Ship();
+                ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
+                m_Entities.Add(ship);
+            }
         }
 
         protected override void Update(GameTime gameTime)
         {
             KeyboardState keyboardState = Keyboard.GetState();
-            m_Entity.Update(gameTime.TotalGameTime.TotalSeconds);
+            m_Player.Update(gameTime.ElapsedGameTime.TotalSeconds);
             base.Update(gameTime);
         }
 
@@ -54,7 +67,11 @@ namespace Ypsilon
         {
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
-            m_SpriteBatch.Vectors.DrawPolygon(m_Entity.WorldVertices(Entities.Position3D.Zero), true, Color.White, false);
+            foreach (Ship ship in m_Entities)
+            {
+                m_SpriteBatch.Vectors.DrawPolygon(ship.WorldVertices(m_Player.Position), true, Color.White, false);
+            }
+            
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
             base.Draw(gameTime);
         }

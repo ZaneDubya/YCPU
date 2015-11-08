@@ -1,13 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Ypsilon.Entities.Geometry;
+using Ypsilon.Entities.Defines;
+using Ypsilon.Entities.Movement;
 
 namespace Ypsilon.Entities
 {
-    class Entity
+    class Ship
     {
-        private IRotator m_Rotator;
+        public ShipDefinition Definition = new ShipDefinition();
+
+        private ARotator m_Rotator;
 
         public Position3D Position = Position3D.Zero;
 
@@ -24,28 +26,28 @@ namespace Ypsilon.Entities
             return verts;
         }
 
-        public Entity()
+        public Ship()
         {
             SetUpVertices();
-            m_Rotator = new Rotator2D();
+            m_Rotator = new Rotator2D(Definition);
         }
 
-        public void Update(double gameSeconds)
+        public void Update(double frameSeconds)
         {
             float updownRotation = 0.0f;
             float leftrightRotation = 0.0f;
 
             KeyboardState keys = Keyboard.GetState();
             if (keys.IsKeyDown(Keys.Up) || keys.IsKeyDown(Keys.W))
-                updownRotation = 0.025f;
+                updownRotation = 1f;
             if (keys.IsKeyDown(Keys.Down) || keys.IsKeyDown(Keys.S))
-                updownRotation = -0.025f;
+                updownRotation = -1f;
             if (keys.IsKeyDown(Keys.Right) || keys.IsKeyDown(Keys.D))
-                leftrightRotation = -0.025f;
+                leftrightRotation = -1f;
             if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
-                leftrightRotation = 0.025f;
+                leftrightRotation = 1f;
 
-            m_Rotator.Rotate(updownRotation, leftrightRotation, gameSeconds);
+            m_Rotator.Rotate(updownRotation, leftrightRotation, frameSeconds);
 
             // move forward
             float moveSpeed = 0.1f;
@@ -56,9 +58,9 @@ namespace Ypsilon.Entities
         {
             ModelVertices = new Vector3[4] {
                 new Vector3(0, 1, 0),
-                new Vector3(1, -1, 0),
-                new Vector3(0, -0.5f, 0.33f),
-                new Vector3(-1, -1, 0) };
+                new Vector3(1, -1, -1f),
+                new Vector3(0, -0.5f, 0f),
+                new Vector3(-1, -1, -1f) };
         }
 
         private Matrix CreateWorldMatrix(Position3D worldSpaceCenter)

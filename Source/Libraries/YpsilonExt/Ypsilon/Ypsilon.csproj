@@ -59,11 +59,12 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Entity.cs" />
-    <Compile Include="Entities\Geometry\IRotator.cs" />
+    <Compile Include="Entities\Defines\ShipDefinition.cs" />
+    <Compile Include="Entities\Ship.cs" />
+    <Compile Include="Entities\Movement\ARotator.cs" />
     <Compile Include="Entities\Position3D.cs" />
-    <Compile Include="Entities\Geometry\Rotator2D.cs" />
-    <Compile Include="Entities\Geometry\RotatorPitchRoll.cs" />
+    <Compile Include="Entities\Movement\Rotator2D.cs" />
+    <Compile Include="Entities\Movement\RotatorPitchRoll.cs" />
     <Compile Include="Graphics\PreTransformedQuad.cs" />
     <Compile Include="Graphics\SpriteBatchExtended.cs" />
     <Compile Include="Graphics\VectorPolygon.cs" />
