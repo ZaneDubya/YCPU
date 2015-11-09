@@ -186,10 +186,15 @@
   * Got rid of TSR/TRS/XSR bit pattern. Again, abomination.
   * PSH/POP can now reference II, IA, P2, to replace XSR.
   * Clock can now tick, at most, every 1024 cycles.
-0x5a RC1 05/21/2015
+0.5a RC1 05/21/2015
   * ALU instructions now support processor registers as sources
     (destinations with STO)
-0x5b RC1 05/22/2015
+0.5b RC1 05/22/2015
   * Got rid of SFL, it is unnecessary.
-0x60 RC2 10/30/2015
+0.6 RC2 10/30/2015
   * Got rid of FPU instructions.
+0.6A RC3 11/9/2015
+  * Simplified MMU, reduced physical bus by 4 lines. Can now only access 15
+    devices.
+  * MMU now no longer has execute protection. Still has supervisor-mode only,
+    write protection, not-present flag, and access flag.

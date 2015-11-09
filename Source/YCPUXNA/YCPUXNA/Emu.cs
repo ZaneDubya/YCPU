@@ -166,7 +166,7 @@ namespace YCPUXNA
             ConsoleWrite(70, r_y + 19, "ps bits:");
             ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_I ? "I" : ".", ".",
-                cpu.PS_Q ? "Q" : ".", cpu.PS_U ? "U" : ".", cpu.PS_W ? "W" : ".", cpu.PS_E ? "E" : "."));
+                cpu.PS_Q ? "Q" : ".", cpu.PS_U ? "U" : ".", cpu.PS_W ? "W" : ".", "."));
 
             ConsoleWrite(70, r_y + 22, "fl bits:");
             ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3}",
@@ -192,10 +192,10 @@ namespace YCPUXNA
             }
             else
             {
-                ConsoleWrite(70, r_y + 26, "$00 $80 .... .");
-                ConsoleWrite(70, r_y + 27, "$00 $01 .... .");
-                ConsoleWrite(70, r_y + 28, "$00 $02 .... .");
-                ConsoleWrite(70, r_y + 29, "$00 $03 .... .");
+                ConsoleWrite(70, r_y + 26, "$0 $80 ....");
+                ConsoleWrite(70, r_y + 27, "$0 $01 ....");
+                ConsoleWrite(70, r_y + 28, "$0 $02 ....");
+                ConsoleWrite(70, r_y + 29, "$0 $03 ....");
             }
 
             // disassembly
@@ -223,15 +223,15 @@ namespace YCPUXNA
 
         private string ConsoleCreateMMUStatusString(YCPU cpu, int index)
         {
-            ushort cache0 = cpu.MMU_Read((ushort)(index * 2));
-            ushort cache1 = cpu.MMU_Read((ushort)(index * 2 + 1));
-            return string.Format("${0:X2} ${1:X2} {2}{3}{4}{5} {6}",
-                    cache0 >> 8, cache0 & 0x00ff,
-                    (cache1 & 0x8000) != 0 ? "S" : ".",
-                    (cache1 & 0x8000) != 0 ? "W" : ".",
-                    (cache1 & 0x8000) != 0 ? "E" : ".",
-                    (cache1 & 0x8000) != 0 ? "P" : ".",
-                    (cache1 & 0x8000) != 0 ? "A" : "."
+            ushort cache0 = cpu.MMU_Read((ushort)(index));
+            ushort bank = (ushort)(cache0 & 0x00ff);
+            ushort device = (ushort)((cache0 >> 8) & 0x0f);
+            return string.Format("${0:X1} ${1:X2} {2}{3}{4}{5}",
+                    device, bank,
+                    (cache0 & 0x8000) != 0 ? "S" : ".",
+                    (cache0 & 0x4000) != 0 ? "W" : ".",
+                    (cache0 & 0x2000) != 0 ? "P" : ".",
+                    (cache0 & 0x1000) != 0 ? "A" : "."
                     );
         }
         #endregion

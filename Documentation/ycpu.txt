@@ -1,5 +1,5 @@
 ﻿YCPU Specification
-Version 0.6 RC2
+Version 0.6A RC3
 
 ### Table of Contents ##########################################################
 
@@ -162,14 +162,13 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMI. QUWE .... ....
+        SMI. QUW. .... ....
             [S] -   [S]upervisor Mode enabled
-            [M] -   Memory [M]anagement enabled
+            [M] -   [M]emory Management hardware enabled
             [I] -   Hardware [I]nterrupts enabled.
             [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
             [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
             [W] -   Bank Fault, Attempt to Write to Read-Only Memory
-            [E] -   Bank Fault, Attempt to Execute in Non-Execute Memory
             
     P2: Processor Status 2. Set during bank fault interrupt.
     
@@ -197,7 +196,7 @@ In Supervisor mode, the processor:
     * Can execute privileged opcodes.
     * Can access Supervisor-only memory banks.
     * Raises a 'Bank fault' interrupt on attempting to write to read-only
-      memory, or execute execute-protected memory.
+      memory.
     * Can set and clear all bits in the process status registers.
     * Has access to all Special Registers.
     * Can directly access the hardware bus.
@@ -205,9 +204,8 @@ In Supervisor mode, the processor:
 
 In User mode, the processor:
     * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
-    * Raises a 'Bank fault' interrupt on attempting to read, write, or execute
-      supervisor-only memory, write to read-only memory, or execute
-      execute-protected memory.
+    * Raises a 'Bank fault' interrupt on attempting to read or write
+      supervisor-only memory, or write to read-only memory.
     * Cannot access any special registers.
     * Cannot directly access the hardware bus.
     * Uses the User Stack Pointer (USP).
@@ -215,7 +213,7 @@ In User mode, the processor:
 
 === 2.C. Hardware Devices ======================================================
 All additional Devices connect to the processor through a modular Hardware Bus.
-This Hardware Bus can host up to 255 Devices. The processor can directly address
+This Hardware Bus can host up to 15 Devices. The processor can directly address
 memory banks exposed by the Devices, and can also directly communicate with a
 Device by executing a Hardware Query instruction. Devices can request the
 processor's attention by raising an interrupt.
@@ -366,21 +364,18 @@ $1  Clock           Raised when the processor's Real Time Clock ticks. The tick
                     rate can be set by writing to the RTC register.
 $2  DivideByZero    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
-$3  FPUError        Raised when the processor executes a floating point
-                    operation that fails due to bad input. Note that the YCPU
-                    does not contain a FPU in its default configuration, and
-                    this interrupt will never be called.
+$3  RESERVED        Not currently used, never raised.
 $4  StackFault      Raised when the processor executes a Pull opcode with SP 
                     equal to the high-value limit of the Stack, or the processor 
                     executes a Push opcode with SP equal to the low-value limit 
                     of the Stack.
                     Note that limits to the Stack are not yet included in this
                     Specification.
-$5  BankFault       Raised when the processor attempts to read, write, or 
-                    execute an address within a Bank which has been protected 
-                    from these operations. The UWE bits in the PS register will 
-                    describe the error, and the P2 register will contain the 
-                    memory address that the processor attempted to access.
+$5  BankFault       Raised when the processor attempts to read from or write to 
+                    an address within a Bank which has been protected from these
+                    operations. The UW bits in the PS register will describe the
+                    error, and the P2 register will contain the memory address
+                    that the processor attempted to access.
 $6  UnprivOpcode    Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
 $7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
@@ -401,13 +396,11 @@ $F  SWI             Raised by the SWI opcode.
 
 When a bank fault is raised, the processor status bits U, W, and E will describe
 the operation that caused the bank fault:
-        U W E   Bank Fault Type
-        0 0 0   Attempted access to bank that is not loaded.
-        0 0 1   Attempted execute in execute-protected memory.
-        0 1 0   Attempted supervisor write of write-protected memory.
-        1 0 0   Attempted user read of supervisor-only memory.
-        1 0 1   Attempted execute in supervisor-only memory while in user mode.
-        1 1 0   Attempted user write of supervisor-only memory.
+        U W     Bank Fault Type
+        0 0     Attempted access to bank that is not loaded. (P bit set)
+        0 1     Attempted supervisor write of write-protected memory.
+        1 0     Attempted user read of supervisor-only memory.
+        1 1     Attempted user write to supervisor-only memory.
         
 Note that writes to ROM banks will fail silently unless the MMU is enabled and
 the write-protect bit is set, which will generate a bank fault.
@@ -467,11 +460,40 @@ when enabled, implements bankable memory and thus a limited form of virtual
 address translation.
 
 
---- 2.F.1. ADDRESS SPACE WHEN THE MMU IS DISABLED ------------------------------
+--- 2.F.1. THE MMU CACHE -------------------------------------------------------
+
+The MMU has 8 16-bit words of internal cache. Each pair of words describes
+the physical address that is mapped to a single MMU bank. 4 of these 16-bit
+words describe the configuration of the 4 banks of memory in supervisor mode,
+and the other 4 describe the configuration of the 4 banks of memory in user
+mode. 
+
+Word $00___________
+FEDC BA98 7654 3210
+SWPA DDDD bbbb bbbb
+    
+    S - Supervisor only flag:
+        0:  User mode and Supervisor mode may access this bank.
+        1:  Supervisor only. User mode accesses to this bank will fail and
+            cause a bank fault.
+    W - Write protection flag:
+        0:  Write operations to this bank will succeed.
+        1:  Write-protected. Writing to this bank will fail and cause a bank
+            fault.
+    P - Not present flag:
+        If this bit is set, any access to this bank will raise a bank fault.
+    A - Accessed flag:
+        This bit is set every time this bank is written to.
+    D - These bits determine the device that the bank of memory if mapped from.
+    b - These bits determine the bank of memory that is mapped to this bank of
+        virtual address space (note that the YCPU's ROM is indicated by setting
+        the high 'b' bit for device 0).
+
+--- 2.F.2. ADDRESS SPACE WHEN THE MMU IS DISABLED ------------------------------
 
 When the 'M' status bit is in PC clear, the MMU is disabled, and the processor's
 address space is mapped as follows:
-    $0000-$3FFF : Internal ROM Bank $00
+    $0000-$0FFF : Internal ROM Bank $00
     $4000-$7FFF : Internal RAM Bank $01
     $8000-$BFFF : Internal RAM Bank $02
     $C000-$FFFF : Internal RAM Bank $03
@@ -479,15 +501,11 @@ address space is mapped as follows:
 The equivalent MMU register values would be as follows:
 
     $00 : $0080                 ; bank hi bit for device zero selects ROM banks.
-    $01 : $0000
-    $02 : $0001
-    $03 : $0000
-    $04 : $0002
-    $05 : $0000
-    $06 : $0003
-    $07 : $0000
+    $01 : $0001
+    $02 : $0002
+    $03 : $0003
 
---- 2.F.2. ADDRESS SPACE WHEN THE MMU IS ENABLED -------------------------------
+--- 2.F.3. ADDRESS SPACE WHEN THE MMU IS ENABLED -------------------------------
 
 While the 'M' status bit in PC is set, the MMU is enabled, and will translate
 memory references to physical addresses. It does so by dividing the processor's
@@ -498,53 +516,23 @@ fourteen bits of the virtual address select a byte of memory within that bank.
 Note that there are different MMU caches for both user and supervisor mode. The
 supervisor can set both caches, while the user mode can set neither. 
 
-
---- 2.F.3. THE MMU CACHE -------------------------------------------------------
-
-The MMU has 16 16-bit words of internal cache. Each pair of words describes
-the physical address that is mapped to a single MMU bank. 8 of these 16-bit words
-describe the configuration of the 4 banks of memory in supervisor mode, and the
-other 8 describe the configuration of the 4 banks of memory in user mode. 
-
-Word $00___________     Word $01___________
-FEDC BA98 7654 3210     FEDC BA98 7654 3210
-DDDD DDDD bbbb bbbb     SWEP A... .... ....
-
-    S - Supervisor only flag:
-        0:  User mode and Supervisor mode may access this bank.
-        1:  User mode accesses to this bank cause a bank fault.
-    W - Write protection flag:
-        0:  Write operations to this bank will succeed.
-        1:  Writing to this bank will fail and cause a bank fault.
-    E - Execute protect flag:
-        0:  The processor can execute opcodes within this bank.
-        1:  Execution of opcodes while PC is in this bank raises a bank fault.
-    P - Not present flag:
-        If this bit is set, any access to this bank will raise a bank fault.
-    A - Accessed flag:
-        This bit is set every time this bank is written to.
-    b - These bits determine the bank of memory that is mapped to this bank of
-        virtual address space (note that the YCPU's ROM is indicated by setting
-        the high 'b' bit for device 0).
-    D - These bits determine the device that the bank of memory if mapped from.
-
         
 --- 2.F.4. ADDRESS TRANSLATION -------------------------------------------------
 
-The MMU has access to 30 bits of physical address space. A physical address is:
+The MMU has access to 26 bits of physical address space. A physical address is:
 
         FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        ..DD DDDD DDbb bbbb     bbaa aaaa aaaa aaaa
+        .... ..DD DDbb bbbb     bbaa aaaa aaaa aaaa
 
 'a' is the 14-bit address of a byte within that bank.
 'b' is the 8-bit index of the device bank mapped to that 16kb bank.
-'D' is the 8-bit hardware bus index that the bank is taken from.
+'D' is the 4-bit hardware bus index that the bank is taken from.
 
 The 8 'b' bits reference a bank of RAM or ROM from a device on the hardware
-bus. The 8 ‘D’ bits are a 8-bit hardware bus index. Because no hardware device
+bus. The 4 'D' bits are a 8-bit hardware bus index. Because no hardware device
 can have more than 2^8 = 256 banks, each bank can host no more than 4
 megabytes of memory, and the MMU as a whole can address no more than
-2^30 bytes = 1024 megabytes of memory.
+2^26 bytes = 64 megabytes of memory.
 
 Note that when selecting memory banks from processor space (device index 0), the
 high bit of the bank selection index (bit 7 of bank/device select) indicates a
@@ -555,7 +543,7 @@ ROM bank. When this is clear, a RAM bank is selected.
 
 The YCPU is internally 16-bit, and can address only 16-bits of logical address
 space. When the MMU is active, this memory is comprised of four 'banks', each of
-16384 bytes. Which banks of memory are placed in memory is determined by the
+16k bytes. Which banks of memory are placed in memory is determined by the
 MMU. As noted in 2.F.3., supra, software may manipulate the MMU cache using the
 MML/MMR/MMW/MMS instructions to load and save values from the MMU cache; this
 will change which banks are loaded within the logical address space.
@@ -573,13 +561,13 @@ next word following the current instruction as the new value of the new PC. With
 a far jump, the processor will use a second word immediately following the first
 operand as the second operand, as follows:
 
-    JMP.F $F006:$010E ; far jump to address $F006 in bank $0E in device $01.
+    JMP.F $FF06:$010E ; far jump to address $F006 in bank $0E in device $01.
     
     The processor sees this instruction as 3 words (6 bytes) containing five
     sets of data:
     
     $00________________ $01________________ $02________________
-    OOOO OOOO OOOO OOOO bbaa aaaa aaaa aaaa DDDD DDDD BBBB BBBB
+    OOOO OOOO OOOO OOOO bbaa aaaa aaaa aaaa .... DDDD BBBB BBBB
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
     b = the bank which will contain the new PC value.
@@ -597,12 +585,12 @@ will contain Bank index $0E from Device $01.
 
 Note 1: far jumps will clear all flags in the upper word for the MMU cache entry
         containing that bank.
-Note 2: 'far jumps' are only accessible from Supervisor mode. If the processor
-        attempts to execute a 'far jump' while in user mode, the processor will
+Note 2: far jumps are only accessible from Supervisor mode. If the processor
+        attempts to execute a far jump while in user mode, the processor will
         raise an 'UnprivOpcode' exception. Thus, these instructions could still
         be used while in User mode; the processor interrupt would have to 'trap'
-        these instructions. Alternatively, software running in User mode could use
-        a SWI instruction for the same purpose.
+        these instructions. Alternatively, software running in User mode could
+        use a SWI instruction for the same purpose.
 Note 3: when the MMU is disabled, a far jump will still set the lower word for 
         the MMU cache entry for the specified bank, but (because the MMU is
         disabled) the address space will remain unchanged.
@@ -1496,9 +1484,9 @@ Sends a message with the specified identified to the Hardware Bus. This may
 query the bus directly, or send a message to a hardware device.
 
 
-MML         Pushes 8 words of MMU cache data onto the stack.
+MML         Pushes 4 words of MMU cache data onto the stack.
 Syntax: MML Rv
-Reads the 8 word MMU cache and pushes it onto the stack. The lowest bit of Rv
+Reads the 4 word MMU cache and pushes it onto the stack. The lowest bit of Rv
 determines whether the user or supervisor MMU cache is loaded in this way; if
 the bit is clear, the user cache is loaded; if the bit is set, the supervisor
 is loaded.
@@ -1516,9 +1504,9 @@ register Rv. The value in Ra is interpreted as follows:
         $000F - last word of supervisor cache  
 
 
-MMS         Pulls 8 words from stack and write these to the MMU cache.
+MMS         Pulls 4 words from stack and write these to the MMU cache.
 Syntax: MMS Rv
-Pulls 8 words from the stack and writes these to the MMU cache. As with MML, the
+Pulls 4 words from the stack and writes these to the MMU cache. As with MML, the
 lowest bit of Rv determines whether the user or supervisor MMU cache is loaded
 in this way; if the bit is clear, the user cache is loaded; if the bit is set,
 the supervisor is loaded. Note that if the M processor status bit is set when

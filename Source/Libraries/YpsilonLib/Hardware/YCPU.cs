@@ -367,7 +367,7 @@ namespace Ypsilon.Hardware
         #region PS
         private ushort m_PS = 0x0000;
         private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000;
-        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_E = 0x0100;
+        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200;
         private bool m_PS_S = false;
         public ushort PS
         {
@@ -508,25 +508,6 @@ namespace Ypsilon.Hardware
                 else if (value == true)
                 {
                     m_PS |= c_PS_W;
-                }
-            }
-        }
-
-        public bool PS_E
-        {
-            get
-            {
-                return ((m_PS & c_PS_E) != 0);
-            }
-            private set
-            {
-                if (value == false)
-                {
-                    m_PS &= unchecked((ushort)~c_PS_E);
-                }
-                else if (value == true)
-                {
-                    m_PS |= c_PS_E;
                 }
             }
         }

@@ -12,10 +12,10 @@ namespace Ypsilon.Hardware
         private const ushort m_Mem_CPU_Count = 0x0004; // YCPU is guaranteed to have at least 4x16kb banks of internal memory.
         private const ushort m_Rom_CPU_Count = 0x0001;
 
-        // MMU Cache: 4x2 16-bit words each for Supervisor and User modes.
-        private uint[] m_MMU;
-        private const uint c_MMUCache_P = 0x10000000, c_MMUCache_E = 0x20000000, c_MMUCache_W = 0x40000000, c_MMUCache_S = 0x80000000;
-        private const uint c_MMUCache_A = 0x08000000, c_MMUCache_Device = 0x0000FF00, c_MMUCache_Bank = 0x000000FF;
+        // MMU Cache: 4 x 16-bit words for both Supervisor and User modes.
+        private ushort[] m_MMU;
+        private const ushort c_MMUCache_A = 0x1000, c_MMUCache_P = 0x2000, c_MMUCache_W = 0x4000, c_MMUCache_S = 0x8000;
+        private const ushort c_MMUCache_Device = 0x0F00, c_MMUCache_Bank = 0x00FF;
         private const ushort c_MMUCache_ProcessorRom = 0x0080;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Ypsilon.Hardware
         public void InitializeMemory()
         {
             m_Mem = new IMemoryBank[0x04];
-            m_MMU = new uint[8];
+            m_MMU = new ushort[8];
 
             m_Mem_CPU = new MemoryBank[m_Mem_CPU_Count];
             for (int i = 0; i < m_Mem_CPU_Count; i += 1)
@@ -60,10 +60,9 @@ namespace Ypsilon.Hardware
 
             if ((mmu & c_MMUCache_P) != 0)
             {
-                // memory access failed, attempted read from bank that is not loaded.
+                // memory access failed, attempted access of bank that is not loaded.
                 PS_U = false;
                 PS_W = false;
-                PS_E = false;
                 P2 = address;
                 Interrupt_BankFault(execute);
                 return false;
@@ -73,17 +72,6 @@ namespace Ypsilon.Hardware
                 // memory access failed, attempted to access supervisor memory while not in supervisor mode.
                 PS_U = true;
                 PS_W = false;
-                PS_E = false;
-                P2 = address;
-                Interrupt_BankFault(execute);
-                return false;
-            }
-            else if (execute && ((mmu & c_MMUCache_E) != 0))
-            {
-                // memory access failed, attempted to execute execute-protected memory.
-                PS_U = false;
-                PS_W = false;
-                PS_E = true;
                 P2 = address;
                 Interrupt_BankFault(execute);
                 return false;
@@ -111,17 +99,15 @@ namespace Ypsilon.Hardware
                 // memory access failed, attempted write to bank that is not loaded.
                 PS_U = false;
                 PS_W = false;
-                PS_E = false;
                 P2 = address;
                 Interrupt_BankFault(false);
                 return false;
             }
             else if (!PS_S && ((mmu & c_MMUCache_S) != 0))
             {
-                // if not in supervisor mode and attempting to access supervisor memory...
+                // if not in supervisor mode and attempting to write to supervisor memory...
                 PS_U = true;
                 PS_W = true;
-                PS_E = false;
                 P2 = address;
                 Interrupt_BankFault(false);
                 return false;
@@ -131,7 +117,6 @@ namespace Ypsilon.Hardware
                 // if attempting to write to read-only memory...
                 PS_U = false;
                 PS_W = true;
-                PS_E = false;
                 P2 = address;
                 Interrupt_BankFault(false);
                 return false;
@@ -345,13 +330,7 @@ namespace Ypsilon.Hardware
         /// </summary>
         public ushort MMU_Read(ushort index)
         {
-            int bankIndex = (index >> 1);
-            bool isHiWord = (index & 0x0001) != 0;
-
-            if (isHiWord)
-                return (ushort)(m_MMU[bankIndex] >> 16);
-            else
-                return (ushort)(m_MMU[bankIndex] & 0x0000FFFF);
+            return m_MMU[index];
         }
 
         /// <summary>
@@ -360,25 +339,19 @@ namespace Ypsilon.Hardware
         /// </summary>
         private void MMU_Write(ushort index, ushort value)
         {
-            int bankIndex = (index >> 1);
-            bool isHiWord = (index & 0x0001) != 0;
-
-            if (isHiWord)
-                m_MMU[bankIndex] = (((m_MMU[bankIndex]) & 0x0000FFFF) | (uint)(value << 16));
-            else
-                m_MMU[bankIndex] = (((m_MMU[bankIndex]) & 0xFFFF0000) | (uint)(value));
+            m_MMU[index] = value;
         }
 
         /// <summary>
-        /// Pushes 8 words of MMU cache data onto the stack.
+        /// Pushes 4 words of MMU cache data onto the stack.
         /// </summary>
         /// <param name="regIndex">If bit 0 of this register are clear, user cache is pushed; bit set, superviser cache.</param>
         private void MMU_PushCacheOntoStack(ushort value)
         {
             bool isSupervisor = (value & 0x01) != 0;
-            int mmuBase = (int)(isSupervisor ? 8 : 0);
+            int mmuBase = (int)(isSupervisor ? 4 : 0);
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 ushort mmuWord = MMU_Read((ushort)(i + mmuBase));
                 StackPush(mmuWord);
@@ -386,15 +359,15 @@ namespace Ypsilon.Hardware
         }
 
         /// <summary>
-        /// Pulls 8 words from stack and write these to the MMU cache.
+        /// Pulls 4 words from stack and write these to the MMU cache.
         /// </summary>
         /// <param name="regIndex">If bit 0 of this register are clear, user cache is pulled; bit set, superviser cache.</param>
         private void MMU_PullCacheFromStack(ushort value)
         {
             bool isSupervisor = (value & 0x01) != 0;
-            int mmuBase = (int)(isSupervisor ? 8 : 0);
+            int mmuBase = (int)(isSupervisor ? 4 : 0);
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 ushort mmuWord = StackPop();
                 MMU_Write((ushort)(mmuBase - 1 - i), mmuWord);
@@ -427,8 +400,8 @@ namespace Ypsilon.Hardware
             int mmuCacheBase = (PS_S) ? 4 : 0;
             for (int i = mmuCacheBase; i < mmuCacheBase + 4; i++)
             {
-                ushort device = (ushort)((m_MMU[i] & c_MMUCache_Device) >> 8);
-                ushort bank = (ushort)(m_MMU[i] & c_MMUCache_Bank);
+                ushort device = (ushort)((m_MMU[i] & c_MMUCache_Device) >> 8); // 0x0f00
+                ushort bank = (ushort)(m_MMU[i] & c_MMUCache_Bank); // 0x00ff
                 if (device == 0x00) // select internal memory space
                 {
                     if ((bank & c_MMUCache_ProcessorRom) == 0) // select internal ram
