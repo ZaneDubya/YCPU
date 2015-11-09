@@ -146,6 +146,23 @@ namespace Ypsilon.Graphics
             DrawPolygon(poly, color, dashed);
         }
 
+        public void DrawPolygon(VertexPositionColorTexture[] polygon, bool isClosed)
+        {
+            if (polygon == null)
+                return;
+            
+            int length = polygon.Length + (isClosed ? 0 : -1);
+            for (int i = 0; i < length; i++)
+            {
+                if (m_LineCount >= c_MaxPrimitives)
+                    throw new Exception("Raster graphics count has exceeded limit.");
+
+                m_WorldVertices[m_CurrentIndex++] = polygon[i % polygon.Length];
+                m_WorldVertices[m_CurrentIndex++] = polygon[(i + 1) % polygon.Length];
+                m_LineCount++;
+            }
+        }
+
         public void Render_WorldSpace(Vector2 rotation, float zoom)
         {
             // if we don't have any vertices, then we can exit early
@@ -153,8 +170,6 @@ namespace Ypsilon.Graphics
                 return;
 
             float zOffset = (zoom > 1000) ? (zoom - 1000) : 0;
-
-            // Matrix projection = Matrix.CreateRotationY(rotation.X) * Matrix.CreateRotationX(rotation.Y) * Matrix.CreateTranslation(0, 0, -zOffset) * Utility.ProjectionMatrixWorld;
 
             Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, m_Graphics.Viewport.AspectRatio, 1.0f, 300.0f);
             Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));

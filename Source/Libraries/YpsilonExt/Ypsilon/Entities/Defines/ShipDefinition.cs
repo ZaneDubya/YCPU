@@ -44,9 +44,9 @@ namespace Ypsilon.Entities.Defines
         public int DefaultAcceleration = 100;
 
         /// <summary>
-        /// Units per second, max speed.
+        /// Units per second, max speed. 100 units is 1 pixel.
         /// </summary>
-        public int DefaultSpeed = 100;
+        public int DefaultSpeed = 1000;
 
         /// <summary>
         /// Degrees per second rotation.

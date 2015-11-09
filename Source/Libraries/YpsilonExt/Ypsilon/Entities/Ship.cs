@@ -9,6 +9,13 @@ namespace Ypsilon.Entities
     class Ship
     {
         public Position3D Position = Position3D.Zero;
+        public float Speed
+        {
+            get
+            {
+                return (Definition.DefaultSpeed / 100f);
+            }
+        }
 
         public ShipDefinition Definition = new ShipDefinition();
 
@@ -19,8 +26,7 @@ namespace Ypsilon.Entities
         public Ship()
         {
             m_ModelVertices = ShipVertices.SimpleArrow;
-            // m_Rotator = new Rotator2D(Definition);
-            m_Rotator = new RotatorPitchRoll(Definition);
+            m_Rotator = new Rotator2D(Definition);
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0));
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
         }
@@ -43,26 +49,25 @@ namespace Ypsilon.Entities
             m_Rotator.Rotate(updownRotation, leftrightRotation, frameSeconds);
 
             // move forward
-            float moveSpeed = 0.1f;
-            Vector3 offset = moveSpeed * m_Rotator.Forward;
+            Vector3 offset = Speed * m_Rotator.Forward * (float)frameSeconds;
             Position += offset;
 
             m_Trail1.Update(frameSeconds, offset);
             m_Trail2.Update(frameSeconds, offset);
         }
 
-        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public void Draw(double frameSeconds, VectorRenderer renderer, Position3D worldSpaceCenter)
         {
             Matrix world = CreateWorldMatrix(worldSpaceCenter);
-            Vector3[] verts = new Vector3[m_ModelVertices.Length];
-            for (int i = 0; i < verts.Length; i++)
-            {
-                verts[i] = Vector3.Transform(m_ModelVertices[i], world);
-            }
 
-            renderer.DrawPolygon(verts, true, Color.White, false);
             m_Trail1.Draw(renderer, world);
             m_Trail2.Draw(renderer, world);
+
+            Vector3[] verts = new Vector3[m_ModelVertices.Length];
+            for (int i = 0; i < verts.Length; i++)
+                verts[i] = Vector3.Transform(m_ModelVertices[i], world);
+            renderer.DrawPolygon(verts, true, Color.White, false);
+            
         }
 
         private Matrix CreateWorldMatrix(Position3D worldSpaceCenter)

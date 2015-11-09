@@ -58,18 +58,22 @@ namespace Ypsilon
 
         protected override void Update(GameTime gameTime)
         {
-            KeyboardState keyboardState = Keyboard.GetState();
+            double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
+
             m_Player.Update(gameTime.ElapsedGameTime.TotalSeconds);
+
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
+
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
             foreach (Ship ship in m_Entities)
             {
-                ship.Draw(m_SpriteBatch.Vectors, m_Player.Position);
+                ship.Draw(frameSeconds, m_SpriteBatch.Vectors, m_Player.Position);
             }
             
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
