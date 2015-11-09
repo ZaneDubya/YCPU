@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using System;
 using Ypsilon.Entities.Defines;
 
 namespace Ypsilon.Entities.Movement
@@ -42,7 +39,7 @@ namespace Ypsilon.Entities.Movement
             leftrightRotation = MathHelper.Clamp(leftrightRotation, -1, 1);
 
             float yawThisFrame = (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
-            float rollThisFrame = yawThisFrame / 4;
+            float rollThisFrame = yawThisFrame / 2;
             float rollMax = (float)MathHelper.PiOver2 * (Definition.DefaultRotation / 360f);
 
             m_Yaw += leftrightRotation * yawThisFrame;

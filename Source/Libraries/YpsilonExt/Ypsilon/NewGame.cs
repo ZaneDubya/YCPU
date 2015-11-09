@@ -48,7 +48,7 @@ namespace Ypsilon
             m_Entities.Add(m_Player = new Ship());
 
             Random r = new Random();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 0; i++)
             {
                 Ship ship = new Ship();
                 ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
@@ -69,7 +69,7 @@ namespace Ypsilon
             m_SpriteBatch.DrawTitleSafeAreas();
             foreach (Ship ship in m_Entities)
             {
-                m_SpriteBatch.Vectors.DrawPolygon(ship.WorldVertices(m_Player.Position), true, Color.White, false);
+                ship.Draw(m_SpriteBatch.Vectors, m_Player.Position);
             }
             
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);

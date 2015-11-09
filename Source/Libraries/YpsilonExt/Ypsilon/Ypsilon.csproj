@@ -60,6 +60,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Defines\ShipDefinition.cs" />
+    <Compile Include="Entities\Defines\ShipVertices.cs" />
+    <Compile Include="Entities\Particles\Trail.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Entities\Movement\ARotator.cs" />
     <Compile Include="Entities\Position3D.cs" />

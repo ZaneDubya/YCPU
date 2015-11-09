@@ -27,7 +27,7 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
-        RotatorPitchRoll(ShipDefinition definition)
+        public RotatorPitchRoll(ShipDefinition definition)
             : base(definition)
         {
 
@@ -35,8 +35,13 @@ namespace Ypsilon.Entities.Movement
 
         public override void Rotate(float pitch, float roll, double frameSeconds)
         {
-            Quaternion zaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(-1, 0, 0), pitch);
-            Quaternion xaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(0, -1, 0), roll);
+            pitch = MathHelper.Clamp(pitch, -1, 1);
+            roll = MathHelper.Clamp(roll, -1, 1);
+            float pitchThisFrame = pitch * (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
+            float rollThisFrame = roll * (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
+
+            Quaternion zaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(-1, 0, 0), pitchThisFrame);
+            Quaternion xaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(0, -1, 0), rollThisFrame);
             m_RotationQ *= zaxisRotation * xaxisRotation;
         }
     }
