@@ -11,6 +11,7 @@ namespace Ypsilon.Entities.Particles
         VertexPositionColorTexture[] m_Vertices;
         private float m_SecondsSinceLastVector = 0;
         private const float c_SecondsBetweenVectors = 0.2f;
+        private bool m_FirstDraw = true; // used to set initial position of all trails.
 
         public Trail(Vector3 offset)
         {
@@ -18,7 +19,7 @@ namespace Ypsilon.Entities.Particles
             m_Vertices = new VertexPositionColorTexture[10];
             for (int i = 0; i < m_Vertices.Length; i++)
             {
-                float a = i < 4 ? MathHelper.Lerp(0f, 1f, (i * 0.25f)) : 1;
+                float a = i < 8 ? MathHelper.Lerp(0f, 1f, (i / 8f)) : 1;
                 m_Vertices[i].Position = m_Offset;
                 m_Vertices[i].Color = new Color(.5f * a, .5f * a, 1f * a, a);
             }
@@ -42,7 +43,17 @@ namespace Ypsilon.Entities.Particles
 
         public void Draw(VectorRenderer renderer, Matrix worldMatrix)
         {
-            m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset, worldMatrix);
+            if (m_FirstDraw)
+            {
+                for (int i = 0; i < m_Vertices.Length; i++)
+                    m_Vertices[i].Position = Vector3.Transform(m_Offset, worldMatrix);
+                m_FirstDraw = false;
+            }
+            else
+            {
+                m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset, worldMatrix);
+            }
+
             renderer.DrawPolygon(m_Vertices, false);
         }
     }

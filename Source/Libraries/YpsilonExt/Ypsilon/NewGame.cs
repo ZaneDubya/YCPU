@@ -46,9 +46,10 @@ namespace Ypsilon
         {
             m_Entities = new List<Ship>();
             m_Entities.Add(m_Player = new Ship());
+            m_Player.IsPlayerEntity = true;
 
             Random r = new Random();
-            for (int i = 0; i < 0; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Ship ship = new Ship();
                 ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
@@ -60,7 +61,10 @@ namespace Ypsilon
         {
             double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
 
-            m_Player.Update(gameTime.ElapsedGameTime.TotalSeconds);
+            foreach (Ship ship in m_Entities)
+            {
+                ship.Update(gameTime.ElapsedGameTime.TotalSeconds);
+            }
 
             base.Update(gameTime);
         }

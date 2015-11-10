@@ -23,6 +23,8 @@ namespace Ypsilon.Entities
         private Vector3[] m_ModelVertices;
         private Particles.Trail m_Trail1, m_Trail2;
 
+        public bool IsPlayerEntity = false;
+
         public Ship()
         {
             m_ModelVertices = ShipVertices.SimpleArrow;
@@ -33,20 +35,23 @@ namespace Ypsilon.Entities
 
         public void Update(double frameSeconds)
         {
-            float updownRotation = 0.0f;
-            float leftrightRotation = 0.0f;
+            if (IsPlayerEntity)
+            {
+                float updownRotation = 0.0f;
+                float leftrightRotation = 0.0f;
 
-            KeyboardState keys = Keyboard.GetState();
-            if (keys.IsKeyDown(Keys.Up) || keys.IsKeyDown(Keys.W))
-                updownRotation = 1f;
-            if (keys.IsKeyDown(Keys.Down) || keys.IsKeyDown(Keys.S))
-                updownRotation = -1f;
-            if (keys.IsKeyDown(Keys.Right) || keys.IsKeyDown(Keys.D))
-                leftrightRotation = -1f;
-            if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
-                leftrightRotation = 1f;
+                KeyboardState keys = Keyboard.GetState();
+                if (keys.IsKeyDown(Keys.Up) || keys.IsKeyDown(Keys.W))
+                    updownRotation = 1f;
+                if (keys.IsKeyDown(Keys.Down) || keys.IsKeyDown(Keys.S))
+                    updownRotation = -1f;
+                if (keys.IsKeyDown(Keys.Right) || keys.IsKeyDown(Keys.D))
+                    leftrightRotation = -1f;
+                if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
+                    leftrightRotation = 1f;
 
-            m_Rotator.Rotate(updownRotation, leftrightRotation, frameSeconds);
+                m_Rotator.Rotate(updownRotation, leftrightRotation, frameSeconds);
+            }
 
             // move forward
             Vector3 offset = Speed * m_Rotator.Forward * (float)frameSeconds;
