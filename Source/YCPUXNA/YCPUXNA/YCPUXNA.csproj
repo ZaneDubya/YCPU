@@ -86,7 +86,7 @@
     <Compile Include="ServiceProviders\YTexture.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\XnaInput151\XnaInput151.csproj">
+    <ProjectReference Include="..\..\Libraries\InputLib\InputLib.csproj">
       <Project>{8d1e41d4-26e5-445b-ac51-270a60760a70}</Project>
       <Name>XnaInput151</Name>
     </ProjectReference>

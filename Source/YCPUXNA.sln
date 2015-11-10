@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUXNA", "YCPUXNA\YCPUXNA\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonLib", "Libraries\YpsilonLib\YpsilonLib.csproj", "{F2711253-F674-44AC-90DC-6EA4C271680B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XnaInput151", "Libraries\XnaInput151\XnaInput151.csproj", "{8D1E41D4-26E5-445B-AC51-270A60760A70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InputLib", "Libraries\InputLib\InputLib.csproj", "{8D1E41D4-26E5-445B-AC51-270A60760A70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
