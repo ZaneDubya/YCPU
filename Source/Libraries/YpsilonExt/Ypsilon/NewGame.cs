@@ -72,12 +72,14 @@ namespace Ypsilon
         protected override void Draw(GameTime gameTime)
         {
             double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
+            Position3D playerPosition = m_Player.Position;
 
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
+
             foreach (Ship ship in m_Entities)
             {
-                ship.Draw(frameSeconds, m_SpriteBatch.Vectors, m_Player.Position);
+                ship.Draw(frameSeconds, m_SpriteBatch.Vectors, playerPosition);
             }
             
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
