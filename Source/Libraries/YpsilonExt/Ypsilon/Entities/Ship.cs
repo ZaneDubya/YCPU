@@ -13,7 +13,7 @@ namespace Ypsilon.Entities
         {
             get
             {
-                return (Definition.DefaultSpeed / 100f);
+                return (Definition.DefaultSpeed / 100f) * (IsPlayerEntity ? 1f : .2f);
             }
         }
 
@@ -63,10 +63,12 @@ namespace Ypsilon.Entities
 
         public void Draw(double frameSeconds, VectorRenderer renderer, Position3D worldSpaceCenter)
         {
-            Matrix world = CreateWorldMatrix(worldSpaceCenter);
+            Vector3 translation = (Position - worldSpaceCenter).ToVector3();
+            Matrix rotation = Matrix.CreateRotationZ((m_Rotator as Rotator2D).Rotation);
+            Matrix world = CreateWorldMatrix(translation);
 
-            m_Trail1.Draw(renderer, world);
-            m_Trail2.Draw(renderer, world);
+            m_Trail1.Draw(renderer, translation, rotation);
+            m_Trail2.Draw(renderer, translation, rotation);
 
             Vector3[] verts = new Vector3[m_ModelVertices.Length];
             for (int i = 0; i < verts.Length; i++)
@@ -75,7 +77,7 @@ namespace Ypsilon.Entities
             
         }
 
-        private Matrix CreateWorldMatrix(Position3D worldSpaceCenter)
+        private Matrix CreateWorldMatrix(Vector3 translation)
         {
             Matrix rotMatrix = m_Rotator.RotationMatrix; // Matrix.CreateFromQuaternion(RotationQ);
 
@@ -85,7 +87,7 @@ namespace Ypsilon.Entities
             Vector3 up = rotMatrix.Up;
             up.Normalize();
 
-            return Matrix.CreateWorld((Position - worldSpaceCenter).ToVector3(), forward, up);
+            return Matrix.CreateWorld(translation, forward, up);
         }
     }
 }

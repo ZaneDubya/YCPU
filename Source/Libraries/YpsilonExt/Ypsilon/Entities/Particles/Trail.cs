@@ -41,7 +41,7 @@ namespace Ypsilon.Entities.Particles
             }
         }
 
-        public void Draw(VectorRenderer renderer, Matrix world)
+        public void Draw(VectorRenderer renderer, Vector3 translation, Matrix rotation)
         {
             if (m_FirstDraw)
             {
@@ -51,23 +51,17 @@ namespace Ypsilon.Entities.Particles
             }
             else
             {
-                m_Vertices[m_Vertices.Length - 1].Position = m_Offset;
+                m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset, rotation);
             }
 
-            Matrix world2 = new Matrix();
-            world2 = Matrix.CreateTranslation(world.Translation);
-            /*world2.Forward = -Vector3.UnitZ;
-            world2.Up = Vector3.UnitY;
-            world2.Right = Vector3.UnitX;
-            world2.Translation = world.Translation;*/
-
-            VertexPositionColorTexture[] verts = new VertexPositionColorTexture[m_Vertices.Length];
-            for (int i = 0; i < verts.Length; i++)
+            VertexPositionColorTexture[] v = new VertexPositionColorTexture[m_Vertices.Length];
+            for (int i = 0; i < v.Length; i++)
             {
-                verts[i] = m_Vertices[i];
-                verts[i].Position = Vector3.Transform(m_Vertices[i].Position, world2);
+                v[i] = m_Vertices[i];
+                v[i].Position += translation;
             }
-            renderer.DrawPolygon(verts, false);
+
+            renderer.DrawPolygon(v, false);
         }
     }
 }

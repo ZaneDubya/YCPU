@@ -19,6 +19,14 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
+        public float Rotation
+        {
+            get
+            {
+                return m_Yaw;
+            }
+        }
+
         public override Matrix RotationMatrix
         {
             get
