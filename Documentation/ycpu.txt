@@ -782,28 +782,28 @@ ALU Bit Pattern
         R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
-        r = Second Operand Register (can also be used as p, see below.)
-        i = Index Register. See Note 1, below.
-        s = Stack Offset. See Note 2, below.
+        r = Second Operand Register. Can be used as:
+            Index Register. See Note 1, below.
+            Stack Offset. See Note 2, below.
+            Processor register. See Note 4, below.
         E = 8-bit Mode. See Note 3, below.
-        p = processor register. See Note 4, below.
     
-    AAAA rrrE OOOO ORRR     Addressing Mode     Example Syntax          Cycles
-    0000 000E       RRR     Immediate           LOD R0, $1234           +1m
-    0000 001E       RRR     Absolute            LOD R0, [$1234]         +2m
-    0001 ppp.       RRR     ProcReg             LOD R0, SP
-    0010 rrrE       RRR     Register            LOD R0, R1              
-    0011 rrrE       RRR     Indirect            LOD R0, [R1]            +1m
-    0100 rrrE       RRR     Absolute Offset     LOD R0, [$1234,R1]      +2m
-                            Indirect Offset     LOD R0, [R1,$1234]      +2m
-    0101 sssE       RRR     Stack Offset        LOD R0, S[$00]          +1m
-    0110 rrrE       RRR     Indirect PostInc    LOD R0, [R1+]           +1m
-    0111 rrrE       RRR     Indirect PreDec     LOD R0, [-R1]           +1m
-    1iii rrrE       RRR     Indirect Indexed    LOD R0, [r1,i2]         +1m
+    AAAA rrrE OOOO ORRR     Addressing Mode     Example Syntax      Cycles  Note
+    0000 000E       RRR     Immediate           LOD R0, $1234       +1m     
+    0000 001E       RRR     Absolute            LOD R0, [$1234]     +2m     
+    0001 ppp.       RRR     ProcReg             LOD R0, SP                  4
+    0010 rrrE       RRR     Register            LOD R0, R1                  
+    0011 rrrE       RRR     Indirect            LOD R0, [R1]        +1m     
+    0100 rrrE       RRR     Absolute Offset     LOD R0, [$1234,R1]  +2m     
+                            Indirect Offset     LOD R0, [R1,$1234]  +2m
+    0101 rrrE       RRR     Stack Offset        LOD R0, S[$00]      +1m     2
+    0110 rrrE       RRR     Indirect PostInc    LOD R0, [R1+]       +1m
+    0111 rrrE       RRR     Indirect PreDec     LOD R0, [-R1]       +1m
+    1iii rrrE       RRR     Indirect Indexed    LOD R0, [r1,i2]     +1m     1
     
-        Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
+        Note 1: The 'r' bits in the ALU Bit Pattern are used to determine
                 the index register in the 'Indirect Indexed' addressing mode.
-        Note 2: The 's' bits describe a value between $00 and $07. This value
+        Note 2: The 'r' bits describe a value between $00 and $07. This value
                 is used as an offset into the stack. S[$00] returns the value
                 at the stack pointer; S[$07] returns the value at [StckPtr + 7].
         Note 3: When the 'E' bit is set, the ALU processes values in its 8-bit
