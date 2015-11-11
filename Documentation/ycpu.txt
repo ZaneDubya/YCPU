@@ -667,22 +667,28 @@ rate by examining R0.
 
 === 2.I. Switching Context =====================================================
 The RTI instruction can also be used to switch the processor into user mode,
-or to switch contexts entirely.
+even switiching contexts entirely when doing so. 
 
-To change context from supervisor to user mode, the stack should be loaded with
-8 words of MMU cache, FL, USP, PS, and PC:
+--- 2.I.1. Switching from Supervisor Context to User Context -------------------
+
+When the MMU is enabled, the layout of memory is different in Supervisor and
+User modes. Thus, as long as the MMU's User mode memory has been set ahead of
+time, the RTI instruction can be used to switch the context of a running
+program.
+
+To change context from supervisor to user mode, the MMU's user mode memory
+should be set, and the stack should be loaded with user-mode values for the 
+R0-R7, FL, USP, PS, and PC registers:
 
     1. Load the MMU cache with the necessary user data.
     2. Pop R0-R7 from the stack.
     3. Pop FL, USP.
     4. Use RTI to pop PS, PC from the stack (PC should have S bit cleared).
     5. Execution will continue.
-
-            LOD R0, $00
-            MMS R0
+            
             POP R0, R1, R2, R3, R4, R5, R6, R7
-            POP FL, UP
-            RTI
+            POP FL, USP
+            RTI ; pops PS and PC
 
 To save context (when responding to an interrupt from user mode). Note that upon
 entering the interrupt, the stack looks like this:
@@ -695,10 +701,10 @@ entering the interrupt, the stack looks like this:
     2. Push R0-R7 to the stack.
     3. Save the user MMU cache to the stack.
 
-            PSH FL, UP
+            PSH FL, USP
             PSH R0, R1, R2, R3, R4, R5, R6, R7
-            LOD R0, $00
-            MML R0
+
+--- 2.I.2. Switching Context while in Superivosr Mode --------------------------
 
 Switching context from supervisor to supervisor is more difficult, as modifying
 the active MMU cache will change the instruction that PC is operating on. It is
