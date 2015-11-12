@@ -1,17 +1,11 @@
-﻿// RoundLine.cs
-// By Michael D. Anderson
-// Version 4.00, Feb 8 2011
-// A class to efficiently draw thick lines with rounded ends.
-// Microsoft Public License (Ms-PL)
-
-#region Using Statements
+﻿#region Using Statements
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Ypsilon.Graphics;
-using Ypsilon.Entities;
 using System;
 using System.Collections.Generic;
+using Ypsilon.Entities;
+using Ypsilon.Graphics;
+using Ypsilon.Views;
 #endregion
 
 namespace Ypsilon
@@ -22,6 +16,7 @@ namespace Ypsilon
         private SpriteBatchExtended m_SpriteBatch;
         private List<Ship> m_Entities;
         private Ship m_Player;
+        private Stars m_Stars;
 
         public NewGame()
         {
@@ -55,31 +50,37 @@ namespace Ypsilon
                 ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
                 m_Entities.Add(ship);
             }
+
+            m_Stars = new Stars(GraphicsDevice);
+            m_Stars.CreateStars(100, new Rectangle(0, 0,
+                m_Graphics.PreferredBackBufferWidth, m_Graphics.PreferredBackBufferHeight));
         }
 
         protected override void Update(GameTime gameTime)
         {
-            double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
+            float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             foreach (Ship ship in m_Entities)
             {
-                ship.Update(gameTime.ElapsedGameTime.TotalSeconds);
+                ship.Update(frameSeconds);
             }
+
+            m_Stars.Update(m_Player.Velocity * frameSeconds);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            double frameSeconds = gameTime.ElapsedGameTime.TotalSeconds;
             Position3D playerPosition = m_Player.Position;
 
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
+            m_Stars.Draw(m_SpriteBatch);
 
             foreach (Ship ship in m_Entities)
             {
-                ship.Draw(frameSeconds, m_SpriteBatch.Vectors, playerPosition);
+                ship.Draw(m_SpriteBatch.Vectors, playerPosition);
             }
             
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);

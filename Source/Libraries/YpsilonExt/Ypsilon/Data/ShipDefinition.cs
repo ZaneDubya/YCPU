@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Entities.Defines
+namespace Ypsilon.Data
 {
     /// <summary>
     /// Ship definition keeps all essential ship variables organized.

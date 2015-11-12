@@ -172,6 +172,7 @@ namespace Ypsilon.Graphics
             float zOffset = (zoom > 1000) ? (zoom - 1000) : 0;
 
             Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, m_Graphics.Viewport.AspectRatio, 1.0f, 300.0f);
+            // Matrix view = Matrix.CreateLookAt(new Vector3(0, -50, 50), new Vector3(0, 40, 0), new Vector3(0, 1, 0)); - perspective! need to figure out how to adjust this...
             Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
 
             m_Effect.Parameters["ProjectionMatrix"].SetValue(projection);
@@ -199,7 +200,10 @@ namespace Ypsilon.Graphics
             m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
             m_Graphics.RasterizerState = RasterizerState.CullNone;
 
+            Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+
             m_Effect.Parameters["ProjectionMatrix"].SetValue(Utility.ProjectionMatrixScreen);
+            m_Effect.Parameters["ViewMatrix"].SetValue(view);
             m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
 

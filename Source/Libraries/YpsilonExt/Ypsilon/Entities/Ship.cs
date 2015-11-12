@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Ypsilon.Entities.Defines;
+using Ypsilon.Data;
 using Ypsilon.Entities.Movement;
 using Ypsilon.Graphics;
 
@@ -14,6 +14,14 @@ namespace Ypsilon.Entities
             get
             {
                 return (Definition.DefaultSpeed / 100f) * (IsPlayerEntity ? 1f : .2f);
+            }
+        }
+
+        public Vector3 Velocity
+        {
+            get
+            {
+                return Speed * m_Rotator.Forward;
             }
         }
 
@@ -33,7 +41,7 @@ namespace Ypsilon.Entities
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
         }
 
-        public void Update(double frameSeconds)
+        public void Update(float frameSeconds)
         {
             if (IsPlayerEntity)
             {
@@ -54,14 +62,14 @@ namespace Ypsilon.Entities
             }
 
             // move forward
-            Vector3 offset = Speed * m_Rotator.Forward * (float)frameSeconds;
+            Vector3 offset = Velocity * frameSeconds;
             Position += offset;
 
             m_Trail1.Update(frameSeconds, offset);
             m_Trail2.Update(frameSeconds, offset);
         }
 
-        public void Draw(double frameSeconds, VectorRenderer renderer, Position3D worldSpaceCenter)
+        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
             Matrix rotation = Matrix.CreateRotationZ((m_Rotator as Rotator2D).Rotation);

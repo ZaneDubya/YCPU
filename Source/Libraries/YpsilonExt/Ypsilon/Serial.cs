@@ -8,7 +8,7 @@ namespace Ypsilon
 
         public static Serial Null
         {
-            get { return (Serial)0; }
+            get { return 0; }
         }
 
         private Serial(int serial)

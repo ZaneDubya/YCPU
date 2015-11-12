@@ -59,14 +59,15 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Defines\ShipDefinition.cs" />
-    <Compile Include="Entities\Defines\ShipVertices.cs" />
+    <Compile Include="Data\ShipDefinition.cs" />
+    <Compile Include="Data\ShipVertices.cs" />
     <Compile Include="Entities\Particles\Trail.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Entities\Movement\ARotator.cs" />
     <Compile Include="Entities\Position3D.cs" />
     <Compile Include="Entities\Movement\Rotator2D.cs" />
     <Compile Include="Entities\Movement\RotatorPitchRoll.cs" />
+    <Compile Include="Views\Stars.cs" />
     <Compile Include="Graphics\PreTransformedQuad.cs" />
     <Compile Include="Graphics\SpriteBatchExtended.cs" />
     <Compile Include="Graphics\VectorPolygon.cs" />
@@ -84,7 +85,9 @@
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Goals.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

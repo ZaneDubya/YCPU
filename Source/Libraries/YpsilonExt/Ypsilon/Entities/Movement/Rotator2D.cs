@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Ypsilon.Entities.Defines;
+using Ypsilon.Data;
 
 namespace Ypsilon.Entities.Movement
 {
@@ -48,7 +48,7 @@ namespace Ypsilon.Entities.Movement
 
             float yawThisFrame = (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
             float rollThisFrame = yawThisFrame / 2;
-            float rollMax = (float)MathHelper.PiOver2 * (Definition.DefaultRotation / 360f);
+            float rollMax = MathHelper.PiOver2 * (Definition.DefaultRotation / 360f);
 
             m_Yaw += leftrightRotation * yawThisFrame;
 

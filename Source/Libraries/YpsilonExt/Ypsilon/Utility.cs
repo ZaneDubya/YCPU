@@ -10,12 +10,12 @@ namespace Ypsilon
     {
         public const float Pi = (float)Math.PI;
         public const float PiTwo = (float)(Math.PI * 2);
-        public const float DegToRad = (float)(PiTwo / 360f);
-        public const float RadToDeg = (float)(360f / PiTwo);
-        public const float KPH_Per_TimeUnit = (float)(5f / 3600f);
-        public const float KPH_LngLat_Per_TimeUnit = (float)(1f / 111.320f) * (5f / 3600f);
-        public const float FuelConsumption_Per_TimeUnit = (float)(.01f * (5f / 600f));
-        public const float FuelConsumption_Per_KM = (float)(6f / 100f);
+        public const float DegToRad = PiTwo / 360f;
+        public const float RadToDeg = 360f / PiTwo;
+        public const float KPH_Per_TimeUnit = 5f / 3600f;
+        public const float KPH_LngLat_Per_TimeUnit = 1f / 111.320f * (5f / 3600f);
+        public const float FuelConsumption_Per_TimeUnit = .01f * (5f / 600f);
+        public const float FuelConsumption_Per_KM = 6f / 100f;
         public const float LngLatToKM = (1f / 111.320f);
         public const float EarthRadius = 6378.1f;
 

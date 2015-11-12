@@ -25,14 +25,14 @@ namespace Ypsilon.Entities.Particles
             }
         }
 
-        public void Update(double frameSeconds, Vector3 offset)
+        public void Update(float frameSeconds, Vector3 offset)
         {
             for (int i = 0; i < m_Vertices.Length - 1; i++)
             {
                 m_Vertices[i].Position -= offset;
             }
 
-            m_SecondsSinceLastVector += (float)frameSeconds;
+            m_SecondsSinceLastVector += frameSeconds;
             if (m_SecondsSinceLastVector >= c_SecondsBetweenVectors)
             {
                 m_SecondsSinceLastVector -= c_SecondsBetweenVectors;
