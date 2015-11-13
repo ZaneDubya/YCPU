@@ -17,6 +17,7 @@ namespace Ypsilon
         private List<Ship> m_Entities;
         private Ship m_Player;
         private Stars m_Stars;
+        private StellarObject m_StellarObject;
 
         public NewGame()
         {
@@ -42,6 +43,7 @@ namespace Ypsilon
             m_Entities = new List<Ship>();
             m_Entities.Add(m_Player = new Ship());
             m_Player.IsPlayerEntity = true;
+            m_StellarObject = new StellarObject();
 
             Random r = new Random();
             for (int i = 0; i < 100; i++)
@@ -77,6 +79,7 @@ namespace Ypsilon
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
             m_Stars.Draw(m_SpriteBatch);
+            m_StellarObject.Draw(m_SpriteBatch.Vectors, playerPosition);
 
             foreach (Ship ship in m_Entities)
             {

@@ -1,2 +1,15 @@
-﻿    Add some stars! DONE
-    Add a planet! 
+﻿Z   Add some stars! DONE
+    Add a planet! DONE! Easy.
+    Make it so we can slow down and speed up. Using W and A. DONE. That was easy.
+
+    Add entity manager collection.
+    Add asteroids, two different sizes.
+    Asteroids rotate, slowly.
+    Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed.
+    Track resources in ship hold.
+    Add ability to land on planet.
+    Add credits.
+    When land on planet, hold is exchanged for credits.
+    Track resources on asteroid. As it is mined, the 'ore' on the asteroid diminishes.
+    As it diminishes, the asteroid shrinks.
+    As it is being mined, effects fly! Beam! Sparks!

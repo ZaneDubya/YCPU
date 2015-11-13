@@ -13,7 +13,25 @@ namespace Ypsilon.Entities
         {
             get
             {
-                return (Definition.DefaultSpeed / 100f) * (IsPlayerEntity ? 1f : .2f);
+                return (Definition.DefaultSpeed / 100f) * Throttle;
+            }
+        }
+
+        private float m_Throttle = 0.2f;
+        public float Throttle
+        {
+            get
+            {
+                return m_Throttle;
+            }
+            set
+            {
+                if (value < 0.0f)
+                    m_Throttle = 0f;
+                else if (value >= 1.0f)
+                    m_Throttle = 1f;
+                else
+                    m_Throttle = value;
             }
         }
 
@@ -35,7 +53,7 @@ namespace Ypsilon.Entities
 
         public Ship()
         {
-            m_ModelVertices = ShipVertices.SimpleArrow;
+            m_ModelVertices = Vertices.SimpleArrow;
             m_Rotator = new Rotator2D(Definition);
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0));
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
@@ -45,20 +63,21 @@ namespace Ypsilon.Entities
         {
             if (IsPlayerEntity)
             {
-                float updownRotation = 0.0f;
+                float acceleration = 0.0f;
                 float leftrightRotation = 0.0f;
 
                 KeyboardState keys = Keyboard.GetState();
                 if (keys.IsKeyDown(Keys.Up) || keys.IsKeyDown(Keys.W))
-                    updownRotation = 1f;
+                    acceleration += 1f;
                 if (keys.IsKeyDown(Keys.Down) || keys.IsKeyDown(Keys.S))
-                    updownRotation = -1f;
+                    acceleration = -1f;
                 if (keys.IsKeyDown(Keys.Right) || keys.IsKeyDown(Keys.D))
                     leftrightRotation = -1f;
                 if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
                     leftrightRotation = 1f;
 
-                m_Rotator.Rotate(updownRotation, leftrightRotation, frameSeconds);
+                m_Rotator.Rotate(0f, leftrightRotation, frameSeconds);
+                Throttle = Throttle + acceleration * frameSeconds;
             }
 
             // move forward
@@ -81,13 +100,15 @@ namespace Ypsilon.Entities
             Vector3[] verts = new Vector3[m_ModelVertices.Length];
             for (int i = 0; i < verts.Length; i++)
                 verts[i] = Vector3.Transform(m_ModelVertices[i], world);
-            renderer.DrawPolygon(verts, true, Color.White, false);
+
+            Color color = IsPlayerEntity ? Color.White : Color.OrangeRed;
+            renderer.DrawPolygon(verts, true, color, false);
             
         }
 
         private Matrix CreateWorldMatrix(Vector3 translation)
         {
-            Matrix rotMatrix = m_Rotator.RotationMatrix; // Matrix.CreateFromQuaternion(RotationQ);
+            Matrix rotMatrix = m_Rotator.RotationMatrix;
 
             Vector3 forward = rotMatrix.Forward;
             forward.Normalize();
