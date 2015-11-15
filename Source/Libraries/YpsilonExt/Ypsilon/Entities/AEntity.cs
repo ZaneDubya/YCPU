@@ -23,6 +23,15 @@ namespace Ypsilon.Entities
             set;
         }
 
+        private bool m_IsInitialized = false;
+        public bool IsInitialized
+        {
+            get
+            {
+                return m_IsInitialized;
+            }
+        }
+
         private bool m_IsPlayerEntity = false;
         public bool IsPlayerEntity
         {
@@ -60,12 +69,27 @@ namespace Ypsilon.Entities
             Position = Position3D.Zero;
         }
 
+        public void Initialize()
+        {
+            if (m_IsInitialized)
+                return;
+
+            OnInitialize();
+
+            m_IsInitialized = true;
+        }
+
         public virtual void Update(float frameSeconds)
         {
 
         }
 
         public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        {
+
+        }
+
+        protected virtual void OnInitialize()
         {
 
         }

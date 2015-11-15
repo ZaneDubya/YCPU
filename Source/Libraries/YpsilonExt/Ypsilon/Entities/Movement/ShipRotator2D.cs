@@ -7,11 +7,12 @@ namespace Ypsilon.Entities.Movement
     /// <summary>
     /// A rotation handler that rotates an object using yaw only, with roll as a graphical extra.
     /// </summary>
-    class Rotator2D : ARotator
+    class ShipRotator2D
     {
         private float m_Roll, m_Yaw;
+        private AShipDefinition m_Definition;
 
-        public override Vector3 Forward
+        public Vector3 Forward
         {
             get
             {
@@ -27,7 +28,7 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
-        public override Matrix RotationMatrix
+        public Matrix RotationMatrix
         {
             get
             {
@@ -35,31 +36,30 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
-        public Rotator2D(ShipDefinition definition)
-            : base(definition)
+        public ShipRotator2D(AShipDefinition definition)
         {
-
+            m_Definition = definition;
         }
 
-        public override void Rotate(float updownRotation, float leftrightRotation, double frameSeconds)
+        public void Rotate(float roll, float yaw, double frameSeconds)
         {
             // note - updownRotation is ignored.
-            leftrightRotation = MathHelper.Clamp(leftrightRotation, -1, 1);
+            yaw = MathHelper.Clamp(yaw, -1, 1);
 
-            float yawThisFrame = (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
+            float yawThisFrame = (float)((m_Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
             float rollThisFrame = yawThisFrame / 2;
-            float rollMax = MathHelper.PiOver2 * (Definition.DefaultRotation / 360f);
+            float rollMax = MathHelper.PiOver2 * (m_Definition.DefaultRotation / 360f);
 
-            m_Yaw += leftrightRotation * yawThisFrame;
+            m_Yaw += yaw * yawThisFrame;
 
-            if (leftrightRotation > 0)
+            if (yaw > 0)
             {
                 // yaw to right, roll to right
-                m_Roll -= leftrightRotation * yawThisFrame;
+                m_Roll -= yaw * yawThisFrame;
             }
-            else if (leftrightRotation < 0)
+            else if (yaw < 0)
             {
-                m_Roll += Math.Abs(leftrightRotation * yawThisFrame);
+                m_Roll += Math.Abs(yaw * yawThisFrame);
             }
             else
             {

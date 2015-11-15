@@ -11,7 +11,7 @@ namespace Ypsilon.Data
     /// 2. Eventually, the ship definition will query a ship's contents to get the current values of these variables.
     /// 3. Right now, everything is hardcoded.
     /// </summary>
-    class ShipDefinition
+    class AShipDefinition
     {
         /// <summary>
         /// Cargo capacity, in tons. 

@@ -8,7 +8,12 @@ namespace Ypsilon.Entities
 {
     class Ship : AEntity
     {
-        
+        public AShipDefinition Definition = new AShipDefinition();
+
+        private ShipRotator2D m_Rotator;
+        private Vector3[] m_ModelVertices;
+        private Particles.Trail m_Trail1, m_Trail2;
+
         public float Speed
         {
             get
@@ -43,17 +48,16 @@ namespace Ypsilon.Entities
             }
         }
 
-        public ShipDefinition Definition = new ShipDefinition();
-
-        private ARotator m_Rotator;
-        private Vector3[] m_ModelVertices;
-        private Particles.Trail m_Trail1, m_Trail2;
-
         public Ship(EntityManager manager, Serial serial)
             : base(manager, serial)
         {
+            
+        }
+
+        protected override void OnInitialize()
+        {
             m_ModelVertices = Vertices.SimpleArrow;
-            m_Rotator = new Rotator2D(Definition);
+            m_Rotator = new ShipRotator2D(Definition);
 
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0));
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
@@ -91,7 +95,7 @@ namespace Ypsilon.Entities
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
-            Matrix rotation = Matrix.CreateRotationZ((m_Rotator as Rotator2D).Rotation);
+            Matrix rotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
             Matrix world = CreateWorldMatrix(translation);
 
             m_Trail1.Draw(renderer, translation, rotation);

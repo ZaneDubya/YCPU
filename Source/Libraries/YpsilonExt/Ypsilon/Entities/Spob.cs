@@ -1,21 +1,30 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Data;
 using Ypsilon.Graphics;
+using Ypsilon.Entities.Movement;
 
 namespace Ypsilon.Entities
 {
     /// <summary>
-    /// A planet.
+    /// A space object.
     /// </summary>
-    class StellarObject : AEntity
+    class Spob : AEntity
     {
-        public PlanetDefinition Definition = new PlanetDefinition();
+        public ASpobDefinition Definition = new ASpobDefinition();
+
+        private AShipRotator m_Rotator;
         private Vector3[] m_ModelVertices;
 
-        public StellarObject(EntityManager manager, Serial serial)
+        public Spob(EntityManager manager, Serial serial)
             : base(manager, serial)
         {
-            m_ModelVertices = Vertices.Planet;
+            
+        }
+
+        protected override void OnInitialize()
+        {
+            m_ModelVertices = Vertices.GetSpobVertices(Definition);
+            m_Rotator = new ShipRotator2D(
         }
 
         public override void Update(float frameSeconds)
@@ -31,14 +40,13 @@ namespace Ypsilon.Entities
             Vector3[] verts = new Vector3[m_ModelVertices.Length];
             for (int i = 0; i < verts.Length; i++)
                 verts[i] = Vector3.Transform(m_ModelVertices[i] * Definition.Size, world);
-
-            Color color = Color.Blue;
-            renderer.DrawPolygon(verts, true, color, false);
+            
+            renderer.DrawPolygon(verts, true, Definition.Color, false);
         }
 
         private Matrix CreateWorldMatrix(Vector3 translation)
         {
-            Matrix rotMatrix = Matrix.Identity; // m_Rotator.RotationMatrix;
+            Matrix rotMatrix = Matrix.Identity;
 
             Vector3 forward = rotMatrix.Forward;
             forward.Normalize();

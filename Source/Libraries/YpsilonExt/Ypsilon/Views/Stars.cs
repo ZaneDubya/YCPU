@@ -25,19 +25,17 @@ namespace Ypsilon.Views
             m_Stars = new Star[count];
             m_Bounds = bounds;
 
-            Random rand = new Random();
-
             for (int i = 0; i < count; i++)
             {
                 m_Stars[i] = new Star(
                     new Vector2(
-                        (float)rand.NextDouble() * bounds.Width, 
-                        (float)rand.NextDouble() * bounds.Height),
-                    (float)rand.NextDouble() * 3, 
+                        (float)Utility.Random_GetNonpersistantDouble() * bounds.Width, 
+                        (float)Utility.Random_GetNonpersistantDouble() * bounds.Height),
+                    (float)Utility.Random_GetNonpersistantDouble() * 3 + 1, 
                     new Color(
-                        (float)rand.NextDouble() / 2 + 0.5f,
-                        (float)rand.NextDouble() / 2 + 0.5f,
-                        (float)rand.NextDouble() / 2 + 0.5f)
+                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
+                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
+                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f)
                     );
             }
         }

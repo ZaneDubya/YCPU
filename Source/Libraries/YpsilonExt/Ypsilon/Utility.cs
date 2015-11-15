@@ -53,20 +53,6 @@ namespace Ypsilon
 
         public const float CursorSize = 20f;
 
-        static Random _random;
-        public static void RandomSeedSet(int seed)
-        {
-            _random = null;
-            _random = new Random(seed);
-        }
-
-        public static int RandomValue(int low, int high)
-        {
-            if (_random == null)
-                _random = new Random();
-            return _random.Next(high - low + 1) + low;
-        }
-
         static int _lastSerial = 0;
         public static Serial NextSerial { get { return ++_lastSerial; } }
 
@@ -143,5 +129,36 @@ namespace Ypsilon
             longlat = new Vector2(longitude, latitude);
             unrotatedPoint = position;
         }
+
+        #region Random values
+
+        private static Random m_RandomPersistent;
+        private static Random m_RandomNonpersistent;
+
+        public static void Random_SetPersistentSeed(int seed)
+        {
+            m_RandomPersistent = null;
+            m_RandomPersistent = new Random(seed);
+        }
+
+        public static int Random_GetPersistentInt(int low, int high)
+        {
+            if (m_RandomPersistent == null)
+                m_RandomPersistent = new Random();
+            return m_RandomPersistent.Next(high - low + 1) + low;
+        }
+
+        /// <summary>
+        /// Returns double from 0.0 to 1.0.
+        /// </summary>
+        /// <returns></returns>
+        public static double Random_GetNonpersistantDouble()
+        {
+            if (m_RandomNonpersistent == null)
+                m_RandomNonpersistent = new Random();
+            return m_RandomNonpersistent.NextDouble();
+        }
+
+        #endregion
     }
 }

@@ -16,18 +16,43 @@ namespace Ypsilon.Data
         {
             get
             {
+                int vectorCount = 16;
                 if (m_Planet == null)
                 {
-                    m_Planet = new Vector3[20];
+                    m_Planet = new Vector3[vectorCount];
                     for (int i = 0; i < m_Planet.Length; i++)
                     {
                         m_Planet[i] = new Vector3(
-                            (float)Math.Cos(MathHelper.TwoPi * ((float)i / 20)),
-                            (float)Math.Sin(MathHelper.TwoPi * ((float)i / 20)),
+                            (float)Math.Cos(MathHelper.TwoPi * ((float)i / vectorCount)),
+                            (float)Math.Sin(MathHelper.TwoPi * ((float)i / vectorCount)),
                             0f);
                     }
                 }
                 return m_Planet;
+            }
+        }
+
+        public static Vector3[] GenerateNewAsteroid(float vertexRandFactor)
+        {
+            Vector3[] asteroidVectors = new Vector3[Planet.Length];
+            Array.Copy(Planet, asteroidVectors, Planet.Length);
+
+            for (int i = 0; i < asteroidVectors.Length; i++)
+            {
+                asteroidVectors[i] *= (float)Utility.Random_GetNonpersistantDouble() * vertexRandFactor + (1.0f - (vertexRandFactor / 2.0f));
+            }
+            return asteroidVectors;
+        }
+
+        public static Vector3[] GetSpobVertices(ASpobDefinition definition)
+        {
+            if (definition.DoRandomizeVertexes)
+            {
+                return GenerateNewAsteroid(definition.VertexRandomizationFactor);
+            }
+            else
+            {
+                return Vertices.Planet;
             }
         }
     }

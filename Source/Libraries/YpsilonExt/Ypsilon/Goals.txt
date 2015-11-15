@@ -3,7 +3,7 @@
     Make it so we can slow down and speed up. Using W and A. DONE. That was easy.
 
     Add entity manager collection. DONE
-    Add asteroids, two different sizes.
+    Add asteroids, two different sizes. DONE.
     Asteroids rotate, slowly.
     Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed.
     Track resources in ship hold.
@@ -13,3 +13,9 @@
     Track resources on asteroid. As it is mined, the 'ore' on the asteroid diminishes.
     As it diminishes, the asteroid shrinks.
     As it is being mined, effects fly! Beam! Sparks!
+
+    Add inventory of ship components (programatic, don't need gui yet).
+    Add different kinds of ship components: hold, room, cockpit, blaster.
+
+    Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!
+    Planet rotates around a star! 

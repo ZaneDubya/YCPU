@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using Ypsilon.Entities;
+using Ypsilon.Data;
 using Ypsilon.Graphics;
 using Ypsilon.Views;
 #endregion
@@ -44,14 +45,25 @@ namespace Ypsilon
             m_Player = m_Entities.GetEntity<Ship>(Serial.GetNext(), true);
             m_Player.IsPlayerEntity = true;
             // create other dudes.
-            Random r = new Random();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 30; i++)
             {
                 Ship ship = m_Entities.GetEntity<Ship>(Serial.GetNext(), true);
-                ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
+                ship.Position = new Position3D(
+                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
+                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
+                    Utility.Random_GetNonpersistantDouble() * 10 - 5);
             }
             // create a star.
-            StellarObject planet = m_Entities.GetEntity<StellarObject>(Serial.GetNext(), true);
+            Spob planet = m_Entities.GetEntity<Spob>(Serial.GetNext(), true);
+            planet.Definition = Definitions.GetSpob("planet");
+
+            Spob asteroid1 = m_Entities.GetEntity<Spob>(Serial.GetNext(), true);
+            asteroid1.Definition = Definitions.GetSpob("asteroid small");
+            asteroid1.Position = new Position3D(10, 10, 0);
+
+            Spob asteroid2 = m_Entities.GetEntity<Spob>(Serial.GetNext(), true);
+            asteroid2.Definition = Definitions.GetSpob("asteroid large");
+            asteroid2.Position = new Position3D(-10, 20, 0);
 
             m_Stars = new Stars(GraphicsDevice);
             m_Stars.CreateStars(100, new Rectangle(0, 0,

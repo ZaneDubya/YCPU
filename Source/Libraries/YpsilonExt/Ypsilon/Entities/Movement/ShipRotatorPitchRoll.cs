@@ -6,11 +6,12 @@ namespace Ypsilon.Entities.Movement
     /// <summary>
     /// A rotation handler that rotates an object using pitch and roll
     /// </summary>
-    class RotatorPitchRoll : ARotator
+    class ShipRotatorPitchRoll
     {
         private Quaternion m_RotationQ = Quaternion.Identity;
+        private AShipDefinition m_Definition;
 
-        public override Vector3 Forward
+        public Vector3 Forward
         {
             get
             {
@@ -19,7 +20,7 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
-        public override Matrix RotationMatrix
+        public Matrix RotationMatrix
         {
             get
             {
@@ -27,18 +28,17 @@ namespace Ypsilon.Entities.Movement
             }
         }
 
-        public RotatorPitchRoll(ShipDefinition definition)
-            : base(definition)
+        public ShipRotatorPitchRoll(AShipDefinition definition)
         {
-
+            m_Definition = definition;
         }
 
-        public override void Rotate(float pitch, float roll, double frameSeconds)
+        public void Rotate(float pitch, float roll, double frameSeconds)
         {
             pitch = MathHelper.Clamp(pitch, -1, 1);
             roll = MathHelper.Clamp(roll, -1, 1);
-            float pitchThisFrame = pitch * (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
-            float rollThisFrame = roll * (float)((Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
+            float pitchThisFrame = pitch * (float)((m_Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
+            float rollThisFrame = roll * (float)((m_Definition.DefaultRotation / 360f) * MathHelper.TwoPi * frameSeconds);
 
             Quaternion zaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(-1, 0, 0), pitchThisFrame);
             Quaternion xaxisRotation = Quaternion.CreateFromAxisAngle(new Vector3(0, -1, 0), rollThisFrame);

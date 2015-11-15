@@ -100,9 +100,16 @@ namespace Ypsilon.Entities
 
             foreach (KeyValuePair<int, AEntity> entity in m_Entities)
             {
-                entity.Value.Update(frameSeconds);
-                if (entity.Value.IsDisposed)
+                if (!entity.Value.IsDisposed)
+                {
+                    if (!entity.Value.IsInitialized)
+                        entity.Value.Initialize();
+                    entity.Value.Update(frameSeconds);
+                }
+                else
+                {
                     m_SerialsToRemove.Add(entity.Key);
+                }
             }
 
             // Remove disposed entities
