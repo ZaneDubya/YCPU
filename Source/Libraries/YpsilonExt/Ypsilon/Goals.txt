@@ -2,7 +2,7 @@
     Add a planet! DONE! Easy.
     Make it so we can slow down and speed up. Using W and A. DONE. That was easy.
 
-    Add entity manager collection.
+    Add entity manager collection. DONE
     Add asteroids, two different sizes.
     Asteroids rotate, slowly.
     Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed.

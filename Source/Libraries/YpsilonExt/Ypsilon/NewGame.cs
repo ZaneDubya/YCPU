@@ -14,10 +14,9 @@ namespace Ypsilon
     {
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
-        private List<Ship> m_Entities;
+        private EntityManager m_Entities;
         private Ship m_Player;
         private Stars m_Stars;
-        private StellarObject m_StellarObject;
 
         public NewGame()
         {
@@ -34,24 +33,25 @@ namespace Ypsilon
         protected override void Initialize()
         {
             Components.Add(m_SpriteBatch = new Graphics.SpriteBatchExtended(this));
+            m_Entities = new EntityManager();
 
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            m_Entities = new List<Ship>();
-            m_Entities.Add(m_Player = new Ship());
+            // create player
+            m_Player = m_Entities.GetEntity<Ship>(Serial.GetNext(), true);
             m_Player.IsPlayerEntity = true;
-            m_StellarObject = new StellarObject();
-
+            // create other dudes.
             Random r = new Random();
             for (int i = 0; i < 100; i++)
             {
-                Ship ship = new Ship();
+                Ship ship = m_Entities.GetEntity<Ship>(Serial.GetNext(), true);
                 ship.Position = new Position3D(r.NextDouble() * 100 - 50, r.NextDouble() * 100 - 50, r.NextDouble() * 40 - 20);
-                m_Entities.Add(ship);
             }
+            // create a star.
+            StellarObject planet = m_Entities.GetEntity<StellarObject>(Serial.GetNext(), true);
 
             m_Stars = new Stars(GraphicsDevice);
             m_Stars.CreateStars(100, new Rectangle(0, 0,
@@ -62,11 +62,7 @@ namespace Ypsilon
         {
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            foreach (Ship ship in m_Entities)
-            {
-                ship.Update(frameSeconds);
-            }
-
+            m_Entities.Update(frameSeconds);
             m_Stars.Update(m_Player.Velocity * frameSeconds);
 
             base.Update(gameTime);
@@ -78,13 +74,10 @@ namespace Ypsilon
 
             GraphicsDevice.Clear(new Color(16, 0, 16, 255));
             m_SpriteBatch.DrawTitleSafeAreas();
-            m_Stars.Draw(m_SpriteBatch);
-            m_StellarObject.Draw(m_SpriteBatch.Vectors, playerPosition);
 
-            foreach (Ship ship in m_Entities)
-            {
-                ship.Draw(m_SpriteBatch.Vectors, playerPosition);
-            }
+            m_Stars.Draw(m_SpriteBatch);
+
+            m_Entities.Draw(m_SpriteBatch.Vectors, playerPosition);
             
             m_SpriteBatch.Vectors.Render_WorldSpace(Vector2.Zero, 1.0f);
             base.Draw(gameTime);

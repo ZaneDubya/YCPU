@@ -1,28 +1,29 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Ypsilon.Data;
-using Ypsilon.Entities.Movement;
 using Ypsilon.Graphics;
 
 namespace Ypsilon.Entities
 {
-    class StellarObject
+    /// <summary>
+    /// A planet.
+    /// </summary>
+    class StellarObject : AEntity
     {
-        public Position3D Position = new Position3D(10, 10, 0);
         public PlanetDefinition Definition = new PlanetDefinition();
         private Vector3[] m_ModelVertices;
 
-        public StellarObject()
+        public StellarObject(EntityManager manager, Serial serial)
+            : base(manager, serial)
         {
             m_ModelVertices = Vertices.Planet;
         }
 
-        public void Update(float frameSeconds)
+        public override void Update(float frameSeconds)
         {
 
         }
 
-        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
             Matrix world = CreateWorldMatrix(translation);

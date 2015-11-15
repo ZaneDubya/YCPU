@@ -62,6 +62,8 @@
     <Compile Include="Data\PlanetDefinition.cs" />
     <Compile Include="Data\ShipDefinition.cs" />
     <Compile Include="Data\Vertices.cs" />
+    <Compile Include="Entities\AEntity.cs" />
+    <Compile Include="Entities\EntityManager.cs" />
     <Compile Include="Entities\Particles\Trail.cs" />
     <Compile Include="Entities\StellarObject.cs" />
     <Compile Include="Entities\Ship.cs" />

@@ -4,23 +4,41 @@ namespace Ypsilon
 {
     public struct Serial : IComparable, IComparable<Serial>
     {
-        private int _serial;
+        private static int m_NextSerial = Serial.First;
+
+        public static Serial GetNext()
+        {
+            return m_NextSerial++;
+        }
 
         public static Serial Null
         {
-            get { return 0; }
+            get
+            {
+                return 0;
+            }
         }
+
+        public static Serial First
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        private int m_Serial;
 
         private Serial(int serial)
         {
-            _serial = serial;
+            m_Serial = serial;
         }
 
         public int Value
         {
             get
             {
-                return _serial;
+                return m_Serial;
             }
         }
 
@@ -28,18 +46,18 @@ namespace Ypsilon
         {
             get
             {
-                return (_serial > 0);
+                return (m_Serial > 0);
             }
         }
 
         public override int GetHashCode()
         {
-            return _serial;
+            return m_Serial;
         }
 
         public int CompareTo(Serial other)
         {
-            return _serial.CompareTo(other._serial);
+            return m_Serial.CompareTo(other.m_Serial);
         }
 
         public int CompareTo(object other)
@@ -56,27 +74,27 @@ namespace Ypsilon
         {
             if (o == null || !(o is Serial)) return false;
 
-            return ((Serial)o)._serial == _serial;
+            return ((Serial)o).m_Serial == m_Serial;
         }
 
         public static bool operator ==(Serial l, Serial r)
         {
-            return l._serial == r._serial;
+            return l.m_Serial == r.m_Serial;
         }
 
         public static bool operator !=(Serial l, Serial r)
         {
-            return l._serial != r._serial;
+            return l.m_Serial != r.m_Serial;
         }
 
         public override string ToString()
         {
-            return String.Format("0x{0:X8}", _serial);
+            return String.Format("0x{0:X8}", m_Serial);
         }
 
         public static implicit operator int (Serial a)
         {
-            return a._serial;
+            return a.m_Serial;
         }
 
         public static implicit operator Serial(int a)

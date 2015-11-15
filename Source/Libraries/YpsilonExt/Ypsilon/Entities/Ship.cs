@@ -6,9 +6,9 @@ using Ypsilon.Graphics;
 
 namespace Ypsilon.Entities
 {
-    class Ship
+    class Ship : AEntity
     {
-        public Position3D Position = Position3D.Zero;
+        
         public float Speed
         {
             get
@@ -49,17 +49,17 @@ namespace Ypsilon.Entities
         private Vector3[] m_ModelVertices;
         private Particles.Trail m_Trail1, m_Trail2;
 
-        public bool IsPlayerEntity = false;
-
-        public Ship()
+        public Ship(EntityManager manager, Serial serial)
+            : base(manager, serial)
         {
             m_ModelVertices = Vertices.SimpleArrow;
             m_Rotator = new Rotator2D(Definition);
+
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0));
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
         }
 
-        public void Update(float frameSeconds)
+        public override void Update(float frameSeconds)
         {
             if (IsPlayerEntity)
             {
@@ -88,7 +88,7 @@ namespace Ypsilon.Entities
             m_Trail2.Update(frameSeconds, offset);
         }
 
-        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
             Matrix rotation = Matrix.CreateRotationZ((m_Rotator as Rotator2D).Rotation);
