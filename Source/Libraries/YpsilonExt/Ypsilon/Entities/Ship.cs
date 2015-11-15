@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using Ypsilon.Data;
 using Ypsilon.Entities.Movement;
 using Ypsilon.Graphics;
+using System;
 
 namespace Ypsilon.Entities
 {
@@ -94,20 +95,33 @@ namespace Ypsilon.Entities
 
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
         {
-            Vector3 translation = (Position - worldSpaceCenter).ToVector3();
-            Matrix rotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
-            Matrix world = CreateWorldMatrix(translation);
+            if (IsVisible)
+            {
+                Vector3 translation = (Position - worldSpaceCenter).ToVector3();
+                Matrix rotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
+                Matrix world = CreateWorldMatrix(translation);
 
-            m_Trail1.Draw(renderer, translation, rotation);
-            m_Trail2.Draw(renderer, translation, rotation);
+                m_Trail1.Draw(renderer, translation, rotation);
+                m_Trail2.Draw(renderer, translation, rotation);
 
-            Vector3[] verts = new Vector3[m_ModelVertices.Length];
-            for (int i = 0; i < verts.Length; i++)
-                verts[i] = Vector3.Transform(m_ModelVertices[i], world);
+                Vector3[] verts = new Vector3[m_ModelVertices.Length];
+                for (int i = 0; i < verts.Length; i++)
+                    verts[i] = Vector3.Transform(m_ModelVertices[i] * Definition.DisplaySize, world);
 
-            Color color = IsPlayerEntity ? Color.White : Color.OrangeRed;
-            renderer.DrawPolygon(verts, true, color, false);
-            
+                Color color = IsPlayerEntity ? Color.White : Color.OrangeRed;
+                renderer.DrawPolygon(verts, true, color, false);
+
+                if (IsSelected)
+                {
+                    Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
+                    for (int i = 0; i < selection.Length; i++)
+                        selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * Definition.DisplaySize, world);
+                    renderer.DrawPolygon(selection, false, Color.Yellow, false);
+                    for (int i = 0; i < selection.Length; i++)
+                        selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * Definition.DisplaySize, world);
+                    renderer.DrawPolygon(selection, false, Color.Yellow, false);
+                }
+            }
         }
 
         private Matrix CreateWorldMatrix(Vector3 translation)

@@ -15,7 +15,15 @@ namespace Ypsilon.Data
     class ASpobDefinition
     {
         public float Size;
+
+        /// <summary>
+        /// Rotation period, in seconds.
+        /// </summary>
+        public float RotationPeriod = 60f;
+
         public Color Color;
+
+
         public float VertexRandomizationFactor;
 
         public bool DoRandomizeVertexes

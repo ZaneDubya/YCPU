@@ -9,7 +9,22 @@ namespace Ypsilon.Data
             new Vector3(0, 1, 0),
             new Vector3(1, -1, 0f),
             new Vector3(0, -0.7f, 0.5f),
-            new Vector3(-1, -1, 0f) };
+            new Vector3(-1, -1, 0f)
+        };
+
+        public static Vector3[] SelectionLeft = new Vector3[4] {
+            new Vector3(-1f, 1.25f, 0f),
+            new Vector3(-1.25f, 1.25f, 0f),
+            new Vector3(-1.25f, -1.25f, 0f),
+            new Vector3(-1f, -1.25f, 0f)
+        };
+
+        public static Vector3[] SelectionRight = new Vector3[4] {
+            new Vector3(1f, 1.25f, 0f),
+            new Vector3(1.25f, 1.25f, 0f),
+            new Vector3(1.25f, -1.25f, 0f),
+            new Vector3(1f, -1.25f, 0f)
+        };
 
         private static Vector3[] m_Planet;
         public static Vector3[] Planet

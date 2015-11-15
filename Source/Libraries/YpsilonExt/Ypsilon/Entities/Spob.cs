@@ -12,7 +12,7 @@ namespace Ypsilon.Entities
     {
         public ASpobDefinition Definition = new ASpobDefinition();
 
-        private AShipRotator m_Rotator;
+        private PlanetRotator m_Rotator;
         private Vector3[] m_ModelVertices;
 
         public Spob(EntityManager manager, Serial serial)
@@ -24,12 +24,12 @@ namespace Ypsilon.Entities
         protected override void OnInitialize()
         {
             m_ModelVertices = Vertices.GetSpobVertices(Definition);
-            m_Rotator = new ShipRotator2D(
+            m_Rotator = new PlanetRotator(Definition);
         }
 
         public override void Update(float frameSeconds)
         {
-
+            m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Definition.RotationPeriod;
         }
 
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
@@ -46,7 +46,7 @@ namespace Ypsilon.Entities
 
         private Matrix CreateWorldMatrix(Vector3 translation)
         {
-            Matrix rotMatrix = Matrix.Identity;
+            Matrix rotMatrix = m_Rotator.RotationMatrix;
 
             Vector3 forward = rotMatrix.Forward;
             forward.Normalize();

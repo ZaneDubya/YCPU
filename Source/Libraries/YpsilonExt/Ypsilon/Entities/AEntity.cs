@@ -32,32 +32,27 @@ namespace Ypsilon.Entities
             }
         }
 
-        private bool m_IsPlayerEntity = false;
         public bool IsPlayerEntity
         {
             get
             {
-                return m_IsPlayerEntity;
+                return Serial == State.Vars.PlayerSerial;
             }
-            set
+        }
+
+        public bool IsSelected
+        {
+            get
             {
-                // if we're not changing the value, do nothing.
-                if (value == m_IsPlayerEntity)
-                    return;
-                // if we're setting this to false, get rid of it.
-                if (value == false)
-                {
-                    m_IsPlayerEntity = false;
-                    if (Manager.PlayerSerial == Serial)
-                        Manager.PlayerSerial = Serial.Null;
-                }
-                // if we're setting this to true, make sure entity manager knows.
-                if (value == true)
-                {
-                    m_IsPlayerEntity = true;
-                    if (Manager.PlayerSerial != Serial)
-                        Manager.PlayerSerial = Serial;
-                }
+                return Serial == State.Vars.SelectedSerial;
+            }
+        }
+
+        public bool IsVisible
+        {
+            get
+            {
+                return true;
             }
         }
 

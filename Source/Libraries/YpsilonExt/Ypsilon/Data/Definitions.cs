@@ -44,6 +44,7 @@ namespace Ypsilon.Data
             {
                 Color = Color.LightGray,
                 Size = 0.5f,
+                RotationPeriod = 10f,
                 VertexRandomizationFactor = 0.6f
             });
 
@@ -51,6 +52,7 @@ namespace Ypsilon.Data
             {
                 Color = Color.Gray,
                 Size = 2f,
+                RotationPeriod = 20f,
                 VertexRandomizationFactor = 0.4f
             });
         }

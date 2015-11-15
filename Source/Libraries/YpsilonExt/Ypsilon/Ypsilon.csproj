@@ -72,6 +72,7 @@
     <Compile Include="Entities\Position3D.cs" />
     <Compile Include="Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="Entities\Movement\ShipRotatorPitchRoll.cs" />
+    <Compile Include="State\Vars.cs" />
     <Compile Include="Views\Stars.cs" />
     <Compile Include="Graphics\PreTransformedQuad.cs" />
     <Compile Include="Graphics\SpriteBatchExtended.cs" />

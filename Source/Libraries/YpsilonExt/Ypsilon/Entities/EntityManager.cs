@@ -22,39 +22,6 @@ namespace Ypsilon.Entities
         private bool m_EntitiesCollectionIsLocked = false;
         private List<int> m_SerialsToRemove = new List<int>();
 
-        private Serial m_PlayerSerial = Serial.Null;
-        public Serial PlayerSerial
-        {
-            get
-            {
-                return m_PlayerSerial;
-            }
-            set
-            {
-                if (m_PlayerSerial != null)
-                {
-                    AEntity oldPlayer;
-                    if (m_Entities.TryGetValue(m_PlayerSerial, out oldPlayer))
-                    {
-                        if (oldPlayer.IsPlayerEntity)
-                            oldPlayer.IsPlayerEntity = false;
-                    }
-                }
-
-                m_PlayerSerial = value;
-
-                if (m_PlayerSerial != null)
-                {
-                    AEntity newPlayer;
-                    if (m_Entities.TryGetValue(m_PlayerSerial, out newPlayer))
-                    {
-                        if (!newPlayer.IsPlayerEntity)
-                            newPlayer.IsPlayerEntity = true;
-                    }
-                }
-            }
-        }
-
         public EntityManager()
         {
 
@@ -87,8 +54,8 @@ namespace Ypsilon.Entities
         public AEntity GetPlayerEntity()
         {
             // This could be cached to save time.
-            if (m_Entities.ContainsKey(PlayerSerial))
-                return (AEntity)m_Entities[PlayerSerial];
+            if (m_Entities.ContainsKey(State.Vars.PlayerSerial))
+                return (AEntity)m_Entities[State.Vars.PlayerSerial];
             else
                 return null;
         }
@@ -177,9 +144,6 @@ namespace Ypsilon.Entities
             var ctor = typeof(T).GetConstructor(new[] { typeof(EntityManager), typeof(Serial) });
 
             AEntity e = (T)ctor.Invoke(new object[] { this, serial, });
-
-            if (e.Serial == PlayerSerial)
-                e.IsPlayerEntity = true;
 
             // If the entities collection is locked, add the new entity to the queue. Otherwise 
             // add it directly to the main entity collection.

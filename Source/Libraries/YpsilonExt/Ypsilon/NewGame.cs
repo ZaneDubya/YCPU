@@ -43,7 +43,7 @@ namespace Ypsilon
         {
             // create player
             m_Player = m_Entities.GetEntity<Ship>(Serial.GetNext(), true);
-            m_Player.IsPlayerEntity = true;
+            State.Vars.PlayerSerial = m_Player.Serial;
             // create other dudes.
             for (int i = 0; i < 30; i++)
             {

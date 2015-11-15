@@ -57,5 +57,8 @@ namespace Ypsilon.Data
         /// Fuel capacity. 100 = 1 jump.
         /// </summary>
         public int DefaultEnergyCapacity = 500;
+
+
+        public float DisplaySize = 1f;
     }
 }
