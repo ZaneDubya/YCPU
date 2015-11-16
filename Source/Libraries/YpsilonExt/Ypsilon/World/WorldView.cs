@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.World.Entities;
 using Ypsilon.Core.Patterns.MVC;
-using Ypsilon.World.View;
+using Ypsilon.World.Views;
 using Ypsilon.Graphics;
 
 namespace Ypsilon.World
@@ -18,14 +18,14 @@ namespace Ypsilon.World
         }
 
         private SpriteBatchExtended m_SpriteBatch;
-        private Stars m_Stars;
+        private Starfield m_Stars;
 
         public WorldView(WorldModel model)
             : base(model)
         {
             m_SpriteBatch = ServiceRegistry.GetService<SpriteBatchExtended>();
 
-            m_Stars = new Stars();
+            m_Stars = new Starfield();
             m_Stars.CreateStars(100, new Rectangle(0, 0,
                 m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth,
                 m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight));

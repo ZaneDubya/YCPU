@@ -6,14 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Ypsilon.Graphics;
 
-namespace Ypsilon.World.View
+namespace Ypsilon.World.Views
 {
-    class Stars
+    class Starfield
     {
         private Star[] m_Stars;
         private Rectangle m_Bounds;
 
-        public Stars()
+        public Starfield()
         {
 
         }

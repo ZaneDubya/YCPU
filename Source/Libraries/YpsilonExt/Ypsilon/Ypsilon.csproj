@@ -97,7 +97,8 @@
     <Compile Include="World\Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Core\Bootstrapper.cs" />
     <Compile Include="World\State\Vars.cs" />
-    <Compile Include="World\View\Stars.cs" />
+    <Compile Include="World\Views\SpaceRenderer.cs" />
+    <Compile Include="World\Views\Starfield.cs" />
     <Compile Include="Graphics\PreTransformedQuad.cs" />
     <Compile Include="Graphics\SpriteBatchExtended.cs" />
     <Compile Include="Graphics\VectorPolygon.cs" />

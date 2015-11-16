@@ -1,9 +1,7 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
-using Ypsilon.World.Data;
-using Ypsilon.World.Entities;
 using Ypsilon.Graphics;
-using Ypsilon.World.View;
+
 #endregion
 
 namespace Ypsilon

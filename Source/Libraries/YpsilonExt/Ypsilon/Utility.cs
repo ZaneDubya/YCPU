@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon
 {
@@ -29,6 +30,11 @@ namespace Ypsilon
             get { return Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -2000f, 2000f); }
         }
 
+        public static Matrix CreateProjectionMatrixScreen(GraphicsDevice graphics)
+        {
+            return Matrix.CreateOrthographicOffCenter(graphics.Viewport.Width / -2, graphics.Viewport.Width / 2, graphics.Viewport.Height / -2, graphics.Viewport.Height / 2, Int16.MinValue, Int16.MaxValue);
+        }
+
         public static Matrix ProjectionMatrixWorld
         {
             get { return Matrix.CreateOrthographicOffCenter(-640f, 640f, 360f, -360f, -2000f, 2000f); }
@@ -52,8 +58,6 @@ namespace Ypsilon
         }
 
         public const float CursorSize = 20f;
-
-        static int _lastSerial = 0;
 
         /*public static Vector3 Legacy_MakeWorldVector(ref short i, ref short j)
         {
