@@ -54,7 +54,6 @@ namespace Ypsilon
         public const float CursorSize = 20f;
 
         static int _lastSerial = 0;
-        public static Serial NextSerial { get { return ++_lastSerial; } }
 
         /*public static Vector3 Legacy_MakeWorldVector(ref short i, ref short j)
         {

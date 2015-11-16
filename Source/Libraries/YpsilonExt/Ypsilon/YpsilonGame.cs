@@ -1,9 +1,9 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
-using Ypsilon.Data;
-using Ypsilon.Entities;
+using Ypsilon.World.Data;
+using Ypsilon.World.Entities;
 using Ypsilon.Graphics;
-using Ypsilon.Views;
+using Ypsilon.World.View;
 #endregion
 
 namespace Ypsilon
@@ -11,24 +11,8 @@ namespace Ypsilon
     public class YpsilonGame : Game
     {
         private GraphicsDeviceManager m_Graphics;
-
-        internal SpriteBatchExtended SpriteBatch
-        {
-            get;
-            private set;
-        }
-
-        internal EntityManager Entities
-        {
-            get;
-            private set;
-        }
-
-        internal TheView View
-        {
-            get;
-            private set;
-        }
+        private SpriteBatchExtended m_SpriteBatch;
+        private World.WorldModel m_Model;
 
         public YpsilonGame()
         {
@@ -44,55 +28,33 @@ namespace Ypsilon
 
         protected override void Initialize()
         {
-            Components.Add(View = new TheView(this));
-            Components.Add(SpriteBatch = new SpriteBatchExtended(this));
+            ServiceRegistry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
+            m_SpriteBatch.Initialize();
 
-            Entities = new EntityManager();
+            World.Data.Textures.Initialize(GraphicsDevice);
+            m_Model = new World.WorldModel();
 
             base.Initialize();
         }
 
-        protected override void LoadContent()
-        {
-            // create player
-            Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-            State.Vars.PlayerSerial = player.Serial;
-            // create other dudes.
-            for (int i = 0; i < 30; i++)
-            {
-                Ship ship = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-                ship.Position = new Position3D(
-                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
-                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
-                    Utility.Random_GetNonpersistantDouble() * 10 - 5);
-            }
-
-            // create a planet.
-            Spob planet = Entities.GetEntity<Spob>(Serial.GetNext(), true);
-            planet.Definition = Definitions.GetSpob("planet");
-
-            Spob asteroid1 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
-            asteroid1.Definition = Definitions.GetSpob("asteroid small");
-            asteroid1.Position = new Position3D(10, 10, 0);
-
-            Spob asteroid2 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
-            asteroid2.Definition = Definitions.GetSpob("asteroid large");
-            asteroid2.Position = new Position3D(-10, 20, 0);
-
-            base.LoadContent();
-        }
-
         protected override void Update(GameTime gameTime)
         {
+            float totalSeconds = (float)gameTime.TotalGameTime.TotalSeconds;
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Entities.Update(frameSeconds);
+            m_Model.Update(totalSeconds, frameSeconds);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            m_Model.GetView().Draw(frameSeconds);
+
+            m_SpriteBatch.Draw(gameTime);
+
             base.Draw(gameTime);
         }
     }
