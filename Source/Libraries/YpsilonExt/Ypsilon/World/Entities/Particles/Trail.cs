@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon.World.Entities.Particles
@@ -8,14 +8,18 @@ namespace Ypsilon.World.Entities.Particles
     class Trail
     {
         Vector3 m_Offset;
+        float m_ShipSize;
+
         VertexPositionColorTexture[] m_Vertices;
         private float m_SecondsSinceLastVector = 0;
         private const float c_SecondsBetweenVectors = 0.2f;
         private bool m_FirstDraw = true; // used to set initial position of all trails.
 
-        public Trail(Vector3 offset)
+        public Trail(Vector3 offset, float shipSize)
         {
             m_Offset = offset;
+            m_ShipSize = shipSize;
+
             m_Vertices = new VertexPositionColorTexture[10];
             for (int i = 0; i < m_Vertices.Length; i++)
             {
@@ -46,12 +50,12 @@ namespace Ypsilon.World.Entities.Particles
             if (m_FirstDraw)
             {
                 for (int i = 0; i < m_Vertices.Length; i++)
-                    m_Vertices[i].Position = m_Offset; // Vector3.Transform(m_Offset, worldMatrix);
+                    m_Vertices[i].Position = m_Offset * m_ShipSize;
                 m_FirstDraw = false;
             }
             else
             {
-                m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset, rotation);
+                m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset * m_ShipSize, rotation);
             }
 
             VertexPositionColorTexture[] v = new VertexPositionColorTexture[m_Vertices.Length];

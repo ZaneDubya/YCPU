@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ypsilon.Graphics
+namespace Ypsilon.Core.Graphics
 {
     public class PreTransformedQuad
     {

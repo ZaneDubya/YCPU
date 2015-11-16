@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ypsilon.Graphics
+namespace Ypsilon.Core.Graphics
 {
     /// <summary>
     /// A series of points that may be drawn together to form a line.

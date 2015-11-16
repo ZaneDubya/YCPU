@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 
 namespace Ypsilon.World.Views
 {

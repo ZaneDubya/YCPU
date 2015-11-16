@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
-namespace Ypsilon.Graphics
+namespace Ypsilon.Core.Graphics
 {
     /// <summary>
     /// Batches line "draw" calls from the game, and renders them at one time.

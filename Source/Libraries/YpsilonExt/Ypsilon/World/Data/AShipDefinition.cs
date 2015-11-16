@@ -44,9 +44,9 @@ namespace Ypsilon.World.Data
         public int DefaultAcceleration = 100;
 
         /// <summary>
-        /// Units per second, max speed. 100 units is 1 pixel.
+        /// Units per second, max speed. 10 units is 1 pixel.
         /// </summary>
-        public int DefaultSpeed = 1000;
+        public int DefaultSpeed = 500;
 
         /// <summary>
         /// Degrees per second rotation.
@@ -59,6 +59,6 @@ namespace Ypsilon.World.Data
         public int DefaultEnergyCapacity = 500;
 
 
-        public float DisplaySize = 1f;
+        public float DisplaySize = 10f;
     }
 }

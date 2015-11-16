@@ -28,9 +28,9 @@ namespace Ypsilon.World
             {
                 Ship ship = Entities.GetEntity<Ship>(Serial.GetNext(), true);
                 ship.Position = new Position3D(
-                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
-                    Utility.Random_GetNonpersistantDouble() * 100 - 50,
-                    Utility.Random_GetNonpersistantDouble() * 10 - 5);
+                    Utility.Random_GetNonpersistantDouble() * 600 - 300,
+                    Utility.Random_GetNonpersistantDouble() * 600 - 300,
+                    0);
             }
 
             // create a planet.
@@ -39,11 +39,11 @@ namespace Ypsilon.World
 
             Spob asteroid1 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
             asteroid1.Definition = Definitions.GetSpob("asteroid small");
-            asteroid1.Position = new Position3D(10, 10, 0);
+            asteroid1.Position = new Position3D(100, 100, 0);
 
             Spob asteroid2 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
             asteroid2.Definition = Definitions.GetSpob("asteroid large");
-            asteroid2.Position = new Position3D(-10, 20, 0);
+            asteroid2.Position = new Position3D(-100, 200, 0);
         }
 
         public override void Update(float totalSeconds, float frameSeconds)

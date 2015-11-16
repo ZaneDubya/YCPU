@@ -36,14 +36,14 @@ namespace Ypsilon.World.Data
             AddSpob("Planet", new ASpobDefinition()
             {
                 Color = Color.CornflowerBlue,
-                Size = 10f,
+                Size = 100f,
                 VertexRandomizationFactor = 0f
             });
 
             AddSpob("Asteroid Small", new ASpobDefinition()
             {
                 Color = Color.LightGray,
-                Size = 0.5f,
+                Size = 20f,
                 RotationPeriod = 10f,
                 VertexRandomizationFactor = 0.6f
             });
@@ -51,7 +51,7 @@ namespace Ypsilon.World.Data
             AddSpob("Asteroid Large", new ASpobDefinition()
             {
                 Color = Color.Gray,
-                Size = 2f,
+                Size = 40f,
                 RotationPeriod = 20f,
                 VertexRandomizationFactor = 0.4f
             });

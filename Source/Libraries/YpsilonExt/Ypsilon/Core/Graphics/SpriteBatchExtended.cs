@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ypsilon.Graphics
+namespace Ypsilon.Core.Graphics
 {
     public class SpriteBatchExtended : DrawableGameComponent
     {

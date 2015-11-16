@@ -1,5 +1,5 @@
 ﻿using System;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 
 namespace Ypsilon.World.Entities
 {

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using Ypsilon.World.Data;
 using Ypsilon.World.Entities.Movement;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 using System;
 
 namespace Ypsilon.World.Entities
@@ -19,7 +19,7 @@ namespace Ypsilon.World.Entities
         {
             get
             {
-                return (Definition.DefaultSpeed / 100f) * Throttle;
+                return (Definition.DefaultSpeed / 10f) * Throttle;
             }
         }
 
@@ -60,8 +60,8 @@ namespace Ypsilon.World.Entities
             m_ModelVertices = Vertices.SimpleArrow;
             m_Rotator = new ShipRotator2D(Definition);
 
-            m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0));
-            m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0));
+            m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), Definition.DisplaySize);
+            m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), Definition.DisplaySize);
         }
 
         public override void Update(float frameSeconds)

@@ -9,7 +9,7 @@
  ***************************************************************************/
 #region usings
 using System.Collections.Generic;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 #endregion
 
 namespace Ypsilon.World.Entities

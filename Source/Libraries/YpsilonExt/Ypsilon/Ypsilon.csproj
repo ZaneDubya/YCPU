@@ -99,11 +99,11 @@
     <Compile Include="World\State\Vars.cs" />
     <Compile Include="World\Views\SpaceRenderer.cs" />
     <Compile Include="World\Views\Starfield.cs" />
-    <Compile Include="Graphics\PreTransformedQuad.cs" />
-    <Compile Include="Graphics\SpriteBatchExtended.cs" />
-    <Compile Include="Graphics\VectorPolygon.cs" />
-    <Compile Include="Graphics\VectorRenderer.cs" />
-    <Compile Include="Graphics\VertexList.cs" />
+    <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
+    <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
+    <Compile Include="Core\Graphics\VectorPolygon.cs" />
+    <Compile Include="Core\Graphics\VectorRenderer.cs" />
+    <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="World\WorldModel.cs" />
     <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

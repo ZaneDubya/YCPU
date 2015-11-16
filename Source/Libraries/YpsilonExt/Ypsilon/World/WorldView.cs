@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.World.Entities;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.World.Views;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 
 namespace Ypsilon.World
 {

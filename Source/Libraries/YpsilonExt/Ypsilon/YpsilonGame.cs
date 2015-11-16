@@ -1,6 +1,6 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
-using Ypsilon.Graphics;
+using Ypsilon.Core.Graphics;
 
 #endregion
 

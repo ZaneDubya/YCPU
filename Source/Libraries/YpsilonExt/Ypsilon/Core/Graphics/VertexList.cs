@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
-namespace Ypsilon.Graphics
+namespace Ypsilon.Core.Graphics
 {
     class VertexList
     {
