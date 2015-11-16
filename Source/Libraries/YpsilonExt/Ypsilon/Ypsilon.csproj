@@ -72,6 +72,7 @@
     <Compile Include="Entities\Position3D.cs" />
     <Compile Include="Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="Entities\Movement\ShipRotatorPitchRoll.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="State\Vars.cs" />
     <Compile Include="Views\Stars.cs" />
     <Compile Include="Graphics\PreTransformedQuad.cs" />
@@ -79,11 +80,11 @@
     <Compile Include="Graphics\VectorPolygon.cs" />
     <Compile Include="Graphics\VectorRenderer.cs" />
     <Compile Include="Graphics\VertexList.cs" />
-    <Compile Include="NewGame.cs" />
+    <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Serial.cs" />
     <Compile Include="Utility.cs" />
+    <Compile Include="Views\TheView.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\YpsilonContent\YpsilonContent.contentproj">

@@ -1,8 +1,10 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Ypsilon
 {
-#if WINDOWS || XBOX
     static class Program
     {
         /// <summary>
@@ -10,12 +12,10 @@ namespace Ypsilon
         /// </summary>
         static void Main(string[] args)
         {
-            using (NewGame game = new NewGame())
+            using (YpsilonGame game = new YpsilonGame())
             {
                 game.Run();
             }
         }
     }
-#endif
 }
-
