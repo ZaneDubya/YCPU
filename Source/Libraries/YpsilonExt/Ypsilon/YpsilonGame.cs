@@ -10,6 +10,7 @@ namespace Ypsilon
     {
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
+        private VectorRenderer m_Vectors;
         private World.WorldModel m_Model;
 
         public YpsilonGame()
@@ -28,6 +29,8 @@ namespace Ypsilon
         {
             ServiceRegistry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
             m_SpriteBatch.Initialize();
+
+            ServiceRegistry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
 
             World.Data.Textures.Initialize(GraphicsDevice);
             m_Model = new World.WorldModel();

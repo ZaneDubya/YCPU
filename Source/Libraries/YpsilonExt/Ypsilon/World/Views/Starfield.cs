@@ -41,7 +41,21 @@ namespace Ypsilon.World.Views
         public void Update(Vector3 frameMovement)
         {
             for (int i = 0; i < m_Stars.Length; i++)
+            {
                 m_Stars[i].Position -= new Vector2(frameMovement.X, -frameMovement.Y) * m_Stars[i].MovementSpeed;
+                if (!m_Bounds.Contains(new Point((int)m_Stars[i].Position.X, (int)m_Stars[i].Position.Y)))
+                {
+                    if (m_Stars[i].Position.X <= m_Bounds.Left)
+                        m_Stars[i].Position.X += m_Bounds.Width;
+                    if (m_Stars[i].Position.X >= m_Bounds.Right)
+                        m_Stars[i].Position.X -= m_Bounds.Width;
+
+                    if (m_Stars[i].Position.Y <= m_Bounds.Top)
+                        m_Stars[i].Position.Y += m_Bounds.Height;
+                    if (m_Stars[i].Position.Y >= m_Bounds.Bottom)
+                        m_Stars[i].Position.Y -= m_Bounds.Height;
+                }
+            }
         }
 
         public void Draw(SpriteBatchExtended sb)

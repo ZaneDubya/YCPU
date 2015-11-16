@@ -15,9 +15,6 @@ namespace Ypsilon.Core.Graphics
         private Queue<List<VertexPositionColorTexture>> _vertexListQueue;
         private short[] _indexBuffer;
 
-        private VectorRenderer _vectorBatch;
-        public VectorRenderer Vectors { get { return _vectorBatch; } }
-
         private Vector3 _zOffset = new Vector3();
         public float ZOffset { set { _zOffset = new Vector3(0, 0, value); } }
 
@@ -37,8 +34,6 @@ namespace Ypsilon.Core.Graphics
             _drawQueue = new Dictionary<Texture2D, List<VertexPositionColorTexture>>(256);
             _indexBuffer = createIndexBuffer(0x1000);
             _vertexListQueue = new Queue<List<VertexPositionColorTexture>>(256);
-
-            _vectorBatch = new VectorRenderer(GraphicsDevice, Game.Content);
         }
 
         private short[] createIndexBuffer(int primitiveCount)
@@ -91,8 +86,6 @@ namespace Ypsilon.Core.Graphics
                 _vertexListQueue.Enqueue(iVertexList);
             }
             _drawQueue.Clear();
-
-            _vectorBatch.Render_ViewportSpace();
         }
 
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue)
@@ -156,20 +149,6 @@ namespace Ypsilon.Core.Graphics
                 _texture.SetData<Color>(new Color[] { Color.White });
             }
             DrawSprite(_texture, position, area, hue);
-        }
-
-        public void DrawTitleSafeAreas()
-        {
-            int width = GraphicsDevice.PresentationParameters.BackBufferWidth;
-            int height = GraphicsDevice.PresentationParameters.BackBufferHeight;
-            int dx = (int)(width * 0.05);
-            int dy = (int)(height * 0.05);
-            int z = 1999;
-            Color notActionSafeColor = new Color(255, 0, 0, 127); // Red, 50% opacity
-            Color notTitleSafeColor = new Color(255, 255, 0, 127); // Yellow, 50% opacity
-
-            DrawRectangle(new Vector3(dx, dy, z), new Vector2(width - 2 * dx, height - 2 * dy), notActionSafeColor);
-            DrawRectangle(new Vector3(dx * 2, dy * 2, z), new Vector2(width - 4 * dx, height - 4 * dy), notTitleSafeColor);
         }
     }
 

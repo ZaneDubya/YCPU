@@ -60,12 +60,6 @@ namespace Ypsilon.Core.Graphics
             return indices;
         }
 
-        public void DrawDot_World(Vector3 origin, Color color)
-        {
-            DrawLine(origin + new Vector3(0, -.01f, 0), origin + new Vector3(0, .01f, 0), color);
-            DrawLine(origin + new Vector3(-.01f, 0, 0), origin + new Vector3(.01f, 0, 0), color);
-        }
-
         /// <summary>
         /// Draw a line from one point to another with the same color.
         /// </summary>
@@ -163,20 +157,20 @@ namespace Ypsilon.Core.Graphics
             }
         }
 
-        public void Render_WorldSpace(Vector2 rotation, float zoom)
+        public void Render(Matrix projection, Matrix view, Matrix world)
         {
             // if we don't have any vertices, then we can exit early
             if (m_CurrentIndex == 0)
                 return;
 
-            Matrix projection = Utility.CreateProjectionMatrixScreen(m_Graphics);
-            // Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, m_Graphics.Viewport.AspectRatio, 1.0f, 300.0f);
-            // Matrix view = Matrix.CreateLookAt(new Vector3(0, -50, 50), new Vector3(0, 40, 0), new Vector3(0, 1, 0)); - perspective! need to figure out how to adjust this...
-            Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            m_Graphics.BlendState = BlendState.AlphaBlend;
+            m_Graphics.DepthStencilState = DepthStencilState.Default;
+            m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
+            m_Graphics.RasterizerState = RasterizerState.CullNone;
 
             m_Effect.Parameters["ProjectionMatrix"].SetValue(projection);
-            m_Effect.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
-            m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
+            m_Effect.Parameters["ViewMatrix"].SetValue(view);
+            m_Effect.Parameters["WorldMatrix"].SetValue(world);
             m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
 
             m_Effect.CurrentTechnique.Passes[0].Apply();
