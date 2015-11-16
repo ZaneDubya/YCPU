@@ -41,6 +41,14 @@ namespace Ypsilon.World.Entities
             }
         }
 
+        public ShipRotator2D Rotator
+        {
+            get
+            {
+                return m_Rotator;
+            }
+        }
+
         public Vector3 Velocity
         {
             get
@@ -74,25 +82,6 @@ namespace Ypsilon.World.Entities
 
         public override void Update(float frameSeconds)
         {
-            if (IsPlayerEntity)
-            {
-                float acceleration = 0.0f;
-                float leftrightRotation = 0.0f;
-
-                KeyboardState keys = Keyboard.GetState();
-                if (keys.IsKeyDown(Keys.Up) || keys.IsKeyDown(Keys.W))
-                    acceleration += 1f;
-                if (keys.IsKeyDown(Keys.Down) || keys.IsKeyDown(Keys.S))
-                    acceleration = -1f;
-                if (keys.IsKeyDown(Keys.Right) || keys.IsKeyDown(Keys.D))
-                    leftrightRotation = -1f;
-                if (keys.IsKeyDown(Keys.Left) || keys.IsKeyDown(Keys.A))
-                    leftrightRotation = 1f;
-
-                m_Rotator.Rotate(0f, leftrightRotation, frameSeconds);
-                Throttle = Throttle + acceleration * frameSeconds;
-            }
-
             // move forward
             Vector3 offset = Velocity * frameSeconds;
             Position += offset;

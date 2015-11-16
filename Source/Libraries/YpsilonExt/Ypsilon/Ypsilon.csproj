@@ -105,6 +105,7 @@
     <Compile Include="Core\Graphics\VectorPolygon.cs" />
     <Compile Include="Core\Graphics\VectorRenderer.cs" />
     <Compile Include="Core\Graphics\VertexList.cs" />
+    <Compile Include="World\WorldController.cs" />
     <Compile Include="World\WorldModel.cs" />
     <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

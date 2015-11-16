@@ -1,7 +1,8 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-
+using Ypsilon.World;
+using Ypsilon.Core.Input;
 #endregion
 
 namespace Ypsilon
@@ -11,7 +12,9 @@ namespace Ypsilon
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
         private VectorRenderer m_Vectors;
-        private World.WorldModel m_Model;
+        private InputManager m_Input;
+
+        private WorldModel m_Model;
 
         public YpsilonGame()
         {
@@ -32,6 +35,8 @@ namespace Ypsilon
 
             ServiceRegistry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
 
+            ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
+
             World.Data.Textures.Initialize(GraphicsDevice);
             m_Model = new World.WorldModel();
 
@@ -43,7 +48,10 @@ namespace Ypsilon
             float totalSeconds = (float)gameTime.TotalGameTime.TotalSeconds;
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            m_Input.Update(totalSeconds, frameSeconds);
+
             m_Model.Update(totalSeconds, frameSeconds);
+            m_Model.GetController().ReceiveInput(frameSeconds, m_Input);
 
             base.Update(gameTime);
         }

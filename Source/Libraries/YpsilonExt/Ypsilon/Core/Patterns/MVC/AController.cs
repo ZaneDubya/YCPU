@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Ypsilon.Core.Input;
-using Ypsilon.Core.Windows;
+﻿using Ypsilon.Core.Input;
 
 namespace Ypsilon.Core.Patterns.MVC
 {
@@ -17,12 +14,7 @@ namespace Ypsilon.Core.Patterns.MVC
             Model = parent_model;
         }
 
-        public virtual void ReceiveKeyboardInput(List<InputEventKeyboard> events)
-        {
-
-        }
-
-        public virtual void ReceiveMouseInput(Point MousePosition, List<InputEventMouse> events)
+        public virtual void ReceiveInput(float frameSeconds, InputManager input)
         {
 
         }

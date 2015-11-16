@@ -53,7 +53,7 @@ namespace Ypsilon.World
 
         protected override AController CreateController()
         {
-            throw new NotImplementedException();
+            return new WorldController(this);
         }
 
         protected override AView CreateView()

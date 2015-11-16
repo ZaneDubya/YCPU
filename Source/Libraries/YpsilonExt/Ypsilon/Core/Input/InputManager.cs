@@ -21,7 +21,7 @@ namespace Ypsilon.Core.Input
     public class InputManager
     {
         // Settings!
-        public static float DoubleClickMS = 400f;
+        public static float DoubleClickSeconds = 0.4f;
 
         // Base WndProc
         private WndProc m_WndProc;
@@ -45,7 +45,7 @@ namespace Ypsilon.Core.Input
         private MouseState m_MouseStateThisFrame;
         private float m_TheTime = -1f;
 
-        private float m_mouseStationaryMS;
+        private float m_mouseStationarySeconds;
 
         public InputManager(IntPtr handle)
         {
@@ -96,9 +96,9 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        public int MouseStationaryTimeMS
+        public int MouseStationarySeconds
         {
-            get { return (int)m_mouseStationaryMS; }
+            get { return (int)m_mouseStationarySeconds; }
         }
 
         public Point MousePosition
@@ -177,9 +177,9 @@ namespace Ypsilon.Core.Input
             return list;
         }
 
-        public void Update(double totalTime, double frameTime)
+        public void Update(float totalSeconds, float frameSeconds)
         {
-            m_TheTime = (float)totalTime;
+            m_TheTime = totalSeconds;
 
             if(!m_IsInitialized)
             {
@@ -193,11 +193,11 @@ namespace Ypsilon.Core.Input
             // update mouse stationary business
             if(hasMouseBeenStationarySinceLastUpdate)
             {
-                m_mouseStationaryMS += (float)frameTime;
+                m_mouseStationarySeconds += frameSeconds;
             }
             else
             {
-                m_mouseStationaryMS = 0;
+                m_mouseStationarySeconds = 0;
             }
 
             copyEvents();
@@ -274,7 +274,7 @@ namespace Ypsilon.Core.Input
                 {
                     addEvent(new InputEventMouse(MouseEvent.Click, e));
 
-                    if((m_TheTime - m_LastMouseClickTime <= DoubleClickMS) &&
+                    if((m_TheTime - m_LastMouseClickTime <= DoubleClickSeconds) &&
                        !DistanceBetweenPoints(m_LastMouseClick.Position, e.Position, MouseClickMaxDelta))
                     {
                         m_LastMouseClickTime = 0f;

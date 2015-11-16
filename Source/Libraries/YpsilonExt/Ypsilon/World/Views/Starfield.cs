@@ -31,9 +31,9 @@ namespace Ypsilon.World.Views
                         (float)Utility.Random_GetNonpersistantDouble() * bounds.Height),
                     (float)Utility.Random_GetNonpersistantDouble() / 4 + 0.25f, 
                     new Color(
-                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
-                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
-                        (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f)
+                        (float)Utility.Random_GetNonpersistantDouble() / 3 + 0.66f,
+                        (float)Utility.Random_GetNonpersistantDouble() / 3 + 0.66f,
+                        (float)Utility.Random_GetNonpersistantDouble() / 3 + 0.66f)
                     );
             }
         }
