@@ -103,12 +103,14 @@ namespace Ypsilon.World.Entities
 
             if (IsSelected)
             {
+                Matrix drawMatrixNoRotation = Matrix.Identity;
+                drawMatrixNoRotation.Translation = DrawMatrix.Translation;
                 Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
                 for (int i = 0; i < selection.Length; i++)
-                    selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, DrawMatrix);
+                    selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, drawMatrixNoRotation);
                 renderer.DrawPolygon(selection, false, Color.Yellow, false);
                 for (int i = 0; i < selection.Length; i++)
-                    selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, DrawMatrix);
+                    selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, drawMatrixNoRotation);
                 renderer.DrawPolygon(selection, false, Color.Yellow, false);
             }
         }

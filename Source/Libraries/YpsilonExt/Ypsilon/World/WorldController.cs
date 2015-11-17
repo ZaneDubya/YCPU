@@ -33,9 +33,12 @@ namespace Ypsilon.World
 
         public override void Update(float frameSeconds, InputManager input)
         {
-            if (MouseOverList.HasEntities)
+            if (input.HandleMouseEvent(MouseEvent.Down, MouseButton.Left))
             {
-
+                if (MouseOverList.HasEntities)
+                {
+                    State.Vars.SelectedSerial = MouseOverList.GetFirstEntity().Serial;
+                }
             }
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
@@ -54,7 +57,7 @@ namespace Ypsilon.World
             player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
             player.Throttle = player.Throttle + acceleration * frameSeconds;
 
-            MouseOverList.Reset(input.MousePosition);
+            MouseOverList.ScreenMousePosition = new Vector3(input.MousePosition.X, input.MousePosition.Y, 0);
         }
     }
 }

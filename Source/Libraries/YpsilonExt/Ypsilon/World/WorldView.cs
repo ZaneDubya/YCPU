@@ -42,6 +42,10 @@ namespace Ypsilon.World
 
             WorldController controller = (WorldController)Model.GetController();
             MouseOverList mouseOver = controller.MouseOverList;
+            mouseOver.WorldMousePosition = new Vector3(
+                mouseOver.ScreenMousePosition.X - screenWidth / 2,
+                (screenHeight - screenHeight / 2) - mouseOver.ScreenMousePosition.Y,
+                0);
             mouseOver.Reset();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();

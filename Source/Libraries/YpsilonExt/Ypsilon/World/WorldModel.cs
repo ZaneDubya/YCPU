@@ -24,7 +24,7 @@ namespace Ypsilon.World
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
             World.State.Vars.PlayerSerial = player.Serial;
             // create other dudes.
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Ship ship = Entities.GetEntity<Ship>(Serial.GetNext(), true);
                 ship.Position = new Position3D(
