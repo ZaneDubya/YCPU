@@ -7,6 +7,9 @@ using Ypsilon.World.Entities.ShipActions;
 
 namespace Ypsilon.World.Entities
 {
+    /// <summary>
+    /// A starship.
+    /// </summary>
     class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();

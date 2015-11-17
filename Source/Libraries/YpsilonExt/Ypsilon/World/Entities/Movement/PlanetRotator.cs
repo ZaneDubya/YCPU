@@ -10,7 +10,7 @@ namespace Ypsilon.World.Entities.Movement
     class PlanetRotator
     {
         private ASpobDefinition m_Definition;
-        private Vector3 m_AxialTilt;
+        // private Vector3 m_AxialTilt;
         private float m_Rotation; // about the axis.
 
         /// <summary>

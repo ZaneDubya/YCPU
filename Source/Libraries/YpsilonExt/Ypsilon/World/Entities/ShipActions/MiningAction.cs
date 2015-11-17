@@ -7,9 +7,9 @@ namespace Ypsilon.World.Entities.ShipActions
 {
     class MiningAction : AAction
     {
-        public AEntity Target = null;
+        public Spob Target = null;
 
-        public MiningAction(Ship parent, AEntity target)
+        public MiningAction(Ship parent, Spob target)
             : base(parent)
         {
             Target = target;
@@ -17,13 +17,13 @@ namespace Ypsilon.World.Entities.ShipActions
 
         public override void Update(float frameSeconds)
         {
-            if (Target == null || !(Target is Spob))
+            if (Target == null )
             {
                 Parent.Action = new NoAction(Parent);
                 return;
             }
 
-            float amount = (Target as Spob).ExtractOre(frameSeconds);
+            float amount = Target.ExtractOre(frameSeconds);
             if (amount == 0)
             {
                 Parent.Action = new NoAction(Parent);

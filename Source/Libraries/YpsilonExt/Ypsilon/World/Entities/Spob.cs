@@ -7,7 +7,7 @@ using Ypsilon.World.Input;
 namespace Ypsilon.World.Entities
 {
     /// <summary>
-    /// A space object.
+    /// A space object: planet or asteroid.
     /// </summary>
     class Spob : AEntity
     {

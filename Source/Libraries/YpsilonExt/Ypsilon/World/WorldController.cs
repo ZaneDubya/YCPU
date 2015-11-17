@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Patterns.MVC;
-using Microsoft.Xna.Framework;
-using Ypsilon.World.Entities;
 using Ypsilon.Core.Windows;
-using Ypsilon.World.Input;
-using Ypsilon.Core.Graphics;
 using Ypsilon.World.Entities;
 using Ypsilon.World.Entities.ShipActions;
+using Ypsilon.World.Input;
 
 namespace Ypsilon.World
 {
@@ -63,7 +57,7 @@ namespace Ypsilon.World
 
                     if (selected != null && selected is Spob && Position3D.Distance(player.Position, selected.Position) < maxDistance)
                     {
-                        player.Action = new MiningAction(player, selected);
+                        player.Action = new MiningAction(player, selected as Spob);
                     }
                 }
             }

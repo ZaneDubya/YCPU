@@ -7,6 +7,10 @@ namespace Ypsilon.World.Crafting.Materials
 {
     abstract class AMineral : AMaterial
     {
+        public AMineral(string name)
+            : base(name)
+        {
 
+        }
     }
 }
