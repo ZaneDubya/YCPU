@@ -1,10 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Ypsilon.World.Entities;
-using Ypsilon.Core.Patterns.MVC;
-using Ypsilon.World.Views;
 using System.Collections.Generic;
 using Ypsilon.Core.Graphics;
+using Ypsilon.Core.Patterns.MVC;
+using Ypsilon.World.Entities;
+using Ypsilon.World.Input;
+using Ypsilon.World.Views;
 
 namespace Ypsilon.World
 {
@@ -20,7 +20,6 @@ namespace Ypsilon.World
 
         private SpriteBatchExtended m_SpriteBatch;
         private VectorRenderer m_Vectors;
-        private List<AEntity> m_MouseOverEntities;
 
         private Starfield m_Stars;
 
@@ -29,7 +28,6 @@ namespace Ypsilon.World
         {
             m_SpriteBatch = ServiceRegistry.GetService<SpriteBatchExtended>();
             m_Vectors = ServiceRegistry.GetService<VectorRenderer>();
-            m_MouseOverEntities = new List<AEntity>();
 
             m_Stars = new Starfield();
             m_Stars.CreateStars(100, new Rectangle(0, 0,
@@ -39,6 +37,13 @@ namespace Ypsilon.World
 
         public override void Draw(float frameSeconds)
         {
+            int screenWidth = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth;
+            int screenHeight = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+            WorldController controller = (WorldController)Model.GetController();
+            MouseOverList mouseOver = controller.MouseOverList;
+            mouseOver.Reset();
+
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
 
             m_SpriteBatch.GraphicsDevice.Clear(new Color(16, 0, 16, 255));
@@ -48,12 +53,10 @@ namespace Ypsilon.World
             m_Stars.Draw(m_SpriteBatch);
 
             // get a list of all entities visible in the world. add them to a local list of visible entities.
-            List<AEntity> visible = Model.Entities.GetVisibleEntities(player.Position, new Vector2(
-                m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight));
+            List<AEntity> visible = Model.Entities.GetVisibleEntities(player.Position, new Vector2(screenWidth, screenHeight));
             foreach (AEntity e in visible)
             {
-                e.Draw(m_Vectors, player.Position);
+                e.Draw(m_Vectors, player.Position, mouseOver);
             }
 
             // now render using sprite batches...

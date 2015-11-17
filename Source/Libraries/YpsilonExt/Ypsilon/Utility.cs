@@ -40,11 +40,6 @@ namespace Ypsilon
             return Matrix.CreateOrthographicOffCenter(graphics.Viewport.Width / -2, graphics.Viewport.Width / 2, graphics.Viewport.Height / -2, graphics.Viewport.Height / 2, Int16.MinValue, Int16.MaxValue);
         }
 
-        public static Matrix ProjectionMatrixWorld
-        {
-            get { return Matrix.CreateOrthographicOffCenter(-640f, 640f, 360f, -360f, -2000f, 2000f); }
-        }
-
         static float _FPS = 0, _Frames = 0, _ElapsedSeconds = 0;
         public static float FPS { get { return (float)Math.Round(_FPS, 2); } }
         // Maintain an accurate count of frames per second.

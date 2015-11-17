@@ -51,7 +51,7 @@ namespace Ypsilon
             m_Input.Update(totalSeconds, frameSeconds);
 
             m_Model.Update(totalSeconds, frameSeconds);
-            m_Model.GetController().ReceiveInput(frameSeconds, m_Input);
+            m_Model.GetController().Update(frameSeconds, m_Input);
 
             base.Update(gameTime);
         }

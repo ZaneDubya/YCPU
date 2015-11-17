@@ -97,6 +97,7 @@
     <Compile Include="World\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="World\Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Core\Bootstrapper.cs" />
+    <Compile Include="World\Input\MouseOverList.cs" />
     <Compile Include="World\State\Vars.cs" />
     <Compile Include="World\Views\SpaceRenderer.cs" />
     <Compile Include="World\Views\Starfield.cs" />

@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+using Ypsilon.Core.Graphics;
 using Ypsilon.World.Data;
 using Ypsilon.World.Entities.Movement;
-using Ypsilon.Core.Graphics;
-using System;
+using Ypsilon.World.Input;
 
 namespace Ypsilon.World.Entities
 {
@@ -90,35 +89,19 @@ namespace Ypsilon.World.Entities
             m_Trail2.Update(frameSeconds, offset);
         }
 
-        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
-            if (IsVisible)
-            {
-                Vector3 translation = (Position - worldSpaceCenter).ToVector3();
-                Matrix rotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
-                Matrix world = CreateWorldMatrix(translation);
+            Vector3 translation = (Position - worldSpaceCenter).ToVector3();
 
-                m_Trail1.Draw(renderer, translation, rotation);
-                m_Trail2.Draw(renderer, translation, rotation);
+            DrawMatrix = CreateWorldMatrix(translation);
+            DrawVertices = m_ModelVertices;
+            DrawColor = IsPlayerEntity ? Color.White : Color.OrangeRed;
 
-                Vector3[] verts = new Vector3[m_ModelVertices.Length];
-                for (int i = 0; i < verts.Length; i++)
-                    verts[i] = Vector3.Transform(m_ModelVertices[i] * ViewSize, world);
+            base.Draw(renderer, worldSpaceCenter, mouseOverList);
 
-                Color color = IsPlayerEntity ? Color.White : Color.OrangeRed;
-                renderer.DrawPolygon(verts, true, color, false);
-
-                if (IsSelected)
-                {
-                    Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
-                    for (int i = 0; i < selection.Length; i++)
-                        selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, world);
-                    renderer.DrawPolygon(selection, false, Color.Yellow, false);
-                    for (int i = 0; i < selection.Length; i++)
-                        selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, world);
-                    renderer.DrawPolygon(selection, false, Color.Yellow, false);
-                }
-            }
+            Matrix childRotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
+            m_Trail1.Draw(renderer, translation, childRotation);
+            m_Trail2.Draw(renderer, translation, childRotation);
         }
 
         private Matrix CreateWorldMatrix(Vector3 translation)

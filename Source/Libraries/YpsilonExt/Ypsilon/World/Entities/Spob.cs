@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using Ypsilon.World.Data;
 using Ypsilon.Core.Graphics;
+using Ypsilon.World.Data;
 using Ypsilon.World.Entities.Movement;
-using System;
+using Ypsilon.World.Input;
 
 namespace Ypsilon.World.Entities
 {
@@ -41,16 +41,14 @@ namespace Ypsilon.World.Entities
             m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Definition.RotationPeriod;
         }
 
-        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
-            Matrix world = CreateWorldMatrix(translation);
+            DrawMatrix = CreateWorldMatrix(translation);
+            DrawVertices = m_ModelVertices;
+            DrawColor = Definition.Color;
 
-            Vector3[] verts = new Vector3[m_ModelVertices.Length];
-            for (int i = 0; i < verts.Length; i++)
-                verts[i] = Vector3.Transform(m_ModelVertices[i] * ViewSize, world);
-            
-            renderer.DrawPolygon(verts, true, Definition.Color, false);
+            base.Draw(renderer, worldSpaceCenter, mouseOverList);
         }
 
         private Matrix CreateWorldMatrix(Vector3 translation)

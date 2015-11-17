@@ -14,7 +14,7 @@ namespace Ypsilon.Core.Patterns.MVC
             Model = parent_model;
         }
 
-        public virtual void ReceiveInput(float frameSeconds, InputManager input)
+        public virtual void Update(float frameSeconds, InputManager input)
         {
 
         }

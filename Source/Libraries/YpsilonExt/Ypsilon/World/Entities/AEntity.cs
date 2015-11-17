@@ -1,7 +1,9 @@
 ﻿using System;
 using Ypsilon.Core.Graphics;
-using Ypsilon.Core;
+using Ypsilon.World.Input;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Ypsilon.World.Data;
 
 namespace Ypsilon.World.Entities
 {
@@ -63,6 +65,10 @@ namespace Ypsilon.World.Entities
             get;
         }
 
+        protected Vector3[] DrawVertices = null;
+        protected Color DrawColor = Color.White;
+        protected Matrix DrawMatrix = Matrix.Identity;
+
         public AEntity(EntityManager manager, Serial serial)
         {
             Manager = manager;
@@ -86,9 +92,25 @@ namespace Ypsilon.World.Entities
 
         }
 
-        public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
+        public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
+            Vector3[] v = new Vector3[DrawVertices.Length];
+            for (int i = 0; i < v.Length; i++)
+                v[i] = Vector3.Transform(DrawVertices[i] * ViewSize, DrawMatrix);
+            renderer.DrawPolygon(v, true, DrawColor, false);
 
+            mouseOverList.AddEntityIfMouseIsOver(this, DrawMatrix.Translation);
+
+            if (IsSelected)
+            {
+                Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
+                for (int i = 0; i < selection.Length; i++)
+                    selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, DrawMatrix);
+                renderer.DrawPolygon(selection, false, Color.Yellow, false);
+                for (int i = 0; i < selection.Length; i++)
+                    selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, DrawMatrix);
+                renderer.DrawPolygon(selection, false, Color.Yellow, false);
+            }
         }
 
         protected virtual void OnInitialize()

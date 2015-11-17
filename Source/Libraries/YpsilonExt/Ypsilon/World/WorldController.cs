@@ -7,6 +7,8 @@ using Ypsilon.Core.Patterns.MVC;
 using Microsoft.Xna.Framework;
 using Ypsilon.World.Entities;
 using Ypsilon.Core.Windows;
+using Ypsilon.World.Input;
+using Ypsilon.Core.Graphics;
 
 namespace Ypsilon.World
 {
@@ -17,14 +19,25 @@ namespace Ypsilon.World
             get { return (WorldModel)base.Model; }
         }
 
+        public MouseOverList MouseOverList
+        {
+            get;
+            private set;
+        }
+
         public WorldController(WorldModel model)
             : base(model)
         {
-
+            MouseOverList = new MouseOverList();
         }
 
-        public override void ReceiveInput(float frameSeconds, InputManager input)
+        public override void Update(float frameSeconds, InputManager input)
         {
+            if (MouseOverList.HasEntities)
+            {
+
+            }
+
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
             float acceleration = 0.0f;
             float leftrightRotation = 0.0f;
@@ -40,6 +53,8 @@ namespace Ypsilon.World
 
             player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
             player.Throttle = player.Throttle + acceleration * frameSeconds;
+
+            MouseOverList.Reset(input.MousePosition);
         }
     }
 }
