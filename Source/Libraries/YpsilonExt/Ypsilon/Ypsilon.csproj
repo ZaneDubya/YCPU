@@ -91,6 +91,7 @@
     <Compile Include="World\Entities\EntityManager.cs" />
     <Compile Include="World\Entities\Movement\PlanetRotator.cs" />
     <Compile Include="World\Entities\Particles\Trail.cs" />
+    <Compile Include="World\Entities\PropertyList.cs" />
     <Compile Include="World\Entities\Spob.cs" />
     <Compile Include="World\Entities\Ship.cs" />
     <Compile Include="World\Entities\Position3D.cs" />

@@ -26,13 +26,12 @@ namespace Ypsilon.World.Entities
             set;
         }
 
-        private bool m_IsInitialized = false;
+        public PropertyList Properties = new PropertyList();
+
         public bool IsInitialized
         {
-            get
-            {
-                return m_IsInitialized;
-            }
+            get;
+            private set;
         }
 
         public bool IsPlayerEntity
@@ -78,12 +77,12 @@ namespace Ypsilon.World.Entities
 
         public void Initialize()
         {
-            if (m_IsInitialized)
+            if (IsInitialized)
                 return;
 
             OnInitialize();
 
-            m_IsInitialized = true;
+            IsInitialized = true;
         }
 
         public virtual void Update(float frameSeconds)
