@@ -72,5 +72,11 @@ namespace Ypsilon.World.Entities
 
             }
         }
+
+        internal static float Distance(Position3D a, Position3D b)
+        {
+            float distance = Vector3.Distance(a.ToVector3(), b.ToVector3());
+            return distance;
+        }
     }
 }

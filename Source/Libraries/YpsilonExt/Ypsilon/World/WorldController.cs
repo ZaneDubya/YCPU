@@ -9,6 +9,8 @@ using Ypsilon.World.Entities;
 using Ypsilon.Core.Windows;
 using Ypsilon.World.Input;
 using Ypsilon.Core.Graphics;
+using Ypsilon.World.Entities;
+using Ypsilon.World.Entities.ShipActions;
 
 namespace Ypsilon.World
 {
@@ -53,6 +55,17 @@ namespace Ypsilon.World
                 leftrightRotation = -1f;
             if (input.IsKeyDown(WinKeys.Left) || input.IsKeyDown(WinKeys.A))
                 leftrightRotation = 1f;
+
+            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
+            {
+                AEntity selected = Model.Entities.GetEntity<AEntity>(PlayerState.SelectedSerial, false);
+                float maxDistance = player.ViewSize + selected.ViewSize;
+                if (selected != null && selected is Spob &&
+                    Position3D.Distance(player.Position, selected.Position) < maxDistance)
+                {
+                    player.Action = new MiningAction(player, selected);
+                }
+            }
 
             player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
             player.Throttle = player.Throttle + acceleration * frameSeconds;
