@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace Ypsilon.World.Data
+namespace Ypsilon.World.Crafting
 {
     /// <summary>
     /// Planet definition keeps all essential planet variables organized.<para />
@@ -22,7 +22,6 @@ namespace Ypsilon.World.Data
         public float RotationPeriod = 60f;
 
         public Color Color;
-
 
         public float VertexRandomizationFactor;
 

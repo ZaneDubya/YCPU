@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World.Data;
+using Ypsilon.World.Crafting;
 using Ypsilon.World.Entities.Movement;
 using Ypsilon.World.Input;
 
@@ -20,7 +20,7 @@ namespace Ypsilon.World.Entities
         {
             get
             {
-                return Definition.Size / 2f;
+                return Definition.Size;
             }
         }
 
@@ -63,5 +63,14 @@ namespace Ypsilon.World.Entities
 
             return Matrix.CreateWorld(translation, forward, up);
         }
+
+        public float ExtractOre(float frameSeconds)
+        {
+            float amount = (ResourceOre > frameSeconds) ? frameSeconds : ResourceOre;
+            ResourceOre -= amount;
+            return amount;
+        }
+
+        public float ResourceOre = 100f;
     }
 }

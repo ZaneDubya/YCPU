@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace Ypsilon.World.Data
+namespace Ypsilon.World.Crafting
 {
     class Vertices
     {

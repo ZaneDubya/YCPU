@@ -35,6 +35,10 @@ namespace Ypsilon.World
 
         public override void Update(float frameSeconds, InputManager input)
         {
+            // get the player object.
+            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+
+            // Left-down to select.
             if (input.HandleMouseEvent(MouseEvent.Down, MouseButton.Left))
             {
                 if (MouseOverList.HasEntities)
@@ -43,10 +47,30 @@ namespace Ypsilon.World
                 }
             }
 
-            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            // M is for MINING
+            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
+            {
+                if (player.Action is MiningAction)
+                {
+                    // stop mining
+                    player.Action = new NoAction(player);
+                }
+                else
+                {
+                    // start mining
+                    AEntity selected = Model.Entities.GetEntity<AEntity>(PlayerState.SelectedSerial, false);
+                    float maxDistance = player.ViewSize + selected.ViewSize;
+
+                    if (selected != null && selected is Spob && Position3D.Distance(player.Position, selected.Position) < maxDistance)
+                    {
+                        player.Action = new MiningAction(player, selected);
+                    }
+                }
+            }
+
+            // Move the player object with WASD.
             float acceleration = 0.0f;
             float leftrightRotation = 0.0f;
-
             if (input.IsKeyDown(WinKeys.Up) || input.IsKeyDown(WinKeys.W))
                 acceleration += 1f;
             if (input.IsKeyDown(WinKeys.Down) || input.IsKeyDown(WinKeys.S))
@@ -55,21 +79,10 @@ namespace Ypsilon.World
                 leftrightRotation = -1f;
             if (input.IsKeyDown(WinKeys.Left) || input.IsKeyDown(WinKeys.A))
                 leftrightRotation = 1f;
-
-            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
-            {
-                AEntity selected = Model.Entities.GetEntity<AEntity>(PlayerState.SelectedSerial, false);
-                float maxDistance = player.ViewSize + selected.ViewSize;
-                if (selected != null && selected is Spob &&
-                    Position3D.Distance(player.Position, selected.Position) < maxDistance)
-                {
-                    player.Action = new MiningAction(player, selected);
-                }
-            }
-
             player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
             player.Throttle = player.Throttle + acceleration * frameSeconds;
 
+            // update the mouse over list's mouse position.
             MouseOverList.ScreenMousePosition = new Vector3(input.MousePosition.X, input.MousePosition.Y, 0);
         }
     }

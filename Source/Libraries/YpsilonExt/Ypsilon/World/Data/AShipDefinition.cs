@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.World.Data
+namespace Ypsilon.World.Crafting
 {
     /// <summary>
     /// Ship definition keeps all essential ship variables organized.
@@ -59,6 +59,6 @@ namespace Ypsilon.World.Data
         public int DefaultEnergyCapacity = 500;
 
 
-        public float DisplaySize = 15f;
+        public float DisplaySize = 7.5f;
     }
 }

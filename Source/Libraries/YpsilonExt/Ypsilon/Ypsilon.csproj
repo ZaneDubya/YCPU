@@ -82,9 +82,12 @@
     <Compile Include="Core\Windows\WinMouseButtons.cs" />
     <Compile Include="Core\Windows\WndProc.cs" />
     <Compile Include="ServiceRegistry.cs" />
+    <Compile Include="Unused\Crafting\Materials\AMineral.cs" />
+    <Compile Include="Unused\Crafting\Materials\Minerals\Metal.cs" />
     <Compile Include="World\Data\ASpobDefinition.cs" />
     <Compile Include="World\Data\AShipDefinition.cs" />
     <Compile Include="World\Data\Definitions.cs" />
+    <Compile Include="Unused\Crafting\AMaterial.cs" />
     <Compile Include="World\Data\Textures.cs" />
     <Compile Include="World\Data\Vertices.cs" />
     <Compile Include="World\Entities\AEntity.cs" />
@@ -123,7 +126,11 @@
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Unused\Crafting\Materials\Chemicals\" />
+    <Folder Include="Unused\Crafting\Materials\Energies\" />
+    <Folder Include="Unused\Crafting\Materials\Organic\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--
