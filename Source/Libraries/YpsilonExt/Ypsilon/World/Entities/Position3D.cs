@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Ypsilon.Core;
+using System;
 
 namespace Ypsilon.World.Entities
 {
@@ -21,6 +23,25 @@ namespace Ypsilon.World.Entities
             X += vector.X;
             Y += vector.Y;
             Z += vector.Z;
+        }
+
+        public bool Intersects(RectangleF rect, float radius)
+        {
+            Vector2 circleDistance;
+            circleDistance.X = (float)Math.Abs(X - (rect.X + rect.Width / 2f));
+            circleDistance.Y = (float)Math.Abs(Y - (rect.Y + rect.Height / 2f));
+
+            if (circleDistance.X > (rect.Width / 2f + radius)) { return false; }
+            if (circleDistance.Y > (rect.Height / 2f + radius)) { return false; }
+
+            if (circleDistance.X <= (rect.Width / 2f)) { return true; }
+            if (circleDistance.Y <= (rect.Height / 2f)) { return true; }
+
+            float cornerDistX = (circleDistance.X - rect.Width / 2f);
+            float cornerDistY = (circleDistance.Y - rect.Height / 2f);
+            float cornerDistance_sq = cornerDistX * cornerDistX + cornerDistY * cornerDistY;
+
+            return (cornerDistance_sq <= (radius * radius));
         }
 
         public Vector3 ToVector3()

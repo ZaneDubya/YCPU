@@ -72,6 +72,7 @@
     <Compile Include="Core\Patterns\MVC\AController.cs" />
     <Compile Include="Core\Patterns\MVC\AModel.cs" />
     <Compile Include="Core\Patterns\MVC\AView.cs" />
+    <Compile Include="Core\RectangleF.cs" />
     <Compile Include="Core\Windows\CultureHandler.cs" />
     <Compile Include="Core\Windows\Message.cs" />
     <Compile Include="Core\Windows\MessageHook.cs" />

@@ -1,5 +1,7 @@
 ﻿using System;
 using Ypsilon.Core.Graphics;
+using Ypsilon.Core;
+using Microsoft.Xna.Framework;
 
 namespace Ypsilon.World.Entities
 {

@@ -10,6 +10,8 @@
 #region usings
 using System.Collections.Generic;
 using Ypsilon.Core.Graphics;
+using Microsoft.Xna.Framework;
+using Ypsilon.Core;
 #endregion
 
 namespace Ypsilon.World.Entities
@@ -93,14 +95,6 @@ namespace Ypsilon.World.Entities
             m_Entities_Queued.Clear();
         }
 
-        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter)
-        {
-            foreach (KeyValuePair<int, AEntity> entity in m_Entities)
-            {
-                entity.Value.Draw(renderer, worldSpaceCenter);
-            }
-        }
-
         public T GetEntity<T>(Serial serial, bool create) where T : AEntity
         {
             T entity;
@@ -161,6 +155,34 @@ namespace Ypsilon.World.Entities
             {
                 m_Entities[serial].Dispose();
             }
+        }
+
+        // ======================================================================
+        // Drawable entities 
+        // ======================================================================
+
+        private List<AEntity> m_EntitiesOnScreen;
+
+        public List<AEntity> GetVisibleEntities(Position3D center, Vector2 dimensions)
+        {
+            RectangleF bounds = new RectangleF(
+                (float)center.X - dimensions.X / 2f,
+                (float)center.Y - dimensions.Y / 2f,
+                dimensions.X,
+                dimensions.Y);
+            if (m_EntitiesOnScreen == null)
+                m_EntitiesOnScreen = new List<AEntity>();
+            m_EntitiesOnScreen.Clear();
+
+            foreach (KeyValuePair<int, AEntity> entity in m_Entities)
+            {
+                AEntity e = entity.Value;
+                if (!e.IsDisposed && e.IsInitialized && e.IsVisible && e.Position.Intersects(bounds, e.ViewSize))
+                {
+                    m_EntitiesOnScreen.Add(e);
+                }
+            }
+            return m_EntitiesOnScreen;
         }
     }
 }
