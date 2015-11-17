@@ -62,29 +62,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DpiManager.cs" />
-    <Compile Include="Core\Input\InputEvent.cs" />
-    <Compile Include="Core\Input\InputEventKeyboard.cs" />
-    <Compile Include="Core\Input\InputEventMouse.cs" />
-    <Compile Include="Core\Input\InputManager.cs" />
-    <Compile Include="Core\Input\KeyboardEvent.cs" />
-    <Compile Include="Core\Input\MouseButton.cs" />
-    <Compile Include="Core\Input\MouseEvent.cs" />
     <Compile Include="Core\Patterns\MVC\AController.cs" />
     <Compile Include="Core\Patterns\MVC\AModel.cs" />
     <Compile Include="Core\Patterns\MVC\AView.cs" />
     <Compile Include="Core\RectangleF.cs" />
-    <Compile Include="Core\Windows\CultureHandler.cs" />
-    <Compile Include="Core\Windows\Message.cs" />
-    <Compile Include="Core\Windows\MessageHook.cs" />
-    <Compile Include="Core\Windows\NativeConstants.cs" />
-    <Compile Include="Core\Windows\NativeMethods.cs" />
-    <Compile Include="Core\Windows\WinKeys.cs" />
-    <Compile Include="Core\Windows\WinMouseButtons.cs" />
-    <Compile Include="Core\Windows\WndProc.cs" />
     <Compile Include="ServiceRegistry.cs" />
+    <Compile Include="Unused\Crafting\Materials\AMineral.cs" />
+    <Compile Include="Unused\Crafting\Materials\Minerals\Metal.cs" />
     <Compile Include="World\Data\ASpobDefinition.cs" />
     <Compile Include="World\Data\AShipDefinition.cs" />
     <Compile Include="World\Data\Definitions.cs" />
+    <Compile Include="Unused\Crafting\AMaterial.cs" />
     <Compile Include="World\Data\Textures.cs" />
     <Compile Include="World\Data\Vertices.cs" />
     <Compile Include="World\Entities\AEntity.cs" />
@@ -92,9 +80,11 @@
     <Compile Include="World\Entities\Movement\PlanetRotator.cs" />
     <Compile Include="World\Entities\Particles\Trail.cs" />
     <Compile Include="World\Entities\PropertyList.cs" />
+    <Compile Include="World\Entities\Pers.cs" />
+    <Compile Include="World\Entities\ShipActions\LandedAction.cs" />
     <Compile Include="World\Entities\Spob.cs" />
     <Compile Include="World\Entities\Ship.cs" />
-    <Compile Include="World\Entities\Position3D.cs" />
+    <Compile Include="World\Position3D.cs" />
     <Compile Include="World\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="World\Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Core\Bootstrapper.cs" />
@@ -119,12 +109,20 @@
     <Compile Include="World\WorldView.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\YpsilonInput\YpsilonInput.csproj">
+      <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
+      <Name>YpsilonInput</Name>
+    </ProjectReference>
     <ProjectReference Include="..\YpsilonContent\YpsilonContent.contentproj">
       <Name>YpsilonContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Unused\Crafting\Materials\Chemicals\" />
+    <Folder Include="Unused\Crafting\Materials\Energies\" />
+    <Folder Include="Unused\Crafting\Materials\Organic\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--
