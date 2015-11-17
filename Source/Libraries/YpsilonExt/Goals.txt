@@ -6,7 +6,7 @@
     Add asteroids, two different sizes. DONE.
     Asteroids rotate, slowly. DONE
     Add selection reticle. DONE.
-    Add ability to 'select' entities.
+    Add ability to 'select' entities. DONE!
     Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed.
     Track resources in ship hold.
     Add ability to land on planet.
