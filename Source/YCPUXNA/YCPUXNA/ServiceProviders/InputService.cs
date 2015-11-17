@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Ypsilon;
-using Microsoft.Xna.Framework;
-using XnaInput;
-using Microsoft.Xna.Framework.Input;
-using YCPUXNA.ServiceProviders.Input;
+using Ypsilon.Core.Input;
+using Ypsilon.Core.Windows;
 
 namespace YCPUXNA.ServiceProviders
 {
@@ -32,18 +30,18 @@ namespace YCPUXNA.ServiceProviders
                     InputEventKeyboard e = m_EventsThisFrame[i] as InputEventKeyboard;
                     m_EventsThisFrame.RemoveAt(i);
 
-                    ushort bitsKeycode = (byte)e.Key;
+                    ushort bitsKeycode = (byte)e.KeyCode;
                     ushort bitsEvent = 0;
 
                     switch (e.EventType)
                     {
-                        case KeyboardEventType.Up:
+                        case KeyboardEvent.Up:
                             bitsEvent = EventUp;
                             break;
-                        case KeyboardEventType.Down:
+                        case KeyboardEvent.Down:
                             bitsEvent = EventDown;
                             break;
-                        case KeyboardEventType.Press:
+                        case KeyboardEvent.Press:
                             bitsEvent = EventPress;
                             break;
                     }
@@ -68,43 +66,28 @@ namespace YCPUXNA.ServiceProviders
 
         public InputService(Game game)
         {
-            m_InputManager = new InputManager(game);
+            m_InputManager = new InputManager(game.Window.Handle);
             m_EventsThisFrame = new List<InputEvent>();
-            m_InputManager.Keyboard.Update();
+            m_InputManager.Update(0, 0);
         }
 
-        public void Update()
+        public void Update(float totalSeconds, float frameSeconds)
         {
             m_EventsThisFrame.Clear();
 
-            m_InputManager.Keyboard.Update();
+            m_InputManager.Update(totalSeconds, frameSeconds);
 
-            Keys[] previous = m_InputManager.Keyboard.PreviousState.GetPressedKeys();
-            Keys[] current = m_InputManager.Keyboard.State.GetPressedKeys();
+            bool shift = m_InputManager.IsShiftDown;
+            bool ctrl = m_InputManager.IsCtrlDown;
+            bool alt = m_InputManager.IsAltDown;
 
-            bool shift = m_InputManager.Keyboard.Down(Keys.LeftShift) || m_InputManager.Keyboard.Down(Keys.RightShift);
-            bool ctrl = m_InputManager.Keyboard.Down(Keys.LeftControl) || m_InputManager.Keyboard.Down(Keys.RightControl);
-            bool alt = m_InputManager.Keyboard.Down(Keys.LeftAlt) || m_InputManager.Keyboard.Down(Keys.RightAlt);
-
-            foreach (Keys key in previous)
+            foreach (InputEventKeyboard e in m_InputManager.GetKeyboardEvents())
             {
-                if (!current.Contains(key))
-                {
-                    m_EventsThisFrame.Add(new InputEventKeyboard(KeyboardEventType.Up, key, shift, ctrl, alt));
-                }
-            }
-
-            foreach (Keys key in current)
-            {
-                if (!previous.Contains(key))
-                {
-                    m_EventsThisFrame.Add(new InputEventKeyboard(KeyboardEventType.Down, key, shift, ctrl, alt));
-                    m_EventsThisFrame.Add(new InputEventKeyboard(KeyboardEventType.Press, key, shift, ctrl, alt));
-                }
+                m_EventsThisFrame.Add(e);
             }
         }
 
-        public bool HandleKeyboardEvent(KeyboardEventType type, Keys key, bool shift, bool alt, bool ctrl)
+        public bool HandleKeyboardEvent(KeyboardEvent type, WinKeys key, bool shift, bool alt, bool ctrl)
         {
             foreach (InputEvent e in m_EventsThisFrame)
             {
@@ -112,7 +95,7 @@ namespace YCPUXNA.ServiceProviders
                 {
                     InputEventKeyboard ek = (InputEventKeyboard)e;
                     if (ek.EventType == type &&
-                       ek.Key == key &&
+                       ek.KeyCode == key &&
                        ek.Shift == shift &&
                        ek.Alt == alt &&
                        ek.Control == ctrl)

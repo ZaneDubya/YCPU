@@ -96,6 +96,18 @@ namespace Ypsilon.Core.Input
             }
         }
 
+        public bool IsAltDown
+        {
+            get
+            {
+                if (NativeMethods.GetKeyState((int)WinKeys.Alt) < 0)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
         public int MouseStationarySeconds
         {
             get { return (int)m_mouseStationarySeconds; }

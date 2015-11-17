@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using YCPUXNA.Display;
 using YCPUXNA.ServiceProviders;
-using YCPUXNA.ServiceProviders.Input;
 using Ypsilon;
 using Ypsilon.Hardware;
+using Ypsilon.Core.Input;
+using Ypsilon.Core.Windows;
 
 namespace YCPUXNA
 {
@@ -64,7 +65,9 @@ namespace YCPUXNA
 
         protected override void Update(GameTime gameTime)
         {
-            m_InputProvider.Update();
+            m_InputProvider.Update(
+                (float)gameTime.TotalGameTime.TotalSeconds,
+                (float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
 
@@ -116,27 +119,27 @@ namespace YCPUXNA
                 UpdateConsole();
             }
 
-            if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.Escape, false, false, true))
+            if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Escape, false, false, true))
             {
                 Exit();
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.R, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.R, false, false, true))
             {
                 m_Emulator.StartCPU();
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.B, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.B, false, false, true))
             {
                 m_Emulator.StopCPU();
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.N, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.N, false, false, true))
             {
                 m_Emulator.RunOneInstruction();
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.M, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, true))
             {
                 m_Emulator.RunCycles(100);
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.L, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
 #if DEBUG
                 m_Emulator.LoadBinaryToCPU("../../Tests/rain.asm.bin", 0x0000);
@@ -144,11 +147,11 @@ namespace YCPUXNA
                 m_Emulator.LoadBinaryToCPU("../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
 #endif
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.T, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
             {
                 m_Emulator.CPU.Interrupt_Reset();
             }
-            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.S, false, false, true))
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.S, false, false, true))
             {
                 m_DoScreenshot = true;
             }

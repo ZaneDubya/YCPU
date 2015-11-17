@@ -82,14 +82,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceProviders\DeviceRenderService.cs" />
     <Compile Include="ServiceProviders\InputService.cs" />
-    <Compile Include="ServiceProviders\Input\InputEvent.cs" />
-    <Compile Include="ServiceProviders\Input\InputEventKeyboard.cs" />
     <Compile Include="ServiceProviders\YTexture.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\InputLib\InputLib.csproj">
-      <Project>{8d1e41d4-26e5-445b-ac51-270a60760a70}</Project>
-      <Name>InputLib</Name>
+    <ProjectReference Include="..\..\Libraries\YpsilonInput\YpsilonInput.csproj">
+      <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
+      <Name>YpsilonInput</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Libraries\YpsilonLib\YpsilonLib.csproj">
       <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
