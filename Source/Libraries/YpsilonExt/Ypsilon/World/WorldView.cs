@@ -86,8 +86,8 @@ namespace Ypsilon.World
             int dy = (int)(height * 0.05);
             int z = 1999;
 
-            Color notActionSafeColor = new Color(255, 0, 0, 127); // Red, 50% opacity
-            Color notTitleSafeColor = new Color(255, 255, 0, 127); // Yellow, 50% opacity
+            Color notActionSafeColor = new Color(127, 0, 0, 127); // Red, 50% opacity
+            Color notTitleSafeColor = new Color(127, 127, 0, 127); // Yellow, 50% opacity
 
             m_Vectors.DrawPolygon(new Vector3[4] { 
                 new Vector3(dx, dy, z), 

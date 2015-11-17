@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World.Input;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.World.Data;
+using Ypsilon.World.Input;
 
 namespace Ypsilon.World.Entities
 {
@@ -40,7 +39,7 @@ namespace Ypsilon.World.Entities
         {
             get
             {
-                return Serial == State.Vars.PlayerSerial;
+                return Serial == Entities.PlayerState.PlayerSerial;
             }
         }
 
@@ -48,7 +47,7 @@ namespace Ypsilon.World.Entities
         {
             get
             {
-                return Serial == State.Vars.SelectedSerial;
+                return Serial == Entities.PlayerState.SelectedSerial;
             }
         }
 

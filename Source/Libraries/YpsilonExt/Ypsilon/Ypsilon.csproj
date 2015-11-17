@@ -98,7 +98,10 @@
     <Compile Include="World\Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Core\Bootstrapper.cs" />
     <Compile Include="World\Input\MouseOverList.cs" />
-    <Compile Include="World\State\Vars.cs" />
+    <Compile Include="World\Entities\ShipActions\AAction.cs" />
+    <Compile Include="World\Entities\ShipActions\MiningAction.cs" />
+    <Compile Include="World\Entities\ShipActions\NoAction.cs" />
+    <Compile Include="World\State\PlayerState.cs" />
     <Compile Include="World\Views\SpaceRenderer.cs" />
     <Compile Include="World\Views\Starfield.cs" />
     <Compile Include="Core\Graphics\PreTransformedQuad.cs" />

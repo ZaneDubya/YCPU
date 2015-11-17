@@ -3,12 +3,14 @@ using Ypsilon.Core.Graphics;
 using Ypsilon.World.Data;
 using Ypsilon.World.Entities.Movement;
 using Ypsilon.World.Input;
+using Ypsilon.World.Entities.ShipActions;
 
 namespace Ypsilon.World.Entities
 {
     class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();
+        public AAction Action = null;
 
         private ShipRotator2D m_Rotator;
         private Vector3[] m_ModelVertices;
@@ -87,6 +89,9 @@ namespace Ypsilon.World.Entities
 
             m_Trail1.Update(frameSeconds, offset);
             m_Trail2.Update(frameSeconds, offset);
+
+            if (Action != null)
+                Action.Update(frameSeconds);
         }
 
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)

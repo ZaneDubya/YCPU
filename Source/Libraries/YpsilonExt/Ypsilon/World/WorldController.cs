@@ -37,7 +37,7 @@ namespace Ypsilon.World
             {
                 if (MouseOverList.HasEntities)
                 {
-                    State.Vars.SelectedSerial = MouseOverList.GetNextSelectableEntity(State.Vars.SelectedSerial).Serial;
+                    Entities.PlayerState.SelectedSerial = MouseOverList.GetNextSelectableEntity(Entities.PlayerState.SelectedSerial).Serial;
                 }
             }
 

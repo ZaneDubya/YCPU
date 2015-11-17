@@ -22,7 +22,7 @@ namespace Ypsilon.World
 
             // create player
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-            World.State.Vars.PlayerSerial = player.Serial;
+            World.Entities.PlayerState.PlayerSerial = player.Serial;
             // create other dudes.
             for (int i = 0; i < 100; i++)
             {
