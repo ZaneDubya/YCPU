@@ -1,7 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System.Linq;
 using Ypsilon;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
@@ -52,6 +50,7 @@ namespace YCPUXNA.ServiceProviders
                         ((e.Shift) ? ShiftDown : 0) |
                         ((e.Alt) ? AltDown : 0) |
                         ((e.Control) ? CtrlDown : 0));
+
                     return true;
                 }
             }
