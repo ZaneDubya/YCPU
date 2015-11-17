@@ -29,7 +29,7 @@ namespace Ypsilon.World.Views
                     new Vector2(
                         (float)Utility.Random_GetNonpersistantDouble() * bounds.Width, 
                         (float)Utility.Random_GetNonpersistantDouble() * bounds.Height),
-                    (float)Utility.Random_GetNonpersistantDouble() * 3 + 1, 
+                    (float)Utility.Random_GetNonpersistantDouble() / 4 + 0.25f, 
                     new Color(
                         (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
                         (float)Utility.Random_GetNonpersistantDouble() / 2 + 0.5f,
