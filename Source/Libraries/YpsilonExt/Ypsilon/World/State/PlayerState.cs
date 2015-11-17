@@ -10,5 +10,6 @@ namespace Ypsilon.World.Entities
     {
         public static Serial PlayerSerial = Serial.Null;
         public static Serial SelectedSerial = Serial.Null;
+        public static float PlayerCredits = 0;
     }
 }

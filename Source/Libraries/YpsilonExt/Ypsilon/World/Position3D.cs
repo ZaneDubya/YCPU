@@ -1,9 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Ypsilon.Core;
-using System;
 
-namespace Ypsilon.World.Entities
+namespace Ypsilon.World
 {
     struct Position3D
     {

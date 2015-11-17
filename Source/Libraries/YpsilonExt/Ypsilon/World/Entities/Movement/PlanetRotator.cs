@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Ypsilon.World.Data;
+using Ypsilon.World.Crafting;
 
 namespace Ypsilon.World.Entities.Movement
 {
@@ -10,7 +10,7 @@ namespace Ypsilon.World.Entities.Movement
     class PlanetRotator
     {
         private ASpobDefinition m_Definition;
-        private Vector3 m_AxialTilt;
+        // private Vector3 m_AxialTilt;
         private float m_Rotation; // about the axis.
 
         /// <summary>

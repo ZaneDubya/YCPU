@@ -1,12 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World.Data;
+using Ypsilon.World.Crafting;
 using Ypsilon.World.Entities.Movement;
 using Ypsilon.World.Input;
 using Ypsilon.World.Entities.ShipActions;
 
 namespace Ypsilon.World.Entities
 {
+    /// <summary>
+    /// A starship.
+    /// </summary>
     class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();
@@ -62,9 +65,11 @@ namespace Ypsilon.World.Entities
         {
             get
             {
-                return Definition.DisplaySize / 2f;
+                return Definition.DisplaySize;
             }
         }
+
+        public float ResourceOre = 0f;
 
         public Ship(EntityManager manager, Serial serial)
             : base(manager, serial)

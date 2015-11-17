@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Asm.cs" />
+    <Compile Include="Extensions\GraphicsDeviceExtensions.cs" />
     <Compile Include="StdConsole.cs" />
     <Compile Include="Display\Curses.cs" />
     <Compile Include="Dsm.cs" />
@@ -88,7 +89,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\InputLib\InputLib.csproj">
       <Project>{8d1e41d4-26e5-445b-ac51-270a60760a70}</Project>
-      <Name>XnaInput151</Name>
+      <Name>InputLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Libraries\YpsilonLib\YpsilonLib.csproj">
       <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
@@ -118,7 +119,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\BIOS.png">
+    <Content Include="Content\BIOS8x14.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\BIOS8x8.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

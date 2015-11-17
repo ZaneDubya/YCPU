@@ -1,21 +1,23 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
+using System.IO;
+using YCPUXNA.Display;
 using YCPUXNA.ServiceProviders;
+using YCPUXNA.ServiceProviders.Input;
 using Ypsilon;
 using Ypsilon.Hardware;
-using YCPUXNA.ServiceProviders.Input;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using YCPUXNA.Display;
 
 namespace YCPUXNA
 {
     class Emu : Game
     {
         private const int c_ConsoleWidth = 128;
-        private const int c_ConsoleHeight = 64;
+        private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
+
+        private const string c_CursesFont = @"Content\BIOS8x14.png";
 
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatch m_SpriteBatch;
@@ -28,15 +30,11 @@ namespace YCPUXNA
         private Curses m_Curses;
 
         private double m_LastConsoleUpdate = 0;
+        private bool m_DoScreenshot = false;
 
         public Emu()
         {
             m_Graphics = new GraphicsDeviceManager(this);
-            m_Graphics.IsFullScreen = false;
-            m_Graphics.PreferredBackBufferWidth = c_ConsoleWidth * 8;
-            m_Graphics.PreferredBackBufferHeight = c_ConsoleHeight * 8;
-
-            this.IsMouseVisible = true;
         }
 
         protected override void Initialize()
@@ -49,7 +47,14 @@ namespace YCPUXNA
             m_DeviceRenderer = (DeviceRenderService)ServiceRegistry.Register<IDeviceRenderer>(new DeviceRenderService(m_SpriteBatch));
 
             m_Emulator = new Emulator();
-            m_Curses = new Display.Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight);
+            m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont);
+            
+            m_Graphics.IsFullScreen = false;
+            m_Graphics.PreferredBackBufferWidth = c_ConsoleWidth * m_Curses.CharWidth;
+            m_Graphics.PreferredBackBufferHeight = c_ConsoleHeight * m_Curses.CharHeight;
+            m_Graphics.ApplyChanges();
+
+            this.IsMouseVisible = true;
         }
 
         protected override void UnloadContent()
@@ -68,6 +73,11 @@ namespace YCPUXNA
 
         protected override void Draw(GameTime gameTime)
         {
+            if (m_DoScreenshot)
+            {
+                GraphicsDevice.PrepareScreenShot();
+            }
+
             // render the devices
             if (m_DeviceTextures == null)
                 m_DeviceTextures = new List<ITexture>();
@@ -84,11 +94,17 @@ namespace YCPUXNA
             for (int i = 0; i < m_DeviceTextures.Count; i++)
             {
                 m_SpriteBatch.Draw((m_DeviceTextures[i] as YTexture).Texture,
-                    new Rectangle(80 * 8, 1 * 8, m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
+                    new Rectangle(82 * (m_Curses.CharWidth + 1), 2 * m_Curses.CharHeight, m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
             }
 
             m_SpriteBatch.End();
             GraphicsDevice.Textures[0] = null;
+
+            if (m_DoScreenshot)
+            {
+                GraphicsDevice.SaveScreenshot();
+                m_DoScreenshot = false;
+            }
         }
 
         private void UpdateEmulator(double frameMS)
@@ -102,7 +118,7 @@ namespace YCPUXNA
 
             if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.Escape, false, false, true))
             {
-                this.Exit();
+                Exit();
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.R, false, false, true))
             {
@@ -131,6 +147,10 @@ namespace YCPUXNA
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.T, false, false, true))
             {
                 m_Emulator.CPU.Interrupt_Reset();
+            }
+            else if (m_InputProvider.HandleKeyboardEvent(KeyboardEventType.Press, Keys.S, false, false, true))
+            {
+                m_DoScreenshot = true;
             }
 
             m_Emulator.Update(frameMS);

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World.Data;
+using Ypsilon.World.Crafting;
 using Ypsilon.World.Input;
 
 namespace Ypsilon.World.Entities

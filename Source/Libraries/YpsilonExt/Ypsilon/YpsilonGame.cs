@@ -37,7 +37,7 @@ namespace Ypsilon
 
             ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
-            World.Data.Textures.Initialize(GraphicsDevice);
+            World.Crafting.Textures.Initialize(GraphicsDevice);
             m_Model = new World.WorldModel();
 
             base.Initialize();

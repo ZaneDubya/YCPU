@@ -9,7 +9,9 @@ namespace YCPUXNA.Display
     {
         private Texture2D m_Texture;
         private byte[] m_CharBuffer; // buffer of screen contents
-        private int m_Width, m_Height;
+
+        public int ScreenWidth, ScreenHeight;
+        public int CharWidth, CharHeight;
 
         /*public Color[] Colors = new Color[16] {
             new Color(0, 0, 0),
@@ -36,12 +38,15 @@ namespace YCPUXNA.Display
         /// <param name="graphics"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public Curses(GraphicsDevice graphics, int width, int height)
+        public Curses(GraphicsDevice graphics, int width, int height, string font)
         {
-            m_Texture = Texture2D.FromStream(graphics, new FileStream(@"Content\BIOS.png", FileMode.Open));
-            m_Width = width;
-            m_Height = height;
-            m_CharBuffer = new byte[m_Width * m_Height];
+            ScreenWidth = width;
+            ScreenHeight = height;
+            m_CharBuffer = new byte[ScreenWidth * ScreenHeight];
+
+            m_Texture = Texture2D.FromStream(graphics, new FileStream(font, FileMode.Open));
+            CharWidth = m_Texture.Width / 16;
+            CharHeight = m_Texture.Height / 16;
         }
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace YCPUXNA.Display
 
         public void WriteString(int x, int y, string s)
         {
-            int begin = y * m_Width + x;
+            int begin = y * ScreenWidth + x;
             if (begin >= m_CharBuffer.Length)
                 return;
             if (begin + s.Length >= m_CharBuffer.Length)
@@ -67,12 +72,14 @@ namespace YCPUXNA.Display
 
         public void Render(SpriteBatch spriteBatch)
         {
-            for (int y = 0; y < m_Height; y++)
+            for (int y = 0; y < ScreenHeight; y++)
             {
-                for (int x = 0; x < m_Width; x++)
+                for (int x = 0; x < ScreenWidth; x++)
                 {
-                    byte ch = m_CharBuffer[x + y * m_Width];
-                    spriteBatch.Draw(m_Texture, new Rectangle(x * 8, y * 8, 8, 8), new Rectangle((ch % 16) * 8, (ch / 16) * 8, 8, 8), Color.LightGray);
+                    byte ch = m_CharBuffer[x + y * ScreenWidth];
+                    spriteBatch.Draw(m_Texture, 
+                        new Rectangle(x * (CharWidth + 1), y * CharHeight, CharWidth, CharHeight), 
+                        new Rectangle((ch % 16) * CharWidth, (ch / 16) * CharHeight, CharWidth, CharHeight), Color.LightGray);
                 }
             }
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.World.Entities;
-using Ypsilon.World.Data;
+using Ypsilon.World.Crafting;
 
 namespace Ypsilon.World
 {
