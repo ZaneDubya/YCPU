@@ -49,6 +49,14 @@ namespace Ypsilon.World.Entities
             }
         }
 
+        public override float ViewSize
+        {
+            get
+            {
+                return Definition.DisplaySize / 2f;
+            }
+        }
+
         public Ship(EntityManager manager, Serial serial)
             : base(manager, serial)
         {
@@ -60,8 +68,8 @@ namespace Ypsilon.World.Entities
             m_ModelVertices = Vertices.SimpleArrow;
             m_Rotator = new ShipRotator2D(Definition);
 
-            m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), Definition.DisplaySize);
-            m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), Definition.DisplaySize);
+            m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), ViewSize);
+            m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), ViewSize);
         }
 
         public override void Update(float frameSeconds)
@@ -106,7 +114,7 @@ namespace Ypsilon.World.Entities
 
                 Vector3[] verts = new Vector3[m_ModelVertices.Length];
                 for (int i = 0; i < verts.Length; i++)
-                    verts[i] = Vector3.Transform(m_ModelVertices[i] * Definition.DisplaySize, world);
+                    verts[i] = Vector3.Transform(m_ModelVertices[i] * ViewSize, world);
 
                 Color color = IsPlayerEntity ? Color.White : Color.OrangeRed;
                 renderer.DrawPolygon(verts, true, color, false);
@@ -115,10 +123,10 @@ namespace Ypsilon.World.Entities
                 {
                     Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
                     for (int i = 0; i < selection.Length; i++)
-                        selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * Definition.DisplaySize, world);
+                        selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, world);
                     renderer.DrawPolygon(selection, false, Color.Yellow, false);
                     for (int i = 0; i < selection.Length; i++)
-                        selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * Definition.DisplaySize, world);
+                        selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, world);
                     renderer.DrawPolygon(selection, false, Color.Yellow, false);
                 }
             }

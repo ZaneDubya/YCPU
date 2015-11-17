@@ -59,6 +59,6 @@ namespace Ypsilon.World.Data
         public int DefaultEnergyCapacity = 500;
 
 
-        public float DisplaySize = 10f;
+        public float DisplaySize = 15f;
     }
 }

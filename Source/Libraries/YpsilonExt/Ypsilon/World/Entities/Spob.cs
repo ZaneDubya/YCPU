@@ -2,6 +2,7 @@
 using Ypsilon.World.Data;
 using Ypsilon.Core.Graphics;
 using Ypsilon.World.Entities.Movement;
+using System;
 
 namespace Ypsilon.World.Entities
 {
@@ -14,6 +15,14 @@ namespace Ypsilon.World.Entities
 
         private PlanetRotator m_Rotator;
         private Vector3[] m_ModelVertices;
+
+        public override float ViewSize
+        {
+            get
+            {
+                return Definition.Size / 2f;
+            }
+        }
 
         public Spob(EntityManager manager, Serial serial)
             : base(manager, serial)
@@ -39,7 +48,7 @@ namespace Ypsilon.World.Entities
 
             Vector3[] verts = new Vector3[m_ModelVertices.Length];
             for (int i = 0; i < verts.Length; i++)
-                verts[i] = Vector3.Transform(m_ModelVertices[i] * Definition.Size, world);
+                verts[i] = Vector3.Transform(m_ModelVertices[i] * ViewSize, world);
             
             renderer.DrawPolygon(verts, true, Definition.Color, false);
         }

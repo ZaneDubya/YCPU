@@ -3,7 +3,7 @@ using Ypsilon.Core.Graphics;
 
 namespace Ypsilon.World.Entities
 {
-    class AEntity : IDisposable
+    abstract class AEntity : IDisposable
     {
         protected EntityManager Manager
         {
@@ -54,6 +54,11 @@ namespace Ypsilon.World.Entities
             {
                 return true;
             }
+        }
+
+        public abstract float ViewSize
+        {
+            get;
         }
 
         public AEntity(EntityManager manager, Serial serial)
