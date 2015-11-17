@@ -35,10 +35,22 @@ namespace Ypsilon.World.Input
             }
         }
 
-        public AEntity GetFirstEntity()
+        public AEntity GetNextSelectableEntity(Serial currentSelectedSerial)
         {
             if (m_Entities.Count == 0)
                 return null;
+
+            for (int i = 0; i < m_Entities.Count; i++)
+            {
+                if (m_Entities[i].Serial == currentSelectedSerial)
+                {
+                    if (i == m_Entities.Count - 1)
+                        return m_Entities[0];
+                    else
+                        return m_Entities[i + 1];
+                }
+            }
+
             return m_Entities[0];
         }
 
@@ -57,7 +69,7 @@ namespace Ypsilon.World.Input
             if (m_Entities.Contains(entity))
                 return;
 
-            BoundingSphere bounds = new BoundingSphere(center, entity.ViewSize);
+            BoundingSphere bounds = new BoundingSphere(center, entity.ViewSize * 1.2f);
             if (bounds.Contains(WorldMousePosition) == ContainmentType.Contains)
             {
                 m_Entities.Add(entity);
