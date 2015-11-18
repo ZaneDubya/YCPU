@@ -108,6 +108,10 @@
       <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
       <Name>YpsilonCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\YpsilonCPU\YpsilonCPU.csproj">
+      <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
+      <Name>YpsilonCPU</Name>
+    </ProjectReference>
     <ProjectReference Include="..\YpsilonContent\YpsilonContent.contentproj">
       <Name>YpsilonContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>
