@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Ypsilon.World.Crafting;
+using Ypsilon.World.Data;
 
 namespace Ypsilon.World.Entities.Movement
 {

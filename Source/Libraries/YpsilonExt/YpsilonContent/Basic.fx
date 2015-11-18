@@ -25,8 +25,8 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	VertexShaderOutput output;
 
 	float4x4 preViewProjection = mul(ViewMatrix, ProjectionMatrix);
-		float4x4 preWorldViewProjection = mul(WorldMatrix, preViewProjection);
-		output.Position = mul(input.Position, preWorldViewProjection);
+	float4x4 preWorldViewProjection = mul(WorldMatrix, preViewProjection);
+	output.Position = mul(input.Position, preWorldViewProjection);
 
 	// Half pixel offset for correct texel centering.
 	output.Position.x -= 0.5 / Viewport.x;

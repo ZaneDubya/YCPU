@@ -70,7 +70,8 @@ namespace Ypsilon.Core.Graphics
 
             IEnumerator<KeyValuePair<Texture2D, List<VertexPositionColorTexture>>> keyValuePairs = _drawQueue.GetEnumerator();
 
-            _effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.ProjectionMatrixScreen);
+            _effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(GraphicsDevice));
+            _effect.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
             _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
 
@@ -85,7 +86,9 @@ namespace Ypsilon.Core.Graphics
                 iVertexList.Clear();
                 _vertexListQueue.Enqueue(iVertexList);
             }
+
             _drawQueue.Clear();
+            GraphicsDevice.Textures[0] = null;
         }
 
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue)

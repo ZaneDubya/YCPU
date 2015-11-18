@@ -26,12 +26,12 @@ namespace Ypsilon
         {
             m_Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
 
             m_Graphics.PreferredBackBufferWidth = 1280;
             m_Graphics.PreferredBackBufferHeight = 720;
             m_Graphics.IsFullScreen = false;
             m_Graphics.ApplyChanges();
+            IsMouseVisible = true;
         }
 
         protected override void Initialize()
@@ -45,7 +45,7 @@ namespace Ypsilon
 
             Registry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
-            World.Crafting.Textures.Initialize(GraphicsDevice);
+            World.Data.Textures.Initialize(GraphicsDevice);
             m_Model = new World.WorldModel();
 
             base.Initialize();

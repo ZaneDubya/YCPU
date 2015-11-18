@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World.Crafting;
+using Ypsilon.World.Data;
 using Ypsilon.World.Entities.Movement;
 using Ypsilon.World.Input;
 using Ypsilon.World.Entities.ShipActions;

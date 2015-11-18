@@ -79,12 +79,13 @@ namespace Ypsilon.Core.Graphics
 
         public void Render(SpriteBatchExtended spriteBatch, Vector2 offset)
         {
+            float sixteenth = (1 / 16f);
+
             for (int y = 0; y < ScreenHeight; y++)
             {
                 for (int x = 0; x < ScreenWidth; x++)
                 {
                     byte ch = m_CharBuffer[x + y * ScreenWidth];
-                    float sixteenth = (1 / 16f);
                     float u = (ch % 16) * sixteenth;
                     float v = (ch / 16) * sixteenth;
 

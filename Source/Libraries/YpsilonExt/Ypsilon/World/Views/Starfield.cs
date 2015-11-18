@@ -61,7 +61,7 @@ namespace Ypsilon.World.Views
         public void Draw(SpriteBatchExtended sb)
         {
             for (int i = 0; i < m_Stars.Length; i++)
-                sb.DrawSprite(Crafting.Textures.Pixel, new Vector3(m_Stars[i].Position, 0f), Vector2.One, m_Stars[i].Color);
+                sb.DrawSprite(Data.Textures.Pixel, new Vector3(m_Stars[i].Position, 0f), Vector2.One, m_Stars[i].Color);
         }
 
         struct Star

@@ -13,7 +13,13 @@ namespace YCPUXNA
 {
     class Emu : Game
     {
-        private const int c_ConsoleWidth = 128;
+        public static ServiceRegistry Registry
+        {
+            get;
+            private set;
+        }
+
+        private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
 
@@ -21,9 +27,8 @@ namespace YCPUXNA
 
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
-        private List<ITexture> m_DeviceTextures;
-
-        private ServiceRegistry m_ServiceRegistry;
+        private List<ITexture> m_DeviceTextures = new List<ITexture>();
+        
         private InputManager m_InputManager;
         private InputProvider m_InputProvider;
         private GraphicsProvider m_DeviceRenderer;
@@ -42,23 +47,24 @@ namespace YCPUXNA
 
         protected override void Initialize()
         {
-            Components.Add(m_SpriteBatch = new SpriteBatchExtended(this));
+            Registry = new ServiceRegistry();
 
-            m_ServiceRegistry = new ServiceRegistry();
-            m_InputManager = new InputManager(this.Window.Handle);
+            Registry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
+            m_SpriteBatch.Initialize();
 
-            m_InputProvider = (InputProvider)m_ServiceRegistry.Register<IInputProvider>(new InputProvider(m_InputManager));
-            m_DeviceRenderer = (GraphicsProvider)m_ServiceRegistry.Register<IDeviceRenderer>(new GraphicsProvider(m_SpriteBatch));
+            Registry.Register<InputManager>(m_InputManager = new InputManager(Window.Handle));
 
-            m_Emulator = new Emulator(m_ServiceRegistry);
+            m_InputProvider = (InputProvider)Registry.Register<IInputProvider>(new InputProvider(m_InputManager));
+            m_DeviceRenderer = (GraphicsProvider)Registry.Register<IDeviceRenderer>(new GraphicsProvider(m_SpriteBatch));
+
+            m_Emulator = new Emulator(Registry);
             m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont);
-            
-            m_Graphics.IsFullScreen = false;
-            m_Graphics.PreferredBackBufferWidth = c_ConsoleWidth * m_Curses.CharWidth;
-            m_Graphics.PreferredBackBufferHeight = c_ConsoleHeight * m_Curses.CharHeight;
-            m_Graphics.ApplyChanges();
 
-            this.IsMouseVisible = true;
+            m_Graphics.PreferredBackBufferWidth = m_Curses.ScreenWidth * (m_Curses.CharWidth + 1);
+            m_Graphics.PreferredBackBufferHeight = m_Curses.ScreenHeight * (m_Curses.CharHeight);
+            m_Graphics.IsFullScreen = false;
+            m_Graphics.ApplyChanges();
+            IsMouseVisible = true;
 
             base.Initialize();
         }
@@ -76,9 +82,9 @@ namespace YCPUXNA
             m_InputManager.Update(totalSeconds, frameSeconds);
             m_InputProvider.Update(totalSeconds, frameSeconds);
 
-            base.Update(gameTime);
-
             UpdateEmulator(gameTime.ElapsedGameTime.TotalMilliseconds);
+
+            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -88,16 +94,13 @@ namespace YCPUXNA
                 GraphicsDevice.PrepareScreenShot();
             }
 
-            // render the devices
-            if (m_DeviceTextures == null)
-                m_DeviceTextures = new List<ITexture>();
-            m_DeviceTextures.Clear();
-            m_Emulator.Draw(m_DeviceTextures);
-
             GraphicsDevice.Clear(Color.Black);
 
             m_Curses.Render(m_SpriteBatch, Vector2.Zero);
 
+            // render the devices
+            m_DeviceTextures.Clear();
+            m_Emulator.Draw(m_DeviceTextures);
             for (int i = 0; i < m_DeviceTextures.Count; i++)
             {
                 m_SpriteBatch.DrawSprite(
@@ -107,10 +110,6 @@ namespace YCPUXNA
             }
 
             m_SpriteBatch.Draw(gameTime);
-
-            base.Draw(gameTime);
-
-            GraphicsDevice.Textures[0] = null;
 
             if (m_DoScreenshot)
             {
