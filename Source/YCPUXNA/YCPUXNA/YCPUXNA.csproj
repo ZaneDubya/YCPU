@@ -78,9 +78,6 @@
     <Compile Include="Emu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\GraphicsProvider.cs" />
-    <Compile Include="Providers\InputProvider.cs" />
-    <Compile Include="Providers\YTexture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\YpsilonCore\YpsilonCore.csproj">

@@ -66,9 +66,9 @@ namespace YCPUXNA.Providers
 
         private List<InputEvent> m_EventsThisFrame;
 
-        public InputProvider(Game game)
+        public InputProvider(InputManager input)
         {
-            m_InputManager = new InputManager(game.Window.Handle);
+            m_InputManager = input;
             m_EventsThisFrame = new List<InputEvent>();
             m_InputManager.Update(0, 0);
         }
@@ -76,8 +76,6 @@ namespace YCPUXNA.Providers
         public void Update(float totalSeconds, float frameSeconds)
         {
             m_EventsThisFrame.Clear();
-
-            m_InputManager.Update(totalSeconds, frameSeconds);
 
             bool shift = m_InputManager.IsShiftDown;
             bool ctrl = m_InputManager.IsCtrlDown;

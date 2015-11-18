@@ -24,6 +24,7 @@ namespace YCPUXNA
         private List<ITexture> m_DeviceTextures;
 
         private ServiceRegistry m_ServiceRegistry;
+        private InputManager m_InputManager;
         private InputProvider m_InputProvider;
         private GraphicsProvider m_DeviceRenderer;
 
@@ -45,7 +46,9 @@ namespace YCPUXNA
             m_SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             m_ServiceRegistry = new ServiceRegistry();
-            m_InputProvider = (InputProvider)m_ServiceRegistry.Register<IInputProvider>(new InputProvider(this));
+            m_InputManager = new InputManager(this.Window.Handle);
+
+            m_InputProvider = (InputProvider)m_ServiceRegistry.Register<IInputProvider>(new InputProvider(m_InputManager));
             m_DeviceRenderer = (GraphicsProvider)m_ServiceRegistry.Register<IDeviceRenderer>(new GraphicsProvider(m_SpriteBatch));
 
             m_Emulator = new Emulator(m_ServiceRegistry);
@@ -66,9 +69,11 @@ namespace YCPUXNA
 
         protected override void Update(GameTime gameTime)
         {
-            m_InputProvider.Update(
-                (float)gameTime.TotalGameTime.TotalSeconds,
-                (float)gameTime.ElapsedGameTime.TotalSeconds);
+            float totalSeconds = (float)gameTime.TotalGameTime.TotalSeconds;
+            float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            m_InputManager.Update(totalSeconds, frameSeconds);
+            m_InputProvider.Update(totalSeconds, frameSeconds);
 
             base.Update(gameTime);
 
