@@ -4,9 +4,12 @@ using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
 using Ypsilon.Emulation;
 
-namespace YCPUXNA.ServiceProviders
+namespace YCPUXNA.Providers
 {
-    public class InputService : IInputProvider
+    /// <summary>
+    /// This is a front end to Ypsilon.Core.Input.InputManager that provides messages to
+    /// </summary>
+    public class InputProvider : IInputProvider
     {
         // YPSILON STUFF
 
@@ -63,7 +66,7 @@ namespace YCPUXNA.ServiceProviders
 
         private List<InputEvent> m_EventsThisFrame;
 
-        public InputService(Game game)
+        public InputProvider(Game game)
         {
             m_InputManager = new InputManager(game.Window.Handle);
             m_EventsThisFrame = new List<InputEvent>();

@@ -13,11 +13,17 @@ namespace Ypsilon.Emulation
             private set;
         }
 
+        public static IServiceRegistry Registry
+        {
+            get;
+            private set;
+        }
+
         private bool m_Running = false;
 
-        public Emulator()
+        public Emulator(IServiceRegistry registry)
         {
-
+            Registry = registry;
         }
 
         public void Update(double frameMS)
@@ -89,7 +95,7 @@ namespace Ypsilon.Emulation
         {
             StopCPU();
 
-            byte[] data = Utility.GetBytesFromFile(path);
+            byte[] data = Common.GetBytesFromFile(path);
             if (data != null)
             {
                 for (int i = 0; i < data.Length; i += 1)

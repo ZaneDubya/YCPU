@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.Emulation;
 
-namespace YCPUXNA.ServiceProviders
+namespace YCPUXNA.Providers
 {
-    public class DeviceRenderService : IDeviceRenderer
+    public class GraphicsProvider : IDeviceRenderer
     {
         // YPSILON STUFF
 
@@ -50,7 +50,7 @@ namespace YCPUXNA.ServiceProviders
 
         // BASE STUFF
 
-        public DeviceRenderService(SpriteBatch spriteBatch)
+        public GraphicsProvider(SpriteBatch spriteBatch)
         {
             m_SpriteBatch = spriteBatch;
         }

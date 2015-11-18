@@ -22,7 +22,7 @@ namespace Ypsilon.Assembler
         {
             ParserState state = new ParserState(this);
             state.WorkingDirectory = workingDirectory;
-            List<string> lines = Utility.SplitString(code, "\n");
+            List<string> lines = Common.SplitString(code, "\n");
 
             int indexOfCurrentLine = 0;
 
@@ -199,7 +199,7 @@ namespace Ypsilon.Assembler
 
         List<string> Tokenize(string data)
         {
-            List<string> tokens = Utility.SplitString(data, new[] { " ", "\t", "," });
+            List<string> tokens = Common.SplitString(data, new[] { " ", "\t", "," });
             for (int i = 0; i < tokens.Count - 1; i++)
             {
                 string token = tokens[i];

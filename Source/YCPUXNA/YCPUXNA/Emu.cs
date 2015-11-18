@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
-using YCPUXNA.Display;
-using YCPUXNA.ServiceProviders;
+using YCPUXNA.Providers;
 using Ypsilon;
+using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
 using Ypsilon.Emulation;
@@ -23,8 +23,9 @@ namespace YCPUXNA
         private SpriteBatch m_SpriteBatch;
         private List<ITexture> m_DeviceTextures;
 
-        private InputService m_InputProvider;
-        private DeviceRenderService m_DeviceRenderer;
+        private ServiceRegistry m_ServiceRegistry;
+        private InputProvider m_InputProvider;
+        private GraphicsProvider m_DeviceRenderer;
 
         private Emulator m_Emulator;
         private Curses m_Curses;
@@ -43,10 +44,11 @@ namespace YCPUXNA
 
             m_SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            m_InputProvider = (InputService)ServiceRegistry.Register<IInputProvider>(new InputService(this));
-            m_DeviceRenderer = (DeviceRenderService)ServiceRegistry.Register<IDeviceRenderer>(new DeviceRenderService(m_SpriteBatch));
+            m_ServiceRegistry = new ServiceRegistry();
+            m_InputProvider = (InputProvider)m_ServiceRegistry.Register<IInputProvider>(new InputProvider(this));
+            m_DeviceRenderer = (GraphicsProvider)m_ServiceRegistry.Register<IDeviceRenderer>(new GraphicsProvider(m_SpriteBatch));
 
-            m_Emulator = new Emulator();
+            m_Emulator = new Emulator(m_ServiceRegistry);
             m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont);
             
             m_Graphics.IsFullScreen = false;

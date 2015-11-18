@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 
-namespace YCPUXNA.Display
+namespace Ypsilon.Core.Graphics
 {
-    class Curses
+    public class Curses
     {
         private Texture2D m_Texture;
         private byte[] m_CharBuffer; // buffer of screen contents

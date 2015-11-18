@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ypsilon;
 
-namespace Ypsilon
+namespace YCPUXNA
 {
-    public static class ServiceRegistry
+    public class ServiceRegistry : IServiceRegistry
     {
-        private static Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
+        private Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
 
-        public static T Register<T>(T service)
+        public T Register<T>(T service)
         {
             Type type = typeof(T);
 
@@ -21,7 +22,7 @@ namespace Ypsilon
             return service;
         }
 
-        public static void Unregister<T>()
+        public void Unregister<T>()
         {
             Type type = typeof(T);
 
@@ -35,7 +36,7 @@ namespace Ypsilon
             }
         }
 
-        public static bool ServiceExists<T>()
+        public bool ServiceExists<T>()
         {
             Type type = typeof(T);
 
@@ -49,7 +50,7 @@ namespace Ypsilon
             }
         }
 
-        public static T GetService<T>()
+        public T GetService<T>()
         {
             Type type = typeof(T);
 

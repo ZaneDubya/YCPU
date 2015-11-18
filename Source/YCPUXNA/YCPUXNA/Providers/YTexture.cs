@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.Emulation;
 
-namespace YCPUXNA.ServiceProviders
+namespace YCPUXNA.Providers
 {
     public class YTexture : ITexture
     {

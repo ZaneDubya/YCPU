@@ -19,8 +19,10 @@ namespace Ypsilon.Emulation.Hardware
 
         public YBUS(YCPU cpu)
         {
-            m_Devices = new List<ADevice>();
             CPU = cpu;
+
+            m_Devices = new List<ADevice>();
+            
         }
 
         public void Reset()
@@ -34,14 +36,14 @@ namespace Ypsilon.Emulation.Hardware
 
         public void Update()
         {
-            IInputProvider input = ServiceRegistry.GetService<IInputProvider>();
+            IInputProvider input = Emulator.Registry.GetService<IInputProvider>();
             for (int i = 0; i < m_Devices.Count; i += 1)
                 m_Devices[i].Update(input);
         }
 
         public void Display(List<ITexture> textures)
         {
-            IDeviceRenderer renderer = ServiceRegistry.GetService<IDeviceRenderer>();
+            IDeviceRenderer renderer = Emulator.Registry.GetService<IDeviceRenderer>();
             for (int i = 0; i < m_Devices.Count; i++)
                 m_Devices[i].Display(i, textures, renderer);
         }

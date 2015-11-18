@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUXNA", "YCPUXNA\YCPUXNA\YCPUXNA.csproj", "{2B4FAF8A-B0FD-4E30-90E9-C066EE1E7630}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonLib", "Libraries\YpsilonLib\YpsilonLib.csproj", "{F2711253-F674-44AC-90DC-6EA4C271680B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCPU", "Libraries\YpsilonCPU\YpsilonCPU.csproj", "{F2711253-F674-44AC-90DC-6EA4C271680B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCore", "Libraries\YpsilonCore\YpsilonCore.csproj", "{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}"
 EndProject
