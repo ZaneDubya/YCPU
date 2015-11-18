@@ -20,14 +20,17 @@ namespace Ypsilon.World
 
         private SpriteBatchExtended m_SpriteBatch;
         private VectorRenderer m_Vectors;
+        private Curses m_Curses;
 
         private Starfield m_Stars;
 
         public WorldView(WorldModel model)
             : base(model)
         {
-            m_SpriteBatch = ServiceRegistry.GetService<SpriteBatchExtended>();
-            m_Vectors = ServiceRegistry.GetService<VectorRenderer>();
+            m_SpriteBatch = YpsilonGame.Registry.GetService<SpriteBatchExtended>();
+            m_Vectors = YpsilonGame.Registry.GetService<VectorRenderer>();
+            m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x14.png");
+            m_Curses.Randomize();
 
             m_Stars = new Starfield();
             m_Stars.CreateStars(100, new Rectangle(0, 0,
@@ -65,15 +68,16 @@ namespace Ypsilon.World
 
             // now render using sprite batches...
             m_Vectors.Render(
-                Utility.CreateProjectionMatrixScreenCentered(m_SpriteBatch.GraphicsDevice),
+                GraphicsUtility.CreateProjectionMatrixScreenCentered(m_SpriteBatch.GraphicsDevice),
                 Matrix.Identity,
                 Matrix.Identity);
 
             // draw user interface
+            m_Curses.Render(m_SpriteBatch, new Vector2(64, 64));
             DrawTitleSafeAreas();
 
             m_Vectors.Render(
-                Utility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.GraphicsDevice),
+                GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.GraphicsDevice),
                 Matrix.Identity,
                 Matrix.Identity);
         }

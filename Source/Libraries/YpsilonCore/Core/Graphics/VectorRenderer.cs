@@ -195,7 +195,7 @@ namespace Ypsilon.Core.Graphics
 
             Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
 
-            m_Effect.Parameters["ProjectionMatrix"].SetValue(Utility.ProjectionMatrixScreen);
+            m_Effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.ProjectionMatrixScreen);
             m_Effect.Parameters["ViewMatrix"].SetValue(view);
             m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));

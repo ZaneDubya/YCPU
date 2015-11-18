@@ -9,6 +9,12 @@ namespace Ypsilon
 {
     public class YpsilonGame : Game
     {
+        public static ServiceRegistry Registry
+        {
+            get;
+            private set;
+        }
+
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
         private VectorRenderer m_Vectors;
@@ -30,12 +36,14 @@ namespace Ypsilon
 
         protected override void Initialize()
         {
-            ServiceRegistry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
+            Registry = new ServiceRegistry();
+
+            Registry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
             m_SpriteBatch.Initialize();
 
-            ServiceRegistry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
+            Registry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
 
-            ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
+            Registry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
             World.Crafting.Textures.Initialize(GraphicsDevice);
             m_Model = new World.WorldModel();

@@ -56,11 +56,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\DpiManager.cs" />
-    <Compile Include="Core\Patterns\MVC\AController.cs" />
-    <Compile Include="Core\Patterns\MVC\AModel.cs" />
-    <Compile Include="Core\Patterns\MVC\AView.cs" />
-    <Compile Include="Core\RectangleF.cs" />
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Unused\Crafting\Materials\AMineral.cs" />
     <Compile Include="Unused\Crafting\Materials\Minerals\Metal.cs" />
@@ -82,7 +77,7 @@
     <Compile Include="World\Position3D.cs" />
     <Compile Include="World\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="World\Entities\Movement\ShipRotatorPitchRoll.cs" />
-    <Compile Include="Core\Bootstrapper.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="World\Input\MouseOverList.cs" />
     <Compile Include="World\Entities\ShipActions\AAction.cs" />
     <Compile Include="World\Entities\ShipActions\MiningAction.cs" />
@@ -90,11 +85,6 @@
     <Compile Include="World\State\PlayerState.cs" />
     <Compile Include="World\Views\SpaceRenderer.cs" />
     <Compile Include="World\Views\Starfield.cs" />
-    <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
-    <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
-    <Compile Include="Core\Graphics\VectorPolygon.cs" />
-    <Compile Include="Core\Graphics\VectorRenderer.cs" />
-    <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="World\WorldController.cs" />
     <Compile Include="World\WorldModel.cs" />
     <Compile Include="YpsilonGame.cs" />

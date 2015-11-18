@@ -32,7 +32,7 @@ namespace Ypsilon.Core.Graphics
 
             _effect = Game.Content.Load<Effect>("Basic");
             _drawQueue = new Dictionary<Texture2D, List<VertexPositionColorTexture>>(256);
-            _indexBuffer = createIndexBuffer(0x1000);
+            _indexBuffer = createIndexBuffer(0x2000);
             _vertexListQueue = new Queue<List<VertexPositionColorTexture>>(256);
         }
 
@@ -70,7 +70,7 @@ namespace Ypsilon.Core.Graphics
 
             IEnumerator<KeyValuePair<Texture2D, List<VertexPositionColorTexture>>> keyValuePairs = _drawQueue.GetEnumerator();
 
-            _effect.Parameters["ProjectionMatrix"].SetValue(Utility.ProjectionMatrixScreen);
+            _effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.ProjectionMatrixScreen);
             _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
             _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
 
@@ -115,6 +115,42 @@ namespace Ypsilon.Core.Graphics
             position += _zOffset;
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, hue);
+
+            for (int i = 0; i < q.Vertices.Length; i++)
+            {
+                vertexList.Add(q.Vertices[i]);
+            }
+
+            return true;
+        }
+
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue)
+        {
+            List<VertexPositionColorTexture> vertexList;
+
+            if (_drawQueue.ContainsKey(texture))
+            {
+                vertexList = _drawQueue[texture];
+            }
+            else
+            {
+                if (_vertexListQueue.Count > 0)
+                {
+                    vertexList = _vertexListQueue.Dequeue();
+
+                    vertexList.Clear();
+                }
+                else
+                {
+                    vertexList = new List<VertexPositionColorTexture>(1024);
+                }
+
+                _drawQueue.Add(texture, vertexList);
+            }
+
+            position += _zOffset;
+
+            PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue);
 
             for (int i = 0; i < q.Vertices.Length; i++)
             {

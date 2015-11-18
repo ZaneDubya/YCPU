@@ -35,11 +35,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DpiManager.cs" />
+    <Compile Include="GraphicsUtility.cs" />
+    <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
+    <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
+    <Compile Include="Core\Graphics\VectorPolygon.cs" />
+    <Compile Include="Core\Graphics\VectorRenderer.cs" />
+    <Compile Include="Core\Graphics\VertexList.cs" />
+    <Compile Include="Core\Patterns\MVC\AController.cs" />
+    <Compile Include="Core\Patterns\MVC\AModel.cs" />
+    <Compile Include="Core\Patterns\MVC\AView.cs" />
+    <Compile Include="Core\RectangleF.cs" />
     <Compile Include="GraphicsDeviceExtensions.cs" />
     <Compile Include="Core\Input\InputEvent.cs" />
     <Compile Include="Core\Input\InputEventKeyboard.cs" />

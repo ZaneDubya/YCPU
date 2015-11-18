@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon
 {
-    class Utility
+    public static partial class Utility
     {
         public const float Pi = (float)Math.PI;
         public const float PiTwo = (float)(Math.PI * 2);
@@ -19,26 +19,6 @@ namespace Ypsilon
         public const float FuelConsumption_Per_KM = 6f / 100f;
         public const float LngLatToKM = (1f / 111.320f);
         public const float EarthRadius = 6378.1f;
-
-        public static Matrix ProjectionMatrixUI
-        {
-            get { return Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -1000f, 3000f); }
-        }
-
-        public static Matrix ProjectionMatrixScreen
-        {
-            get { return Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -2000f, 2000f); }
-        }
-
-        public static Matrix CreateProjectionMatrixScreenOffset(GraphicsDevice graphics)
-        {
-            return Matrix.CreateOrthographicOffCenter(0, graphics.Viewport.Width, graphics.Viewport.Height, 0, Int16.MinValue, Int16.MaxValue);
-        }
-
-        public static Matrix CreateProjectionMatrixScreenCentered(GraphicsDevice graphics)
-        {
-            return Matrix.CreateOrthographicOffCenter(graphics.Viewport.Width / -2, graphics.Viewport.Width / 2, graphics.Viewport.Height / -2, graphics.Viewport.Height / 2, Int16.MinValue, Int16.MaxValue);
-        }
 
         static float _FPS = 0, _Frames = 0, _ElapsedSeconds = 0;
         public static float FPS { get { return (float)Math.Round(_FPS, 2); } }

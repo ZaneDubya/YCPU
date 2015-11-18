@@ -1,58 +1,46 @@
-﻿/***************************************************************************
- *   ServiceRegistry.cs
- *   Copyright (c) 2015 UltimaXNA Development Team
- * 
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 3 of the License, or
- *   (at your option) any later version.
- *
- ***************************************************************************/
-#region usings
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-#endregion
+using Ypsilon;
 
 namespace Ypsilon
 {
-    public static class ServiceRegistry
+    public class ServiceRegistry : IServiceRegistry
     {
-        private static readonly Dictionary<Type, object> s_Services = new Dictionary<Type, object>();
+        private Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
 
-        public static T Register<T>(T service)
+        public T Register<T>(T service)
         {
             Type type = typeof(T);
 
-            if (s_Services.ContainsKey(type))
+            if (m_Services.ContainsKey(type))
             {
-                throw new Exception(string.Format("Attempted to register service of type {0} twice.", type));
-                // s_Services.Remove(type);
+                // Tracer.Critical(string.Format("Attempted to register service of type {0} twice.", type.ToString()));
+                m_Services.Remove(type);
             }
 
-            s_Services.Add(type, service);
+            m_Services.Add(type, service);
             return service;
         }
 
-        public static void Unregister<T>()
+        public void Unregister<T>()
         {
             Type type = typeof(T);
 
-            if (s_Services.ContainsKey(type))
+            if (m_Services.ContainsKey(type))
             {
-                s_Services.Remove(type);
+                m_Services.Remove(type);
             }
             else
             {
-                throw new Exception(string.Format("Attempted to unregister service of type {0}, but no service of this type (or type and equality) is registered.", type));
+                // Tracer.Critical(string.Format("Attempted to unregister service of type {0}, but no service of this type (or type and equality) is registered.", type.ToString()));
             }
         }
 
-        public static bool ServiceExists<T>()
+        public bool ServiceExists<T>()
         {
             Type type = typeof(T);
 
-            if (s_Services.ContainsKey(type))
+            if (m_Services.ContainsKey(type))
             {
                 return true;
             }
@@ -62,18 +50,18 @@ namespace Ypsilon
             }
         }
 
-        public static T GetService<T>()
+        public T GetService<T>()
         {
             Type type = typeof(T);
 
-            if (s_Services.ContainsKey(type))
+            if (m_Services.ContainsKey(type))
             {
-                return (T)s_Services[type];
+                return (T)m_Services[type];
             }
             else
             {
-                throw new Exception(string.Format("Attempted to get service service of type {0}, but no service of this type is registered.", type));
-                // return default(T);
+                // Tracer.Critical(string.Format("Attempted to get service service of type {0}, but no service of this type is registered.", type.ToString()));
+                return default(T);
             }
         }
     }

@@ -57,6 +57,13 @@ namespace Ypsilon.Core.Graphics
             Array.Clear(m_CharBuffer, 0, m_CharBuffer.Length);
         }
 
+        public void Randomize()
+        {
+            Random rand = new Random();
+            for (int i = 0; i < m_CharBuffer.Length; i++)
+                m_CharBuffer[i] = (byte)rand.Next(255);
+        }
+
         public void WriteString(int x, int y, string s)
         {
             int begin = y * ScreenWidth + x;
@@ -70,16 +77,22 @@ namespace Ypsilon.Core.Graphics
             }
         }
 
-        public void Render(SpriteBatch spriteBatch)
+        public void Render(SpriteBatchExtended spriteBatch, Vector2 offset)
         {
             for (int y = 0; y < ScreenHeight; y++)
             {
                 for (int x = 0; x < ScreenWidth; x++)
                 {
                     byte ch = m_CharBuffer[x + y * ScreenWidth];
-                    spriteBatch.Draw(m_Texture, 
-                        new Rectangle(x * (CharWidth + 1), y * CharHeight, CharWidth, CharHeight), 
-                        new Rectangle((ch % 16) * CharWidth, (ch / 16) * CharHeight, CharWidth, CharHeight), Color.LightGray);
+                    float sixteenth = (1 / 16f);
+                    float u = (ch % 16) * sixteenth;
+                    float v = (ch / 16) * sixteenth;
+
+                    spriteBatch.DrawSprite(m_Texture,
+                        new Vector3(offset.X + x * (CharWidth + 1), offset.Y + y * CharHeight, 0),
+                        new Vector2(CharWidth, CharHeight),
+                        new Vector4(u, v, u + sixteenth, v + sixteenth),
+                        Color.LightGray);
                 }
             }
         }
