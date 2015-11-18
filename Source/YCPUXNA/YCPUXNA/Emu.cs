@@ -37,13 +37,12 @@ namespace YCPUXNA
         public Emu()
         {
             m_Graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
         {
-            base.Initialize();
-
-            m_SpriteBatch = new SpriteBatchExtended(this);
+            Components.Add(m_SpriteBatch = new SpriteBatchExtended(this));
 
             m_ServiceRegistry = new ServiceRegistry();
             m_InputManager = new InputManager(this.Window.Handle);
@@ -60,6 +59,8 @@ namespace YCPUXNA
             m_Graphics.ApplyChanges();
 
             this.IsMouseVisible = true;
+
+            base.Initialize();
         }
 
         protected override void UnloadContent()
@@ -93,20 +94,22 @@ namespace YCPUXNA
             m_DeviceTextures.Clear();
             m_Emulator.Draw(m_DeviceTextures);
 
-            // draw the emulator.
-            base.Draw(gameTime);
-
             GraphicsDevice.Clear(Color.Black);
-            m_SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+
             m_Curses.Render(m_SpriteBatch, Vector2.Zero);
 
             for (int i = 0; i < m_DeviceTextures.Count; i++)
             {
-                m_SpriteBatch.Draw((m_DeviceTextures[i] as YTexture).Texture,
-                    new Rectangle(82 * (m_Curses.CharWidth + 1), 2 * m_Curses.CharHeight, m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
+                m_SpriteBatch.DrawSprite(
+                    (m_DeviceTextures[i] as YTexture).Texture,
+                    new Vector3(82 * (m_Curses.CharWidth + 1), 2 * m_Curses.CharHeight, 0),
+                    new Vector2(m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
             }
 
-            m_SpriteBatch.End();
+            m_SpriteBatch.Draw(gameTime);
+
+            base.Draw(gameTime);
+
             GraphicsDevice.Textures[0] = null;
 
             if (m_DoScreenshot)

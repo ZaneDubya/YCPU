@@ -88,6 +88,11 @@
       <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
       <Name>YpsilonCPU</Name>
     </ProjectReference>
+    <ProjectReference Include="..\YCPUXNAContent\YCPUXNAContent.contentproj">
+      <Project>{057E6EB1-3411-49F4-B1D5-46A2A18D79B4}</Project>
+      <Name>YCPUXNAContent</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

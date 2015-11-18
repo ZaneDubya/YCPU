@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCPU", "Libraries\Yps
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCore", "Libraries\YpsilonCore\YpsilonCore.csproj", "{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUXNAContent", "YCPUXNA\YCPUXNAContent\YCPUXNAContent.contentproj", "{057E6EB1-3411-49F4-B1D5-46A2A18D79B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -27,6 +29,8 @@ Global
 		{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}.Debug|x86.Build.0 = Debug|x86
 		{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}.Release|x86.ActiveCfg = Release|x86
 		{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}.Release|x86.Build.0 = Release|x86
+		{057E6EB1-3411-49F4-B1D5-46A2A18D79B4}.Debug|x86.ActiveCfg = Debug|x86
+		{057E6EB1-3411-49F4-B1D5-46A2A18D79B4}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
