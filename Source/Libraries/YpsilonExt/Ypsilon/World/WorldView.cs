@@ -29,8 +29,7 @@ namespace Ypsilon.World
         {
             m_SpriteBatch = YpsilonGame.Registry.GetService<SpriteBatchExtended>();
             m_Vectors = YpsilonGame.Registry.GetService<VectorRenderer>();
-            m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x14.png");
-            m_Curses.Randomize();
+            m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x16.png");
 
             m_Stars = new Starfield();
             m_Stars.CreateStars(100, new Rectangle(0, 0,
@@ -40,6 +39,9 @@ namespace Ypsilon.World
 
         public override void Draw(float frameSeconds)
         {
+            // update curses
+            UpdateCurses();
+
             int screenWidth = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth;
             int screenHeight = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight;
 
@@ -73,8 +75,8 @@ namespace Ypsilon.World
                 Matrix.Identity);
 
             // draw user interface
-            m_Curses.Render(m_SpriteBatch, new Vector2(64, 64));
             DrawTitleSafeAreas();
+            m_Curses.Render(m_SpriteBatch, new Vector2(64, 40));
 
             m_Vectors.Render(
                 GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.GraphicsDevice),
@@ -104,6 +106,17 @@ namespace Ypsilon.World
                 new Vector3(dx * 2 + width - 4 * dx, dy * 2, z),
                 new Vector3(dx * 2 + width - 4 * dx, dy * 2 + height - 4 * dy, z),
                 new Vector3(dx * 2, dy* 2 + height - 4 * dy, z) }, true, notTitleSafeColor, false);
+        }
+
+        private void UpdateCurses()
+        {
+            m_Curses.Clear();
+
+            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            m_Curses.WriteString(0, 0, string.Format("P <{0:E4} {1:E4}>", player.Position.X, player.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:E4} {1:E4}>", player.Velocity.X, player.Velocity.Y));
+            //if (PlayerState.SelectedSerial != Serial.Null)
+            //    m_Curses.WriteString(8, 2, "Hello world!");
         }
     }
 }
