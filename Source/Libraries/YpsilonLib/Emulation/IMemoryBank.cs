@@ -1,5 +1,5 @@
 ﻿
-namespace Ypsilon
+namespace Ypsilon.Emulation
 {
     /// <summary>
     /// Standard interface to a 4 kilobyte memory bank.

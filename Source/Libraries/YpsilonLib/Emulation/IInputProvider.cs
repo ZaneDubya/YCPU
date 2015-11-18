@@ -1,5 +1,5 @@
 ﻿
-namespace Ypsilon
+namespace Ypsilon.Emulation
 {
     public interface IInputProvider
     {

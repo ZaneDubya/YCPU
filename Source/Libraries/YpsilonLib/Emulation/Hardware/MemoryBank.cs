@@ -1,5 +1,5 @@
 ﻿
-namespace Ypsilon.Hardware
+namespace Ypsilon.Emulation.Hardware
 {
     /// <summary>
     /// A bank of 0x1000 = 4096 bytes.

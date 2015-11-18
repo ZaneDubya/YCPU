@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Emulation.Hardware
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.

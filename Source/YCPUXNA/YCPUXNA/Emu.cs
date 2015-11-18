@@ -1,14 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System.IO;
 using YCPUXNA.Display;
 using YCPUXNA.ServiceProviders;
 using Ypsilon;
-using Ypsilon.Hardware;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
+using Ypsilon.Emulation;
+using Ypsilon.Emulation.Hardware;
 
 namespace YCPUXNA
 {

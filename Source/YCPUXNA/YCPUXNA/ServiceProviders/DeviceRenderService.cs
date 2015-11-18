@@ -1,6 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Ypsilon;
+﻿using Microsoft.Xna.Framework.Graphics;
+using Ypsilon.Emulation;
 
 namespace YCPUXNA.ServiceProviders
 {

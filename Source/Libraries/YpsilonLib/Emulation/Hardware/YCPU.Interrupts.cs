@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Emulation.Hardware
 {
     partial class YCPU
     {

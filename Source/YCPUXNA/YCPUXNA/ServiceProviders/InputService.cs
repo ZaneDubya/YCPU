@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using Ypsilon;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
+using Ypsilon.Emulation;
 
 namespace YCPUXNA.ServiceProviders
 {

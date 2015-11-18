@@ -85,9 +85,9 @@
     <Compile Include="ServiceProviders\YTexture.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\YpsilonInput\YpsilonInput.csproj">
+    <ProjectReference Include="..\..\Libraries\YpsilonCore\YpsilonCore.csproj">
       <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
-      <Name>YpsilonInput</Name>
+      <Name>YpsilonCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Libraries\YpsilonLib\YpsilonLib.csproj">
       <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>

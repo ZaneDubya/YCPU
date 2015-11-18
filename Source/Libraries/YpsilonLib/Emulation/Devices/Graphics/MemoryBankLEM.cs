@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Devices.Graphics
+namespace Ypsilon.Emulation.Devices.Graphics
 {
     public class MemoryBankLEM : IMemoryBank
     {

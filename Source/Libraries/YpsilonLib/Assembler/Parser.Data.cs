@@ -162,7 +162,7 @@ namespace Ypsilon.Assembler
         {
             List<string> dataFields = new List<string>();
 
-            List<string> linesplit = Common.SplitString(line, ",");
+            List<string> linesplit = Utility.SplitString(line, ",");
 
             for (int i = 0; i < linesplit.Count; i++)
             {

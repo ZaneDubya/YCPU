@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ypsilon.Hardware;
+using Ypsilon.Emulation.Hardware;
 
-namespace Ypsilon.Devices.Graphics
+namespace Ypsilon.Emulation.Devices.Graphics
 {
     public class GraphicsAdapter : ADevice
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using Ypsilon.Hardware;
+using Ypsilon.Emulation.Hardware;
 using System.Collections.Generic;
 
-namespace Ypsilon
+namespace Ypsilon.Emulation
 {
     public class Emulator
     {
@@ -81,15 +81,15 @@ namespace Ypsilon
         {
             CPU.BUS.Reset();
 
-            CPU.BUS.AddDevice(new Ypsilon.Devices.Graphics.GraphicsAdapter(CPU.BUS));
-            CPU.BUS.AddDevice(new Ypsilon.Devices.Input.KeyboardDevice(CPU.BUS));
+            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Graphics.GraphicsAdapter(CPU.BUS));
+            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Input.KeyboardDevice(CPU.BUS));
         }
 
         public void LoadBinaryToCPU(string path, ushort address)
         {
             StopCPU();
 
-            byte[] data = Common.GetBytesFromFile(path);
+            byte[] data = Utility.GetBytesFromFile(path);
             if (data != null)
             {
                 for (int i = 0; i < data.Length; i += 1)

@@ -1,7 +1,7 @@
-﻿using Ypsilon.Hardware;
+﻿using Ypsilon.Emulation.Hardware;
 using System.Collections.Generic;
 
-namespace Ypsilon
+namespace Ypsilon.Emulation
 {
     public abstract class ADevice
     {

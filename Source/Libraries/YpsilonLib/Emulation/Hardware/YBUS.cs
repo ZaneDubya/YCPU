@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Emulation.Hardware
 {
     public class YBUS
     {

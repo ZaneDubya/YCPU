@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ypsilon.Hardware
+namespace Ypsilon.Emulation.Hardware
 {
     class YRTC
     {

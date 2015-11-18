@@ -1,6 +1,6 @@
-﻿using Ypsilon.Hardware;
+﻿using Ypsilon.Emulation.Hardware;
 
-namespace Ypsilon.Devices.Input
+namespace Ypsilon.Emulation.Devices.Input
 {
     public class KeyboardDevice : ADevice
     {
