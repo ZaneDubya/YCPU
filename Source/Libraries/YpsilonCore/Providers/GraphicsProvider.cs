@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Ypsilon.Emulation;
+using Ypsilon.Core.Graphics;
 
 namespace YCPUXNA.Providers
 {
@@ -10,7 +11,7 @@ namespace YCPUXNA.Providers
         Texture2D m_LEM;
         uint[] m_LEM_Data;
 
-        SpriteBatch m_SpriteBatch;
+        SpriteBatchExtended m_SpriteBatch;
 
         public ITexture RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
         {
@@ -50,7 +51,7 @@ namespace YCPUXNA.Providers
 
         // BASE STUFF
 
-        public GraphicsProvider(SpriteBatch spriteBatch)
+        public GraphicsProvider(SpriteBatchExtended spriteBatch)
         {
             m_SpriteBatch = spriteBatch;
         }

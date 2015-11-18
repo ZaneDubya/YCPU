@@ -20,7 +20,7 @@ namespace YCPUXNA
         private const string c_CursesFont = @"Content\BIOS8x14.png";
 
         private GraphicsDeviceManager m_Graphics;
-        private SpriteBatch m_SpriteBatch;
+        private SpriteBatchExtended m_SpriteBatch;
         private List<ITexture> m_DeviceTextures;
 
         private ServiceRegistry m_ServiceRegistry;
@@ -43,7 +43,7 @@ namespace YCPUXNA
         {
             base.Initialize();
 
-            m_SpriteBatch = new SpriteBatch(GraphicsDevice);
+            m_SpriteBatch = new SpriteBatchExtended(this);
 
             m_ServiceRegistry = new ServiceRegistry();
             m_InputManager = new InputManager(this.Window.Handle);
@@ -98,7 +98,7 @@ namespace YCPUXNA
 
             GraphicsDevice.Clear(Color.Black);
             m_SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
-            m_Curses.Render(m_SpriteBatch);
+            m_Curses.Render(m_SpriteBatch, Vector2.Zero);
 
             for (int i = 0; i < m_DeviceTextures.Count; i++)
             {
