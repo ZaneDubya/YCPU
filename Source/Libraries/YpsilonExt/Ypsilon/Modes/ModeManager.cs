@@ -1,4 +1,5 @@
 ﻿using Ypsilon.Core.Patterns.MVC;
+using Ypsilon.Core.Input;
 
 namespace Ypsilon.Modes
 {
@@ -55,12 +56,14 @@ namespace Ypsilon.Modes
 
         public void Update(float totalSeconds, float frameSeconds)
         {
-
+            InputManager input = ServiceRegistry.GetService<InputManager>();
+            m_Model.Update(totalSeconds, frameSeconds);
+            m_Model.GetController().Update(frameSeconds, input);
         }
 
         public void Draw(float frameSeconds)
         {
-
+            m_Model.GetView().Draw(frameSeconds);
         }
     }
 }

@@ -46,6 +46,16 @@ namespace Ypsilon.World
             asteroid2.Position = new Position3D(-100, 200, 0);
         }
 
+        public override void Initialize()
+        {
+
+        }
+
+        public override void Dispose()
+        {
+
+        }
+
         public override void Update(float totalSeconds, float frameSeconds)
         {
             Entities.Update(frameSeconds);

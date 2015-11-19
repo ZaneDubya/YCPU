@@ -4,11 +4,11 @@ using Ypsilon;
 
 namespace Ypsilon
 {
-    public class ServiceRegistry
+    public static class ServiceRegistry
     {
-        private Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
+        private static Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
 
-        public T Register<T>(T service)
+        public static T Register<T>(T service)
         {
             Type type = typeof(T);
 
@@ -22,7 +22,7 @@ namespace Ypsilon
             return service;
         }
 
-        public void Unregister<T>()
+        public static void Unregister<T>()
         {
             Type type = typeof(T);
 
@@ -36,7 +36,7 @@ namespace Ypsilon
             }
         }
 
-        public bool ServiceExists<T>()
+        public static bool ServiceExists<T>()
         {
             Type type = typeof(T);
 
@@ -50,7 +50,7 @@ namespace Ypsilon
             }
         }
 
-        public T GetService<T>()
+        public static T GetService<T>()
         {
             Type type = typeof(T);
 

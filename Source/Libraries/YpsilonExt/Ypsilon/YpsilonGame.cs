@@ -3,24 +3,19 @@ using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
 using Ypsilon.World;
 using Ypsilon.Core.Input;
+using Ypsilon.Modes;
 #endregion
 
 namespace Ypsilon
 {
     public class YpsilonGame : Game
     {
-        public static ServiceRegistry Registry
-        {
-            get;
-            private set;
-        }
-
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
         private VectorRenderer m_Vectors;
         private InputManager m_Input;
 
-        private WorldModel m_Model;
+        private ModeManager m_Modes;
 
         public YpsilonGame()
         {
@@ -36,19 +31,24 @@ namespace Ypsilon
 
         protected override void Initialize()
         {
-            Registry = new ServiceRegistry();
-
-            Registry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
+            ServiceRegistry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
             m_SpriteBatch.Initialize();
 
-            Registry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
+            ServiceRegistry.Register<VectorRenderer>(m_Vectors = new VectorRenderer(GraphicsDevice, Content));
 
-            Registry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
+            ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
-            World.Data.Textures.Initialize(GraphicsDevice);
-            m_Model = new World.WorldModel();
+            ServiceRegistry.Register<ModeManager>(m_Modes = new ModeManager());
+            m_Modes.ActiveModel = new WorldModel();
 
             base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
+            World.Data.Textures.Initialize(GraphicsDevice);
+
+            base.LoadContent();
         }
 
         protected override void Update(GameTime gameTime)
@@ -57,9 +57,7 @@ namespace Ypsilon
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             m_Input.Update(totalSeconds, frameSeconds);
-
-            m_Model.Update(totalSeconds, frameSeconds);
-            m_Model.GetController().Update(frameSeconds, m_Input);
+            m_Modes.Update(totalSeconds, frameSeconds);
 
             base.Update(gameTime);
         }
@@ -68,7 +66,7 @@ namespace Ypsilon
         {
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            m_Model.GetView().Draw(frameSeconds);
+            m_Modes.Draw(frameSeconds);
 
             m_SpriteBatch.Draw(gameTime);
 

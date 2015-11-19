@@ -27,8 +27,8 @@ namespace Ypsilon.World
         public WorldView(WorldModel model)
             : base(model)
         {
-            m_SpriteBatch = YpsilonGame.Registry.GetService<SpriteBatchExtended>();
-            m_Vectors = YpsilonGame.Registry.GetService<VectorRenderer>();
+            m_SpriteBatch = ServiceRegistry.GetService<SpriteBatchExtended>();
+            m_Vectors = ServiceRegistry.GetService<VectorRenderer>();
             m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x16.png");
 
             m_Stars = new Starfield();
