@@ -26,6 +26,9 @@
 
         }
 
+        public abstract void Initialize();
+        public abstract void Dispose();
+
         public abstract void Update(float totalSeconds, float frameSeconds);
 
         protected abstract AView CreateView();

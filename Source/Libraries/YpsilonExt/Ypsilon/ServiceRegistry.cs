@@ -4,7 +4,7 @@ using Ypsilon;
 
 namespace Ypsilon
 {
-    public class ServiceRegistry : IServiceRegistry
+    public class ServiceRegistry
     {
         private Dictionary<Type, object> m_Services = new Dictionary<Type, object>();
 
