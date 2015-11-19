@@ -5,6 +5,7 @@ using Ypsilon.Core.Windows;
 using Ypsilon.World.Entities;
 using Ypsilon.World.Entities.ShipActions;
 using Ypsilon.World.Input;
+using Ypsilon.PlayerState;
 
 namespace Ypsilon.World
 {
@@ -37,11 +38,17 @@ namespace Ypsilon.World
             {
                 if (MouseOverList.HasEntities)
                 {
-                    Entities.PlayerState.SelectedSerial = MouseOverList.GetNextSelectableEntity(Entities.PlayerState.SelectedSerial).Serial;
+                    WorldModel.SelectedSerial = MouseOverList.GetNextSelectableEntity(WorldModel.SelectedSerial).Serial;
                 }
             }
 
-            // M is for MINING
+            // L is for LAND
+            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, false))
+            {
+                AEntity selected = Model.Entities.GetEntity<AEntity>(WorldModel.SelectedSerial, false);
+            }
+
+                // M is for MINING
             if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
             {
                 if (player.Action is MiningAction)
@@ -52,12 +59,15 @@ namespace Ypsilon.World
                 else
                 {
                     // start mining
-                    AEntity selected = Model.Entities.GetEntity<AEntity>(PlayerState.SelectedSerial, false);
-                    float maxDistance = player.ViewSize + selected.ViewSize;
-
-                    if (selected != null && selected is Spob && Position3D.Distance(player.Position, selected.Position) < maxDistance)
+                    AEntity selected = Model.Entities.GetEntity<AEntity>(WorldModel.SelectedSerial, false);
+                    if (selected != null)
                     {
-                        player.Action = new MiningAction(player, selected as Spob);
+                        float maxDistance = player.ViewSize + selected.ViewSize;
+
+                        if (selected is Spob && Position3D.Distance(player.Position, selected.Position) < maxDistance)
+                        {
+                            player.Action = new MiningAction(player, selected as Spob);
+                        }
                     }
                 }
             }

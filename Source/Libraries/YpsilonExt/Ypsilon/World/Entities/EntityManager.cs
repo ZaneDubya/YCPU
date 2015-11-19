@@ -11,6 +11,7 @@
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Ypsilon.Core;
+using Ypsilon.PlayerState;
 #endregion
 
 namespace Ypsilon.World.Entities
@@ -55,8 +56,8 @@ namespace Ypsilon.World.Entities
         public AEntity GetPlayerEntity()
         {
             // This could be cached to save time.
-            if (m_Entities.ContainsKey(Entities.PlayerState.PlayerSerial))
-                return (AEntity)m_Entities[Entities.PlayerState.PlayerSerial];
+            if (m_Entities.ContainsKey(WorldModel.PlayerSerial))
+                return (AEntity)m_Entities[WorldModel.PlayerSerial];
             else
                 return null;
         }

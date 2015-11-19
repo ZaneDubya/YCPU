@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ypsilon.World.Views
 {
-    class SpaceRenderer
+    class SpaceView
     {
     }
 }

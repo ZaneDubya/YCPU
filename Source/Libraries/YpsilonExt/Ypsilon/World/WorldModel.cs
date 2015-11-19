@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Ypsilon.Core.Patterns.MVC;
-using Ypsilon.World.Entities;
+﻿using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.World.Data;
+using Ypsilon.World.Entities;
+using Ypsilon.PlayerState;
 
 namespace Ypsilon.World
 {
@@ -16,13 +13,16 @@ namespace Ypsilon.World
             private set;
         }
 
+        public static Serial PlayerSerial = Serial.Null;
+        public static Serial SelectedSerial = Serial.Null;
+
         public WorldModel()
         {
             Entities = new EntityManager();
 
             // create player
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-            World.Entities.PlayerState.PlayerSerial = player.Serial;
+            WorldModel.PlayerSerial = player.Serial;
             // create other dudes.
             for (int i = 0; i < 100; i++)
             {

@@ -113,8 +113,12 @@ namespace Ypsilon.World
             m_Curses.Clear();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
-            m_Curses.WriteString(0, 0, string.Format("P <{0:E4} {1:E4}>", player.Position.X, player.Position.Y));
-            m_Curses.WriteString(0, 1, string.Format("V <{0:E4} {1:E4}>", player.Velocity.X, player.Velocity.Y));
+            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", player.Position.X, player.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", player.Velocity.X, player.Velocity.Y));
+
+            m_Curses.WriteString(108, 0, string.Format("Hold:"));
+            m_Curses.WriteString(108, 1, string.Format("Ore: {0:F2} kg", player.ResourceOre));
+
             //if (PlayerState.SelectedSerial != Serial.Null)
             //    m_Curses.WriteString(8, 2, "Hello world!");
         }

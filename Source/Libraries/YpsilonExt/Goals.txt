@@ -8,12 +8,12 @@
     Add selection reticle. DONE.
     Add ability to 'select' entities. DONE!
     Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed. DONE.
-    Track resources in ship hold. DONE.
-    Add ability to land on planet.
+    Track one resource in ship hold. DONE.
+	Show contents of hold (only one resource) in GUI. DONE. 
+    Add ability to land on planet with "L".
     Add credits.
     When land on planet, hold is exchanged for credits.
-    Track resources on asteroid. As it is mined, the 'ore' on the asteroid diminishes.
-    As it diminishes, the asteroid shrinks.
+    Track resources on asteroid. DONE
     As it is being mined, effects fly! Beam! Sparks!
 
     Add inventory of ship components (programatic, don't need gui yet).
@@ -21,3 +21,5 @@
 
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!
     Planet rotates around a star! 
+	
+	Break out resources into items. Hold is item.

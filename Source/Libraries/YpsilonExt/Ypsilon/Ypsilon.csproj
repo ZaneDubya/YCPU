@@ -82,8 +82,8 @@
     <Compile Include="World\Entities\ShipActions\AAction.cs" />
     <Compile Include="World\Entities\ShipActions\MiningAction.cs" />
     <Compile Include="World\Entities\ShipActions\NoAction.cs" />
-    <Compile Include="World\State\PlayerState.cs" />
-    <Compile Include="World\Views\SpaceRenderer.cs" />
+    <Compile Include="PlayerState\Vars.cs" />
+    <Compile Include="World\Views\SpaceView.cs" />
     <Compile Include="World\Views\Starfield.cs" />
     <Compile Include="World\WorldController.cs" />
     <Compile Include="World\WorldModel.cs" />

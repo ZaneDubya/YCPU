@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using Ypsilon.World.Entities.ShipActions;
 
-namespace Ypsilon.World.Entities
+namespace Ypsilon.PlayerState
 {
-    static class PlayerState
+    static class Vars
     {
-        public static Serial PlayerSerial = Serial.Null;
-        public static Serial SelectedSerial = Serial.Null;
         public static float PlayerCredits = 0;
     }
 }
