@@ -1,7 +1,7 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.World;
+using Ypsilon.Modes.Space;
 using Ypsilon.Core.Input;
 using Ypsilon.Modes;
 #endregion
@@ -39,14 +39,14 @@ namespace Ypsilon
             ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
             ServiceRegistry.Register<ModeManager>(m_Modes = new ModeManager());
-            m_Modes.ActiveModel = new WorldModel();
+            m_Modes.ActiveModel = new SpaceModel();
 
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            World.Data.Textures.Initialize(GraphicsDevice);
+            Space.Resources.Textures.Initialize(GraphicsDevice);
 
             base.LoadContent();
         }

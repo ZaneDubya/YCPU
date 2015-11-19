@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.World.Data
+namespace Ypsilon.Modes.Space.Resources
 {
     class AMaterial
     {

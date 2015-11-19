@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ypsilon.World.Entities.ShipActions;
+using Ypsilon.Modes.Space.Entities.ShipActions;
 
 namespace Ypsilon.PlayerState
 {
