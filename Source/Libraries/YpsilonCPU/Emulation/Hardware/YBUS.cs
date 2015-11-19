@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Ypsilon.Emulation.Hardware
 {
     public class YBUS
     {
+        private IDisplayProvider m_DisplayProvider;
+        private IInputProvider m_InputProvider;
+
         private List<ADevice> m_Devices;
-        protected List<ADevice> Devices
-        {
-            get { return m_Devices; }
-        }
 
         public YCPU CPU
         {
@@ -20,7 +20,6 @@ namespace Ypsilon.Emulation.Hardware
         public YBUS(YCPU cpu)
         {
             CPU = cpu;
-
             m_Devices = new List<ADevice>();
             
         }
@@ -36,16 +35,20 @@ namespace Ypsilon.Emulation.Hardware
 
         public void Update()
         {
-            IInputProvider input = Emulator.Registry.GetService<IInputProvider>();
             for (int i = 0; i < m_Devices.Count; i += 1)
-                m_Devices[i].Update(input);
+                m_Devices[i].Update(m_InputProvider);
         }
 
         public void Display(List<ITexture> textures)
         {
-            IDeviceRenderer renderer = Emulator.Registry.GetService<IDeviceRenderer>();
             for (int i = 0; i < m_Devices.Count; i++)
-                m_Devices[i].Display(i, textures, renderer);
+                m_Devices[i].Display(i, textures, m_DisplayProvider);
+        }
+
+        internal void SetProviders(IDisplayProvider display, IInputProvider input)
+        {
+            m_DisplayProvider = display;
+            m_InputProvider = input;
         }
 
         public ushort DevicesConnected

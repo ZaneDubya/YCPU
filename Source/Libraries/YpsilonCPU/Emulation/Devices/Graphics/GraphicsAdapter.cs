@@ -69,7 +69,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             return MSG_ACK;
         }
 
-        public override void Display(int busIndex, List<ITexture> textures, IDeviceRenderer renderer)
+        public override void Display(int busIndex, List<ITexture> textures, IDisplayProvider renderer)
         {
             switch (m_GraphicsMode)
             {

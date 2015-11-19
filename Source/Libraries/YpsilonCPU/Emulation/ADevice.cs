@@ -36,7 +36,7 @@ namespace Ypsilon.Emulation
 
         }
 
-        public virtual void Display(int busIndex, List<ITexture> textures, IDeviceRenderer renderer)
+        public virtual void Display(int busIndex, List<ITexture> textures, IDisplayProvider renderer)
         {
 
         }

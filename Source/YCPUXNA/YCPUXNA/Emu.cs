@@ -31,7 +31,7 @@ namespace YCPUXNA
         
         private InputManager m_InputManager;
         private InputProvider m_InputProvider;
-        private GraphicsProvider m_DeviceRenderer;
+        private DisplayProvider m_DisplayProvider;
 
         private Emulator m_Emulator;
         private Curses m_Curses;
@@ -54,10 +54,10 @@ namespace YCPUXNA
 
             Registry.Register<InputManager>(m_InputManager = new InputManager(Window.Handle));
 
-            m_InputProvider = (InputProvider)Registry.Register<IInputProvider>(new InputProvider(m_InputManager));
-            m_DeviceRenderer = (GraphicsProvider)Registry.Register<IDeviceRenderer>(new GraphicsProvider(m_SpriteBatch));
+            m_InputProvider = new InputProvider(m_InputManager);
+            m_DisplayProvider = new DisplayProvider(m_SpriteBatch);
 
-            m_Emulator = new Emulator(Registry);
+            m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
             m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont);
 
             m_Graphics.PreferredBackBufferWidth = m_Curses.ScreenWidth * (m_Curses.CharWidth + 1);

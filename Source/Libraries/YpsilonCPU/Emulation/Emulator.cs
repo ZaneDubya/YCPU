@@ -13,28 +13,19 @@ namespace Ypsilon.Emulation
             private set;
         }
 
-        public static IServiceRegistry Registry
-        {
-            get;
-            private set;
-        }
-
         private bool m_Running = false;
 
-        public Emulator(IServiceRegistry registry)
+        public Emulator(IDisplayProvider display, IInputProvider input)
         {
-            Registry = registry;
+            CPU = new YCPU();
+            CPU.BUS.SetProviders(display, input);
+            SetupDebugDevices();
+            CPU.Interrupt_Reset();
+
         }
 
         public void Update(double frameMS)
         {
-            if (CPU == null)
-            {
-                CPU = new YCPU();
-                SetupDebugDevices();
-                CPU.Interrupt_Reset();
-            }
-
             if (m_Running)
             {
                 CPU.Run((int)(YCPU.ClockRateHz * (frameMS / 1000d)));

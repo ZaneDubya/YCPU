@@ -51,7 +51,6 @@
     <Compile Include="Assembler\ParserState.cs" />
     <Compile Include="Assembler\Sanity.cs" />
     <Compile Include="Assembler\Scopes.cs" />
-    <Compile Include="IServiceRegistry.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Emulation\Devices\Graphics\MemoryBankLEM.cs" />
@@ -66,7 +65,7 @@
     <Compile Include="Emulation\Hardware\YCPU.Memory.cs" />
     <Compile Include="Emulation\Hardware\YCPU.Patterns.cs" />
     <Compile Include="Emulation\Hardware\YRTC.cs" />
-    <Compile Include="Emulation\IDeviceRenderer.cs" />
+    <Compile Include="Emulation\IDisplayProvider.cs" />
     <Compile Include="Emulation\IInputProvider.cs" />
     <Compile Include="Emulation\IMemoryBank.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

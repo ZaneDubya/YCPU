@@ -4,7 +4,7 @@ using Ypsilon.Core.Graphics;
 
 namespace YCPUXNA.Providers
 {
-    public class GraphicsProvider : IDeviceRenderer
+    public class DisplayProvider : IDisplayProvider
     {
         // YPSILON STUFF
 
@@ -51,7 +51,7 @@ namespace YCPUXNA.Providers
 
         // BASE STUFF
 
-        public GraphicsProvider(SpriteBatchExtended spriteBatch)
+        public DisplayProvider(SpriteBatchExtended spriteBatch)
         {
             m_SpriteBatch = spriteBatch;
         }
