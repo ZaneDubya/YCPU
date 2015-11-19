@@ -19,6 +19,12 @@ namespace Ypsilon.Entities
             private set;
         }
 
+        public bool IsDisposed
+        {
+            get;
+            private set;
+        }
+
         public AEntityComponent(AEntity entity)
         {
             Entity = entity;
@@ -34,7 +40,22 @@ namespace Ypsilon.Entities
             IsInitialized = true;
         }
 
+        public void Dispose()
+        {
+            if (IsDisposed)
+                return;
+
+            OnDipose();
+
+            IsDisposed = true;
+        }
+
         protected virtual void OnInitialize()
+        {
+
+        }
+
+        protected virtual void OnDipose()
         {
 
         }

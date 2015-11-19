@@ -80,7 +80,5 @@ namespace Ypsilon.Modes.Space.Input
                 m_Entities.Add(entity);
             }
         }
-
-        
     }
 }

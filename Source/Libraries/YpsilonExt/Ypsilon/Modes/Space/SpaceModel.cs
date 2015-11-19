@@ -22,12 +22,12 @@ namespace Ypsilon.Modes.Space
             // create player dude
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
             PlayerState.Vars.PlayerSerial = player.Serial;
-            player.AddComponent<ShipSpaceComponent>(new ShipSpaceComponent(player));
+            player.SetComponent(new ShipSpaceComponent(player));
             // create other dudes.
             for (int i = 0; i < 100; i++)
             {
                 Ship ship = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-                ShipSpaceComponent c = ship.AddComponent<ShipSpaceComponent>(new ShipSpaceComponent(ship));
+                ShipSpaceComponent c = (ShipSpaceComponent)ship.SetComponent(new ShipSpaceComponent(ship));
                 c.Position = new Position3D(
                     Utility.Random_GetNonpersistantDouble() * 600 - 300,
                     Utility.Random_GetNonpersistantDouble() * 600 - 300,
@@ -37,17 +37,17 @@ namespace Ypsilon.Modes.Space
             // create a planet.
             Spob planet = Entities.GetEntity<Spob>(Serial.GetNext(), true);
             planet.Definition = Definitions.GetSpob("planet");
-            SpobSpceComponent planetComponent = planet.AddComponent<SpobSpceComponent>(new SpobSpceComponent(planet));
+            SpobSpceComponent planetComponent = (SpobSpceComponent)planet.SetComponent(new SpobSpceComponent(planet));
             planetComponent.Position = new Position3D(0, 0, 0);
 
             Spob asteroid1 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
             asteroid1.Definition = Definitions.GetSpob("asteroid small");
-            SpobSpceComponent asteroid1c = asteroid1.AddComponent<SpobSpceComponent>(new SpobSpceComponent(asteroid1));
+            SpobSpceComponent asteroid1c = (SpobSpceComponent)asteroid1.SetComponent(new SpobSpceComponent(asteroid1));
             asteroid1c.Position = new Position3D(100, 100, 0);
 
             Spob asteroid2 = Entities.GetEntity<Spob>(Serial.GetNext(), true);
             asteroid2.Definition = Definitions.GetSpob("asteroid large");
-            SpobSpceComponent asteroid2c = asteroid2.AddComponent<SpobSpceComponent>(new SpobSpceComponent(asteroid2));
+            SpobSpceComponent asteroid2c = (SpobSpceComponent)asteroid2.SetComponent(new SpobSpceComponent(asteroid2));
             asteroid2c.Position = new Position3D(-100, 200, 0);
         }
 

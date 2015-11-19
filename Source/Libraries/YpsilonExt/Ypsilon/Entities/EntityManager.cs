@@ -170,7 +170,10 @@ namespace Ypsilon.Entities
         public void RemoveAllComponentsOfType<T>() where T : AEntityComponent
         {
             foreach (AEntity entity in m_Entities.Values)
-                entity.RemoveComponent<T>();
+            {
+                if (entity.GetComponent<T>() != null)
+                    entity.ClearComponent();
+            }
         }
     }
 }

@@ -34,14 +34,17 @@ namespace Ypsilon.Entities
 
         public virtual void Update(float frameSeconds)
         {
-            if (m_Components != null)
+            if (m_Component != null)
             {
-                foreach (AEntityComponent c in m_Components.Values)
+                if (!m_Component.IsDisposed)
                 {
-                    if (!c.IsInitialized)
-                        c.Initialize();
-                    c.Update(frameSeconds);
+                    if (!m_Component.IsInitialized)
+                        m_Component.Initialize();
+                    m_Component.Update(frameSeconds);
                 }
+
+                if (m_Component.IsDisposed)
+                    m_Component = null;
             }
         }
 
@@ -58,7 +61,43 @@ namespace Ypsilon.Entities
         #endregion
 
         #region Component Support
-        private Dictionary<Type, AEntityComponent> m_Components;
+        private AEntityComponent m_Component;
+
+        public AEntityComponent SetComponent(AEntityComponent component)
+        {
+            if (m_Component != null && !m_Component.IsDisposed)
+            {
+                m_Component.Dispose();
+                m_Component = null;
+            }
+
+            m_Component = component;
+            return component;
+        }
+
+        public void ClearComponent()
+        {
+            if (m_Component != null && !m_Component.IsDisposed)
+            {
+                m_Component.Dispose();
+                m_Component = null;
+            }
+        }
+
+        public T GetComponent<T>() where T : AEntityComponent
+        {
+            if (m_Component == null)
+                return default(T);
+
+            Type type = typeof(T);
+
+            if (type.IsAssignableFrom(m_Component.GetType()))
+                return (T)m_Component;
+            else
+                return default(T);
+        }
+
+        /*private Dictionary<Type, AEntityComponent> m_Components;
 
         public T AddComponent<T>(AEntityComponent component) where T : AEntityComponent
         {
@@ -100,7 +139,7 @@ namespace Ypsilon.Entities
             {
                 m_Components.Remove(type);
             }
-        }
+        }*/
         #endregion
 
         #region IDisposable Support
