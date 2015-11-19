@@ -5,6 +5,7 @@ using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Views;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space
 {

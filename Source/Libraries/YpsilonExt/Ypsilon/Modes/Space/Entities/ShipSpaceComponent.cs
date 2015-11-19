@@ -1,19 +1,28 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Data;
 using Ypsilon.Modes.Space.Entities.Movement;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space.Entities
 {
-    /// <summary>
-    /// A starship.
-    /// </summary>
-    class Ship : AEntity
+    class ShipSpaceComponent : AEntitySpaceComponent
     {
-        public AShipDefinition Definition = new AShipDefinition();
+        public new Ship Entity
+        {
+            get
+            {
+                return (Ship)base.Entity;
+            }
+        }
+
         public AAction Action = null;
 
         private ShipRotator2D m_Rotator;
@@ -24,7 +33,7 @@ namespace Ypsilon.Modes.Space.Entities
         {
             get
             {
-                return (Definition.DefaultSpeed / 10f) * Throttle;
+                return (Entity.Definition.DefaultSpeed / 10f) * Throttle;
             }
         }
 
@@ -62,26 +71,16 @@ namespace Ypsilon.Modes.Space.Entities
             }
         }
 
-        public override float ViewSize
+        public ShipSpaceComponent(Ship ship)
+            : base(ship)
         {
-            get
-            {
-                return Definition.DisplaySize;
-            }
-        }
-
-        public float ResourceOre = 0f;
-
-        public Ship(EntityManager manager, Serial serial)
-            : base(manager, serial)
-        {
-            
+            ViewSize = Entity.Definition.DisplaySize;
         }
 
         protected override void OnInitialize()
         {
             m_ModelVertices = Vertices.SimpleArrow;
-            m_Rotator = new ShipRotator2D(Definition);
+            m_Rotator = new ShipRotator2D(Entity.Definition);
 
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), ViewSize);
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), ViewSize);
@@ -106,7 +105,7 @@ namespace Ypsilon.Modes.Space.Entities
 
             DrawMatrix = CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = IsPlayerEntity ? Color.White : Color.OrangeRed;
+            DrawColor = Entity.IsPlayerEntity ? Color.White : Color.OrangeRed;
 
             base.Draw(renderer, worldSpaceCenter, mouseOverList);
 

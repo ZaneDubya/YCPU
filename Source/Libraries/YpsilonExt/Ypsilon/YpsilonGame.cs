@@ -46,7 +46,7 @@ namespace Ypsilon
 
         protected override void LoadContent()
         {
-            Space.Resources.Textures.Initialize(GraphicsDevice);
+            Modes.Space.Resources.Textures.Initialize(GraphicsDevice);
 
             base.LoadContent();
         }

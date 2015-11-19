@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ypsilon.Modes.Space
+namespace Ypsilon.Entities
 {
     public struct Serial : IComparable, IComparable<Serial>
     {

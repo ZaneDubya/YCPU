@@ -1,45 +1,40 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.Data;
+using Ypsilon.Entities;
 using Ypsilon.Modes.Space.Entities.Movement;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
 
 namespace Ypsilon.Modes.Space.Entities
 {
-    /// <summary>
-    /// A space object: planet or asteroid.
-    /// </summary>
-    class Spob : AEntity
+    class SpobSpceComponent : AEntitySpaceComponent
     {
-        public ASpobDefinition Definition = new ASpobDefinition();
+        public new Spob Entity
+        {
+            get
+            {
+                return (Spob)base.Entity;
+            }
+        }
 
         private PlanetRotator m_Rotator;
         private Vector3[] m_ModelVertices;
 
-        public override float ViewSize
+        public SpobSpceComponent(Spob spob)
+            : base(spob)
         {
-            get
-            {
-                return Definition.Size;
-            }
-        }
-
-        public Spob(EntityManager manager, Serial serial)
-            : base(manager, serial)
-        {
-            
+            ViewSize = Entity.Definition.Size;
         }
 
         protected override void OnInitialize()
         {
-            m_ModelVertices = Vertices.GetSpobVertices(Definition);
-            m_Rotator = new PlanetRotator(Definition);
+            m_ModelVertices = Vertices.GetSpobVertices(Entity.Definition);
+            m_Rotator = new PlanetRotator(Entity.Definition);
         }
 
         public override void Update(float frameSeconds)
         {
-            m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Definition.RotationPeriod;
+            m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Entity.Definition.RotationPeriod;
         }
 
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
@@ -47,7 +42,7 @@ namespace Ypsilon.Modes.Space.Entities
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
             DrawMatrix = CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = Definition.Color;
+            DrawColor = Entity.Definition.Color;
 
             base.Draw(renderer, worldSpaceCenter, mouseOverList);
         }
@@ -64,14 +59,5 @@ namespace Ypsilon.Modes.Space.Entities
 
             return Matrix.CreateWorld(translation, forward, up);
         }
-
-        public float ExtractOre(float frameSeconds)
-        {
-            float amount = (ResourceOre > frameSeconds) ? frameSeconds : ResourceOre;
-            ResourceOre -= amount;
-            return amount;
-        }
-
-        public float ResourceOre = 100f;
     }
 }

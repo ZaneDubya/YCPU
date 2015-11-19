@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using Ypsilon.Modes.Space.Entities;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space.Input
 {

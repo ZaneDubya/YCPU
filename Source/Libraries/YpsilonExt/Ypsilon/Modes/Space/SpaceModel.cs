@@ -1,19 +1,18 @@
 ﻿using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Data;
-using Ypsilon.Modes.Space.Entities;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space
 {
     class SpaceModel : AModel
     {
+        public static Serial SelectedSerial = Serial.Null;
+
         internal EntityManager Entities
         {
             get;
             private set;
         }
-
-        public static Serial PlayerSerial = Serial.Null;
-        public static Serial SelectedSerial = Serial.Null;
 
         public SpaceModel()
         {
@@ -21,7 +20,7 @@ namespace Ypsilon.Modes.Space
 
             // create player
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);
-            SpaceModel.PlayerSerial = player.Serial;
+            PlayerState.Vars.PlayerSerial = player.Serial;
             // create other dudes.
             for (int i = 0; i < 100; i++)
             {

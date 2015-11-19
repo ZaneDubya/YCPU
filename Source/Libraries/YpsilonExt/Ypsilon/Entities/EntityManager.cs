@@ -14,7 +14,7 @@ using Ypsilon.Core;
 using Ypsilon.PlayerState;
 #endregion
 
-namespace Ypsilon.Modes.Space.Entities
+namespace Ypsilon.Entities
 {
     class EntityManager
     {
@@ -56,8 +56,8 @@ namespace Ypsilon.Modes.Space.Entities
         public AEntity GetPlayerEntity()
         {
             // This could be cached to save time.
-            if (m_Entities.ContainsKey(SpaceModel.PlayerSerial))
-                return (AEntity)m_Entities[SpaceModel.PlayerSerial];
+            if (m_Entities.ContainsKey(Vars.PlayerSerial))
+                return (AEntity)m_Entities[Vars.PlayerSerial];
             else
                 return null;
         }
@@ -71,8 +71,6 @@ namespace Ypsilon.Modes.Space.Entities
             {
                 if (!entity.Value.IsDisposed)
                 {
-                    if (!entity.Value.IsInitialized)
-                        entity.Value.Initialize();
                     entity.Value.Update(frameSeconds);
                 }
                 else

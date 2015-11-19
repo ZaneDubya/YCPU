@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 #endregion
 
-namespace Ypsilon.Modes.Space.Entities
+namespace Ypsilon.Entities
 {
     public class PropertyList
     {
