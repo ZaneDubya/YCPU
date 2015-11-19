@@ -56,7 +56,7 @@ namespace Ypsilon.Entities
         #region Component Support
         private static Dictionary<Type, AEntityComponent> m_Components;
 
-        public void AddComponent<T>(AEntityComponent component)
+        public void AddComponent<T>(AEntityComponent component) where T : AEntityComponent
         {
             Type type = typeof(T);
 
@@ -65,7 +65,20 @@ namespace Ypsilon.Entities
             m_Components.Add(type, component);
         }
 
-        public void RemoveComponent<T>()
+        public T GetComponent<T>() where T : AEntityComponent
+        {
+            if (m_Components == null)
+                return default(T);
+
+            Type type = typeof(T);
+
+            if (m_Components.ContainsKey(type))
+                return (T)m_Components[type];
+            else
+                return default(T);
+        }
+
+        public void RemoveComponent<T>() where T : AEntityComponent
         {
             if (m_Components == null)
                 return;

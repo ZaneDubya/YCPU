@@ -24,6 +24,14 @@ namespace Ypsilon.Entities
         private bool m_EntitiesCollectionIsLocked = false;
         private List<int> m_SerialsToRemove = new List<int>();
 
+        public Dictionary<int, AEntity> AllEntities
+        {
+            get
+            {
+                return m_Entities;
+            }
+        }
+
         public EntityManager()
         {
 
@@ -156,31 +164,13 @@ namespace Ypsilon.Entities
         }
 
         // ======================================================================
-        // Drawable entities 
+        // Component support
         // ======================================================================
 
-        private List<AEntity> m_EntitiesOnScreen;
-
-        public List<AEntity> GetVisibleEntities(Position3D center, Vector2 dimensions)
+        public void RemoveAllComponentsOfType<T>() where T : AEntityComponent
         {
-            RectangleF bounds = new RectangleF(
-                (float)center.X - dimensions.X / 2f,
-                (float)center.Y - dimensions.Y / 2f,
-                dimensions.X,
-                dimensions.Y);
-            if (m_EntitiesOnScreen == null)
-                m_EntitiesOnScreen = new List<AEntity>();
-            m_EntitiesOnScreen.Clear();
-
-            foreach (KeyValuePair<int, AEntity> entity in m_Entities)
-            {
-                AEntity e = entity.Value;
-                if (!e.IsDisposed && e.IsInitialized && e.IsVisible && e.Position.Intersects(bounds, e.ViewSize))
-                {
-                    m_EntitiesOnScreen.Add(e);
-                }
-            }
-            return m_EntitiesOnScreen;
+            foreach (AEntity entity in m_Entities.Values)
+                entity.RemoveComponent<T>();
         }
     }
 }

@@ -6,6 +6,7 @@ using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Views;
 using Ypsilon.Entities;
+using Ypsilon.Core;
 
 namespace Ypsilon.Modes.Space
 {
@@ -55,18 +56,19 @@ namespace Ypsilon.Modes.Space
             mouseOver.Reset();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
             m_SpriteBatch.GraphicsDevice.Clear(new Color(16, 0, 16, 255));
 
             // draw backdrop
-            m_Stars.Update(player.Velocity * frameSeconds);
+            m_Stars.Update(playerShip.Velocity * frameSeconds);
             m_Stars.Draw(m_SpriteBatch);
 
             // get a list of all entities visible in the world. add them to a local list of visible entities.
-            List<AEntity> visible = Model.Entities.GetVisibleEntities(player.Position, new Vector2(screenWidth, screenHeight));
+            List<AEntity> visible = Model.Entities.GetVisibleEntities(playerShip.Position, new Vector2(screenWidth, screenHeight));
             foreach (AEntity e in visible)
             {
-                e.Draw(m_Vectors, player.Position, mouseOver);
+                playerShip.Draw(m_Vectors, playerShip.Position, mouseOver);
             }
 
             // now render using sprite batches...
@@ -114,14 +116,46 @@ namespace Ypsilon.Modes.Space
             m_Curses.Clear();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
-            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", player.Position.X, player.Position.Y));
-            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", player.Velocity.X, player.Velocity.Y));
+            ShipSpaceComponent ship = player.GetComponent<ShipSpaceComponent>();
+
+            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", ship.Position.X, ship.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", ship.Velocity.X, ship.Velocity.Y));
 
             m_Curses.WriteString(108, 0, string.Format("Hold:"));
             m_Curses.WriteString(108, 1, string.Format("Ore: {0:F2} kg", player.ResourceOre));
 
             //if (PlayerState.SelectedSerial != Serial.Null)
             //    m_Curses.WriteString(8, 2, "Hello world!");
+        }
+
+        // ======================================================================
+        // Drawable entities 
+        // ======================================================================
+
+        private List<AEntity> m_EntitiesOnScreen;
+
+        public List<AEntity> GetVisibleEntities(Position3D center, Vector2 dimensions)
+        {
+            RectangleF bounds = new RectangleF(
+                (float)center.X - dimensions.X / 2f,
+                (float)center.Y - dimensions.Y / 2f,
+                dimensions.X,
+                dimensions.Y);
+            if (m_EntitiesOnScreen == null)
+                m_EntitiesOnScreen = new List<AEntity>();
+            m_EntitiesOnScreen.Clear();
+
+            foreach (KeyValuePair<int, AEntity> entity in Model.Entities.AllEntities)
+            {
+                AEntity e = entity.Value;
+                AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
+
+                if (!e.IsDisposed && e.IsInitialized && e.IsVisible && e.Position.Intersects(bounds, e.ViewSize))
+                {
+                    m_EntitiesOnScreen.Add(e);
+                }
+            }
+            return m_EntitiesOnScreen;
         }
     }
 }
