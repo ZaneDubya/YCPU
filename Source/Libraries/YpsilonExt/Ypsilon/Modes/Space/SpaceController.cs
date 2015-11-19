@@ -6,6 +6,7 @@ using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.PlayerState;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space
 {
@@ -32,6 +33,7 @@ namespace Ypsilon.Modes.Space
         {
             // get the player object.
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            ShipSpaceComponent playerComponent = player.GetComponent<ShipSpaceComponent>();
 
             // Left-down to select.
             if (input.HandleMouseEvent(MouseEvent.Down, MouseButton.Left))
@@ -51,10 +53,10 @@ namespace Ypsilon.Modes.Space
                 // M is for MINING
             if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
             {
-                if (player.Action is MiningAction)
+                if (playerComponent.Action is MiningAction)
                 {
                     // stop mining
-                    player.Action = new NoAction(player);
+                    playerComponent.Action = new NoAction(player);
                 }
                 else
                 {
@@ -62,11 +64,13 @@ namespace Ypsilon.Modes.Space
                     AEntity selected = Model.Entities.GetEntity<AEntity>(SpaceModel.SelectedSerial, false);
                     if (selected != null)
                     {
-                        float maxDistance = player.ViewSize + selected.ViewSize;
+                        AEntitySpaceComponent selectedComponent = selected.GetComponent<AEntitySpaceComponent>();
 
-                        if (selected is Spob && Position3D.Distance(player.Position, selected.Position) < maxDistance)
+                        float maxDistance = playerComponent.ViewSize + selectedComponent.ViewSize;
+
+                        if (selected is Spob && Position3D.Distance(playerComponent.Position, selectedComponent.Position) < maxDistance)
                         {
-                            player.Action = new MiningAction(player, selected as Spob);
+                            playerComponent.Action = new MiningAction(player, selected as Spob);
                         }
                     }
                 }
@@ -83,8 +87,8 @@ namespace Ypsilon.Modes.Space
                 leftrightRotation = -1f;
             if (input.IsKeyDown(WinKeys.Left) || input.IsKeyDown(WinKeys.A))
                 leftrightRotation = 1f;
-            player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
-            player.Throttle = player.Throttle + acceleration * frameSeconds;
+            playerComponent.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
+            playerComponent.Throttle = playerComponent.Throttle + acceleration * frameSeconds;
 
             // update the mouse over list's mouse position.
             MouseOverList.ScreenMousePosition = new Vector3(input.MousePosition.X, input.MousePosition.Y, 0);

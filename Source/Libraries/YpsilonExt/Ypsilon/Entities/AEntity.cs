@@ -37,7 +37,11 @@ namespace Ypsilon.Entities
             if (m_Components != null)
             {
                 foreach (AEntityComponent c in m_Components.Values)
+                {
+                    if (!c.IsInitialized)
+                        c.Initialize();
                     c.Update(frameSeconds);
+                }
             }
         }
 
@@ -54,15 +58,17 @@ namespace Ypsilon.Entities
         #endregion
 
         #region Component Support
-        private static Dictionary<Type, AEntityComponent> m_Components;
+        private Dictionary<Type, AEntityComponent> m_Components;
 
-        public void AddComponent<T>(AEntityComponent component) where T : AEntityComponent
+        public T AddComponent<T>(AEntityComponent component) where T : AEntityComponent
         {
             Type type = typeof(T);
 
             if (m_Components == null)
                 m_Components = new Dictionary<Type, AEntityComponent>();
             m_Components.Add(type, component);
+
+            return (T)component;
         }
 
         public T GetComponent<T>() where T : AEntityComponent
@@ -75,7 +81,12 @@ namespace Ypsilon.Entities
             if (m_Components.ContainsKey(type))
                 return (T)m_Components[type];
             else
+            {
+                foreach (AEntityComponent e in m_Components.Values)
+                    if (type.IsAssignableFrom(e.GetType()))
+                        return (T)e;
                 return default(T);
+            }
         }
 
         public void RemoveComponent<T>() where T : AEntityComponent

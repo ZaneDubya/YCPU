@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space.Entities.ShipActions
 {
@@ -17,16 +14,20 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
 
         public override void Update(float frameSeconds)
         {
+            ShipSpaceComponent component = Parent.GetComponent<ShipSpaceComponent>();
+            if (component == null)
+                return;
+
             if (Target == null )
             {
-                Parent.Action = new NoAction(Parent);
+                component.Action = new NoAction(Parent);
                 return;
             }
 
             float amount = Target.ExtractOre(frameSeconds);
             if (amount == 0)
             {
-                Parent.Action = new NoAction(Parent);
+                component.Action = new NoAction(Parent);
                 return;
             }
 

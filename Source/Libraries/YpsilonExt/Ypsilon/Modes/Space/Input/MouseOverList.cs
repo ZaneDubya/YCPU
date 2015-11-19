@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Ypsilon.Entities;
+using Ypsilon.Modes.Space.Entities;
 
 namespace Ypsilon.Modes.Space.Input
 {
@@ -69,7 +70,11 @@ namespace Ypsilon.Modes.Space.Input
             if (m_Entities.Contains(entity))
                 return;
 
-            BoundingSphere bounds = new BoundingSphere(center, entity.ViewSize * 1.2f);
+            AEntitySpaceComponent component = entity.GetComponent<AEntitySpaceComponent>();
+            if (component == null)
+                return;
+
+            BoundingSphere bounds = new BoundingSphere(center, component.ViewSize * 1.2f);
             if (bounds.Contains(WorldMousePosition) == ContainmentType.Contains)
             {
                 m_Entities.Add(entity);

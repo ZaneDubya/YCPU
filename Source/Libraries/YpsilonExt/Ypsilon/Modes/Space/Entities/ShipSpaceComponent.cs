@@ -75,6 +75,7 @@ namespace Ypsilon.Modes.Space.Entities
             : base(ship)
         {
             ViewSize = Entity.Definition.DisplaySize;
+            m_Rotator = new ShipRotator2D(Entity.Definition);
         }
 
         protected override void OnInitialize()

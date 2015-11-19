@@ -65,10 +65,11 @@ namespace Ypsilon.Modes.Space
             m_Stars.Draw(m_SpriteBatch);
 
             // get a list of all entities visible in the world. add them to a local list of visible entities.
-            List<AEntity> visible = Model.Entities.GetVisibleEntities(playerShip.Position, new Vector2(screenWidth, screenHeight));
+            List<AEntity> visible = GetVisibleEntities(playerShip.Position, new Vector2(screenWidth, screenHeight));
             foreach (AEntity e in visible)
             {
-                playerShip.Draw(m_Vectors, playerShip.Position, mouseOver);
+                AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
+                c.Draw(m_Vectors, playerShip.Position, mouseOver);
             }
 
             // now render using sprite batches...
@@ -150,7 +151,7 @@ namespace Ypsilon.Modes.Space
                 AEntity e = entity.Value;
                 AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
 
-                if (!e.IsDisposed && e.IsInitialized && e.IsVisible && e.Position.Intersects(bounds, e.ViewSize))
+                if (!e.IsDisposed && c.IsInitialized && c.IsVisible && c.Position.Intersects(bounds, c.ViewSize))
                 {
                     m_EntitiesOnScreen.Add(e);
                 }

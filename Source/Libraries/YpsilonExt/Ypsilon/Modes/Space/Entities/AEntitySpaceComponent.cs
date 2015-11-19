@@ -30,7 +30,7 @@ namespace Ypsilon.Modes.Space.Entities
             }
         }
 
-        protected float ViewSize = 1f;
+        public float ViewSize = 1f;
         protected Vector3[] DrawVertices = null;
         protected Color DrawColor = Color.White;
         protected Matrix DrawMatrix = Matrix.Identity;
@@ -41,7 +41,7 @@ namespace Ypsilon.Modes.Space.Entities
             Position = Position3D.Zero;
         }
 
-        public void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
+        public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
             Vector3[] v = new Vector3[DrawVertices.Length];
             for (int i = 0; i < v.Length; i++)
