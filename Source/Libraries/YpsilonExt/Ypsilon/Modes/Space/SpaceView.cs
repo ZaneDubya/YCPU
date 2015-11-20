@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using Ypsilon.Core;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Patterns.MVC;
+using Ypsilon.Entities;
 using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Views;
-using Ypsilon.Entities;
-using Ypsilon.Core;
 
 namespace Ypsilon.Modes.Space
 {

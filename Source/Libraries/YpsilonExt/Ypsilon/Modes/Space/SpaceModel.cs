@@ -7,7 +7,7 @@ namespace Ypsilon.Modes.Space
 {
     class SpaceModel : AModel
     {
-        public static Serial SelectedSerial = Serial.Null;
+        public static Serial SelectedSerial;
 
         internal EntityManager Entities
         {
@@ -18,6 +18,7 @@ namespace Ypsilon.Modes.Space
         public SpaceModel()
         {
             Entities = new EntityManager();
+            SelectedSerial = Serial.Null;
 
             // create player dude
             Ship player = Entities.GetEntity<Ship>(Serial.GetNext(), true);

@@ -26,3 +26,6 @@
 	Break out resources into items. Hold is item.
 	
 	Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
+	Split out SpaceMode. DONE.
+	Add a landed mode.
+	

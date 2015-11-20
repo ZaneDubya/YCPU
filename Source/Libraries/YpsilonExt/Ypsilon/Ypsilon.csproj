@@ -57,6 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\AEntityComponent.cs" />
+    <Compile Include="Modes\Landed\LandedController.cs" />
+    <Compile Include="Modes\Landed\LandedModel.cs" />
+    <Compile Include="Modes\Landed\LandedView.cs" />
     <Compile Include="Modes\ModeManager.cs" />
     <Compile Include="Modes\Space\Entities\AEntitySpaceComponent.cs" />
     <Compile Include="Modes\Space\Entities\ShipSpaceComponent.cs" />
