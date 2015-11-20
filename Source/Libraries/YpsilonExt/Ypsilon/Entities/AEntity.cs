@@ -12,6 +12,12 @@ namespace Ypsilon.Entities
             private set;
         }
 
+        public string Name
+        {
+            get;
+            set;
+        }
+
         public Serial Serial
         {
             get;

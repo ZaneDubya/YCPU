@@ -70,6 +70,8 @@ namespace Ypsilon.Modes.Space
             {
                 AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
                 c.Draw(m_Vectors, playerShip.Position, mouseOver);
+                if (e.Serial == Model.SelectedSerial)
+                    c.DrawSelection(m_Vectors);
             }
 
             // now render using sprite batches...
@@ -117,16 +119,24 @@ namespace Ypsilon.Modes.Space
             m_Curses.Clear();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
-            ShipSpaceComponent ship = player.GetComponent<ShipSpaceComponent>();
+            ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
-            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", ship.Position.X, ship.Position.Y));
-            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", ship.Velocity.X, ship.Velocity.Y));
+            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
 
             m_Curses.WriteString(108, 0, string.Format("Hold:"));
             m_Curses.WriteString(108, 1, string.Format("Ore: {0:F2} kg", player.ResourceOre));
 
+            AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+            if (selected != null)
+            {
+                string name = selected.Name;
+                m_Curses.WriteString(64 - name.Length / 2, 2, name);
+                // m_Curses.WriteString(8, 2, "Hello world!");
+            }
+
             //if (PlayerState.SelectedSerial != Serial.Null)
-            //    m_Curses.WriteString(8, 2, "Hello world!");
+            //    
         }
 
         // ======================================================================

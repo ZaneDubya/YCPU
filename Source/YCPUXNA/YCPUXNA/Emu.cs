@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using YCPUXNA.Providers;
-using Ypsilon;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;

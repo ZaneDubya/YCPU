@@ -40,14 +40,14 @@ namespace Ypsilon.Modes.Space
             {
                 if (MouseOverList.HasEntities)
                 {
-                    SpaceModel.SelectedSerial = MouseOverList.GetNextSelectableEntity(SpaceModel.SelectedSerial).Serial;
+                    Model.SelectedSerial = MouseOverList.GetNextSelectableEntity(Model.SelectedSerial).Serial;
                 }
             }
 
             // L is for LAND
             if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, false))
             {
-                AEntity selected = Model.Entities.GetEntity<AEntity>(SpaceModel.SelectedSerial, false);
+                AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
             }
 
                 // M is for MINING
@@ -61,7 +61,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     // start mining
-                    AEntity selected = Model.Entities.GetEntity<AEntity>(SpaceModel.SelectedSerial, false);
+                    AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
                     if (selected != null)
                     {
                         AEntitySpaceComponent selectedComponent = selected.GetComponent<AEntitySpaceComponent>();
