@@ -81,7 +81,7 @@ namespace Ypsilon.Modes.Space
                 Matrix.Identity);
 
             // draw user interface
-            DrawTitleSafeAreas();
+            // DrawTitleSafeAreas();
             m_Curses.Render(m_SpriteBatch, new Vector2(64, 40));
 
             m_Vectors.Render(

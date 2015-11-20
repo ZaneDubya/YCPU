@@ -36,7 +36,7 @@ namespace Ypsilon.Modes.Space
                 ship.Name = "Enemy ship";
                 ShipSpaceComponent c = (ShipSpaceComponent)ship.SetComponent(new ShipSpaceComponent(ship));
                 c.Position = new Position3D(
-                    Utility.Random_GetNonpersistantDouble() * 600 - 300,
+                    Utility.Random_GetNonpersistantDouble() * 1000 - 500,
                     Utility.Random_GetNonpersistantDouble() * 600 - 300,
                     0);
             }
