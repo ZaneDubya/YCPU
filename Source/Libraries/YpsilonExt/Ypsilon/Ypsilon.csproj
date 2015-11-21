@@ -88,14 +88,15 @@
     <Compile Include="Modes\Space\SpaceController.cs" />
     <Compile Include="Modes\Space\SpaceModel.cs" />
     <Compile Include="Modes\Space\SpaceView.cs" />
-    <Compile Include="Unused\Crafting\Materials\AMineral.cs" />
-    <Compile Include="Unused\Crafting\Materials\Minerals\Metal.cs" />
+    <Compile Include="Data\Crafting\Materials\Mineral.cs" />
+    <Compile Include="Data\Crafting\Materials\Minerals\Metal.cs" />
     <Compile Include="Data\ASpobDefinition.cs" />
     <Compile Include="Data\AShipDefinition.cs" />
     <Compile Include="Data\Definitions.cs" />
-    <Compile Include="Unused\Crafting\AMaterial.cs" />
+    <Compile Include="Data\Crafting\Material.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="PlayerState\Vars.cs" />
+    <Compile Include="Data\Crafting\Materials\Minerals\Ore.cs" />
     <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility.cs" />
@@ -115,9 +116,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Unused\Crafting\Materials\Chemicals\" />
-    <Folder Include="Unused\Crafting\Materials\Energies\" />
-    <Folder Include="Unused\Crafting\Materials\Organic\" />
+    <Folder Include="Data\Crafting\Materials\Chemicals\" />
+    <Folder Include="Data\Crafting\Materials\Energies\" />
+    <Folder Include="Data\Crafting\Materials\Organic\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

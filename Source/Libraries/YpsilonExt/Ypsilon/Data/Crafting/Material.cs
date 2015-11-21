@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Modes.Space.Resources
+namespace Ypsilon.Data.Crafting
 {
-    class AMaterial
+    class Material
     {
         public string Name;
 
-        public AMaterial(string name)
+        public Material(string name)
         {
             Name = name;
         }

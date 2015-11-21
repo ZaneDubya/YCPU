@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Modes.Space.Resources.Materials
+namespace Ypsilon.Data.Crafting.Materials
 {
-    abstract class AMineral : AMaterial
+    abstract class Mineral : Material
     {
-        public AMineral(string name)
+        public Mineral(string name)
             : base(name)
         {
 

@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Ypsilon.Core.Patterns.MVC;
 
 namespace Ypsilon.Modes.Landed
 {
-    class LandedView
+    class LandedView : AView
     {
+        public LandedView(LandedModel model)
+            : base(model)
+        {
+
+        }
     }
 }

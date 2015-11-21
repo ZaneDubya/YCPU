@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Modes.Space.Resources.Materials.Minerals
+namespace Ypsilon.Data.Crafting.Materials.Minerals
 {
-    class Metal : AMineral
+    class Metal : Mineral
     {
         public Metal(string name)
             : base(name)
