@@ -1,9 +1,9 @@
 ﻿#region Using Statements
 using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
-using Ypsilon.Modes.Space;
 using Ypsilon.Core.Input;
 using Ypsilon.Modes;
+using Ypsilon.Modes.Space;
 #endregion
 
 namespace Ypsilon

@@ -24,6 +24,6 @@ namespace Ypsilon.Entities
             return amount;
         }
 
-        public float ResourceOre = 100f;
+        public float ResourceOre = 1f;
     }
 }

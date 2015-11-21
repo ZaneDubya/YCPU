@@ -121,11 +121,14 @@ namespace Ypsilon.Modes.Space
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
             ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
-            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
-            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
+            // m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
+            // m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
+            m_Curses.WriteString(0, 0, "Player ship");
+            m_Curses.WriteString(0, 1, "Sh: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
+            m_Curses.WriteString(0, 2, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
 
-            m_Curses.WriteString(108, 0, string.Format("Hold:"));
-            m_Curses.WriteString(108, 1, string.Format("Ore: {0:F2} kg", player.ResourceOre));
+            m_Curses.WriteString(0, 4, string.Format("Hold:"));
+            m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", player.ResourceOre));
 
             AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
             if (selected != null)
