@@ -18,6 +18,8 @@ namespace Ypsilon.Data
         public float RotationPeriod = 60f;
 
         public Color Color;
+        public string Name;
+        public string Description;
 
         public float VertexRandomizationFactor;
 

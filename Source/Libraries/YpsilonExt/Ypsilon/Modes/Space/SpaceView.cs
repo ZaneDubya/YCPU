@@ -31,7 +31,7 @@ namespace Ypsilon.Modes.Space
         {
             m_SpriteBatch = ServiceRegistry.GetService<SpriteBatchExtended>();
             m_Vectors = ServiceRegistry.GetService<VectorRenderer>();
-            m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x16.png");
+            m_Curses = new Curses(m_SpriteBatch.GraphicsDevice, 128, 40, @"Content\BIOS8x16.png", false);
 
             m_Stars = new Starfield();
             m_Stars.CreateStars(100, new Rectangle(0, 0,
@@ -81,8 +81,11 @@ namespace Ypsilon.Modes.Space
                 Matrix.Identity);
 
             // draw user interface
-            // DrawTitleSafeAreas();
-            m_Curses.Render(m_SpriteBatch, new Vector2(64, 40));
+            DrawTitleSafeAreas();
+            m_Curses.Render(m_SpriteBatch, 
+                new Vector2(
+                    (screenWidth - m_Curses.DisplayWidth) / 2, 
+                    (screenHeight - m_Curses.DisplayHeight) / 2));
 
             m_Vectors.Render(
                 GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.GraphicsDevice),

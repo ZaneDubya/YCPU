@@ -77,7 +77,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
-                    modes.QueuedModel = new Landed.LandedModel();
+                    modes.QueuedModel = new Landed.LandedModel(selected as Spob);
                 }
             }
 

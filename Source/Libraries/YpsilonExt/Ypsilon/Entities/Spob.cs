@@ -9,7 +9,22 @@ namespace Ypsilon.Entities
     {
         public ASpobDefinition Definition = new ASpobDefinition();
 
-        
+        public override string Name
+        {
+            get
+            {
+                return Definition.Name;
+            }
+        }
+
+        public override string Description
+        {
+            get
+            {
+                return Definition.Description;
+            }
+
+        }
 
         public Spob(EntityManager manager, Serial serial)
             : base(manager, serial)

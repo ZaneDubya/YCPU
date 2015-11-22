@@ -1,10 +1,22 @@
 ﻿using System;
 using Ypsilon.Core.Patterns.MVC;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Landed
 {
     class LandedModel : AModel
     {
+        public Spob LandedOn
+        {
+            get;
+            private set;
+        }
+
+        public LandedModel(Spob landedOn)
+        {
+            LandedOn = landedOn;
+        }
+
         public override void Dispose()
         {
 
