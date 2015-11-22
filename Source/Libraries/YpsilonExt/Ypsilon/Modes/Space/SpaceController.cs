@@ -6,6 +6,7 @@ using Ypsilon.Entities;
 using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
+using System.Collections.Generic;
 
 namespace Ypsilon.Modes.Space
 {
@@ -43,8 +44,18 @@ namespace Ypsilon.Modes.Space
                 }
             }
 
+            // T is for TARGET
+            if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.T, false, false, false))
+            {
+                AEntity target = GetClosestEntity(playerComponent.Position);
+                if (target != null)
+                {
+                    Model.SelectedSerial = target.Serial;
+                }
+            }
+
             // L is for LAND
-            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, false))
+            if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.L, false, false, false))
             {
                 AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
                 if (selected == null)
@@ -71,7 +82,7 @@ namespace Ypsilon.Modes.Space
             }
 
                 // M is for MINING
-            if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, false))
+            if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.M, false, false, false))
             {
                 if (playerComponent.Action is MiningAction)
                 {
@@ -129,6 +140,31 @@ namespace Ypsilon.Modes.Space
 
             // update the mouse over list's mouse position.
             MouseOverList.ScreenMousePosition = new Vector3(input.MousePosition.X, input.MousePosition.Y, 0);
+        }
+
+        private AEntity GetClosestEntity(Position3D position)
+        {
+            Vector3 aPos = position.ToVector3();
+
+            AEntity nearest = null;
+            float distance = float.MaxValue;
+
+            Dictionary<int, AEntity> entites = Model.Entities.AllEntities;
+
+            foreach (AEntity e in entites.Values)
+            {
+                if (e.IsDisposed || e.IsPlayerEntity)
+                    continue;
+                Position3D ePos = e.GetComponent<AEntitySpaceComponent>().Position;
+                float eDist = Vector3.Distance(ePos.ToVector3(), aPos);
+                if (eDist < distance)
+                {
+                    distance = eDist;
+                    nearest = e;
+                }
+            }
+
+            return nearest;
         }
     }
 }

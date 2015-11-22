@@ -12,6 +12,8 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Ypsilon.Core;
 using Ypsilon.PlayerState;
+using System;
+using Ypsilon.Modes.Space;
 #endregion
 
 namespace Ypsilon.Entities
@@ -160,19 +162,6 @@ namespace Ypsilon.Entities
             if (m_Entities.ContainsKey(serial))
             {
                 m_Entities[serial].Dispose();
-            }
-        }
-
-        // ======================================================================
-        // Component support
-        // ======================================================================
-
-        public void RemoveAllComponentsOfType<T>() where T : AEntityComponent
-        {
-            foreach (AEntity entity in m_Entities.Values)
-            {
-                if (entity.GetComponent<T>() != null)
-                    entity.ClearComponent();
             }
         }
     }
