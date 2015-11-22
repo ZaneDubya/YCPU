@@ -23,9 +23,10 @@
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!
     Planet rotates around a star! 
 	
-	Break out resources into items. Hold is item.
+    Break out resources into items. Hold is item.
 	
-	Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
-	Split out SpaceMode. DONE.
-	Add a landed mode.
+    Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
+    Split out SpaceMode. DONE.
+    Add a landed mode.
 	
+    Design a GUI.

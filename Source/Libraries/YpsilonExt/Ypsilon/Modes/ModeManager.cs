@@ -56,6 +56,11 @@ namespace Ypsilon.Modes
 
         public void Update(float totalSeconds, float frameSeconds)
         {
+            if (m_QueuedModel != null)
+            {
+                ActivateQueuedModel();
+            }
+
             InputManager input = ServiceRegistry.GetService<InputManager>();
             m_Model.Update(totalSeconds, frameSeconds);
             m_Model.GetController().Update(frameSeconds, input);

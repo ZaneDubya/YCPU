@@ -14,20 +14,48 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
 
         public override void Update(float frameSeconds)
         {
-            ShipSpaceComponent component = Parent.GetComponent<ShipSpaceComponent>();
-            if (component == null)
-                return;
+            ShipSpaceComponent playerComponent = Parent.GetComponent<ShipSpaceComponent>();
+            SpobSpaceComponent targetComponent;
 
-            if (Target == null )
+            // make sure we have a target.
+
+            if (Target == null)
             {
-                component.Action = new NoAction(Parent);
+                playerComponent.Action = new NoAction(Parent);
                 return;
             }
+            else
+            {
+                targetComponent = Target.GetComponent<SpobSpaceComponent>();
+                if (targetComponent == null)
+                {
+                    playerComponent.Action = new NoAction(Parent);
+                    return;
+                }
+            }
+
+            // error conditions.
+
+            float maxDistance = playerComponent.ViewSize + targetComponent.ViewSize;
+
+            if (Position3D.Distance(playerComponent.Position, targetComponent.Position) > maxDistance)
+            {
+                Messages.Add(MessageType.Error, "Mining halted. Too far away to mine.");
+            }
+            else if (playerComponent.Speed > Constants.MaxMiningSpeed)
+            {
+                Messages.Add(MessageType.Error, "Mining halted. Moving too fast to mine.");
+                playerComponent.Action = new NoAction(Parent);
+                return;
+            }
+
+            // mine, unless target has run out of resources...
 
             float amount = Target.ExtractOre(frameSeconds);
             if (amount == 0)
             {
-                component.Action = new NoAction(Parent);
+                Messages.Add(MessageType.Error, "Target resources exhausted.");
+                playerComponent.Action = new NoAction(Parent);
                 return;
             }
 

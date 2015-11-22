@@ -61,9 +61,11 @@
     <Compile Include="Modes\Landed\LandedModel.cs" />
     <Compile Include="Modes\Landed\LandedView.cs" />
     <Compile Include="Modes\ModeManager.cs" />
+    <Compile Include="Modes\Space\Constants.cs" />
     <Compile Include="Modes\Space\Entities\AEntitySpaceComponent.cs" />
     <Compile Include="Modes\Space\Entities\ShipSpaceComponent.cs" />
-    <Compile Include="Modes\Space\Entities\SpobSpceComponent.cs" />
+    <Compile Include="Modes\Space\Entities\SpobSpaceComponent.cs" />
+    <Compile Include="Modes\Space\Messages.cs" />
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Entities\AEntity.cs" />
     <Compile Include="Entities\EntityManager.cs" />
@@ -74,7 +76,6 @@
     <Compile Include="Entities\PropertyList.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\AAction.cs" />
-    <Compile Include="Modes\Space\Entities\ShipActions\LandedAction.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\MiningAction.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\NoAction.cs" />
     <Compile Include="Entities\Spob.cs" />

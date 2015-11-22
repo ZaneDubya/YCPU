@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Ypsilon.Entities;
+﻿using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space.Entities.ShipActions
 {

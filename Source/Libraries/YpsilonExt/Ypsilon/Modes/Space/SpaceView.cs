@@ -42,7 +42,7 @@ namespace Ypsilon.Modes.Space
         public override void Draw(float frameSeconds)
         {
             // update curses
-            UpdateCurses();
+            UpdateCurses(frameSeconds);
 
             int screenWidth = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth;
             int screenHeight = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight;
@@ -114,18 +114,24 @@ namespace Ypsilon.Modes.Space
                 new Vector3(dx * 2, dy* 2 + height - 4 * dy, z) }, true, notTitleSafeColor, false);
         }
 
-        private void UpdateCurses()
+        private bool m_DisplayingMessage = false;
+        private string m_Message;
+        private float m_MessageTime;
+
+        private void UpdateCurses(float frameSeconds)
         {
+            UpdateDisplayMessage(frameSeconds);
+
             m_Curses.Clear();
 
             Ship player = (Ship)Model.Entities.GetPlayerEntity();
             ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
-            // m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
-            // m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
-            m_Curses.WriteString(0, 0, "Player ship");
-            m_Curses.WriteString(0, 1, "Sh: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
-            m_Curses.WriteString(0, 2, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
+            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
+            // m_Curses.WriteString(0, 0, "Player ship");
+            m_Curses.WriteString(0, 38, "Sh: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
+            m_Curses.WriteString(0, 39, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
 
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
             m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", player.ResourceOre));
@@ -140,6 +146,32 @@ namespace Ypsilon.Modes.Space
 
             //if (PlayerState.SelectedSerial != Serial.Null)
             //    
+
+            if (m_DisplayingMessage)
+            {
+                m_Curses.WriteString(64 - m_Message.Length / 2, 32, m_Message);
+            }
+        }
+
+        private void UpdateDisplayMessage(float frameSeconds)
+        {
+            MessageType msgType;
+            string msg;
+            if (Messages.Get(out msgType, out msg))
+            {
+                m_DisplayingMessage = true;
+                m_Message = msg;
+                m_MessageTime = 2f + m_Message.Length * .1f + frameSeconds;
+            }
+
+            if (m_DisplayingMessage)
+            {
+                m_MessageTime -= frameSeconds;
+                if (m_MessageTime <= 0)
+                {
+                    m_DisplayingMessage = false;
+                }
+            }
         }
 
         // ======================================================================

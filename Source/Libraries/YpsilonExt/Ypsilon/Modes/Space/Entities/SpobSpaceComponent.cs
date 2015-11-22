@@ -7,7 +7,7 @@ using Ypsilon.Modes.Space.Resources;
 
 namespace Ypsilon.Modes.Space.Entities
 {
-    class SpobSpceComponent : AEntitySpaceComponent
+    class SpobSpaceComponent : AEntitySpaceComponent
     {
         public new Spob Entity
         {
@@ -20,7 +20,7 @@ namespace Ypsilon.Modes.Space.Entities
         private PlanetRotator m_Rotator;
         private Vector3[] m_ModelVertices;
 
-        public SpobSpceComponent(Spob spob)
+        public SpobSpaceComponent(Spob spob)
             : base(spob)
         {
             ViewSize = Entity.Definition.Size;

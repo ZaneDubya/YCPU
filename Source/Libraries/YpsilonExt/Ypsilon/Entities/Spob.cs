@@ -24,6 +24,7 @@ namespace Ypsilon.Entities
             return amount;
         }
 
-        public float ResourceOre = 1f;
+        public float ResourceOre = 10f;
+        public bool CanLandHere = false;
     }
 }

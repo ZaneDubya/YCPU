@@ -2,11 +2,10 @@
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Core.Windows;
+using Ypsilon.Entities;
 using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
-using Ypsilon.PlayerState;
-using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Space
 {
@@ -48,6 +47,27 @@ namespace Ypsilon.Modes.Space
             if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, false))
             {
                 AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+                if (selected == null)
+                {
+                    // do nothing? error noise?
+                }
+                else if (!(selected is Spob))
+                {
+                    // do nothing? error noise?
+                }
+                else if (!(selected as Spob).CanLandHere)
+                {
+                    Messages.Add(MessageType.Error, "Cannot land on target.");
+                }
+                else if (playerComponent.Speed > Constants.MaxLandingSpeed)
+                {
+                    Messages.Add(MessageType.Error, "Landing cancelled. Moving too quickly to land.");
+                }
+                else
+                {
+                    ModeManager modes = ServiceRegistry.GetService<ModeManager>();
+                    modes.QueuedModel = new Landed.LandedModel();
+                }
             }
 
                 // M is for MINING
@@ -62,15 +82,32 @@ namespace Ypsilon.Modes.Space
                 {
                     // start mining
                     AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
-                    if (selected != null)
+                    if (selected == null)
+                    {
+                        // do nothing? error noise?
+                    }
+                    else if (!(selected is Spob))
+                    {
+                        Messages.Add(MessageType.Error, "Cannot mine this object.");
+                    }
+                    else
                     {
                         AEntitySpaceComponent selectedComponent = selected.GetComponent<AEntitySpaceComponent>();
 
                         float maxDistance = playerComponent.ViewSize + selectedComponent.ViewSize;
 
-                        if (selected is Spob && Position3D.Distance(playerComponent.Position, selectedComponent.Position) < maxDistance)
+                        if (Position3D.Distance(playerComponent.Position, selectedComponent.Position) > maxDistance)
+                        {
+                            Messages.Add(MessageType.Error, "Too far away to mine. Close distance.");
+                        }
+                        else if (playerComponent.Speed > Constants.MaxMiningSpeed)
+                        {
+                            Messages.Add(MessageType.Error, "Moving too quickly to mine. Reduce velocity.");
+                        }
+                        else
                         {
                             playerComponent.Action = new MiningAction(player, selected as Spob);
+                            Messages.Add(MessageType.Error, "Mining commenced.");
                         }
                     }
                 }
