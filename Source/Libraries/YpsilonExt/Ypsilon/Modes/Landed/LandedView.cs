@@ -45,14 +45,12 @@ namespace Ypsilon.Modes.Landed
 
         private void OnLandedStateChanged()
         {
-            m_Curses.Clear();
-            m_Curses.WriteString(8, 4, Model.LandedOn.Name);
-
             switch (State)
             {
                 case LandedState.Overview:
+                    m_Curses.Clear();
+                    m_Curses.WriteString(8, 4, Model.LandedOn.Name);
                     m_Curses.WriteLines(8, 6, 60, Model.LandedOn.Description, '~');
-
                     m_Curses.WriteString(80, 8, "[1] - Bar.");
                     m_Curses.WriteString(80, 9, "[2] - Commodity Exchange.");
                     m_Curses.WriteString(80, 10, "[3] - Ship outfitter.");
@@ -61,16 +59,13 @@ namespace Ypsilon.Modes.Landed
                     break;
 
                 case LandedState.Exchange:
-                    m_Curses.WriteString(8, 6, "Outfitter");
+                    UpdateExchangeScreen();
                     break;
 
                 default:
                     m_Curses.WriteString(8, 6, "Error - LandedState is unknown value.");
                     break;
             }
-            
-
-            
         }
 
         public override void Draw(float frameSeconds)
@@ -84,6 +79,22 @@ namespace Ypsilon.Modes.Landed
                 new Vector2(
                     (screenWidth - m_Curses.DisplayWidth) / 2,
                     (screenHeight - m_Curses.DisplayHeight) / 2));
+        }
+
+        private void UpdateExchangeScreen()
+        {
+            m_Curses.Clear();
+
+            m_Curses.WriteString(8, 6, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
+            m_Curses.WriteLines(8, 8, 60, "The din of the exchange is the prefect background noise for the brokers haggling all around you.", '~');
+
+            m_Curses.WriteBox(6, 11, 60, 12, Curses.CurseDecoration.Block);
+            m_Curses.WriteString(8, 12, string.Format("{0,-30}{1,-10}{2}", "Commodities in Hold", "Amount", "Sale Price"));
+
+            for (int i = 0; i < 8; i++)
+            {
+                m_Curses.WriteString(8, 14 + i, string.Format("{0,-30}{1,-10}{2}", "Commodity x", "amt", "300"));
+            }
         }
     }
 }

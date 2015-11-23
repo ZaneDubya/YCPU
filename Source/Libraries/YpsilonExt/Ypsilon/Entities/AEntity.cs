@@ -21,7 +21,6 @@ namespace Ypsilon.Entities
         public virtual string Description
         {
             get;
-            set;
         }
 
         public Serial Serial

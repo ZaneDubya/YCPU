@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\AEntityComponent.cs" />
+    <Compile Include="Entities\Item.cs" />
     <Compile Include="Modes\Landed\LandedController.cs" />
     <Compile Include="Modes\Landed\LandedState.cs" />
     <Compile Include="Modes\Landed\LandedModel.cs" />

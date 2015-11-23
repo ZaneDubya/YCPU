@@ -153,13 +153,40 @@ namespace Ypsilon.Core.Graphics
 
                 i++;
             }
+        }
 
-            /*if (begin + s.Length >= m_CharBuffer.Length)
-                s = s.Substring(0, m_CharBuffer.Length - begin);
-            for (int i = 0; i < s.Length; i++)
+        public void WriteBox(int x, int y, int w, int h, CurseDecoration d)
+        {
+            byte[] deco;
+            switch (d)
             {
-                m_CharBuffer[begin + i] = (byte)s[i];
-            }*/
+                case CurseDecoration.DoubleLine:
+                    deco = m_CurseDecorationDoubleLine;
+                    break;
+                case CurseDecoration.Block:
+                    deco = m_CurseDecorationBlock;
+                    break;
+                default:
+                    deco = m_CurseDecorationBlock;
+                    break;
+            }
+
+            m_CharBuffer[x + y * ScreenWidth] = deco[0];
+            m_CharBuffer[(x + w) + y * ScreenWidth] = deco[2];
+            m_CharBuffer[x + (y + h) * ScreenWidth] = deco[6];
+            m_CharBuffer[(x + w) + (y + h) * ScreenWidth] = deco[8];
+
+            for (int i = 1; i < w; i++)
+            {
+                m_CharBuffer[(x + i) + y * ScreenWidth] = deco[1];
+                m_CharBuffer[(x + i) + (y + h) * ScreenWidth] = deco[7];
+            }
+
+            for (int i = 1; i < h; i++)
+            {
+                m_CharBuffer[(x) + (y + i) * ScreenWidth] = deco[3];
+                m_CharBuffer[(x + w) + (y + i) * ScreenWidth] = deco[5];
+            }
         }
 
         public void Render(SpriteBatchExtended spriteBatch, Vector2 offset)
@@ -182,6 +209,24 @@ namespace Ypsilon.Core.Graphics
                         Color.LightGray);
                 }
             }
+        }
+
+        byte[] m_CurseDecorationDoubleLine = new byte[9] {
+            0xC9, 0xCD, 0xBB,
+            0xBA, 0x00, 0xBA,
+            0xC8, 0xCD, 0xBC
+        };
+
+        byte[] m_CurseDecorationBlock = new byte[9] {
+            0xDB, 0xDB, 0xDB,
+            0xDB, 0x00, 0xDB,
+            0xDB, 0xDB, 0xDB
+        };
+
+        public enum CurseDecoration
+        {
+            DoubleLine = 0,
+            Block = 1
         }
     }
 }
