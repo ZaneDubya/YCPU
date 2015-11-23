@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Entities\AEntityComponent.cs" />
     <Compile Include="Modes\Landed\LandedController.cs" />
+    <Compile Include="Modes\Landed\LandedState.cs" />
     <Compile Include="Modes\Landed\LandedModel.cs" />
     <Compile Include="Modes\Landed\LandedView.cs" />
     <Compile Include="Modes\ModeManager.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Modes\Space\Entities\ShipSpaceComponent.cs" />
     <Compile Include="Modes\Space\Entities\SpobSpaceComponent.cs" />
     <Compile Include="Modes\Space\Messages.cs" />
+    <Compile Include="Persistence\Savegame.cs" />
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Entities\AEntity.cs" />
     <Compile Include="Entities\EntityManager.cs" />

@@ -7,6 +7,7 @@ using Ypsilon.Modes.Space.Entities;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using System.Collections.Generic;
+using Ypsilon.Modes.Landed;
 
 namespace Ypsilon.Modes.Space
 {
@@ -77,7 +78,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
-                    modes.QueuedModel = new Landed.LandedModel(selected as Spob);
+                    modes.QueuedModel = new LandedModel(selected as Spob);
                 }
             }
 

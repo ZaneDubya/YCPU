@@ -39,7 +39,7 @@ namespace Ypsilon
             ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
             ServiceRegistry.Register<ModeManager>(m_Modes = new ModeManager());
-            m_Modes.ActiveModel = new SpaceModel();
+            m_Modes.ActiveModel = Persistence.Savegame.Load();
 
             base.Initialize();
         }

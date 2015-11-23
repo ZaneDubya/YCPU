@@ -10,8 +10,9 @@
     Add ability to 'mine' asteroids. Can be 100% simple. No graphics needed. DONE.
     Track one resource in ship hold. DONE.
 	Show contents of hold (only one resource) in GUI. DONE. 
-    Mining only continues so long as (1) in range, (2) not moving faster than X.
-    Add ability to land on planet with "L".
+    Mining only continues so long as (1) in range, (2) not moving faster than X. DONE.
+    Add a landed mode. DONE.
+    Add ability to land on planet with "L". DONE.
     Add credits.
     When land on planet, hold is exchanged for credits.
     Track resources on asteroid. DONE
@@ -27,6 +28,3 @@
 	
     Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
     Split out SpaceMode. DONE.
-    Add a landed mode.
-	
-    Design a GUI.

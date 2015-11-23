@@ -32,7 +32,7 @@ namespace Ypsilon.Modes.Space.Entities
             }
         }
 
-        private float m_Throttle = 0.2f;
+        private float m_Throttle;
         public float Throttle
         {
             get
@@ -71,6 +71,7 @@ namespace Ypsilon.Modes.Space.Entities
         {
             ViewSize = Entity.Definition.DisplaySize;
             m_Rotator = new ShipRotator2D(Entity.Definition);
+            m_Throttle = ship.IsPlayerEntity ? 0.0f : 0.2f;
         }
 
         protected override void OnInitialize()
