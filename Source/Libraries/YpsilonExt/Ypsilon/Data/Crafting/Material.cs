@@ -9,9 +9,12 @@ namespace Ypsilon.Data.Crafting
     {
         public string Name;
 
-        public Material(string name)
+        public MaterialIndex Index;
+
+        public Material(string name, MaterialIndex index)
         {
             Name = name;
+            Index = Index;
         }
 
         /*public int ColdResistance;

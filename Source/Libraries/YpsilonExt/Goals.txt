@@ -11,6 +11,8 @@
     Track one resource in ship hold. DONE.
 	Show contents of hold (only one resource) in GUI. DONE. 
     Mining only continues so long as (1) in range, (2) not moving faster than X. DONE.
+    Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
+    Split out SpaceMode. DONE.
     Add a landed mode. DONE.
     Add ability to land on planet with "L". DONE.
     Add credits.
@@ -18,13 +20,15 @@
     Track resources on asteroid. DONE
     As it is being mined, effects fly! Beam! Sparks!
 
+    Add ability to load in crafting data?
+    
+    Create ship equipment - items. Hold is item. Hold contains resources.
     Add inventory of ship components (programatic, don't need gui yet).
     Add different kinds of ship components: hold, room, cockpit, blaster.
 
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!
     Planet rotates around a star! 
 	
-    Break out resources into items. Hold is item.
+    
 	
-    Break out entities somehow so they can exist in multiple modes. They're getting monolithic. DONE.
-    Split out SpaceMode. DONE.
+    
