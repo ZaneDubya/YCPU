@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Patterns.MVC;
+using Ypsilon.Data;
 
 namespace Ypsilon.Modes.Landed
 {
@@ -49,8 +50,8 @@ namespace Ypsilon.Modes.Landed
             {
                 case LandedState.Overview:
                     m_Curses.Clear();
-                    m_Curses.WriteString(8, 4, Model.LandedOn.Name);
-                    m_Curses.WriteLines(8, 6, 60, Model.LandedOn.Description, '~');
+                    m_Curses.WriteString(10, 4, Model.LandedOn.Name);
+                    m_Curses.WriteLines(10, 6, 60, Model.LandedOn.Description, '~');
                     m_Curses.WriteString(80, 8, "[1] - Bar.");
                     m_Curses.WriteString(80, 9, "[2] - Commodity Exchange.");
                     m_Curses.WriteString(80, 10, "[3] - Ship outfitter.");
@@ -85,15 +86,19 @@ namespace Ypsilon.Modes.Landed
         {
             m_Curses.Clear();
 
-            m_Curses.WriteString(8, 6, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
-            m_Curses.WriteLines(8, 8, 60, "The din of the exchange is the prefect background noise for the brokers haggling all around you.", '~');
+            m_Curses.WriteString(10, 4, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
+            m_Curses.WriteLines(10, 6, 56, "The din of the exchange is the prefect background noise for the brokers haggling all around you.", '~');
 
-            m_Curses.WriteBox(6, 11, 60, 12, Curses.CurseDecoration.Block);
-            m_Curses.WriteString(8, 12, string.Format("{0,-30}{1,-10}{2}", "Commodities in Hold", "Amount", "Sale Price"));
+            m_Curses.WriteBox(10, 11, 52, 13, Curses.CurseDecoration.Block);
+            m_Curses.WriteString(14, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities in Hold", "Amount", "Sell at"));
 
-            for (int i = 0; i < 8; i++)
+            m_Curses.WriteBox(65, 11, 52, 13, Curses.CurseDecoration.Block);
+            m_Curses.WriteString(69, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Buy at"));
+
+            for (int i = 0; i < Commodities.List.Count; i++)
             {
-                m_Curses.WriteString(8, 14 + i, string.Format("{0,-30}{1,-10}{2}", "Commodity x", "amt", "300"));
+                Commodity c = Commodities.List[i];
+                m_Curses.WriteString(14, 15 + i, string.Format("{0,-30}{1,-10}{2}", c.Name, 500 / (i + 1), c.Cost));
             }
         }
     }

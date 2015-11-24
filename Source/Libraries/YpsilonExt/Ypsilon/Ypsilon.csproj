@@ -56,6 +56,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Commodities.cs" />
+    <Compile Include="Data\Commodity.cs" />
     <Compile Include="Entities\AEntityComponent.cs" />
     <Compile Include="Entities\Item.cs" />
     <Compile Include="Modes\Landed\LandedController.cs" />

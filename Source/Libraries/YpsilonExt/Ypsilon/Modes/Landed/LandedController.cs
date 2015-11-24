@@ -40,6 +40,13 @@ namespace Ypsilon.Modes.Landed
                     modes.QueuedModel = Persistence.Savegame.Load();
                 }
             }
+            else if (view.State == LandedState.Exchange)
+            {
+                if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
+                {
+                    view.State = LandedState.Overview;
+                }
+            }
         }
     }
 }

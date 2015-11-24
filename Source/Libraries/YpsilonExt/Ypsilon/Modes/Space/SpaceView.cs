@@ -81,7 +81,6 @@ namespace Ypsilon.Modes.Space
                 Matrix.Identity);
 
             // draw user interface
-            DrawTitleSafeAreas();
             m_Curses.Render(m_SpriteBatch, 
                 new Vector2(
                     (screenWidth - m_Curses.DisplayWidth) / 2, 
@@ -91,30 +90,6 @@ namespace Ypsilon.Modes.Space
                 GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.GraphicsDevice),
                 Matrix.Identity,
                 Matrix.Identity);
-        }
-
-        private void DrawTitleSafeAreas()
-        {
-            int width = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth;
-            int height = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight;
-            int dx = (int)(width * 0.05);
-            int dy = (int)(height * 0.05);
-            int z = 1999;
-
-            Color notActionSafeColor = new Color(127, 0, 0, 127); // Red, 50% opacity
-            Color notTitleSafeColor = new Color(127, 127, 0, 127); // Yellow, 50% opacity
-
-            m_Vectors.DrawPolygon(new Vector3[4] { 
-                new Vector3(dx, dy, z), 
-                new Vector3(dx + width - 2 * dx, dy, z),
-                new Vector3(dx + width - 2 * dx, dy + height - 2 * dy, z),
-                new Vector3(dx, dy + height - 2 * dy, z) }, true, notActionSafeColor, false);
-
-            m_Vectors.DrawPolygon(new Vector3[4] { 
-                new Vector3(dx * 2, dy * 2, z), 
-                new Vector3(dx * 2 + width - 4 * dx, dy * 2, z),
-                new Vector3(dx * 2 + width - 4 * dx, dy * 2 + height - 4 * dy, z),
-                new Vector3(dx * 2, dy* 2 + height - 4 * dy, z) }, true, notTitleSafeColor, false);
         }
 
         private bool m_DisplayingMessage = false;
