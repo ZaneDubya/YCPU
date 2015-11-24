@@ -89,6 +89,7 @@ namespace Ypsilon.Modes.Space
                 {
                     // stop mining
                     playerComponent.Action = new NoAction(player);
+                    Messages.Add(MessageType.Error, "Mining halted.");
                 }
                 else
                 {

@@ -32,14 +32,14 @@ namespace Ypsilon.Entities
             
         }
 
-        public float ExtractOre(float frameSeconds)
+        public int ExtractOre(int extractedUnits)
         {
-            float amount = (ResourceOre > frameSeconds) ? frameSeconds : ResourceOre;
-            ResourceOre -= amount;
+            int amount = (ResourceOre < extractedUnits) ? ResourceOre : extractedUnits;
+            ResourceOre -= extractedUnits;
             return amount;
         }
 
-        public float ResourceOre = 10f;
+        public int ResourceOre = 10;
         public bool CanLandHere = false;
     }
 }

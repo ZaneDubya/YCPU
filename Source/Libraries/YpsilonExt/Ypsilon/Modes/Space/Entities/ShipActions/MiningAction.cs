@@ -6,6 +6,8 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
     {
         public Spob Target = null;
 
+        private float m_MinedAmount = 0f;
+
         public MiningAction(Ship parent, Spob target)
             : base(parent)
         {
@@ -50,16 +52,24 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             }
 
             // mine, unless target has run out of resources...
-
-            float amount = Target.ExtractOre(frameSeconds);
-            if (amount == 0)
+            if (Target.ResourceOre == 0)
             {
+                m_MinedAmount = 0;
                 Messages.Add(MessageType.Error, "Target resources exhausted.");
                 playerComponent.Action = new NoAction(Parent);
                 return;
             }
-
-            Parent.ResourceOre += amount;
+            else
+            {
+                m_MinedAmount += frameSeconds; // multipled by the power of the mining device and the difficulty of mining the resource?
+                if (m_MinedAmount >= 1.0f)
+                {
+                    int amount = (int)m_MinedAmount;
+                    Target.ExtractOre(amount);
+                    Parent.ResourceOre += amount;
+                    m_MinedAmount -= amount;
+                }
+            }
 
             base.Update(frameSeconds);
         }

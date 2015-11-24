@@ -150,10 +150,10 @@ namespace Ypsilon.Modes.Landed
             m_Curses.WriteBox(65, 11, 52, 13, Curses.CurseDecoration.Block);
             m_Curses.WriteString(69, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Buy at"));
 
-            for (int i = 0; i < Commodities.List.Count; i++)
+            for (int i = 0; i < CommodityList.List.Count; i++)
             {
-                Commodity c = Commodities.List[i];
-                m_Curses.WriteString(14, 15 + i, string.Format("{0,-30}{1,-10}{2}", c.Name, 500 / (i + 1), c.Cost));
+                Commodity c = CommodityList.List[i];
+                m_Curses.WriteString(14, 15 + i, string.Format("{0,-30}{1,-10}{2}", c.Name, 500 / (i + 1), c.Value));
             }
 
             m_Curses.WriteString(10, 27, "[ w ] - Scroll up.");
@@ -168,7 +168,7 @@ namespace Ypsilon.Modes.Landed
             }
             else
             {
-                int maxScrollOffset = Data.Commodities.List.Count - 8;
+                int maxScrollOffset = Data.CommodityList.List.Count - 8;
                 if (SelectScrollOffset > 0)
                     m_Curses.WriteString(12, 14, "\x1E");
                 if (SelectScrollOffset < maxScrollOffset)

@@ -8,12 +8,14 @@ namespace Ypsilon.Data
     class Commodity
     {
         public string Name;
-        public int Cost;
+        public int Amount;
+        public int Value;
 
-        public Commodity(string name, int cost)
+        public Commodity(string name, int amount, int value)
         {
             Name = name;
-            Cost = cost;
+            Amount = amount;
+            Value = value;
         }
     }
 }
