@@ -34,7 +34,7 @@ namespace Ypsilon.Modes.Landed
                 {
 
                 }
-                else if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.D5, false, false, false))
+                else if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
                     modes.QueuedModel = Persistence.Savegame.Load();
@@ -45,6 +45,33 @@ namespace Ypsilon.Modes.Landed
                 if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
                     view.State = LandedState.Overview;
+                }
+                else if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Tab, false, false, false))
+                {
+                    view.SelectSecond = !view.SelectSecond;
+                }
+                else if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.W, false, false, false))
+                {
+                    view.SelectIndex--;
+                    if (view.SelectIndex < 0)
+                    {
+                        view.SelectIndex = 0;
+                        view.SelectScrollOffset--;
+                        if (view.SelectScrollOffset < 0)
+                            view.SelectScrollOffset = 0;
+                    }
+                }
+                else if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.S, false, false, false))
+                {
+                    view.SelectIndex++;
+                    if (view.SelectIndex > 7)
+                    {
+                        view.SelectIndex = 7;
+                        view.SelectScrollOffset++;
+                        int maxScrollOffset = Data.Commodities.List.Count - 8;
+                        if (view.SelectScrollOffset > maxScrollOffset)
+                            view.SelectScrollOffset = maxScrollOffset;
+                    }
                 }
             }
         }
