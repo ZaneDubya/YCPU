@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using Ypsilon.Entities;
 using Ypsilon.Scripts.Items;
 using Ypsilon.Scripts.Items.MaterialItems;
 
@@ -9,6 +7,9 @@ namespace Ypsilon.Scripts.Vendors
 {
     class VendorInfo
     {
+        public BuyInfo Purchasing { get; protected set; }
+        public List<SellInfo> Selling { get; protected set; }
+
         /// <summary>
         /// A generic info for a vendor. Filled with generic values.
         /// </summary>
@@ -37,7 +38,21 @@ namespace Ypsilon.Scripts.Vendors
             Selling.Add(new SellInfo("Iron", 1f, 100, typeof(IronItem), null));
         }
 
-        public BuyInfo Purchasing { get; protected set; }
-        public List<SellInfo> Selling { get; protected set; }
+        public BuyInfo GetBuyInfoLimitedToSellerInventory(ItemList inventory)
+        {
+            BuyInfo limited = new BuyInfo();
+            for (int i = 0; i < inventory.ItemCount; i++)
+            {
+                if (Purchasing.WillPurchase(inventory[i]))
+                {
+                    float diff;
+                    if (Purchasing.GetPurchaseInfo(inventory[i], out diff))
+                    {
+                        limited.Add(inventory[i].GetType(), diff);
+                    }
+                }
+            }
+            return limited;
+        }
     }
 }

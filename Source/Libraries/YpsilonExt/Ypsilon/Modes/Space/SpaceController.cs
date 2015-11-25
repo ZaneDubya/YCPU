@@ -77,6 +77,8 @@ namespace Ypsilon.Modes.Space
                 }
                 else
                 {
+                    // halt any actions
+                    playerComponent.Action = new NoAction(player);
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
                     modes.QueuedModel = new LandedModel(selected as Spob);
                 }

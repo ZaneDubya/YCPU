@@ -1,8 +1,8 @@
 ﻿using Ypsilon.Core.Input;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Core.Windows;
-using Ypsilon.Modes.Space;
 using Ypsilon.Entities;
+using Ypsilon.Modes.Space;
 using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Modes.Landed
@@ -74,15 +74,45 @@ namespace Ypsilon.Modes.Landed
                 }
                 else if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.S, false, false, false))
                 {
+                    int maxSelection = view.SelectSecond ? vendor.Selling.Count : Model.BuyInfo.Types.Length;
                     view.SelectIndex++;
+                    if (view.SelectIndex >= maxSelection)
+                        view.SelectIndex = maxSelection - 1;
                     if (view.SelectIndex > 7)
                     {
                         view.SelectIndex = 7;
                         view.SelectScrollOffset++;
-                        int maxScrollOffset = vendor.Selling.Count - 8;
+                        int maxScrollOffset = maxSelection - 8;
+                        if (maxScrollOffset < 0)
+                            maxScrollOffset = 0;
                         if (view.SelectScrollOffset > maxScrollOffset)
                             view.SelectScrollOffset = maxScrollOffset;
                     }
+                }
+                else if (input.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.Enter, false, false, false))
+                {
+                    if (view.SelectSecond) // buying
+                    {
+                        // do we have enough credits? Buy and reduce credits.
+                    }
+                    else // selling
+                    {
+
+                    }
+                }
+
+                if ((Model.BuyInfo.Types.Length == 0) && (vendor.Selling.Count == 0))
+                {
+                    // !!! show an error message - the exchange is closed.
+                    view.State = LandedState.Overview;
+                }
+                if (Model.BuyInfo.Types.Length == 0)
+                {
+                    view.SelectSecond = true;
+                }
+                else if (vendor.Selling.Count == 0)
+                {
+                    view.SelectSecond = false;
                 }
             }
         }

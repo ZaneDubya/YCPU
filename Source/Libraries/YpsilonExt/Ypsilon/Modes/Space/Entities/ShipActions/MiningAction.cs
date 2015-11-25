@@ -67,7 +67,7 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
                 if (m_MinedAmount >= 1.0f)
                 {
                     int amount = (int)m_MinedAmount;
-                    if (Parent.Items.TryAddItem(typeof(CarbonateOreItem), amount))
+                    if (Parent.Inventory.TryAddItem(typeof(CarbonateOreItem), amount))
                     {
                         // success!
                         Target.ExtractOre(amount);

@@ -46,7 +46,7 @@ namespace Ypsilon.Entities
                 }
                 else
                 {
-                    item = (AItem)World.Entities.AddEntity(itemType);
+                    item = (AItem)AEntity.CreateEntity(itemType);
                     item.Amount = amount;
                     m_Items.Add(item);
                 }

@@ -8,7 +8,7 @@ namespace Ypsilon
 {
     public static class World
     {
-        public static float PlayerCredits = 0;
+        public static float PlayerCredits = 10005;
         public static Serial PlayerSerial = Serial.Null;
 
         public static EntityManager Entities

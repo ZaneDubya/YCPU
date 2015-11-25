@@ -1,6 +1,7 @@
 ﻿using System;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Entities;
+using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Modes.Landed
 {
@@ -12,9 +13,18 @@ namespace Ypsilon.Modes.Landed
             private set;
         }
 
+        public BuyInfo BuyInfo
+        {
+            get;
+            private set;
+        }
+
         public LandedModel(Spob landedOn)
         {
             LandedOn = landedOn;
+
+            Ship player = (Ship)World.Entities.GetPlayerEntity();
+            BuyInfo = LandedOn.Exchange.GetBuyInfoLimitedToSellerInventory(player.Inventory);
         }
 
         public override void Dispose()

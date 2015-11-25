@@ -58,5 +58,15 @@ namespace Ypsilon.Scripts.Vendors
 
             return m_Table.ContainsKey(item.GetType());
         }
+
+        public bool GetPurchaseInfo(AItem item, out float diff)
+        {
+            diff = 0;
+            if (m_Table.TryGetValue(item.GetType(), out diff))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
