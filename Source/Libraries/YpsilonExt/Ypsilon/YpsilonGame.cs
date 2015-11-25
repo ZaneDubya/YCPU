@@ -60,6 +60,7 @@ namespace Ypsilon
 
             m_Input.Update(totalSeconds, frameSeconds);
             m_Modes.Update(totalSeconds, frameSeconds);
+            World.Update(totalSeconds, frameSeconds);
 
             base.Update(gameTime);
         }

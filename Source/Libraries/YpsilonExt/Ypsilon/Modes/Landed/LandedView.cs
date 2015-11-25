@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Patterns.MVC;
-using Ypsilon.Data;
 using Ypsilon.Entities;
+using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Modes.Landed
 {
@@ -143,6 +143,7 @@ namespace Ypsilon.Modes.Landed
         private void UpdateExchangeScreen()
         {
             Ship player = (Ship)World.Entities.GetPlayerEntity();
+            VendorInfo vendor = Model.LandedOn.Exchange;
 
             m_Curses.WriteString(10, 4, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
             m_Curses.WriteLines(10, 6, 56, "The din of the exchange is the perfect background noise for the brokers haggling all around you.", '~');
@@ -153,11 +154,24 @@ namespace Ypsilon.Modes.Landed
             m_Curses.WriteBox(65, 11, 52, 13, Curses.CurseDecoration.Block);
             m_Curses.WriteString(69, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Buy at"));
 
-            for (int i = 0; i < CommodityList.List.Count; i++)
+            // player hold - items for sale by player.
+            /*for (int i = 0; i < CommodityList.List.Count; i++)
             {
                 Commodity c = CommodityList.List[i];
                 m_Curses.WriteString(14, 15 + i, string.Format("{0,-30}{1,-10}{2}", c.Name, 500 / (i + 1), c.Value));
+            }*/
+
+            // spob vendor - items for purchase by player.
+            int sellIndex = 0;
+            for (int i = m_SelectScrollOffset2; i < vendor.WillSell.Count; i++)
+            {
+                SellInfo info = vendor.WillSell[i];
+                m_Curses.WriteString(69, 15 + sellIndex, string.Format("{0,-30}{1,-10}{2}", info.Name, info.Amount, info.Price));
+                sellIndex++;
+                if (sellIndex >= 8)
+                    break;
             }
+
 
             m_Curses.WriteString(10, 27, "[ w ] - Scroll up.");
             m_Curses.WriteString(10, 28, "[ d ] - Scroll down.");
@@ -167,11 +181,16 @@ namespace Ypsilon.Modes.Landed
 
             if (SelectSecond)
             {
-                m_Curses.WriteString(67, SelectIndex + 15, "\x10");
+                int maxScrollOffset = vendor.WillSell.Count - 8;
+                if (SelectScrollOffset > 0)
+                    m_Curses.WriteString(67, 14, "\x1E");
+                if (SelectScrollOffset < maxScrollOffset)
+                    m_Curses.WriteString(67, 23, "\x1F");
+                m_Curses.WriteString(68, SelectIndex + 15, "\x10");
             }
             else
             {
-                int maxScrollOffset = Data.CommodityList.List.Count - 8;
+                int maxScrollOffset = 8; // vendor.WillSell.Count - 8;
                 if (SelectScrollOffset > 0)
                     m_Curses.WriteString(12, 14, "\x1E");
                 if (SelectScrollOffset < maxScrollOffset)

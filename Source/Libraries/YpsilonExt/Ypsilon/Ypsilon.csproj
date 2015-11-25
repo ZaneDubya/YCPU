@@ -56,15 +56,22 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\CommodityList.cs" />
-    <Compile Include="Data\Commodity.cs" />
     <Compile Include="Data\Materials\MaterialIndex.cs" />
-    <Compile Include="Data\Materials\AllMaterials.cs" />
+    <Compile Include="Data\Materials\MaterialInfos.cs" />
     <Compile Include="Data\Materials\MaterialQuality.cs" />
     <Compile Include="Entities\AEntityComponent.cs" />
     <Compile Include="Entities\ItemList.cs" />
-    <Compile Include="Entities\Item.cs" />
-    <Compile Include="Entities\Items\MaterialItems\Copper.cs" />
+    <Compile Include="Entities\AItem.cs" />
+    <Compile Include="Scripts\Items\Chocolate.cs" />
+    <Compile Include="Scripts\Items\Food.cs" />
+    <Compile Include="Scripts\Items\Industrial.cs" />
+    <Compile Include="Scripts\Items\LuxuryGoods.cs" />
+    <Compile Include="Scripts\Items\MaterialItems\AMaterialItem.cs" />
+    <Compile Include="Scripts\Items\MaterialItems\CarbonateOreItem.cs" />
+    <Compile Include="Scripts\Items\MaterialItems\CopperItem.cs" />
+    <Compile Include="Scripts\Items\MaterialItems\IronItem.cs" />
+    <Compile Include="Scripts\Items\MaterialItems\SilicateOreItem.cs" />
+    <Compile Include="Scripts\Items\MedicalSupplies.cs" />
     <Compile Include="Modes\Landed\LandedController.cs" />
     <Compile Include="Modes\Landed\LandedState.cs" />
     <Compile Include="Modes\Landed\LandedModel.cs" />
@@ -76,6 +83,9 @@
     <Compile Include="Modes\Space\Entities\SpobSpaceComponent.cs" />
     <Compile Include="Modes\Space\Messages.cs" />
     <Compile Include="Persistence\Savegame.cs" />
+    <Compile Include="Scripts\Vendors\SellInfo.cs" />
+    <Compile Include="Scripts\Vendors\BuyInfo.cs" />
+    <Compile Include="Scripts\Vendors\VendorInfo.cs" />
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Entities\AEntity.cs" />
     <Compile Include="Entities\EntityManager.cs" />
@@ -101,9 +111,8 @@
     <Compile Include="Data\ASpobDefinition.cs" />
     <Compile Include="Data\AShipDefinition.cs" />
     <Compile Include="Data\Definitions.cs" />
-    <Compile Include="Data\Materials\Material.cs" />
+    <Compile Include="Data\Materials\MaterialInfo.cs" />
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="PlayerState\Vars.cs" />
     <Compile Include="World.cs" />
     <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

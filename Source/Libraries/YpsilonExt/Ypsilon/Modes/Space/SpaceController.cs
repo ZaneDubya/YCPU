@@ -58,7 +58,7 @@ namespace Ypsilon.Modes.Space
             // L is for LAND
             if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.L, false, false, false))
             {
-                AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+                AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial);
                 if (selected == null)
                 {
                     // do nothing? error noise?
@@ -94,7 +94,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     // start mining
-                    AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+                    AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial);
                     if (selected == null)
                     {
                         // do nothing? error noise?

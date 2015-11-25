@@ -8,12 +8,8 @@
  *
  ***************************************************************************/
 #region usings
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using Ypsilon.Core;
-using Ypsilon.PlayerState;
 using System;
-using Ypsilon.Modes.Space;
+using System.Collections.Generic;
 #endregion
 
 namespace Ypsilon.Entities
@@ -66,8 +62,8 @@ namespace Ypsilon.Entities
         public AEntity GetPlayerEntity()
         {
             // This could be cached to save time.
-            if (m_Entities.ContainsKey(Vars.PlayerSerial))
-                return (AEntity)m_Entities[Vars.PlayerSerial];
+            if (m_Entities.ContainsKey(World.PlayerSerial))
+                return (AEntity)m_Entities[World.PlayerSerial];
             else
                 return null;
         }
@@ -103,45 +99,42 @@ namespace Ypsilon.Entities
             m_Entities_Queued.Clear();
         }
 
-        public T GetEntity<T>(Serial serial, bool create) where T : AEntity
+        public T GetEntity<T>(Serial serial) where T : AEntity
         {
-            T entity;
             // Check for existence in the collection.
             if (m_Entities.ContainsKey(serial))
             {
                 // This object is in the m_entities collection. If it is being disposed, then we should complete disposal
                 // of the object and then return a new object. If it is not being disposed, return the object in the collection.
-                entity = (T)m_Entities[serial];
+                T entity = (T)m_Entities[serial];
                 if (entity.IsDisposed)
                 {
                     m_Entities.Remove(serial);
-                    if (create)
-                    {
-                        entity = InternalCreateEntity<T>(serial);
-                        return (T)entity;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return null;
                 }
                 return (T)m_Entities[serial];
             }
 
-            // No object with this Serial is in the collection. So we create a new one and return that, and hope that the server
-            // will fill us in on the details of this object soon.
-            if (create)
+            // No object with this Serial is in the collection.
+            return null;
+        }
+
+        public T AddEntity<T>() where T : AEntity
+        {
+            T entity = InternalCreateEntity<T>(Serial.Next);
+            return (T)entity;
+        }
+
+        public void RemoveEntity(Serial serial)
+        {
+            if (m_Entities.ContainsKey(serial))
             {
-                entity = InternalCreateEntity<T>(serial);
-                return (T)entity;
-            }
-            else
-            {
-                return null;
+                // dispose of the entity - it will be removed on next update.
+                m_Entities[serial].Dispose();
             }
         }
 
-        T InternalCreateEntity<T>(Serial serial) where T : AEntity
+        private T InternalCreateEntity<T>(Serial serial) where T : AEntity
         {
             AEntity e = (T)Activator.CreateInstance(typeof(T));
             e.Serial = serial;
@@ -154,14 +147,6 @@ namespace Ypsilon.Entities
                 m_Entities.Add(e.Serial, e);
 
             return (T)e;
-        }
-
-        public void RemoveEntity(Serial serial)
-        {
-            if (m_Entities.ContainsKey(serial))
-            {
-                m_Entities[serial].Dispose();
-            }
         }
     }
 }

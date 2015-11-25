@@ -114,7 +114,7 @@ namespace Ypsilon.Modes.Space
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
             m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", player.ResourceOre));
 
-            AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+            AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial);
             if (selected != null)
             {
                 string name = selected.Name;

@@ -1,5 +1,4 @@
 ﻿using System;
-using Ypsilon.PlayerState;
 using System.Collections.Generic;
 
 namespace Ypsilon.Entities
@@ -12,10 +11,22 @@ namespace Ypsilon.Entities
             private set;
         }
 
-        public virtual string Name
+        private string m_Name = null;
+        public virtual string DefaultName { get { return null; } }
+        public string Name
         {
-            get;
-            set;
+            get
+            {
+                if (m_Name != null)
+                    return m_Name;
+                if (DefaultName != null)
+                    return DefaultName;
+                return string.Empty;
+            }
+            set
+            {
+                m_Name = value;
+            }
         }
 
         public virtual string Description
@@ -34,7 +45,7 @@ namespace Ypsilon.Entities
         {
             get
             {
-                return Serial == Vars.PlayerSerial;
+                return Serial == World.PlayerSerial;
             }
         }
 

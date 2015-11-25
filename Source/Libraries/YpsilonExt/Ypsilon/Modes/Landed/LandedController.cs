@@ -3,11 +3,17 @@ using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Core.Windows;
 using Ypsilon.Modes.Space;
 using Ypsilon.Entities;
+using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Modes.Landed
 {
     class LandedController : AController
     {
+        protected new LandedModel Model
+        {
+            get { return (LandedModel)base.Model; }
+        }
+
         public LandedController(LandedModel model)
             : base(model)
         {
@@ -45,7 +51,7 @@ namespace Ypsilon.Modes.Landed
             else if (view.State == LandedState.Exchange)
             {
                 Ship player = (Ship)World.Entities.GetPlayerEntity();
-                
+                VendorInfo vendor = Model.LandedOn.Exchange;
 
                 if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
@@ -73,7 +79,7 @@ namespace Ypsilon.Modes.Landed
                     {
                         view.SelectIndex = 7;
                         view.SelectScrollOffset++;
-                        int maxScrollOffset = Data.CommodityList.List.Count - 8;
+                        int maxScrollOffset = vendor.WillSell.Count - 8;
                         if (view.SelectScrollOffset > maxScrollOffset)
                             view.SelectScrollOffset = maxScrollOffset;
                     }

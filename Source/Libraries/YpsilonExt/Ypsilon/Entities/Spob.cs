@@ -1,4 +1,5 @@
 ﻿using Ypsilon.Data;
+using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Entities
 {
@@ -7,28 +8,15 @@ namespace Ypsilon.Entities
     /// </summary>
     class Spob : AEntity
     {
-        public ASpobDefinition Definition = new ASpobDefinition();
+        public ASpobDefinition Definition;
+        public VendorInfo Exchange;
 
-        public override string Name
-        {
-            get
-            {
-                return Definition.Name;
-            }
-        }
-
-        public override string Description
-        {
-            get
-            {
-                return Definition.Description;
-            }
-
-        }
+        public override string DefaultName { get { return Definition.Name; } }
+        public override string Description { get { return Definition.Description; } }
 
         public Spob()
         {
-            
+            Exchange = new VendorInfo();
         }
 
         public int ExtractOre(int extractedUnits)

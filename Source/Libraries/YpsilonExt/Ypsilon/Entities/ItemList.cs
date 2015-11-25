@@ -8,7 +8,7 @@ namespace Ypsilon.Entities
     class ItemList
     {
         private AEntity m_Parent;
-        private List<Item> m_Items;
+        private List<AItem> m_Items;
 
         public int ItemCount
         {
@@ -18,7 +18,7 @@ namespace Ypsilon.Entities
             }
         }
 
-        public Item this[int index]
+        public AItem this[int index]
         {
             get
             {
@@ -30,7 +30,7 @@ namespace Ypsilon.Entities
             }
         }
 
-        public bool TryAdd(Item item)
+        public bool TryAdd(AItem item)
         {
             bool canHold = true;
             if (canHold)
@@ -47,7 +47,7 @@ namespace Ypsilon.Entities
         public ItemList(AEntity parent)
         {
             m_Parent = parent;
-            m_Items = new List<Item>();
+            m_Items = new List<AItem>();
         }
     }
 }

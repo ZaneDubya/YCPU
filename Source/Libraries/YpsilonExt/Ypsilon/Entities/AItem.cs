@@ -5,20 +5,17 @@ using System.Text;
 
 namespace Ypsilon.Entities
 {
-    class Item : AEntity
+    abstract class AItem : AEntity
     {
-        private int m_Amount;
+        public abstract int Price { get; }
 
-        public virtual string DefaultName { get { return null; } }
+        private int m_Amount;
 
         public int Amount
         {
             get { return m_Amount; }
         }
 
-        public Item()
-        {
-
-        }
+        public bool Nontransferable { get; set; }
     }
 }
