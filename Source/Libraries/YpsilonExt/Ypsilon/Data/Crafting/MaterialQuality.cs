@@ -7,25 +7,17 @@ namespace Ypsilon.Data.Crafting
 {
     enum MaterialQuality
     {
-        #region Inorganics
         IsInorganic,
+        #region Inorganics
 
         IsMineral,
-
+        #region Minerals
         IsOre,
-
-        IsSedimentary,
-
-        IsIgneous,
-
-        IsMetamorphic,
-
+        IsMetal,
+        #endregion
         IsChemical,
-
         IsGas,
-
         IsLiquid,
-
         #endregion
 
         IsOrganic,
