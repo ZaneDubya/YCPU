@@ -58,11 +58,13 @@
   <ItemGroup>
     <Compile Include="Data\CommodityList.cs" />
     <Compile Include="Data\Commodity.cs" />
-    <Compile Include="Data\Crafting\MaterialIndex.cs" />
-    <Compile Include="Data\Crafting\Materials.cs" />
-    <Compile Include="Data\Crafting\MaterialQuality.cs" />
+    <Compile Include="Data\Materials\MaterialIndex.cs" />
+    <Compile Include="Data\Materials\AllMaterials.cs" />
+    <Compile Include="Data\Materials\MaterialQuality.cs" />
     <Compile Include="Entities\AEntityComponent.cs" />
+    <Compile Include="Entities\ItemList.cs" />
     <Compile Include="Entities\Item.cs" />
+    <Compile Include="Entities\Items\MaterialItems\Copper.cs" />
     <Compile Include="Modes\Landed\LandedController.cs" />
     <Compile Include="Modes\Landed\LandedState.cs" />
     <Compile Include="Modes\Landed\LandedModel.cs" />
@@ -81,7 +83,6 @@
     <Compile Include="Modes\Space\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="Modes\Space\Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Entities\Pers.cs" />
-    <Compile Include="Entities\PropertyList.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\AAction.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\MiningAction.cs" />
@@ -100,9 +101,10 @@
     <Compile Include="Data\ASpobDefinition.cs" />
     <Compile Include="Data\AShipDefinition.cs" />
     <Compile Include="Data\Definitions.cs" />
-    <Compile Include="Data\Crafting\Material.cs" />
+    <Compile Include="Data\Materials\Material.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="PlayerState\Vars.cs" />
+    <Compile Include="World.cs" />
     <Compile Include="YpsilonGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility.cs" />

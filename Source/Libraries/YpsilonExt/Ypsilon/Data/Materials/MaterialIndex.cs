@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Data.Crafting
+namespace Ypsilon.Materials
 {
     public enum MaterialIndex : int
     {
@@ -12,7 +12,5 @@ namespace Ypsilon.Data.Crafting
         Gold,
         Iron,
         Aluminium,
-
-
     }
 }

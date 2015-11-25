@@ -55,7 +55,7 @@ namespace Ypsilon.Modes.Space
                 0);
             mouseOver.Reset();
 
-            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            Ship player = (Ship)World.Entities.GetPlayerEntity();
             ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
             m_SpriteBatch.GraphicsDevice.Clear(new Color(16, 0, 16, 255));
@@ -102,7 +102,7 @@ namespace Ypsilon.Modes.Space
 
             m_Curses.Clear();
 
-            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            Ship player = (Ship)World.Entities.GetPlayerEntity();
             ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
             m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
@@ -114,7 +114,7 @@ namespace Ypsilon.Modes.Space
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
             m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", player.ResourceOre));
 
-            AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+            AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
             if (selected != null)
             {
                 string name = selected.Name;
@@ -169,7 +169,7 @@ namespace Ypsilon.Modes.Space
                 m_EntitiesOnScreen = new List<AEntity>();
             m_EntitiesOnScreen.Clear();
 
-            foreach (KeyValuePair<int, AEntity> entity in Model.Entities.AllEntities)
+            foreach (KeyValuePair<int, AEntity> entity in World.Entities.AllEntities)
             {
                 AEntity e = entity.Value;
                 AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();

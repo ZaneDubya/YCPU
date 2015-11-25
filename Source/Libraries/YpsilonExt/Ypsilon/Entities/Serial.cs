@@ -6,9 +6,12 @@ namespace Ypsilon.Entities
     {
         private static int m_NextSerial = Serial.First;
 
-        public static Serial GetNext()
+        public static Serial Next
         {
-            return m_NextSerial++;
+            get
+            {
+                return m_NextSerial++;
+            }
         }
 
         public static Serial Null

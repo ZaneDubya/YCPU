@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Data.Crafting
+namespace Ypsilon.Materials
 {
-    class Materials
+    class AllMaterials
     {
         public static Material Copper, Silver, Gold, Iron, Aluminium;
 
-        static Materials()
+        static AllMaterials()
         {
-
-            Copper = new Material("Copper", MaterialIndex.Copper);
+            Copper = new Material(MaterialIndex.Copper, MaterialQuality.IsMineral, MaterialQuality.IsMetal);
         }
     }
 }

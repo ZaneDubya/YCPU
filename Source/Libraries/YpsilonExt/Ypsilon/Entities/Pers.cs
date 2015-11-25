@@ -10,8 +10,7 @@ namespace Ypsilon.Entities
     /// </summary>
     class Pers : AEntity
     {
-        public Pers(EntityManager manager, Serial serial)
-            : base(manager, serial)
+        public Pers()
         {
 
         }

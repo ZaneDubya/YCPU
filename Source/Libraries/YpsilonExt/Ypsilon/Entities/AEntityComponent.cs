@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ypsilon.Entities
 {
-    class AEntityComponent
+    public class AEntityComponent
     {
         public AEntity Entity
         {

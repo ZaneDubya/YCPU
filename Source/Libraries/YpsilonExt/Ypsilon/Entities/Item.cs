@@ -7,8 +7,16 @@ namespace Ypsilon.Entities
 {
     class Item : AEntity
     {
-        public Item(EntityManager manager, Serial serial)
-            : base(manager, serial)
+        private int m_Amount;
+
+        public virtual string DefaultName { get { return null; } }
+
+        public int Amount
+        {
+            get { return m_Amount; }
+        }
+
+        public Item()
         {
 
         }

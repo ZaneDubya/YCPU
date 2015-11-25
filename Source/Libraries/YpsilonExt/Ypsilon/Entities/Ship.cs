@@ -8,13 +8,13 @@ namespace Ypsilon.Entities
     class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();
+        public ItemList Items;
 
         public int ResourceOre = 0;
 
-        public Ship(EntityManager manager, Serial serial)
-            : base(manager, serial)
+        public Ship()
         {
-            
+            Items = new ItemList(this);
         }
     }
 }

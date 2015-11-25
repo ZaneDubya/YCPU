@@ -51,6 +51,10 @@ namespace Ypsilon.Data
             m_Commodities.Add(new Commodity("Equipment", 100, 300));
             m_Commodities.Add(new Commodity("Cookies", 100, 600));
             m_Commodities.Add(new Commodity("Lizard Pelts", 100, 300));
+            m_Commodities.Add(new Commodity("Ore", 100, 75));
+            m_Commodities.Add(new Commodity("Copper", 100, 350));
+            m_Commodities.Add(new Commodity("Aluminium", 100, 750));
+            m_Commodities.Add(new Commodity("Bites", 100, 900));
         }
 
         /// <summary>
@@ -60,7 +64,10 @@ namespace Ypsilon.Data
         /// <param name="landedAt"></param>
         public CommodityList(Ship ship, Spob spob)
         {
-
+            m_Commodities.Add(new Commodity("Ore", 100, 75));
+            m_Commodities.Add(new Commodity("Copper", 100, 350));
+            m_Commodities.Add(new Commodity("Aluminium", 100, 750));
+            m_Commodities.Add(new Commodity("Bites", 100, 900));
         }
 
         /// <summary>

@@ -26,8 +26,7 @@ namespace Ypsilon.Entities
 
         }
 
-        public Spob(EntityManager manager, Serial serial)
-            : base(manager, serial)
+        public Spob()
         {
             
         }

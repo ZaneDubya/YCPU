@@ -18,7 +18,7 @@ using Ypsilon.Modes.Space;
 
 namespace Ypsilon.Entities
 {
-    class EntityManager
+    public class EntityManager
     {
         private Dictionary<int, AEntity> m_Entities = new Dictionary<int, AEntity>();
         private List<AEntity> m_Entities_Queued = new List<AEntity>();
@@ -143,9 +143,8 @@ namespace Ypsilon.Entities
 
         T InternalCreateEntity<T>(Serial serial) where T : AEntity
         {
-            var ctor = typeof(T).GetConstructor(new[] { typeof(EntityManager), typeof(Serial) });
-
-            AEntity e = (T)ctor.Invoke(new object[] { this, serial, });
+            AEntity e = (T)Activator.CreateInstance(typeof(T));
+            e.Serial = serial;
 
             // If the entities collection is locked, add the new entity to the queue. Otherwise 
             // add it directly to the main entity collection.

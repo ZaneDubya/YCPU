@@ -31,6 +31,8 @@ namespace Ypsilon
 
         protected override void Initialize()
         {
+            Persistence.Savegame.Load();
+
             ServiceRegistry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
             m_SpriteBatch.Initialize();
 
@@ -39,7 +41,7 @@ namespace Ypsilon
             ServiceRegistry.Register<InputManager>(m_Input = new InputManager(Window.Handle));
 
             ServiceRegistry.Register<ModeManager>(m_Modes = new ModeManager());
-            m_Modes.ActiveModel = Persistence.Savegame.Load();
+            m_Modes.ActiveModel = new SpaceModel();
 
             base.Initialize();
         }

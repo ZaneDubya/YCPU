@@ -2,6 +2,7 @@
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Data;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Landed
 {
@@ -141,6 +142,8 @@ namespace Ypsilon.Modes.Landed
 
         private void UpdateExchangeScreen()
         {
+            Ship player = (Ship)World.Entities.GetPlayerEntity();
+
             m_Curses.WriteString(10, 4, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
             m_Curses.WriteLines(10, 6, 56, "The din of the exchange is the perfect background noise for the brokers haggling all around you.", '~');
 

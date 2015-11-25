@@ -11,15 +11,8 @@ namespace Ypsilon.Modes.Space
             set;
         }
 
-        internal EntityManager Entities
-        {
-            get;
-            private set;
-        }
-
         public SpaceModel()
         {
-            Entities = new EntityManager();
             SelectedSerial = Serial.Null;
         }
 
@@ -35,7 +28,7 @@ namespace Ypsilon.Modes.Space
 
         public override void Update(float totalSeconds, float frameSeconds)
         {
-            Entities.Update(frameSeconds);
+            
         }
 
         protected override AController CreateController()

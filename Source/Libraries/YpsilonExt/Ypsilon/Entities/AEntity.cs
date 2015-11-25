@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ypsilon.Entities
 {
-    abstract class AEntity : IDisposable
+    public abstract class AEntity : IDisposable
     {
         protected EntityManager Manager
         {
@@ -27,7 +27,7 @@ namespace Ypsilon.Entities
         public Serial Serial
         {
             get;
-            private set;
+            set;
         }
 
         public bool IsPlayerEntity
@@ -38,10 +38,9 @@ namespace Ypsilon.Entities
             }
         }
 
-        public AEntity(EntityManager manager, Serial serial)
+        public AEntity()
         {
-            Manager = manager;
-            Serial = serial;
+
         }
 
         public virtual void Update(float frameSeconds)

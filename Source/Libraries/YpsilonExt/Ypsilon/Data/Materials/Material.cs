@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Data.Crafting
+namespace Ypsilon.Materials
 {
     class Material
     {
-        public string Name;
-
         public MaterialIndex Index;
 
-        public Material(string name, MaterialIndex index)
+        public Material(MaterialIndex index, params MaterialQuality[] qualities)
         {
-            Name = name;
-            Index = Index;
+            Index = index;
         }
 
         /*public int ColdResistance;

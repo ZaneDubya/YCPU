@@ -33,7 +33,7 @@ namespace Ypsilon.Modes.Space
         public override void Update(float frameSeconds, InputManager input)
         {
             // get the player object.
-            Ship player = (Ship)Model.Entities.GetPlayerEntity();
+            Ship player = (Ship)World.Entities.GetPlayerEntity();
             ShipSpaceComponent playerComponent = player.GetComponent<ShipSpaceComponent>();
 
             // Left-down to select.
@@ -58,7 +58,7 @@ namespace Ypsilon.Modes.Space
             // L is for LAND
             if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.L, false, false, false))
             {
-                AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+                AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
                 if (selected == null)
                 {
                     // do nothing? error noise?
@@ -94,7 +94,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     // start mining
-                    AEntity selected = Model.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
+                    AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial, false);
                     if (selected == null)
                     {
                         // do nothing? error noise?
@@ -151,7 +151,7 @@ namespace Ypsilon.Modes.Space
             AEntity nearest = null;
             float distance = float.MaxValue;
 
-            Dictionary<int, AEntity> entites = Model.Entities.AllEntities;
+            Dictionary<int, AEntity> entites = World.Entities.AllEntities;
 
             foreach (AEntity e in entites.Values)
             {

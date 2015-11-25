@@ -1,6 +1,8 @@
 ﻿using Ypsilon.Core.Input;
 using Ypsilon.Core.Patterns.MVC;
 using Ypsilon.Core.Windows;
+using Ypsilon.Modes.Space;
+using Ypsilon.Entities;
 
 namespace Ypsilon.Modes.Landed
 {
@@ -37,11 +39,14 @@ namespace Ypsilon.Modes.Landed
                 else if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
-                    modes.QueuedModel = Persistence.Savegame.Load();
+                    modes.QueuedModel = new SpaceModel();
                 }
             }
             else if (view.State == LandedState.Exchange)
             {
+                Ship player = (Ship)World.Entities.GetPlayerEntity();
+                
+
                 if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
                     view.State = LandedState.Overview;
