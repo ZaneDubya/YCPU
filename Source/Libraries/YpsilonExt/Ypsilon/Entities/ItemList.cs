@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Ypsilon.Entities
 {
@@ -30,18 +31,52 @@ namespace Ypsilon.Entities
             }
         }
 
-        public bool TryAdd(AItem item)
+        /// <summary>
+        /// Attempts to add an item to this collection. Returns false if the item would not fit inside the collection.
+        /// </summary>
+        public bool TryAddItem(Type itemType, int amount)
         {
             bool canHold = true;
+            AItem item;
             if (canHold)
             {
-                m_Items.Add(item);
+                if (TryGetItem(itemType, out item))
+                {
+                    item.Amount += amount;
+                }
+                else
+                {
+                    item = (AItem)World.Entities.AddEntity(itemType);
+                    item.Amount = amount;
+                    m_Items.Add(item);
+                }
                 return true;
             }
             else
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Returns true if item of type is in collection.
+        /// </summary>
+        /// <param name="itemType"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool TryGetItem(Type itemType, out AItem item)
+        {
+            foreach (AItem i in m_Items)
+            {
+                if (i.GetType() == itemType)
+                {
+                    item = i;
+                    return true;
+                }
+            }
+
+            item = null;
+            return false;
         }
 
         public ItemList(AEntity parent)

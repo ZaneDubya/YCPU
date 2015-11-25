@@ -63,7 +63,7 @@ namespace Ypsilon.Scripts.Vendors
             Args = args;
 
             // this is a horrible hackity hack hack hack please forgive me.
-            AItem item = (AItem)Activator.CreateInstance(type);
+            AItem item = (AItem)AEntity.CreateEntityWithoutSerial(Type, Args);
             m_Price = item.Price;
         }
 
@@ -72,10 +72,7 @@ namespace Ypsilon.Scripts.Vendors
         /// </summary>
         public virtual AEntity GetEntity()
         {
-            if (Args == null || Args.Length == 0)
-                return (AEntity)Activator.CreateInstance(Type);
-            else
-                return (AEntity)Activator.CreateInstance(Type, Args);
+            return AEntity.CreateEntity(Type, Args);
         }
 
         public void Restock()

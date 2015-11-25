@@ -1,4 +1,6 @@
 ﻿using Ypsilon.Entities;
+using Ypsilon.Scripts.Items.MaterialItems;
+using System;
 
 namespace Ypsilon.Modes.Space.Entities.ShipActions
 {
@@ -65,9 +67,20 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
                 if (m_MinedAmount >= 1.0f)
                 {
                     int amount = (int)m_MinedAmount;
-                    Target.ExtractOre(amount);
-                    Parent.ResourceOre += amount;
-                    m_MinedAmount -= amount;
+                    if (Parent.Items.TryAddItem(typeof(CarbonateOreItem), amount))
+                    {
+                        // success!
+                        Target.ExtractOre(amount);
+                        m_MinedAmount -= amount;
+                    }
+                    else
+                    {
+                        // can't add it. Failure!
+                        m_MinedAmount = 0;
+                        Messages.Add(MessageType.Error, "Could not store extracted ore in hold.");
+                        playerComponent.Action = new NoAction(Parent);
+                        return;
+                    }
                 }
             }
 

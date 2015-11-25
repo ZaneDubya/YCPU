@@ -99,30 +99,30 @@ namespace Ypsilon.Entities
             m_Entities_Queued.Clear();
         }
 
-        public T GetEntity<T>(Serial serial) where T : AEntity
+        public AEntity GetEntity(Serial serial)
         {
             // Check for existence in the collection.
             if (m_Entities.ContainsKey(serial))
             {
                 // This object is in the m_entities collection. If it is being disposed, then we should complete disposal
                 // of the object and then return a new object. If it is not being disposed, return the object in the collection.
-                T entity = (T)m_Entities[serial];
+                AEntity entity = (AEntity)m_Entities[serial];
                 if (entity.IsDisposed)
                 {
                     m_Entities.Remove(serial);
                     return null;
                 }
-                return (T)m_Entities[serial];
+                return entity;
             }
 
             // No object with this Serial is in the collection.
             return null;
         }
 
-        public T AddEntity<T>() where T : AEntity
+        public AEntity AddEntity(Type type)
         {
-            T entity = InternalCreateEntity<T>(Serial.Next);
-            return (T)entity;
+            AEntity entity = InternalAddEntity(type);
+            return entity;
         }
 
         public void RemoveEntity(Serial serial)
@@ -134,19 +134,18 @@ namespace Ypsilon.Entities
             }
         }
 
-        private T InternalCreateEntity<T>(Serial serial) where T : AEntity
+        private AEntity InternalAddEntity(Type type, params object[] args)
         {
-            AEntity e = (T)Activator.CreateInstance(typeof(T));
-            e.Serial = serial;
+            AEntity entity = AEntity.CreateEntity(type, args);
 
             // If the entities collection is locked, add the new entity to the queue. Otherwise 
             // add it directly to the main entity collection.
             if (m_EntitiesCollectionIsLocked)
-                m_Entities_Queued.Add(e);
+                m_Entities_Queued.Add(entity);
             else
-                m_Entities.Add(e.Serial, e);
+                m_Entities.Add(entity.Serial, entity);
 
-            return (T)e;
+            return (AEntity)entity;
         }
     }
 }

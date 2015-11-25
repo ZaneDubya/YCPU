@@ -79,7 +79,7 @@ namespace Ypsilon.Modes.Landed
                     {
                         view.SelectIndex = 7;
                         view.SelectScrollOffset++;
-                        int maxScrollOffset = vendor.WillSell.Count - 8;
+                        int maxScrollOffset = vendor.Selling.Count - 8;
                         if (view.SelectScrollOffset > maxScrollOffset)
                             view.SelectScrollOffset = maxScrollOffset;
                     }

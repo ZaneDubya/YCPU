@@ -10,8 +10,6 @@ namespace Ypsilon.Entities
         public AShipDefinition Definition = new AShipDefinition();
         public ItemList Items;
 
-        public int ResourceOre = 0;
-
         public Ship()
         {
             Items = new ItemList(this);

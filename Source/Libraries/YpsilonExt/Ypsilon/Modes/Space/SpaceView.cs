@@ -112,9 +112,9 @@ namespace Ypsilon.Modes.Space
             m_Curses.WriteString(0, 39, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
 
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
-            m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", player.ResourceOre));
+            m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", "must update..."));
 
-            AEntity selected = World.Entities.GetEntity<AEntity>(Model.SelectedSerial);
+            AEntity selected = World.Entities.GetEntity(Model.SelectedSerial);
             if (selected != null)
             {
                 string name = selected.Name;
@@ -173,6 +173,8 @@ namespace Ypsilon.Modes.Space
             {
                 AEntity e = entity.Value;
                 AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
+                if (c == null)
+                    continue;
 
                 if (!e.IsDisposed && c.IsInitialized && c.IsVisible && c.Position.Intersects(bounds, c.ViewSize))
                 {

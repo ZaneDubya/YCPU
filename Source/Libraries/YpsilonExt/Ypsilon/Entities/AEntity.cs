@@ -206,5 +206,32 @@ namespace Ypsilon.Entities
             // GC.SuppressFinalize(this);
         }
         #endregion
+
+        #region Static item generation!
+        public static AEntity CreateEntity(Type type, params object[] args)
+        {
+            AEntity entity = CreateEntityWithoutSerial(type, args);
+            if (entity == null)
+                return null;
+
+            entity.Serial = Serial.Next;
+            return entity;
+        }
+
+        public static AEntity CreateEntityWithoutSerial(Type type, params object[] args)
+        {
+            if (!typeof(AEntity).IsAssignableFrom(type))
+                return null;
+
+            AEntity entity;
+
+            if (args == null || args.Length == 0)
+                entity = (AEntity)Activator.CreateInstance(type);
+            else
+                entity = (AEntity)Activator.CreateInstance(type, args);
+
+            return entity;
+        }
+        #endregion
     }
 }

@@ -149,39 +149,44 @@ namespace Ypsilon.Modes.Landed
             m_Curses.WriteLines(10, 6, 56, "The din of the exchange is the perfect background noise for the brokers haggling all around you.", '~');
 
             m_Curses.WriteBox(10, 11, 52, 13, Curses.CurseDecoration.Block);
-            m_Curses.WriteString(14, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities in Hold", "Amount", "Sell at"));
+            m_Curses.WriteString(14, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities in Hold", "Amount", "Price"));
 
             m_Curses.WriteBox(65, 11, 52, 13, Curses.CurseDecoration.Block);
-            m_Curses.WriteString(69, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Buy at"));
+            m_Curses.WriteString(69, 13, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Price"));
 
             // player hold - items for sale by player.
-            /*for (int i = 0; i < CommodityList.List.Count; i++)
+            int buyIndex = 0;
+            for (int i = m_SelectScrollOffset; i < player.Items.ItemCount; i++)
             {
-                Commodity c = CommodityList.List[i];
-                m_Curses.WriteString(14, 15 + i, string.Format("{0,-30}{1,-10}{2}", c.Name, 500 / (i + 1), c.Value));
-            }*/
+                AItem item = player.Items[i];
+                if (vendor.Purchasing.WillPurchase(item))
+                {
+                    m_Curses.WriteString(14, 15 + buyIndex, string.Format("{0,-30}{1,-10}{2}", 
+                        item.Name, item.Amount, vendor.Purchasing.GetSellPriceFor(item)));
+                    buyIndex++;
+                }
+            }
 
             // spob vendor - items for purchase by player.
             int sellIndex = 0;
-            for (int i = m_SelectScrollOffset2; i < vendor.WillSell.Count; i++)
+            for (int i = m_SelectScrollOffset2; i < vendor.Selling.Count; i++)
             {
-                SellInfo info = vendor.WillSell[i];
+                SellInfo info = vendor.Selling[i];
                 m_Curses.WriteString(69, 15 + sellIndex, string.Format("{0,-30}{1,-10}{2}", info.Name, info.Amount, info.Price));
                 sellIndex++;
                 if (sellIndex >= 8)
                     break;
             }
 
-
             m_Curses.WriteString(10, 27, "[ w ] - Scroll up.");
             m_Curses.WriteString(10, 28, "[ d ] - Scroll down.");
-            m_Curses.WriteString(10, 29, "[Ent] - Sell.");
-            m_Curses.WriteString(10, 30, "[Tab] - Switch to buying.");
+            m_Curses.WriteString(10, 29, string.Format("[Ent] - {0}.", SelectSecond ? "Purchase" : "Sell"));
+            m_Curses.WriteString(10, 30, string.Format("[Tab] - Switch to {0}.", SelectSecond ? "selling" : "purchasing"));
             m_Curses.WriteString(10, 31, "[Esc] - Leave the exchange.");
 
             if (SelectSecond)
             {
-                int maxScrollOffset = vendor.WillSell.Count - 8;
+                int maxScrollOffset = vendor.Selling.Count - 8;
                 if (SelectScrollOffset > 0)
                     m_Curses.WriteString(67, 14, "\x1E");
                 if (SelectScrollOffset < maxScrollOffset)
