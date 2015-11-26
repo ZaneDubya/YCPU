@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 /// <summary>
 /// Class with extensionmethods for GraphicsDevice.
 /// </summary>
-public static class GraphicsDeviceExtensions
+public static class GraphicsDeviceX
 {
 
     #region Constants

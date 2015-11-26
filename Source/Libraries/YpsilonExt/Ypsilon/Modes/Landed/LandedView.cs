@@ -193,20 +193,6 @@ namespace Ypsilon.Modes.Landed
             }
 
             // ======================================================================
-            // money money money
-            // ======================================================================
-            m_Curses.WriteString(80, 4, string.Format("Credits: {0}", World.PlayerCredits));
-
-            // ======================================================================
-            // explanation of controls.
-            // ======================================================================
-            m_Curses.WriteString(80, 6, "[ w ] - Scroll up.");
-            m_Curses.WriteString(80, 7, "[ d ] - Scroll down.");
-            m_Curses.WriteString(80, 8, string.Format("[Ent] - {0}.", SelectSecond ? "Purchase" : "Sell"));
-            m_Curses.WriteString(80, 9, string.Format("[Tab] - Switch to {0}.", SelectSecond ? "selling" : "purchasing"));
-            m_Curses.WriteString(80, 10, "[Esc] - Leave the exchange.");
-
-            // ======================================================================
             // scrolling
             // ======================================================================
             if (SelectSecond)
@@ -227,6 +213,20 @@ namespace Ypsilon.Modes.Landed
                     m_Curses.WriteString(salePosition.X + 2, salePosition.Y + 12, "\x1F"); // dn
                 m_Curses.WriteString(salePosition.X + 3, salePosition.Y + 4 + SelectIndex, "\x10"); // right
             }
+
+            // ======================================================================
+            // RIGHT - money money money
+            // ======================================================================
+            m_Curses.WriteString(80, 4, string.Format("Credits: {0}", World.PlayerCredits));
+
+            // ======================================================================
+            // RIGHT - explanation of controls.
+            // ======================================================================
+            m_Curses.WriteString(80, 6, "[ w ] - Scroll up.");
+            m_Curses.WriteString(80, 7, "[ d ] - Scroll down.");
+            m_Curses.WriteString(80, 8, string.Format("[Ent] - {0}.", SelectSecond ? "Purchase" : "Sell"));
+            m_Curses.WriteString(80, 9, string.Format("[Tab] - Switch to {0}.", SelectSecond ? "selling" : "purchasing"));
+            m_Curses.WriteString(80, 10, "[Esc] - Leave the exchange.");
         }
     }
 }

@@ -85,6 +85,7 @@
     <Compile Include="Modes\Space\Entities\SpobSpaceComponent.cs" />
     <Compile Include="Modes\Space\Messages.cs" />
     <Compile Include="Persistence\Savegame.cs" />
+    <Compile Include="Scripts\Modules\CargoModule.cs" />
     <Compile Include="Scripts\Vendors\SellInfo.cs" />
     <Compile Include="Scripts\Vendors\BuyInfo.cs" />
     <Compile Include="Scripts\Vendors\VendorInfo.cs" />
@@ -135,7 +136,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\Modules\" />
+    <Folder Include="Scripts\Ships\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

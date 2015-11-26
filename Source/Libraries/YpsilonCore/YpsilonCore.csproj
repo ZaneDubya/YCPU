@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Core\DpiManager.cs" />
     <Compile Include="Core\Patterns\ECS\ComponentCollection.cs" />
+    <Compile Include="Extensions\PointX.cs" />
     <Compile Include="GraphicsUtility.cs" />
     <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
     <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
@@ -53,7 +54,7 @@
     <Compile Include="Core\Patterns\MVC\AModel.cs" />
     <Compile Include="Core\Patterns\MVC\AView.cs" />
     <Compile Include="Core\RectangleF.cs" />
-    <Compile Include="GraphicsDeviceExtensions.cs" />
+    <Compile Include="Extensions\GraphicsDeviceX.cs" />
     <Compile Include="Core\Input\InputEvent.cs" />
     <Compile Include="Core\Input\InputEventKeyboard.cs" />
     <Compile Include="Core\Input\InputEventMouse.cs" />

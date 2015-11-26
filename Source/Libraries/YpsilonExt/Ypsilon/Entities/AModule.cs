@@ -7,7 +7,7 @@ namespace Ypsilon.Entities
     /// </summary>
     public abstract class AModule : AEntity
     {
-        public abstract Point Size { get; }
+        public virtual Point Size { get { return PointX.OneByOne; } }
         public Point Position { get; set; }
 
         protected override void OnDispose()

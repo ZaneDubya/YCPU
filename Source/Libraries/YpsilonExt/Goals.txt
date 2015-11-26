@@ -21,8 +21,8 @@
     
     MODULES
     Create ship equipment, aka Modules.
-        Ships have 'module space' - collection of points.
-        Modules have rectangle 'size' - taking up space. For now, all have size of '1x1'.
+        Ships have hardpoints - collection of points. DONE. Belongs in definition.
+        Modules have rectangle 'size' - taking up space. For now, all have size of '1x1'. DONE.
     Create a 'hold' module. 1x1. Holds can hold items.
         Any open module space becomes a hold by default.
     Add 'laser' module. Laser fires when 'space' is pressed.

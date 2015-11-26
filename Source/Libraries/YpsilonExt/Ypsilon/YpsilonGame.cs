@@ -94,13 +94,13 @@ namespace Ypsilon
                 new Vector3(dx, dy, z), 
                 new Vector3(dx + width - 2 * dx, dy, z),
                 new Vector3(dx + width - 2 * dx, dy + height - 2 * dy, z),
-                new Vector3(dx, dy + height - 2 * dy, z) }, notActionSafeColor, 1f, Matrix.Identity, false);
+                new Vector3(dx, dy + height - 2 * dy, z) }, notActionSafeColor, 1f, Matrix.Identity, true);
 
             m_Vectors.DrawPolygon(new Vector3[4] { 
                 new Vector3(dx * 2, dy * 2, z), 
                 new Vector3(dx * 2 + width - 4 * dx, dy * 2, z),
                 new Vector3(dx * 2 + width - 4 * dx, dy * 2 + height - 4 * dy, z),
-                new Vector3(dx * 2, dy* 2 + height - 4 * dy, z) }, notTitleSafeColor, 1f, Matrix.Identity, false);
+                new Vector3(dx * 2, dy* 2 + height - 4 * dy, z) }, notTitleSafeColor, 1f, Matrix.Identity, true);
         }
     }
 }

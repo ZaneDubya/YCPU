@@ -5,11 +5,11 @@ using System.Collections.Generic;
 namespace Ypsilon.Entities
 {
     /// <summary>
-    /// A collection of items!
+    /// A collection of modules, for a ship.
     /// </summary>
     public class ModuleList
     {
-        private AEntity m_Parent;
+        private Ship m_Parent;
         private List<AModule> m_Modules;
 
         public int Count
@@ -32,21 +32,20 @@ namespace Ypsilon.Entities
             }
         }
 
-        public ModuleList(AEntity parent)
+        public ModuleList(Ship parent)
         {
             m_Parent = parent;
             m_Modules = new List<AModule>();
         }
 
         /// <summary>
-        /// Attempts to add an item to this list. Returns false if the item would not fit inside the list.
+        /// Attempts to add an item to this list. Returns false if the item would not fit in the designated place.
         /// </summary>
-        public bool TryAddModule(Type type, Point position)
+        public bool TryAddModule(AModule module, Point position)
         {
-            bool canHold = true;
+            bool canHold = CanPlaceModule(module, position);
             if (canHold)
             {
-                AModule module = (AModule)AEntity.CreateEntity(type);
                 module.Parent = m_Parent;
                 module.Position = position;
                 m_Modules.Add(module);
@@ -58,24 +57,35 @@ namespace Ypsilon.Entities
             }
         }
 
-        /// <summary>
-        /// Returns true if module of type is in collection.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public bool TryGetModule(Type type, out AModule item)
+        public bool CanPlaceModule(AModule module, Point position)
+        {
+            for (int y = 0; y < module.Size.Y; y++)
+            {
+                for (int x = 0; x < module.Size.X; x++)
+                {
+                    if (!m_Parent.Definition.Hardpoints.Contains(new Point(position.X + x, position.Y + y)))
+                        return false;
+                    AModule m;
+                    if (TryGetModule(new Point(position.X + x, position.Y + y), out m))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        public bool TryGetModule(Point position, out AModule module)
         {
             foreach (AModule m in m_Modules)
             {
-                if (m.GetType() == type)
+                if (position.X >= m.Position.X && position.X < m.Position.X + m.Size.X &&
+                    position.Y >= m.Position.Y && position.Y < m.Position.Y + m.Size.Y)
                 {
-                    item = m;
+                    module = m;
                     return true;
                 }
             }
 
-            item = null;
+            module = null;
             return false;
         }
 
@@ -89,6 +99,13 @@ namespace Ypsilon.Entities
                     i--;
                 }
             }
+        }
+
+        enum HardpointStatus
+        {
+            HardpointDoesNotExist,
+            HardpointOccupied,
+            HardpointAvailable
         }
     }
 }

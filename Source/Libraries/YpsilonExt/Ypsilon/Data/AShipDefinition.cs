@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace Ypsilon.Data
 {
@@ -8,12 +9,16 @@ namespace Ypsilon.Data
     /// 2. Eventually, the ship definition will query a ship's contents to get the current values of these variables.
     /// 3. Right now, everything is hardcoded.
     /// </summary>
-    class AShipDefinition
+    public class AShipDefinition
     {
         /// <summary>
-        /// Cargo capacity, in tons. 
+        /// A list of places where modules can be installed.
         /// </summary>
-        public int DefaultHoldSpace = 100;
+        public List<Point> Hardpoints = new List<Point>() {
+            new Point(0, 0), new Point(1, 0),
+            new Point(0, 1), new Point(1, 1),
+            new Point(0, 2), new Point(1, 2),
+            new Point(0, 3), new Point(1, 3) };
 
         /// <summary>
         /// Space available to add additional items and upgrades. 
