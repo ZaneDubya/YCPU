@@ -17,7 +17,7 @@
     Add credits. DONE
     Add ability to buy and sell items. DONE.
     Track resources on asteroid. DONE
-    Update hold GUI to reflect actual hold contents and count of same.
+    Update hold GUI to reflect actual hold contents and count of same. DONE.
     
     MODULES.
     Create ship equipment, aka Modules.
