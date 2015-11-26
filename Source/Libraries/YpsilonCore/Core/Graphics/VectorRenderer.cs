@@ -44,12 +44,12 @@ namespace Ypsilon.Core.Graphics
             // create the vertex and indices array
             m_WorldVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
             m_ScreenVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
-            m_Indices = createIndexBuffer(c_MaxPrimitives);
+            m_Indices = CreateIndexBuffer(c_MaxPrimitives);
             m_CurrentIndex = 0;
             m_LineCount = 0;
         }
 
-        private short[] createIndexBuffer(int primitiveCount)
+        private short[] CreateIndexBuffer(int primitiveCount)
         {
             short[] indices = new short[primitiveCount * 2];
             for (int i = 0; i < primitiveCount; i++)
@@ -108,51 +108,40 @@ namespace Ypsilon.Core.Graphics
         /// <summary>
         /// Draws the given polygon.
         /// </summary>
-        /// <param name="polygon">The polygon to render.</param>
-        /// <param name="color">The color to use when drawing the polygon.</param>
-        /// <param name="dashed">If true, the polygon will be "dashed".</param>
-        public void DrawPolygon(VectorPolygon polygon, Color color, bool dashed)
+        public void DrawPolygon(Vector3[] polygon, Color color, float drawSize, Matrix matrix, bool closePolygon)
         {
             if (polygon == null)
                 return;
 
-            int step = (dashed == true) ? 2 : 1;
-            int length = polygon.Points.Length + ((polygon.IsClosed) ? 0 : -1);
-            for (int i = 0; i < length; i += step)
-            {
-                if (m_LineCount >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit.");
-
-                m_WorldVertices[m_CurrentIndex].Position = polygon.Points[i % polygon.Points.Length];
-                m_WorldVertices[m_CurrentIndex++].Color = color;
-                m_WorldVertices[m_CurrentIndex].Position = polygon.Points[(i + 1) % polygon.Points.Length];
-                m_WorldVertices[m_CurrentIndex++].Color = color;
-                m_LineCount++;
-            }
-        }
-
-        public void DrawPolygon(Vector3[] polygon, bool isClosed, Color color, bool dashed)
-        {
-            if (polygon == null)
-                return;
-
-            VectorPolygon poly = new VectorPolygon(polygon, isClosed);
-            DrawPolygon(poly, color, dashed);
-        }
-
-        public void DrawPolygon(VertexPositionColorTexture[] polygon, bool isClosed)
-        {
-            if (polygon == null)
-                return;
-            
-            int length = polygon.Length + (isClosed ? 0 : -1);
+            int length = polygon.Length - (closePolygon ? 0 : 1);
             for (int i = 0; i < length; i++)
             {
                 if (m_LineCount >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit.");
 
-                m_WorldVertices[m_CurrentIndex++] = polygon[i % polygon.Length];
-                m_WorldVertices[m_CurrentIndex++] = polygon[(i + 1) % polygon.Length];
+                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[i % polygon.Length] * drawSize, matrix);
+                m_WorldVertices[m_CurrentIndex++].Color = color;
+                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length] * drawSize, matrix);
+                m_WorldVertices[m_CurrentIndex++].Color = color;
+                m_LineCount++;
+            }
+        }
+
+        public void DrawPolygon(VertexPositionColorTexture[] polygon, Vector3 translation, bool closePolygon)
+        {
+            if (polygon == null)
+                return;
+
+            int length = polygon.Length - (closePolygon ? 0 : 1);
+            for (int i = 0; i < length; i++)
+            {
+                if (m_LineCount >= c_MaxPrimitives)
+                    throw new Exception("Raster graphics count has exceeded limit.");
+
+                m_WorldVertices[m_CurrentIndex] = polygon[i % polygon.Length];
+                m_WorldVertices[m_CurrentIndex++].Position += translation;
+                m_WorldVertices[m_CurrentIndex] = polygon[(i + 1) % polygon.Length];
+                m_WorldVertices[m_CurrentIndex++].Position += translation;
                 m_LineCount++;
             }
         }

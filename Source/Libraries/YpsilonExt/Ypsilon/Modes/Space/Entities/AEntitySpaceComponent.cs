@@ -35,11 +35,7 @@ namespace Ypsilon.Modes.Space.Entities
 
         public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
-            Vector3[] v = new Vector3[DrawVertices.Length];
-            for (int i = 0; i < v.Length; i++)
-                v[i] = Vector3.Transform(DrawVertices[i] * ViewSize, DrawMatrix);
-            renderer.DrawPolygon(v, true, DrawColor, false);
-
+            renderer.DrawPolygon(DrawVertices, DrawColor, ViewSize, DrawMatrix, true);
             mouseOverList.AddEntityIfMouseIsOver(Entity, DrawMatrix.Translation);
         }
 
@@ -47,13 +43,8 @@ namespace Ypsilon.Modes.Space.Entities
         {
             Matrix drawMatrixNoRotation = Matrix.Identity;
             drawMatrixNoRotation.Translation = DrawMatrix.Translation;
-            Vector3[] selection = new Vector3[Vertices.SelectionLeft.Length];
-            for (int i = 0; i < selection.Length; i++)
-                selection[i] = Vector3.Transform(Vertices.SelectionLeft[i] * ViewSize, drawMatrixNoRotation);
-            renderer.DrawPolygon(selection, false, Color.Yellow, false);
-            for (int i = 0; i < selection.Length; i++)
-                selection[i] = Vector3.Transform(Vertices.SelectionRight[i] * ViewSize, drawMatrixNoRotation);
-            renderer.DrawPolygon(selection, false, Color.Yellow, false);
+            renderer.DrawPolygon(Vertices.SelectionLeft, Color.Yellow, ViewSize, drawMatrixNoRotation, false);
+            renderer.DrawPolygon(Vertices.SelectionRight, Color.Yellow, ViewSize, drawMatrixNoRotation, false);
         }
     }
 }

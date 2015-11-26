@@ -5,9 +5,9 @@ namespace Ypsilon.Entities
     /// <summary>
     /// A piece of ship equipment.
     /// </summary>
-    class AModule : AEntity
+    public abstract class AModule : AEntity
     {
-        public virtual Point Size { get; }
+        public abstract Point Size { get; }
         public Point Position { get; set; }
 
         protected override void OnDispose()

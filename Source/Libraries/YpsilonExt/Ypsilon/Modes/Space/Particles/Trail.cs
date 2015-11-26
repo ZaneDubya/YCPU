@@ -58,14 +58,7 @@ namespace Ypsilon.Modes.Space.Particles
                 m_Vertices[m_Vertices.Length - 1].Position = Vector3.Transform(m_Offset * m_ShipSize, rotation);
             }
 
-            VertexPositionColorTexture[] v = new VertexPositionColorTexture[m_Vertices.Length];
-            for (int i = 0; i < v.Length; i++)
-            {
-                v[i] = m_Vertices[i];
-                v[i].Position += translation;
-            }
-
-            renderer.DrawPolygon(v, false);
+            renderer.DrawPolygon(m_Vertices, translation, false);
         }
     }
 }
