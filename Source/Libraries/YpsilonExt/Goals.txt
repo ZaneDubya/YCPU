@@ -19,7 +19,8 @@
     Track resources on asteroid. DONE
     Update hold GUI to reflect actual hold contents and count of same.
     
-    Create ship equipment - MODULES.
+    MODULES.
+    Create ship equipment, aka Modules.
         Ships have 'module space' - collection of points.
         Modules have rectangle 'size' - taking up space. For now, all have size of '1x1'.
     Create a 'hold' module. 1x1. Holds can hold items.

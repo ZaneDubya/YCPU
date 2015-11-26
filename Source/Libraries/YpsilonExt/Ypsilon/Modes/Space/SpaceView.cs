@@ -112,7 +112,11 @@ namespace Ypsilon.Modes.Space
             m_Curses.WriteString(0, 39, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
 
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
-            m_Curses.WriteString(0, 5, string.Format("Ore: {0:F2} kg", "must update..."));
+            for (int i = 0; i < player.Inventory.ItemCount; i++)
+            {
+                AItem item = player.Inventory[i];
+                m_Curses.WriteString(0, 5 + i, string.Format("{0}: {1}t", item.Name, item.Amount));
+            }
 
             AEntity selected = World.Entities.GetEntity(Model.SelectedSerial);
             if (selected != null)
