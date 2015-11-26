@@ -1,7 +1,6 @@
-﻿Z   Add some stars! DONE
+﻿    Add some stars! DONE
     Add a planet! DONE! Easy.
-    Make it so we can slow down and speed up. Using W and A. DONE. That was easy.
-
+    Make it so we can slow down and speed up. Using W and A. DONE.
     Add entity manager collection. DONE
     Add asteroids, two different sizes. DONE.
     Asteroids rotate, slowly. DONE
@@ -15,20 +14,24 @@
     Split out SpaceMode. DONE.
     Add a landed mode. DONE.
     Add ability to land on planet with "L". DONE.
-    Add credits.
-    When land on planet, hold is exchanged for credits.
+    Add credits. DONE
+    Add ability to buy and sell items. DONE.
     Track resources on asteroid. DONE
-    As it is being mined, effects fly! Beam! Sparks!
-
-    Add ability to load in crafting data?
+    Update hold GUI to reflect actual hold contents and count of same.
     
-    Create ship equipment - items. Hold is item. Hold contains resources.
-    Add inventory of ship components (programatic, don't need gui yet).
-    Add different kinds of ship components: hold, room, cockpit, blaster.
-
+    Create ship equipment - MODULES.
+        Ships have 'module space' - collection of points.
+        Modules have rectangle 'size' - taking up space. For now, all have size of '1x1'.
+    Create a 'hold' module. 1x1. Holds can hold items.
+        Any open module space becomes a hold by default.
+    Add 'laser' module. Laser fires when 'space' is pressed.
+        Laser fires small projectiles.
+    
+    WORLD
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!
     Planet rotates around a star! 
-	
     
-	
+	GRAPHICS
+    During mining operations, effects fly! Beam! Sparks!
+    
     
