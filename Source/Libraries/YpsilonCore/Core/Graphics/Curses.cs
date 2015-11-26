@@ -203,7 +203,7 @@ namespace Ypsilon.Core.Graphics
                     float v = (ch / 16) * sixteenth;
 
                     spriteBatch.DrawSprite(m_Texture,
-                        new Vector3(offset.X + x * (CharWidth + horizSpacer), offset.Y + y * CharHeight, 100),
+                        new Vector3(offset.X + x * (CharWidth + horizSpacer), offset.Y + y * CharHeight, 0),
                         new Vector2(CharWidth, CharHeight),
                         new Vector4(u, v, u + sixteenth, v + sixteenth),
                         Color.LightGray);

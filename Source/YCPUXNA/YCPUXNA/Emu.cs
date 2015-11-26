@@ -57,10 +57,10 @@ namespace YCPUXNA
             m_DisplayProvider = new DisplayProvider(m_SpriteBatch);
 
             m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
-            m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont);
+            m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont, true);
 
-            m_Graphics.PreferredBackBufferWidth = m_Curses.ScreenWidth * (m_Curses.CharWidth + 1);
-            m_Graphics.PreferredBackBufferHeight = m_Curses.ScreenHeight * (m_Curses.CharHeight);
+            m_Graphics.PreferredBackBufferWidth = m_Curses.DisplayWidth;
+            m_Graphics.PreferredBackBufferHeight = m_Curses.DisplayHeight;
             m_Graphics.IsFullScreen = false;
             m_Graphics.ApplyChanges();
             IsMouseVisible = true;
