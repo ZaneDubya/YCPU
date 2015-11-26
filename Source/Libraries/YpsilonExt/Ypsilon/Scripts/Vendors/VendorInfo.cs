@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Ypsilon.Entities;
 using Ypsilon.Scripts.Items;
 using Ypsilon.Scripts.Items.MaterialItems;
@@ -26,6 +27,7 @@ namespace Ypsilon.Scripts.Vendors
             Purchasing.Add(typeof(CopperItem), 1f);
             Purchasing.Add(typeof(IronItem), 1f);
 
+            // these have amounts, but we don't actually track them...
             Selling = new List<SellInfo>();
             Selling.Add(new SellInfo("Chocolate", 1f, 100, typeof(Chocolate), null));
             Selling.Add(new SellInfo("Food", 1f, 100, typeof(Food), null));
@@ -43,7 +45,8 @@ namespace Ypsilon.Scripts.Vendors
             BuyInfo limited = new BuyInfo();
             for (int i = 0; i < inventory.ItemCount; i++)
             {
-                if (Purchasing.WillPurchase(inventory[i]))
+                if (inventory[i].Amount > 0 &&
+                    Purchasing.WillPurchase(inventory[i]))
                 {
                     float diff;
                     if (Purchasing.GetPurchaseInfo(inventory[i], out diff))
@@ -53,6 +56,16 @@ namespace Ypsilon.Scripts.Vendors
                 }
             }
             return limited;
+        }
+
+        public SellInfo GetSellInfoByItemType(Type itemType)
+        {
+            foreach (SellInfo info in Selling)
+            {
+                if (info.Type == itemType)
+                    return info;
+            }
+            return null;
         }
     }
 }

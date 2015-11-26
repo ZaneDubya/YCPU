@@ -27,7 +27,7 @@ namespace Ypsilon.Scripts.Vendors
         /// <summary>
         /// Gets the value this vendor will give the seller if the proferred item is sold. Returns -1 if vendor does not buy this item.
         /// </summary>
-        public int GetSellPriceFor(AItem item)
+        public int GetPurchasePrice(AItem item)
         {
             float diff = 0;
             if (m_Table.TryGetValue(item.GetType(), out diff))

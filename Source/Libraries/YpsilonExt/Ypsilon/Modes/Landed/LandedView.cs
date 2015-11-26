@@ -149,7 +149,9 @@ namespace Ypsilon.Modes.Landed
             m_Curses.WriteString(10, 4, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
             m_Curses.WriteLines(10, 6, 56, "The din of the exchange is the perfect background noise for the brokers haggling all around you.", '~');
 
+            // ======================================================================
             // player hold - items for sale by player.
+            // ======================================================================
             int saleIndex = 0;
             Point salePosition = new Point(10, 9);
             m_Curses.WriteBox(salePosition.X, salePosition.Y, 52, 13, Curses.CurseDecoration.Block);
@@ -159,60 +161,71 @@ namespace Ypsilon.Modes.Landed
             {
                 Type itemType = Model.BuyInfo.Types[i];
                 AItem item;
-                int price;
-                if (player.Inventory.TryGetItem(itemType, out item))
-                {
-                    price = Model.BuyInfo.GetSellPriceFor(item);
+                if (!player.Inventory.TryGetItem(itemType, out item)) // this will always succeed.
+                    throw new Exception("LandedView.UpdateExchangeScreen() - could not retrieve item for sale.");
 
-                    m_Curses.WriteString(salePosition.X + 4, salePosition.Y + 4 + saleIndex, string.Format("{0,-30}{1,-10}{2}",
-                        item.Name, item.Amount, price));
-                    saleIndex++;
-                }
+                int price = Model.BuyInfo.GetPurchasePrice(item);
+
+                m_Curses.WriteString(salePosition.X + 4, salePosition.Y + 4 + saleIndex, string.Format("{0,-30}{1,-10}{2}",
+                    item.Name, item.Amount, price));
+                saleIndex++;
+                if (saleIndex >= 8)
+                    break;
             }
 
+            // ======================================================================
             // spob vendor - items for purchase by player.
+            // ======================================================================
             int purchaseIndex = 0;
             Point purPosition = new Point(10, 24);
             m_Curses.WriteBox(purPosition.X, purPosition.Y, 52, 13, Curses.CurseDecoration.Block);
-            m_Curses.WriteString(purPosition.X + 4, purPosition.Y + 2, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", "Amount", "Price"));
+            // string.Empty in the following line used to be "Amount". We aren't tracking amounts at the moment.
+            m_Curses.WriteString(purPosition.X + 4, purPosition.Y + 2, string.Format("{0,-30}{1,-10}{2}", "Commodities for Sale", string.Empty, "Price"));
             
             for (int i = m_SelectScrollOffset2; i < vendor.Selling.Count; i++)
             {
                 SellInfo info = vendor.Selling[i];
-                m_Curses.WriteString(purPosition.X + 4, purPosition.Y + 4 + purchaseIndex, string.Format("{0,-30}{1,-10}{2}", info.Name, info.Amount, info.Price));
+                // string.Empty in the following line used to be info.Amount. We aren't tracking amounts at the moment.
+                m_Curses.WriteString(purPosition.X + 4, purPosition.Y + 4 + purchaseIndex, string.Format("{0,-30}{1,-10}{2}", info.Name, string.Empty, info.Price));
                 purchaseIndex++;
                 if (purchaseIndex >= 8)
                     break;
             }
 
+            // ======================================================================
             // money money money
+            // ======================================================================
             m_Curses.WriteString(80, 4, string.Format("Credits: {0}", World.PlayerCredits));
 
+            // ======================================================================
             // explanation of controls.
+            // ======================================================================
             m_Curses.WriteString(80, 6, "[ w ] - Scroll up.");
             m_Curses.WriteString(80, 7, "[ d ] - Scroll down.");
             m_Curses.WriteString(80, 8, string.Format("[Ent] - {0}.", SelectSecond ? "Purchase" : "Sell"));
             m_Curses.WriteString(80, 9, string.Format("[Tab] - Switch to {0}.", SelectSecond ? "selling" : "purchasing"));
             m_Curses.WriteString(80, 10, "[Esc] - Leave the exchange.");
 
+            // ======================================================================
             // scrolling
+            // ======================================================================
             if (SelectSecond)
             {
                 int maxScrollOffset = vendor.Selling.Count - 8;
                 if (SelectScrollOffset > 0)
-                    m_Curses.WriteString(purPosition.X + 2, purPosition.Y + 3, "\x1E");
+                    m_Curses.WriteString(purPosition.X + 2, purPosition.Y + 3, "\x1E"); // up
                 if (SelectScrollOffset < maxScrollOffset)
-                    m_Curses.WriteString(purPosition.X + 2, purPosition.Y + 12, "\x1F");
-                m_Curses.WriteString(purPosition.X + 3, purPosition.Y + 4 + SelectIndex, "\x10");
+                    m_Curses.WriteString(purPosition.X + 2, purPosition.Y + 12, "\x1F"); // dn
+                m_Curses.WriteString(purPosition.X + 3, purPosition.Y + 4 + SelectIndex, "\x10"); // right
             }
             else
             {
                 int maxScrollOffset = Model.BuyInfo.Types.Length - 8;
                 if (SelectScrollOffset > 0)
-                    m_Curses.WriteString(salePosition.X + 2, salePosition.Y + 3, "\x1E");
+                    m_Curses.WriteString(salePosition.X + 2, salePosition.Y + 3, "\x1E"); // up
                 if (SelectScrollOffset < maxScrollOffset)
-                    m_Curses.WriteString(salePosition.X + 2, salePosition.Y + 3, "\x1F");
-                m_Curses.WriteString(salePosition.X + 3, salePosition.Y + 4 + SelectIndex, "\x10");
+                    m_Curses.WriteString(salePosition.X + 2, salePosition.Y + 12, "\x1F"); // dn
+                m_Curses.WriteString(salePosition.X + 3, salePosition.Y + 4 + SelectIndex, "\x10"); // right
             }
         }
     }

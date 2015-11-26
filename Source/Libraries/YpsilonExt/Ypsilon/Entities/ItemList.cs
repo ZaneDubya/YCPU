@@ -6,7 +6,7 @@ namespace Ypsilon.Entities
     /// <summary>
     /// A collection of items!
     /// </summary>
-    class ItemList
+    public class ItemList
     {
         private AEntity m_Parent;
         private List<AItem> m_Items;
@@ -31,6 +31,12 @@ namespace Ypsilon.Entities
             }
         }
 
+        public ItemList(AEntity parent)
+        {
+            m_Parent = parent;
+            m_Items = new List<AItem>();
+        }
+
         /// <summary>
         /// Attempts to add an item to this collection. Returns false if the item would not fit inside the collection.
         /// </summary>
@@ -47,6 +53,7 @@ namespace Ypsilon.Entities
                 else
                 {
                     item = (AItem)AEntity.CreateEntity(itemType);
+                    item.Parent = m_Parent;
                     item.Amount = amount;
                     m_Items.Add(item);
                 }
@@ -79,10 +86,16 @@ namespace Ypsilon.Entities
             return false;
         }
 
-        public ItemList(AEntity parent)
+        public void RemoveItem(AItem item)
         {
-            m_Parent = parent;
-            m_Items = new List<AItem>();
+            for (int i = 0; i < m_Items.Count; i++)
+            {
+                if (m_Items[i] == item)
+                {
+                    m_Items.RemoveAt(i);
+                    i--;
+                }
+            }
         }
     }
 }

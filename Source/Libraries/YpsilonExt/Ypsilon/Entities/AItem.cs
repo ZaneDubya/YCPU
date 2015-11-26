@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ypsilon.Entities
 {
-    abstract class AItem : AEntity
+    public abstract class AItem : AEntity
     {
         public abstract int Price { get; }
         public virtual bool CanStack { get { return true; } }
@@ -30,5 +30,18 @@ namespace Ypsilon.Entities
         }
 
         public bool Nontransferable { get; set; }
+
+        protected override void OnDispose()
+        {
+            if (Parent != null)
+            {
+                Parent.RemoveItem(this);
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}x{1}", Amount, Name);
+        }
     }
 }

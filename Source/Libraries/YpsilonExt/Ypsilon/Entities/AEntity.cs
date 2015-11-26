@@ -5,12 +5,6 @@ namespace Ypsilon.Entities
 {
     public abstract class AEntity : IDisposable
     {
-        protected EntityManager Manager
-        {
-            get;
-            private set;
-        }
-
         private string m_Name = null;
         public virtual string DefaultName { get { return null; } }
         public string Name
@@ -49,9 +43,26 @@ namespace Ypsilon.Entities
             }
         }
 
+        public AEntity Parent
+        {
+            get;
+            set;
+        }
+
+        public ItemList Inventory
+        {
+            get;
+            private set;
+        }
+
         public AEntity()
         {
+            Inventory = new ItemList(this);
+        }
 
+        public void RemoveItem(AItem item)
+        {
+            Inventory.RemoveItem(item);
         }
 
         public virtual void Update(float frameSeconds)
@@ -68,6 +79,11 @@ namespace Ypsilon.Entities
                 if (m_Component.IsDisposed)
                     m_Component = null;
             }
+        }
+
+        protected virtual void OnDispose()
+        {
+
         }
 
         #region Serialize/Unserialize Support
@@ -182,6 +198,7 @@ namespace Ypsilon.Entities
                 if (disposing)
                 {
                     // TODO: dispose managed state (managed objects).
+                    OnDispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

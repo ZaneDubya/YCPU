@@ -8,11 +8,10 @@ namespace Ypsilon.Entities
     class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();
-        public ItemList Inventory;
 
         public Ship()
         {
-            Inventory = new ItemList(this);
+            
         }
     }
 }

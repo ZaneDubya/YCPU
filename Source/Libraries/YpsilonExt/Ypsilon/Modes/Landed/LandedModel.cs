@@ -16,7 +16,7 @@ namespace Ypsilon.Modes.Landed
         public BuyInfo BuyInfo
         {
             get;
-            private set;
+            set;
         }
 
         public LandedModel(Spob landedOn)
