@@ -35,7 +35,7 @@ namespace Ypsilon.Entities
         {
             if (Parent != null)
             {
-                Parent.RemoveItem(this);
+                Parent.RemoveEntity(this);
             }
         }
 

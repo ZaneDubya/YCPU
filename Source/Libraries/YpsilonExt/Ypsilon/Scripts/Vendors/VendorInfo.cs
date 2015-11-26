@@ -12,7 +12,8 @@ namespace Ypsilon.Scripts.Vendors
         public List<SellInfo> Selling { get; protected set; }
 
         /// <summary>
-        /// A generic info for a vendor. Filled with generic values.
+        /// A generic info for a vendor. Filled with generic values at present.
+        /// We use this instead of just using the inventory, because this has more information!
         /// </summary>
         public VendorInfo()
         {
@@ -43,7 +44,7 @@ namespace Ypsilon.Scripts.Vendors
         public BuyInfo GetBuyInfoLimitedToSellerInventory(ItemList inventory)
         {
             BuyInfo limited = new BuyInfo();
-            for (int i = 0; i < inventory.ItemCount; i++)
+            for (int i = 0; i < inventory.Count; i++)
             {
                 if (inventory[i].Amount > 0 &&
                     Purchasing.WillPurchase(inventory[i]))

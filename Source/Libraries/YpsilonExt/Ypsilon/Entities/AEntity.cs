@@ -49,20 +49,14 @@ namespace Ypsilon.Entities
             set;
         }
 
-        public ItemList Inventory
-        {
-            get;
-            private set;
-        }
-
         public AEntity()
         {
-            Inventory = new ItemList(this);
+            
         }
 
-        public void RemoveItem(AItem item)
+        public virtual void RemoveEntity(AEntity entity)
         {
-            Inventory.RemoveItem(item);
+
         }
 
         public virtual void Update(float frameSeconds)

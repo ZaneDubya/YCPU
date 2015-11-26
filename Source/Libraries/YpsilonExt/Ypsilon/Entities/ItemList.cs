@@ -11,7 +11,7 @@ namespace Ypsilon.Entities
         private AEntity m_Parent;
         private List<AItem> m_Items;
 
-        public int ItemCount
+        public int Count
         {
             get
             {

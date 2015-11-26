@@ -112,7 +112,7 @@ namespace Ypsilon.Modes.Space
             m_Curses.WriteString(0, 39, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
 
             m_Curses.WriteString(0, 4, string.Format("Hold:"));
-            for (int i = 0; i < player.Inventory.ItemCount; i++)
+            for (int i = 0; i < player.Inventory.Count; i++)
             {
                 AItem item = player.Inventory[i];
                 m_Curses.WriteString(0, 5 + i, string.Format("{0}: {1}t", item.Name, item.Amount));

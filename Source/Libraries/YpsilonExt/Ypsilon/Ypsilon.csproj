@@ -60,8 +60,10 @@
     <Compile Include="Data\Materials\MaterialInfos.cs" />
     <Compile Include="Data\Materials\MaterialQuality.cs" />
     <Compile Include="Entities\AEntityComponent.cs" />
+    <Compile Include="Entities\AModule.cs" />
     <Compile Include="Entities\ItemList.cs" />
     <Compile Include="Entities\AItem.cs" />
+    <Compile Include="Entities\ModuleList.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />
@@ -132,7 +134,9 @@
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Scripts\Modules\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--
