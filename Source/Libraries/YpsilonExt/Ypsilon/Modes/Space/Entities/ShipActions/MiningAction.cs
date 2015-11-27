@@ -22,7 +22,6 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             SpobSpaceComponent targetComponent;
 
             // make sure we have a target.
-
             if (Target == null)
             {
                 playerComponent.Action = new NoAction(Parent);
@@ -39,7 +38,6 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             }
 
             // error conditions.
-
             float maxDistance = playerComponent.ViewSize + targetComponent.ViewSize;
 
             if (Position3D.Distance(playerComponent.Position, targetComponent.Position) > maxDistance)
@@ -53,7 +51,7 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
                 return;
             }
 
-            // mine, unless target has run out of resources...
+            // stop mining if the target has run out of resources.
             if (Target.ResourceOre == 0)
             {
                 m_MinedAmount = 0;
@@ -61,26 +59,25 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
                 playerComponent.Action = new NoAction(Parent);
                 return;
             }
-            else
+
+            // ok, mine!
+            m_MinedAmount += frameSeconds; // multipled by the power of the mining device and the difficulty of mining the resource?
+            if (m_MinedAmount >= 1.0f)
             {
-                m_MinedAmount += frameSeconds; // multipled by the power of the mining device and the difficulty of mining the resource?
-                if (m_MinedAmount >= 1.0f)
+                int amount = (int)m_MinedAmount;
+                if (Parent.Inventory.TryAddItem(typeof(CarbonateOreItem), amount))
                 {
-                    int amount = (int)m_MinedAmount;
-                    if (Parent.Inventory.TryAddItem(typeof(CarbonateOreItem), amount))
-                    {
-                        // success!
-                        Target.ExtractOre(amount);
-                        m_MinedAmount -= amount;
-                    }
-                    else
-                    {
-                        // can't add it. Failure!
-                        m_MinedAmount = 0;
-                        Messages.Add(MessageType.Error, "Could not store extracted ore in hold.");
-                        playerComponent.Action = new NoAction(Parent);
-                        return;
-                    }
+                    // success!
+                    Target.ExtractOre(amount);
+                    m_MinedAmount -= amount;
+                }
+                else
+                {
+                    // can't add it. Failure!
+                    m_MinedAmount = 0;
+                    Messages.Add(MessageType.Error, "Could not store extracted ore in hold.");
+                    playerComponent.Action = new NoAction(Parent);
+                    return;
                 }
             }
 

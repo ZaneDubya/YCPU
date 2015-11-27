@@ -23,10 +23,12 @@
     Create ship equipment, aka Modules.
         Ships have hardpoints - collection of points. DONE. Belongs in definition.
         Modules have rectangle 'size' - taking up space. For now, all have size of '1x1'. DONE.
-    Create a 'hold' module. 1x1. Holds can hold items.
-        Any open module space becomes a hold by default.
+    Create a 'hold' module. 1x1. Holds can hold 10t of items. DONE.
+    Items held are limited by hold space. DONE
+        In both mining [DONE] and vendors [DONE]
     Add 'laser' module. Laser fires when 'space' is pressed.
         Laser fires small projectiles.
+    Any open module space becomes a hold by default.
     
     WORLD
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!

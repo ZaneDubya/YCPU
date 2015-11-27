@@ -96,7 +96,6 @@
     <Compile Include="Modes\Space\Entities\Movement\PlanetRotator.cs" />
     <Compile Include="Modes\Space\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="Modes\Space\Entities\Movement\ShipRotatorPitchRoll.cs" />
-    <Compile Include="Entities\Pers.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\AAction.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\MiningAction.cs" />

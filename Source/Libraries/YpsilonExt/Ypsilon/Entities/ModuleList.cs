@@ -33,6 +33,17 @@ namespace Ypsilon.Entities
             }
         }
 
+        public int HoldSpace
+        {
+            get
+            {
+                int holdspace = 0;
+                foreach (AModule m in m_Modules)
+                    holdspace += m.HoldSpace;
+                return holdspace;
+            }
+        }
+
         public ModuleList(Ship parent)
         {
             m_Parent = parent;
@@ -54,7 +65,6 @@ namespace Ypsilon.Entities
             }
             else
             {
-                module = null;
                 return false;
             }
         }
@@ -101,13 +111,6 @@ namespace Ypsilon.Entities
                     i--;
                 }
             }
-        }
-
-        enum HardpointStatus
-        {
-            HardpointDoesNotExist,
-            HardpointOccupied,
-            HardpointAvailable
         }
     }
 }

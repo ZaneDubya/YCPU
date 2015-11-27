@@ -2,6 +2,7 @@
 using Ypsilon.Entities;
 using Ypsilon.Modes.Space;
 using Ypsilon.Modes.Space.Entities;
+using Ypsilon.Scripts.Modules;
 
 namespace Ypsilon.Persistence
 {
@@ -16,6 +17,8 @@ namespace Ypsilon.Persistence
             World.PlayerSerial = player.Serial;
             player.Name = "Player";
             player.SetComponent(new ShipSpaceComponent(player));
+            player.Modules.TryAddModule(new CargoModule(), new Point(0, 0));
+            
             // create other dudes.
             for (int i = 0; i < 100; i++)
             {

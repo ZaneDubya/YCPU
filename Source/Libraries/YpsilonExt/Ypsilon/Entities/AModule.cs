@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Ypsilon.Data;
 
 namespace Ypsilon.Entities
 {
@@ -10,6 +9,10 @@ namespace Ypsilon.Entities
     {
         public Point ModuleHardpoint { get; set; }
         public virtual Point ModuleSize { get { return PointX.OneByOne; } }
+
+        public override bool CanStack { get { return false; } }
+
+        public virtual int HoldSpace { get { return 0; } }
 
         protected override void OnDispose()
         {

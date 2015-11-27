@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Ypsilon.Entities;
+﻿using Ypsilon.Entities;
 
 namespace Ypsilon.Scripts.Modules
 {
     class CargoModule : AModule
     {
+        public override int HoldSpace { get { return 10; } }
     }
 }

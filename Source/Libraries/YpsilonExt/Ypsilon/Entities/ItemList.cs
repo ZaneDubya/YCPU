@@ -8,7 +8,7 @@ namespace Ypsilon.Entities
     /// </summary>
     public class ItemList
     {
-        private AEntity m_Parent;
+        private Ship m_Parent;
         private List<AItem> m_Items;
 
         public int Count
@@ -31,7 +31,20 @@ namespace Ypsilon.Entities
             }
         }
 
-        public ItemList(AEntity parent)
+        public int Tons
+        {
+            get
+            {
+                int tons = 0;
+                foreach (AItem i in m_Items)
+                {
+                    tons += i.Amount;
+                }
+                return tons;
+            }
+        }
+
+        public ItemList(Ship parent)
         {
             m_Parent = parent;
             m_Items = new List<AItem>();
@@ -42,7 +55,7 @@ namespace Ypsilon.Entities
         /// </summary>
         public bool TryAddItem(Type itemType, int amount)
         {
-            bool canHold = true;
+            bool canHold = TryToFitAnItemIn(itemType, amount);
             AItem item;
             if (canHold)
             {
@@ -96,6 +109,13 @@ namespace Ypsilon.Entities
                     i--;
                 }
             }
+        }
+
+        private bool TryToFitAnItemIn(Type itemType, int amount)
+        {
+            if (Tons < m_Parent.Modules.HoldSpace)
+                return true;
+            return false;
         }
     }
 }

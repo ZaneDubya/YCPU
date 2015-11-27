@@ -101,16 +101,28 @@ namespace Ypsilon.Modes.Landed
 
                         if (World.PlayerCredits >= price)
                         {
-                            player.Inventory.TryAddItem(info.Type, amount);
-                            World.PlayerCredits -= price;
-                            AItem item;
-                            if (!player.Inventory.TryGetItem(info.Type, out item))
-                                throw new Exception("LandedController.Update() - could not retrieve newly purchased item.");
-                            if (item.Amount == amount)
+                            if (player.Inventory.TryAddItem(info.Type, amount))
                             {
-                                // newly purchased item - need a new sell list.
-                                Model.BuyInfo = vendor.GetBuyInfoLimitedToSellerInventory(player.Inventory);
+                                World.PlayerCredits -= price;
+                                AItem item;
+                                if (!player.Inventory.TryGetItem(info.Type, out item))
+                                {
+                                    throw new Exception("LandedController.Update() - could not retrieve newly purchased item.");
+                                }
+                                if (item.Amount == amount)
+                                {
+                                    // newly purchased item - need to refresh the sell list.
+                                    Model.BuyInfo = vendor.GetBuyInfoLimitedToSellerInventory(player.Inventory);
+                                }
                             }
+                            else
+                            {
+                                // error message: not enough hold space.
+                            }
+                        }
+                        else
+                        {
+                            // error message: not enough credits.
                         }
                     }
                     else // selling - add credits!
@@ -119,13 +131,13 @@ namespace Ypsilon.Modes.Landed
                         Type itemType = Model.BuyInfo.Types[view.SelectIndex + view.SelectScrollOffset];
                         AItem item;
                         if (!player.Inventory.TryGetItem(itemType, out item)) // this will always succeed.
+                        {
                             throw new Exception("LandedController.Update() - could not retrieve item for sale.");
-
-                        int price = Model.BuyInfo.GetPurchasePrice(item);
+                        }
 
                         // if we were tracking amounts, we would want to increment the amount in the sell info...
                         // SellInfo info = vendor.GetSellInfoByItemType(itemType);
-
+                        int price = Model.BuyInfo.GetPurchasePrice(item);
                         World.PlayerCredits += price;
                         item.Amount -= 1;
                         if (item.Amount == 0)
