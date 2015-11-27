@@ -8,7 +8,6 @@ namespace Ypsilon.Modes.Space.Entities.Movement
     /// </summary>
     class PlanetRotator
     {
-        private ASpobDefinition m_Definition;
         // private Vector3 m_AxialTilt;
         private float m_Rotation; // about the axis.
 
@@ -36,11 +35,6 @@ namespace Ypsilon.Modes.Space.Entities.Movement
             {
                 return Matrix.CreateRotationZ(m_Rotation * MathHelper.TwoPi);
             }
-        }
-
-        public PlanetRotator(ASpobDefinition definition)
-        {
-            m_Definition = definition;
         }
     }
 }

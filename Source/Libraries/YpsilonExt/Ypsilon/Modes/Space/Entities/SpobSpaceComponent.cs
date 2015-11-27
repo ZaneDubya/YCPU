@@ -23,18 +23,18 @@ namespace Ypsilon.Modes.Space.Entities
         public SpobSpaceComponent(Spob spob)
             : base(spob)
         {
-            ViewSize = Entity.Definition.Size;
+            ViewSize = Entity.Size;
         }
 
         protected override void OnInitialize()
         {
-            m_ModelVertices = Vertices.GetSpobVertices(Entity.Definition);
-            m_Rotator = new PlanetRotator(Entity.Definition);
+            m_ModelVertices = Vertices.GetSpobVertices(Entity.VertexRandomizationFactor);
+            m_Rotator = new PlanetRotator();
         }
 
         public override void Update(float frameSeconds)
         {
-            m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Entity.Definition.RotationPeriod;
+            m_Rotator.Rotation = m_Rotator.Rotation + frameSeconds / Entity.RotationPeriod;
         }
 
         public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
@@ -42,7 +42,7 @@ namespace Ypsilon.Modes.Space.Entities
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
             DrawMatrix = CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = Entity.Definition.Color;
+            DrawColor = Entity.Color;
 
             base.Draw(renderer, worldSpaceCenter, mouseOverList);
         }

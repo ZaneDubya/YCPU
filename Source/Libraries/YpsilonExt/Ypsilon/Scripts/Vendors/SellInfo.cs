@@ -1,5 +1,6 @@
 ﻿using System;
 using Ypsilon.Entities;
+using Ypsilon.Data;
 
 namespace Ypsilon.Scripts.Vendors
 {
@@ -62,9 +63,7 @@ namespace Ypsilon.Scripts.Vendors
             Type = type;
             Args = args;
 
-            // this is a horrible hackity hack hack hack please forgive me.
-            AItem item = (AItem)AEntity.CreateEntityWithoutSerial(Type, Args);
-            m_Price = item.Price;
+            m_Price = Prices.GetPrice(type);
         }
 
         /// <summary>

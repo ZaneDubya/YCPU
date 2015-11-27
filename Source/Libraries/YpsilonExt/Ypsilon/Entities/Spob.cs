@@ -1,4 +1,5 @@
 ﻿using Ypsilon.Data;
+using Microsoft.Xna.Framework;
 using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Entities
@@ -8,11 +9,12 @@ namespace Ypsilon.Entities
     /// </summary>
     class Spob : AEntity
     {
-        public ASpobDefinition Definition;
         public VendorInfo Exchange;
 
-        public override string DefaultName { get { return Definition.Name; } }
-        public override string Description { get { return Definition.Description; } }
+        public float Size = 40f;
+        public float RotationPeriod = 30f;
+        public Color Color = Color.Magenta;
+        public float VertexRandomizationFactor = 0f;
 
         public Spob()
         {

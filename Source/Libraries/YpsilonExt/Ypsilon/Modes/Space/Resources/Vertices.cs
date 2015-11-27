@@ -60,11 +60,11 @@ namespace Ypsilon.Modes.Space.Resources
             return asteroidVectors;
         }
 
-        public static Vector3[] GetSpobVertices(ASpobDefinition definition)
+        public static Vector3[] GetSpobVertices(float vertexRandomizationFactor)
         {
-            if (definition.DoRandomizeVertexes)
+            if (vertexRandomizationFactor != 0)
             {
-                return GenerateNewAsteroid(definition.VertexRandomizationFactor);
+                return GenerateNewAsteroid(vertexRandomizationFactor);
             }
             else
             {

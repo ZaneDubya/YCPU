@@ -7,7 +7,6 @@ namespace Ypsilon.Entities
 {
     public abstract class AItem : AEntity
     {
-        public abstract int Price { get; }
         public virtual bool CanStack { get { return true; } }
 
         private int m_Amount = 1;

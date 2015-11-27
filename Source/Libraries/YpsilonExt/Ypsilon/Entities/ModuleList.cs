@@ -42,15 +42,13 @@ namespace Ypsilon.Entities
         /// <summary>
         /// Attempts to add an item to this list. Returns false if the item would not fit in the designated place.
         /// </summary>
-        public bool TryAddModule(AModuleDefinition definition, Point position, out AModule module)
+        public bool TryAddModule(AModule module, Point position)
         {
-            bool canHold = CanPlaceModule(definition, position);
+            bool canHold = CanPlaceModule(module, position);
             if (canHold)
             {
-                module = (AModule)AEntity.CreateEntity(definition.Type);
                 module.Parent = m_Parent;
-                module.Position = position;
-                module.Definition = definition;
+                module.ModuleHardpoint = position;
                 m_Modules.Add(module);
                 return true;
             }
@@ -61,11 +59,11 @@ namespace Ypsilon.Entities
             }
         }
 
-        public bool CanPlaceModule(AModuleDefinition definition, Point position)
+        public bool CanPlaceModule(AModule module, Point position)
         {
-            for (int y = 0; y < definition.Size.Y; y++)
+            for (int y = 0; y < module.ModuleSize.Y; y++)
             {
-                for (int x = 0; x < definition.Size.X; x++)
+                for (int x = 0; x < module.ModuleSize.X; x++)
                 {
                     if (!m_Parent.Definition.Hardpoints.Contains(new Point(position.X + x, position.Y + y)))
                         return false;
@@ -81,8 +79,8 @@ namespace Ypsilon.Entities
         {
             foreach (AModule m in m_Modules)
             {
-                if (position.X >= m.Position.X && position.X < m.Position.X + m.Definition.Size.X &&
-                    position.Y >= m.Position.Y && position.Y < m.Position.Y + m.Definition.Size.Y)
+                if (position.X >= m.ModuleHardpoint.X && position.X < m.ModuleHardpoint.X + m.ModuleSize.X &&
+                    position.Y >= m.ModuleHardpoint.Y && position.Y < m.ModuleHardpoint.Y + m.ModuleSize.Y)
                 {
                     module = m;
                     return true;

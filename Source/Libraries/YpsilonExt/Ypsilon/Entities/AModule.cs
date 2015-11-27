@@ -6,10 +6,10 @@ namespace Ypsilon.Entities
     /// <summary>
     /// A piece of ship equipment.
     /// </summary>
-    public abstract class AModule : AEntity
+    public abstract class AModule : AItem
     {
-        public AModuleDefinition Definition { get; internal set; }
-        public Point Position { get; set; }
+        public Point ModuleHardpoint { get; set; }
+        public virtual Point ModuleSize { get { return PointX.OneByOne; } }
 
         protected override void OnDispose()
         {

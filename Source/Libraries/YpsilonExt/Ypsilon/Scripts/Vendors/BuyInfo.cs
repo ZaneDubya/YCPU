@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Ypsilon.Entities;
+using Ypsilon.Data;
 
 namespace Ypsilon.Scripts.Vendors
 {
@@ -30,9 +29,10 @@ namespace Ypsilon.Scripts.Vendors
         public int GetPurchasePrice(AItem item)
         {
             float diff = 0;
-            if (m_Table.TryGetValue(item.GetType(), out diff))
+            Type type = item.GetType();
+            if (m_Table.TryGetValue(type, out diff))
             {
-                return (int)(item.Price * diff);
+                return (int)(Prices.GetPrice(type) * diff);
             }
             return -1;
         }
