@@ -56,6 +56,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\AModuleDefinition.cs" />
     <Compile Include="Data\Materials\MaterialIndex.cs" />
     <Compile Include="Data\Materials\MaterialInfos.cs" />
     <Compile Include="Data\Materials\MaterialQuality.cs" />
@@ -64,6 +65,9 @@
     <Compile Include="Entities\ItemList.cs" />
     <Compile Include="Entities\AItem.cs" />
     <Compile Include="Entities\ModuleList.cs" />
+    <Compile Include="Scripts\Definitions\Spobs\AsteroidLargeDefinition.cs" />
+    <Compile Include="Scripts\Definitions\Spobs\AsteroidSmallDefinition.cs" />
+    <Compile Include="Scripts\Definitions\Spobs\GaeaDefinition.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />
@@ -113,7 +117,6 @@
     <Compile Include="Modes\Space\SpaceView.cs" />
     <Compile Include="Data\ASpobDefinition.cs" />
     <Compile Include="Data\AShipDefinition.cs" />
-    <Compile Include="Data\Definitions.cs" />
     <Compile Include="Data\Materials\MaterialInfo.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="World.cs" />

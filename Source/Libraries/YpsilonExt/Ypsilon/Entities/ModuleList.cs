@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using Ypsilon.Data;
 
 namespace Ypsilon.Entities
 {
@@ -41,27 +42,30 @@ namespace Ypsilon.Entities
         /// <summary>
         /// Attempts to add an item to this list. Returns false if the item would not fit in the designated place.
         /// </summary>
-        public bool TryAddModule(AModule module, Point position)
+        public bool TryAddModule(AModuleDefinition definition, Point position, out AModule module)
         {
-            bool canHold = CanPlaceModule(module, position);
+            bool canHold = CanPlaceModule(definition, position);
             if (canHold)
             {
+                module = (AModule)AEntity.CreateEntity(definition.Type);
                 module.Parent = m_Parent;
                 module.Position = position;
+                module.Definition = definition;
                 m_Modules.Add(module);
                 return true;
             }
             else
             {
+                module = null;
                 return false;
             }
         }
 
-        public bool CanPlaceModule(AModule module, Point position)
+        public bool CanPlaceModule(AModuleDefinition definition, Point position)
         {
-            for (int y = 0; y < module.Size.Y; y++)
+            for (int y = 0; y < definition.Size.Y; y++)
             {
-                for (int x = 0; x < module.Size.X; x++)
+                for (int x = 0; x < definition.Size.X; x++)
                 {
                     if (!m_Parent.Definition.Hardpoints.Contains(new Point(position.X + x, position.Y + y)))
                         return false;
@@ -77,8 +81,8 @@ namespace Ypsilon.Entities
         {
             foreach (AModule m in m_Modules)
             {
-                if (position.X >= m.Position.X && position.X < m.Position.X + m.Size.X &&
-                    position.Y >= m.Position.Y && position.Y < m.Position.Y + m.Size.Y)
+                if (position.X >= m.Position.X && position.X < m.Position.X + m.Definition.Size.X &&
+                    position.Y >= m.Position.Y && position.Y < m.Position.Y + m.Definition.Size.Y)
                 {
                     module = m;
                     return true;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Ypsilon.Data;
 
 namespace Ypsilon.Entities
 {
@@ -7,7 +8,7 @@ namespace Ypsilon.Entities
     /// </summary>
     public abstract class AModule : AEntity
     {
-        public virtual Point Size { get { return PointX.OneByOne; } }
+        public AModuleDefinition Definition { get; internal set; }
         public Point Position { get; set; }
 
         protected override void OnDispose()

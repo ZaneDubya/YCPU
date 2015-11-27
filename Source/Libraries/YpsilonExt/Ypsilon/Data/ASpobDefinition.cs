@@ -2,26 +2,20 @@
 
 namespace Ypsilon.Data
 {
-    /// <summary>
-    /// Planet definition keeps all essential planet variables organized.<para />
-    /// 1. The base values of the variables in the definition are loaded from a file.<para />
-    /// 2. Eventually, the planet definition will query a planet's variables to get the current values of these variables.<para />
-    /// 3. Right now, everything is hardcoded.
-    /// </summary>
     class ASpobDefinition
     {
-        public float Size;
+        public virtual float Size { get { return 60f; } }
 
         /// <summary>
         /// Rotation period, in seconds.
         /// </summary>
-        public float RotationPeriod = 60f;
+        public virtual float RotationPeriod { get { return 60f; } }
 
-        public Color Color;
-        public string Name;
-        public string Description;
+        public virtual Color Color { get { return Color.Gray; } }
+        public virtual string Name { get { return "Spob"; } }
+        public virtual string Description { get { return string.Empty; } }
 
-        public float VertexRandomizationFactor;
+        public virtual float VertexRandomizationFactor { get { return 0f; } }
 
         public bool DoRandomizeVertexes
         {

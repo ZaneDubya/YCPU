@@ -1,8 +1,7 @@
-﻿using Ypsilon.Core.Patterns.MVC;
-using Ypsilon.Data;
-using Ypsilon.Entities;
+﻿using Ypsilon.Entities;
 using Ypsilon.Modes.Space;
 using Ypsilon.Modes.Space.Entities;
+using Ypsilon.Scripts.Definitions.Spobs;
 
 namespace Ypsilon.Persistence
 {
@@ -31,18 +30,18 @@ namespace Ypsilon.Persistence
 
             // create a planet.
             Spob planet = (Spob)World.Entities.AddEntity(typeof(Spob));
-            planet.Definition = Definitions.GetSpob("gaea");
+            planet.Definition = new GaeaDefinition();
             planet.CanLandHere = true;
             SpobSpaceComponent planetComponent = (SpobSpaceComponent)planet.SetComponent(new SpobSpaceComponent(planet));
             planetComponent.Position = new Position3D(0, 0, 0);
 
             Spob asteroid1 = (Spob)World.Entities.AddEntity(typeof(Spob));
-            asteroid1.Definition = Definitions.GetSpob("asteroid small");
+            asteroid1.Definition = new AsteroidSmallDefinition();
             SpobSpaceComponent asteroid1c = (SpobSpaceComponent)asteroid1.SetComponent(new SpobSpaceComponent(asteroid1));
             asteroid1c.Position = new Position3D(100, 100, 0);
 
             Spob asteroid2 = (Spob)World.Entities.AddEntity(typeof(Spob));
-            asteroid2.Definition = Definitions.GetSpob("asteroid large");
+            asteroid2.Definition = new AsteroidLargeDefinition();
             SpobSpaceComponent asteroid2c = (SpobSpaceComponent)asteroid2.SetComponent(new SpobSpaceComponent(asteroid2));
             asteroid2c.Position = new Position3D(-100, 200, 0);
         }
