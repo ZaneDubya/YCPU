@@ -65,6 +65,7 @@
     <Compile Include="Entities\ItemList.cs" />
     <Compile Include="Entities\AItem.cs" />
     <Compile Include="Entities\ModuleList.cs" />
+    <Compile Include="Entities\Modules\AWeaponModule.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Modes\Space\Messages.cs" />
     <Compile Include="Persistence\Savegame.cs" />
     <Compile Include="Scripts\Modules\CargoModule.cs" />
+    <Compile Include="Scripts\Modules\LaserModule.cs" />
     <Compile Include="Scripts\Vendors\SellInfo.cs" />
     <Compile Include="Scripts\Vendors\BuyInfo.cs" />
     <Compile Include="Scripts\Vendors\VendorInfo.cs" />

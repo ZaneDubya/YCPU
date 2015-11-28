@@ -10,9 +10,14 @@ namespace Ypsilon.Entities
         public Point ModuleHardpoint { get; set; }
         public virtual Point ModuleSize { get { return PointX.OneByOne; } }
 
+        /// <summary>
+        /// Modules don't stack.
+        /// </summary>
         public override bool CanStack { get { return false; } }
 
         public virtual int HoldSpace { get { return 0; } }
+
+        public override string DefaultName { get { return "Unnamed module"; } }
 
         protected override void OnDispose()
         {
@@ -21,5 +26,12 @@ namespace Ypsilon.Entities
                 Parent.RemoveEntity(this);
             }
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}", Name);
+        }
+
+
     }
 }

@@ -18,6 +18,7 @@ namespace Ypsilon.Persistence
             player.Name = "Player";
             player.SetComponent(new ShipSpaceComponent(player));
             player.Modules.TryAddModule(new CargoModule(), new Point(0, 0));
+            player.Modules.TryAddModule(new LaserModule(), new Point(1, 0));
             
             // create other dudes.
             for (int i = 0; i < 100; i++)
