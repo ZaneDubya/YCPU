@@ -65,9 +65,7 @@ namespace Ypsilon.Entities
             {
                 if (!m_Component.IsDisposed)
                 {
-                    if (!m_Component.IsInitialized)
-                        m_Component.Initialize();
-                    m_Component.Update(frameSeconds);
+                    m_Component.Update(this, frameSeconds);
                 }
 
                 if (m_Component.IsDisposed)
@@ -93,9 +91,9 @@ namespace Ypsilon.Entities
         #endregion
 
         #region Component Support
-        private AEntityComponent m_Component;
+        private AComponent m_Component;
 
-        public AEntityComponent SetComponent(AEntityComponent component)
+        public AComponent SetComponent(AComponent component)
         {
             if (m_Component != null && !m_Component.IsDisposed)
             {
@@ -104,7 +102,9 @@ namespace Ypsilon.Entities
             }
 
             m_Component = component;
-            return component;
+            if (!m_Component.IsInitialized)
+                m_Component.Initialize(this);
+            return m_Component;
         }
 
         public void ClearComponent()
@@ -116,7 +116,7 @@ namespace Ypsilon.Entities
             }
         }
 
-        public T GetComponent<T>() where T : AEntityComponent
+        public T GetComponent<T>() where T : AComponent
         {
             if (m_Component == null)
                 return default(T);
@@ -124,7 +124,9 @@ namespace Ypsilon.Entities
             Type type = typeof(T);
 
             if (type.IsAssignableFrom(m_Component.GetType()))
+            {
                 return (T)m_Component;
+            }
             else
                 return default(T);
         }

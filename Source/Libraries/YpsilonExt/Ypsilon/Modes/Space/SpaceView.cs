@@ -56,7 +56,7 @@ namespace Ypsilon.Modes.Space
             mouseOver.Reset();
 
             Ship player = (Ship)World.Entities.GetPlayerEntity();
-            ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
+            ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
             // draw backdrop
             m_Stars.Update(playerShip.Velocity * frameSeconds);
@@ -66,8 +66,8 @@ namespace Ypsilon.Modes.Space
             List<AEntity> visible = GetVisibleEntities(playerShip.Position, new Vector2(screenWidth, screenHeight));
             foreach (AEntity e in visible)
             {
-                AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
-                c.Draw(m_Vectors, playerShip.Position, mouseOver);
+                ASpaceComponent c = e.GetComponent<ASpaceComponent>();
+                c.Draw(e, m_Vectors, playerShip.Position, mouseOver);
                 if (e.Serial == Model.SelectedSerial)
                     c.DrawSelection(m_Vectors);
             }
@@ -101,7 +101,7 @@ namespace Ypsilon.Modes.Space
             m_Curses.Clear();
 
             Ship player = (Ship)World.Entities.GetPlayerEntity();
-            ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
+            ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
             m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
             m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
@@ -174,7 +174,7 @@ namespace Ypsilon.Modes.Space
             foreach (KeyValuePair<int, AEntity> entity in World.Entities.AllEntities)
             {
                 AEntity e = entity.Value;
-                AEntitySpaceComponent c = e.GetComponent<AEntitySpaceComponent>();
+                ASpaceComponent c = e.GetComponent<ASpaceComponent>();
                 if (c == null)
                     continue;
 

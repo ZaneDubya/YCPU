@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ypsilon.Entities;
+using Ypsilon.Entities.Collections;
 using Ypsilon.Scripts.Items;
 using Ypsilon.Scripts.Items.MaterialItems;
 

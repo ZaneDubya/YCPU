@@ -1,9 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
-using Ypsilon.Data;
 
-namespace Ypsilon.Entities
+namespace Ypsilon.Entities.Collections
 {
     /// <summary>
     /// A collection of modules, for a ship.

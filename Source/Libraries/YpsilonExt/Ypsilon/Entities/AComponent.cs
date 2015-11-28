@@ -5,14 +5,8 @@ using System.Text;
 
 namespace Ypsilon.Entities
 {
-    public class AEntityComponent
+    public class AComponent
     {
-        public AEntity Entity
-        {
-            get;
-            private set;
-        }
-
         public bool IsInitialized
         {
             get;
@@ -25,17 +19,17 @@ namespace Ypsilon.Entities
             private set;
         }
 
-        public AEntityComponent(AEntity entity)
+        public AComponent()
         {
-            Entity = entity;
+
         }
 
-        public void Initialize()
+        public void Initialize(AEntity entity)
         {
             if (IsInitialized)
                 return;
 
-            OnInitialize();
+            OnInitialize(entity);
 
             IsInitialized = true;
         }
@@ -50,7 +44,7 @@ namespace Ypsilon.Entities
             IsDisposed = true;
         }
 
-        protected virtual void OnInitialize()
+        protected virtual void OnInitialize(AEntity entity)
         {
 
         }
@@ -60,7 +54,7 @@ namespace Ypsilon.Entities
 
         }
 
-        public virtual void Update(float frameSeconds)
+        public virtual void Update(AEntity entity, float frameSeconds)
         {
 
         }

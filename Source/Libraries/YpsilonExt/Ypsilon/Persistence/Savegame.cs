@@ -16,7 +16,7 @@ namespace Ypsilon.Persistence
             Ship player = (Ship)World.Entities.AddEntity(typeof(Ship));
             World.PlayerSerial = player.Serial;
             player.Name = "Player";
-            player.SetComponent(new ShipSpaceComponent(player));
+            player.SetComponent(new ShipComponent());
             player.Modules.TryAddModule(new CargoModule(), new Point(0, 0));
             player.Modules.TryAddModule(new LaserModule(), new Point(1, 0));
             
@@ -25,7 +25,7 @@ namespace Ypsilon.Persistence
             {
                 Ship ship = (Ship)World.Entities.AddEntity(typeof(Ship));
                 ship.Name = "Enemy ship";
-                ShipSpaceComponent c = (ShipSpaceComponent)ship.SetComponent(new ShipSpaceComponent(ship));
+                ShipComponent c = (ShipComponent)ship.SetComponent(new ShipComponent());
                 c.Position = new Position3D(
                     Utility.Random_GetNonpersistantDouble() * 1000 - 500,
                     Utility.Random_GetNonpersistantDouble() * 600 - 300,
@@ -39,7 +39,7 @@ namespace Ypsilon.Persistence
             planet.Description = "Gaea is just slightly smaller than Terra and has almost the same mass and gravity. The surface is about 60 percent water. ~Because of its distance from Beta Caeli, the surface temperature is slightly cooler than Terra's. The planet does not have as many ore deposits as its neighbor, Rhea. ~The planet has an oxygen-nitrogen-carbon dioxide atmosphere very similar to Terra's. The oxygen and the detectable traces of methane indicate that life is present on the planet. ~Distance from Star: 2.54.06x10(8) kilometers. Period of revolution (Terran): 793.98 days. Period of rotation (Terran): 22.32 hours. Equatorial diameter: 12,224 kilometers. Mass (Terra=1): 0.97. Density (water=1): 5.4. Atmosphere: Nitrogen, Oxygen. ~Mean temperature (visible surface; Celsius): 20 equator/-2 polar. Surface gravity (Terra=1): 0.96. Inclination of axis: 27.24 degrees. Inclination of orbit to ecliptic: 0.0 degrees. Eccentricity of orbit: 0.10410.";
             planet.Color = Color.CornflowerBlue;
             planet.Size = 60f;
-            SpobSpaceComponent planetComponent = (SpobSpaceComponent)planet.SetComponent(new SpobSpaceComponent(planet));
+            SpobComponent planetComponent = (SpobComponent)planet.SetComponent(new SpobComponent());
             planetComponent.Position = new Position3D(0, 0, 0);
 
             Spob asteroid1 = (Spob)World.Entities.AddEntity(typeof(Spob));
@@ -49,7 +49,7 @@ namespace Ypsilon.Persistence
             asteroid1.Size = 10f;
             asteroid1.RotationPeriod = 12f;
             asteroid1.VertexRandomizationFactor = 0.6f;
-            SpobSpaceComponent asteroid1c = (SpobSpaceComponent)asteroid1.SetComponent(new SpobSpaceComponent(asteroid1));
+            SpobComponent asteroid1c = (SpobComponent)asteroid1.SetComponent(new SpobComponent());
             asteroid1c.Position = new Position3D(100, 100, 0);
 
             Spob asteroid2 = (Spob)World.Entities.AddEntity(typeof(Spob));
@@ -58,7 +58,7 @@ namespace Ypsilon.Persistence
             asteroid2.Size = 28f;
             asteroid2.RotationPeriod = 18f;
             asteroid2.VertexRandomizationFactor = 0.4f;
-            SpobSpaceComponent asteroid2c = (SpobSpaceComponent)asteroid2.SetComponent(new SpobSpaceComponent(asteroid2));
+            SpobComponent asteroid2c = (SpobComponent)asteroid2.SetComponent(new SpobComponent());
             asteroid2c.Position = new Position3D(-100, 200, 0);
         }
     }

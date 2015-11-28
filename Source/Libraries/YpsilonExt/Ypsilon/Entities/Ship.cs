@@ -1,5 +1,6 @@
 ﻿using System;
 using Ypsilon.Data;
+using Ypsilon.Entities.Collections;
 
 namespace Ypsilon.Entities
 {

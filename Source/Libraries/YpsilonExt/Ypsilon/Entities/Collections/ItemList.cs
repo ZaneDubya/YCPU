@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ypsilon.Entities
+namespace Ypsilon.Entities.Collections
 {
     /// <summary>
     /// A collection of items!

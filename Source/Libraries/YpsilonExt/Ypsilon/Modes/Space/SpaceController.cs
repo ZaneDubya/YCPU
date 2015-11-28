@@ -34,7 +34,7 @@ namespace Ypsilon.Modes.Space
         {
             // get the player object.
             Ship player = (Ship)World.Entities.GetPlayerEntity();
-            ShipSpaceComponent playerComponent = player.GetComponent<ShipSpaceComponent>();
+            ShipComponent playerComponent = player.GetComponent<ShipComponent>();
 
             // Left-down to select.
             if (input.HandleMouseEvent(MouseEvent.Down, MouseButton.Left))
@@ -71,7 +71,7 @@ namespace Ypsilon.Modes.Space
                 {
                     Messages.Add(MessageType.Error, "Cannot land on target.");
                 }
-                else if (playerComponent.Speed > Constants.MaxLandingSpeed)
+                else if (playerComponent.Throttle > 0)
                 {
                     Messages.Add(MessageType.Error, "Landing cancelled. Moving too quickly to land.");
                 }
@@ -107,7 +107,7 @@ namespace Ypsilon.Modes.Space
                     }
                     else
                     {
-                        AEntitySpaceComponent selectedComponent = selected.GetComponent<AEntitySpaceComponent>();
+                        ASpaceComponent selectedComponent = selected.GetComponent<ASpaceComponent>();
 
                         float maxDistance = playerComponent.ViewSize + selectedComponent.ViewSize;
 
@@ -115,9 +115,9 @@ namespace Ypsilon.Modes.Space
                         {
                             Messages.Add(MessageType.Error, "Too far away to mine. Close distance.");
                         }
-                        else if (playerComponent.Speed > Constants.MaxMiningSpeed)
+                        else if (playerComponent.Throttle > 0)
                         {
-                            Messages.Add(MessageType.Error, "Moving too quickly to mine. Reduce velocity.");
+                            Messages.Add(MessageType.Error, "Cannot move while moving. Mining cancelled.");
                         }
                         else
                         {
@@ -159,7 +159,7 @@ namespace Ypsilon.Modes.Space
             {
                 if (e.IsDisposed || e.IsPlayerEntity)
                     continue;
-                Position3D ePos = e.GetComponent<AEntitySpaceComponent>().Position;
+                Position3D ePos = e.GetComponent<ASpaceComponent>().Position;
                 float eDist = Vector3.Distance(ePos.ToVector3(), aPos);
                 if (eDist < distance)
                 {

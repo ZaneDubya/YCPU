@@ -9,29 +9,15 @@ using Ypsilon.Data;
 
 namespace Ypsilon.Modes.Space.Entities
 {
-    class ShipSpaceComponent : AEntitySpaceComponent
+    class ShipComponent : ASpaceComponent
     {
-        public new Ship Entity
-        {
-            get
-            {
-                return (Ship)base.Entity;
-            }
-        }
-
         public AAction Action = null;
 
         private ShipRotator2D m_Rotator;
         private Vector3[] m_ModelVertices;
         private Particles.Trail m_Trail1, m_Trail2;
 
-        public float Speed
-        {
-            get
-            {
-                return (Entity.Definition.DefaultSpeed / 10f) * Throttle;
-            }
-        }
+        private float m_Speed;
 
         private float m_Throttle;
         public float Throttle
@@ -63,29 +49,36 @@ namespace Ypsilon.Modes.Space.Entities
         {
             get
             {
-                return Speed * m_Rotator.Forward;
+                return m_Speed * m_Rotator.Forward;
             }
         }
 
-        public ShipSpaceComponent(Ship ship)
-            : base(ship)
+        public ShipComponent()
         {
-            ViewSize = Entity.Definition.DisplaySize;
-            m_Rotator = new ShipRotator2D(Entity.Definition);
-            m_Throttle = ship.IsPlayerEntity ? 0.0f : 0.2f;
+            
         }
 
-        protected override void OnInitialize()
+        protected override void OnInitialize(AEntity entity)
         {
+            Ship ship = entity as Ship;
+
+            ViewSize = ship.Definition.DisplaySize;
+            m_Rotator = new ShipRotator2D(ship.Definition);
+            m_Throttle = ship.IsPlayerEntity ? 0.0f : 0.2f;
             m_ModelVertices = Vertices.SimpleArrow;
-            m_Rotator = new ShipRotator2D(Entity.Definition);
+            m_Rotator = new ShipRotator2D(ship.Definition);
 
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), ViewSize);
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), ViewSize);
         }
 
-        public override void Update(float frameSeconds)
+        public override void Update(AEntity entity, float frameSeconds)
         {
+            Ship ship = entity as Ship;
+
+            // set speed.
+            m_Speed = (ship.Definition.DefaultSpeed / 10f) * Throttle;
+
             // move forward
             Vector3 offset = Velocity * frameSeconds;
             Position += offset;
@@ -97,15 +90,15 @@ namespace Ypsilon.Modes.Space.Entities
                 Action.Update(frameSeconds);
         }
 
-        public override void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
+        public override void Draw(AEntity entity, VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
 
             DrawMatrix = Matrix.CreateScale(ViewSize) * CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = Entity.IsPlayerEntity ? Colors.Railscasts[0x0C] : Colors.Railscasts[0x08];
+            DrawColor = entity.IsPlayerEntity ? Colors.Railscasts[0x0C] : Colors.Railscasts[0x08];
 
-            base.Draw(renderer, worldSpaceCenter, mouseOverList);
+            base.Draw(entity, renderer, worldSpaceCenter, mouseOverList);
 
             Matrix childRotation = Matrix.CreateRotationZ((m_Rotator as ShipRotator2D).Rotation);
             m_Trail1.Draw(renderer, translation, childRotation);

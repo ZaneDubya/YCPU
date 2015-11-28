@@ -18,8 +18,8 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
 
         public override void Update(float frameSeconds)
         {
-            ShipSpaceComponent playerComponent = Parent.GetComponent<ShipSpaceComponent>();
-            SpobSpaceComponent targetComponent;
+            ShipComponent playerComponent = Parent.GetComponent<ShipComponent>();
+            SpobComponent targetComponent;
 
             // make sure we have a target.
             if (Target == null)
@@ -29,7 +29,7 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             }
             else
             {
-                targetComponent = Target.GetComponent<SpobSpaceComponent>();
+                targetComponent = Target.GetComponent<SpobComponent>();
                 if (targetComponent == null)
                 {
                     playerComponent.Action = new NoAction(Parent);
@@ -44,9 +44,9 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             {
                 Messages.Add(MessageType.Error, "Mining halted. Too far away to mine.");
             }
-            else if (playerComponent.Speed > Constants.MaxMiningSpeed)
+            else if (playerComponent.Throttle > 0)
             {
-                Messages.Add(MessageType.Error, "Mining halted. Moving too fast to mine.");
+                Messages.Add(MessageType.Error, "Mining halted. Cannot mine while moving.");
                 playerComponent.Action = new NoAction(Parent);
                 return;
             }

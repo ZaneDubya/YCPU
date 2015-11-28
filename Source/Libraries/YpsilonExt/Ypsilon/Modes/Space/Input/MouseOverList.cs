@@ -70,7 +70,7 @@ namespace Ypsilon.Modes.Space.Input
             if (m_Entities.Contains(entity))
                 return;
 
-            AEntitySpaceComponent component = entity.GetComponent<AEntitySpaceComponent>();
+            ASpaceComponent component = entity.GetComponent<ASpaceComponent>();
             if (component == null)
                 return;
 

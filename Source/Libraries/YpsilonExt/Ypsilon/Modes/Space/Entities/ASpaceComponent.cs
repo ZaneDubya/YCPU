@@ -6,7 +6,7 @@ using Ypsilon.Modes.Space.Resources;
 
 namespace Ypsilon.Modes.Space.Entities
 {
-    class AEntitySpaceComponent : AEntityComponent
+    class ASpaceComponent : AComponent
     {
         public Position3D Position
         {
@@ -27,16 +27,15 @@ namespace Ypsilon.Modes.Space.Entities
         protected Color DrawColor = Color.Magenta;
         protected Matrix DrawMatrix = Matrix.Identity;
 
-        public AEntitySpaceComponent(AEntity entity)
-            : base(entity)
+        public ASpaceComponent()
         {
             Position = Position3D.Zero;
         }
 
-        public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
+        public virtual void Draw(AEntity entity, VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
             renderer.DrawPolygon(DrawVertices, DrawMatrix, DrawColor, true);
-            mouseOverList.AddEntityIfMouseIsOver(Entity, DrawMatrix.Translation);
+            mouseOverList.AddEntityIfMouseIsOver(entity, DrawMatrix.Translation);
         }
 
         public void DrawSelection(VectorRenderer renderer)
