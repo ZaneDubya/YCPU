@@ -42,14 +42,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DpiManager.cs" />
+    <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
+    <Compile Include="Core\Graphics\VertexPositionNormalTextureData.cs" />
     <Compile Include="Core\Patterns\ECS\ComponentCollection.cs" />
     <Compile Include="Extensions\PointX.cs" />
     <Compile Include="GraphicsUtility.cs" />
-    <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
     <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
-    <Compile Include="Core\Graphics\VectorPolygon.cs" />
     <Compile Include="Core\Graphics\VectorRenderer.cs" />
-    <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="Core\Patterns\MVC\AController.cs" />
     <Compile Include="Core\Patterns\MVC\AModel.cs" />
     <Compile Include="Core\Patterns\MVC\AView.cs" />

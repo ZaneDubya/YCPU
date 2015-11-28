@@ -100,7 +100,7 @@ namespace Ypsilon.Modes.Space.Entities
         {
             Vector3 translation = (Position - worldSpaceCenter).ToVector3();
 
-            DrawMatrix = CreateWorldMatrix(translation);
+            DrawMatrix = Matrix.CreateScale(ViewSize) * CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
             DrawColor = Entity.IsPlayerEntity ? Color.White : Color.OrangeRed;
 

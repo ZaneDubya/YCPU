@@ -35,16 +35,16 @@ namespace Ypsilon.Modes.Space.Entities
 
         public virtual void Draw(VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
         {
-            renderer.DrawPolygon(DrawVertices, DrawColor, ViewSize, DrawMatrix, true);
+            renderer.DrawPolygon(DrawVertices, DrawMatrix, DrawColor, true);
             mouseOverList.AddEntityIfMouseIsOver(Entity, DrawMatrix.Translation);
         }
 
         public void DrawSelection(VectorRenderer renderer)
         {
-            Matrix drawMatrixNoRotation = Matrix.Identity;
+            Matrix drawMatrixNoRotation = Matrix.CreateScale(ViewSize) * Matrix.Identity;
             drawMatrixNoRotation.Translation = DrawMatrix.Translation;
-            renderer.DrawPolygon(Vertices.SelectionLeft, Color.Yellow, ViewSize, drawMatrixNoRotation, false);
-            renderer.DrawPolygon(Vertices.SelectionRight, Color.Yellow, ViewSize, drawMatrixNoRotation, false);
+            renderer.DrawPolygon(Vertices.SelectionLeft, drawMatrixNoRotation, Color.Yellow, false);
+            renderer.DrawPolygon(Vertices.SelectionRight, drawMatrixNoRotation, Color.Yellow, false);
         }
     }
 }

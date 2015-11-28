@@ -26,7 +26,7 @@ namespace Ypsilon.Core.Graphics
         Effect m_Effect;
 
         private const int c_MaxPrimitives = 0x1000;
-        private VertexPositionColorTexture[] m_WorldVertices, m_ScreenVertices;
+        private VertexPositionNormalTextureData[] m_WorldVertices, m_ScreenVertices;
         private Texture2D m_Texture;
         private short[] m_Indices;
         private int m_CurrentIndex;
@@ -35,15 +35,15 @@ namespace Ypsilon.Core.Graphics
         public VectorRenderer(GraphicsDevice g, ContentManager c)
         {
             m_Graphics = g;
-            m_Effect = c.Load<Effect>("Basic");
+            m_Effect = c.Load<Effect>("DataEffect");
 
             Color[] data = new Color[] { Color.White };
             m_Texture = new Texture2D(m_Graphics, 1, 1);
             m_Texture.SetData<Color>(data);
 
             // create the vertex and indices array
-            m_WorldVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
-            m_ScreenVertices = new VertexPositionColorTexture[c_MaxPrimitives * 2];
+            m_WorldVertices = new VertexPositionNormalTextureData[c_MaxPrimitives * 2];
+            m_ScreenVertices = new VertexPositionNormalTextureData[c_MaxPrimitives * 2];
             m_Indices = CreateIndexBuffer(c_MaxPrimitives);
             m_CurrentIndex = 0;
             m_LineCount = 0;
@@ -61,54 +61,9 @@ namespace Ypsilon.Core.Graphics
         }
 
         /// <summary>
-        /// Draw a line from one point to another with the same color.
-        /// </summary>
-        /// <param name="start">The starting point.</param>
-        /// <param name="end">The ending point.</param>
-        /// <param name="color">The color throughout the line.</param>
-        public void DrawLine(Vector3 start, Vector3 end, Color color)
-        {
-            DrawLine(
-                new VertexPositionColorTexture(start, color, new Vector2()),
-                new VertexPositionColorTexture(end, color, new Vector2()));
-        }
-
-
-        /// <summary>
-        /// Draw a line from one point to another with different colors at each end.
-        /// </summary>
-        /// <param name="start">The starting point.</param>
-        /// <param name="end">The ending point.</param>
-        /// <param name="startColor">The color at the starting point.</param>
-        /// <param name="endColor">The color at the ending point.</param>
-        public void DrawLine(Vector3 start, Vector3 end, Color startColor, Color endColor)
-        {
-            DrawLine(
-                new VertexPositionColorTexture(start, startColor, new Vector2()),
-                new VertexPositionColorTexture(end, endColor, new Vector2()));
-        }
-
-
-        /// <summary>
-        /// Draws a line from one vertex to another.
-        /// </summary>
-        /// <param name="start">The starting vertex.</param>
-        /// <param name="end">The ending vertex.</param>
-        public void DrawLine(VertexPositionColorTexture start, VertexPositionColorTexture end)
-        {
-            if (m_LineCount >= c_MaxPrimitives)
-                throw new Exception("Raster graphics count has exceeded limit.");
-
-            m_WorldVertices[m_CurrentIndex++] = start;
-            m_WorldVertices[m_CurrentIndex++] = end;
-
-            m_LineCount++;
-        }
-
-        /// <summary>
         /// Draws the given polygon.
         /// </summary>
-        public void DrawPolygon(Vector3[] polygon, Color color, float drawSize, Matrix matrix, bool closePolygon)
+        public void DrawPolygon(Vector3[] polygon, Matrix matrix, Color color, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -119,15 +74,15 @@ namespace Ypsilon.Core.Graphics
                 if (m_LineCount >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit.");
 
-                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[i % polygon.Length] * drawSize, matrix);
-                m_WorldVertices[m_CurrentIndex++].Color = color;
-                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length] * drawSize, matrix);
-                m_WorldVertices[m_CurrentIndex++].Color = color;
+                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
+                m_WorldVertices[m_CurrentIndex++].Data = color.ToVector4();
+                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
+                m_WorldVertices[m_CurrentIndex++].Data = color.ToVector4();
                 m_LineCount++;
             }
         }
 
-        public void DrawPolygon(VertexPositionColorTexture[] polygon, Vector3 translation, bool closePolygon)
+        public void DrawPolygon(VertexPositionNormalTextureData[] polygon, Vector3 translation, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -165,7 +120,7 @@ namespace Ypsilon.Core.Graphics
             m_Effect.CurrentTechnique.Passes[0].Apply();
 
             m_Graphics.Textures[0] = m_Texture;
-            m_Graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
+            m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
 
             m_CurrentIndex = 0;
             m_LineCount = 0;
@@ -192,7 +147,7 @@ namespace Ypsilon.Core.Graphics
             m_Effect.CurrentTechnique.Passes[0].Apply();
 
             m_Graphics.Textures[0] = m_Texture;
-            m_Graphics.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
+            m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
 
             m_CurrentIndex = 0;
             m_LineCount = 0;
