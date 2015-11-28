@@ -4,6 +4,7 @@ using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
 using Ypsilon.Modes;
 using Ypsilon.Modes.Space;
+using Ypsilon.Data;
 #endregion
 
 namespace Ypsilon
@@ -69,6 +70,8 @@ namespace Ypsilon
         {
             float frameSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            m_SpriteBatch.GraphicsDevice.Clear(Data.Colors.Railscasts[0]);
+
             m_Modes.Draw(frameSeconds);
 
             DrawTitleSafeAreas();
@@ -87,8 +90,8 @@ namespace Ypsilon
             int dy = (int)(height * 0.05);
             int z = 1999;
 
-            Color notActionSafeColor = new Color(127, 0, 0, 127); // Red, 50% opacity
-            Color notTitleSafeColor = new Color(127, 127, 0, 127); // Yellow, 50% opacity
+            Color notActionSafeColor = Colors.Railscasts[0x02];
+            Color notTitleSafeColor = Colors.Railscasts[0x03];
 
             m_Vectors.DrawPolygon(new Vector3[4] { 
                 new Vector3(dx, dy, z), 

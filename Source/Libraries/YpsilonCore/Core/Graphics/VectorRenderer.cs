@@ -8,11 +8,10 @@
 #endregion
 
 #region Using Statements
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 #endregion
 
 namespace Ypsilon.Core.Graphics
@@ -60,6 +59,11 @@ namespace Ypsilon.Core.Graphics
             return indices;
         }
 
+        /*public void SetColorLookupTable(Vector4[] clut)
+        {
+            m_Effect.Parameters["ColorLookupTable"].SetValue(clut);
+        }*/
+
         /// <summary>
         /// Draws the given polygon.
         /// </summary>
@@ -68,6 +72,8 @@ namespace Ypsilon.Core.Graphics
             if (polygon == null)
                 return;
 
+            Vector4 data = color.ToVector4();
+
             int length = polygon.Length - (closePolygon ? 0 : 1);
             for (int i = 0; i < length; i++)
             {
@@ -75,9 +81,9 @@ namespace Ypsilon.Core.Graphics
                     throw new Exception("Raster graphics count has exceeded limit.");
 
                 m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
-                m_WorldVertices[m_CurrentIndex++].Data = color.ToVector4();
+                m_WorldVertices[m_CurrentIndex++].Data = data;
                 m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
-                m_WorldVertices[m_CurrentIndex++].Data = color.ToVector4();
+                m_WorldVertices[m_CurrentIndex++].Data = data;
                 m_LineCount++;
             }
         }

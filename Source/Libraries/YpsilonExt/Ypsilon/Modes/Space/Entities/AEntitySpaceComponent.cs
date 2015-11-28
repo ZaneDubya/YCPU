@@ -24,7 +24,7 @@ namespace Ypsilon.Modes.Space.Entities
 
         public float ViewSize = 1f;
         protected Vector3[] DrawVertices = null;
-        protected Color DrawColor = Color.White;
+        protected Color DrawColor = Color.Magenta;
         protected Matrix DrawMatrix = Matrix.Identity;
 
         public AEntitySpaceComponent(AEntity entity)

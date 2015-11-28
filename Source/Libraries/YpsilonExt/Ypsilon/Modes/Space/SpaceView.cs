@@ -58,8 +58,6 @@ namespace Ypsilon.Modes.Space
             Ship player = (Ship)World.Entities.GetPlayerEntity();
             ShipSpaceComponent playerShip = player.GetComponent<ShipSpaceComponent>();
 
-            m_SpriteBatch.GraphicsDevice.Clear(new Color(16, 0, 16, 255));
-
             // draw backdrop
             m_Stars.Update(playerShip.Velocity * frameSeconds);
             m_Stars.Draw(m_SpriteBatch);

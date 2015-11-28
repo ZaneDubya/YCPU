@@ -105,8 +105,6 @@ namespace Ypsilon.Modes.Landed
             int screenWidth = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferWidth;
             int screenHeight = m_SpriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight;
 
-            m_SpriteBatch.GraphicsDevice.Clear(new Color(16, 0, 16, 255));
-
             m_Curses.Clear();
 
             switch (State)

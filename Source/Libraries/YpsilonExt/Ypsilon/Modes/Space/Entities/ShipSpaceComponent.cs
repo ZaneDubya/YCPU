@@ -5,6 +5,7 @@ using Ypsilon.Modes.Space.Entities.Movement;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
+using Ypsilon.Data;
 
 namespace Ypsilon.Modes.Space.Entities
 {
@@ -102,7 +103,7 @@ namespace Ypsilon.Modes.Space.Entities
 
             DrawMatrix = Matrix.CreateScale(ViewSize) * CreateWorldMatrix(translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = Entity.IsPlayerEntity ? Color.White : Color.OrangeRed;
+            DrawColor = Entity.IsPlayerEntity ? Colors.Railscasts[0x0C] : Colors.Railscasts[0x08];
 
             base.Draw(renderer, worldSpaceCenter, mouseOverList);
 

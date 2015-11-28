@@ -1,16 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using Ypsilon.Core.Graphics;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon.Modes.Space.Particles
 {
     class Trail
     {
-        Vector3 m_Offset;
-        float m_ShipSize;
+        private Vector3 m_Offset; // from owning ship object.
+        private float m_ShipSize;
 
-        VertexPositionNormalTextureData[] m_Vertices;
+        private VertexPositionNormalTextureData[] m_Vertices;
         private float m_SecondsSinceLastVector = 0;
         private const float c_SecondsBetweenVectors = 0.2f;
         private bool m_FirstDraw = true; // used to set initial position of all trails.
@@ -25,7 +23,8 @@ namespace Ypsilon.Modes.Space.Particles
             {
                 float a = i < 8 ? MathHelper.Lerp(0f, 1f, (i / 8f)) : 1;
                 m_Vertices[i].Position = m_Offset;
-                m_Vertices[i].Data = new Color(.5f * a, .5f * a, 1f * a, a).ToVector4();
+                m_Vertices[i].Data = Data.Colors.Railscasts[0x03].ToVector4();
+                m_Vertices[i].Data *= a;
             }
         }
 
