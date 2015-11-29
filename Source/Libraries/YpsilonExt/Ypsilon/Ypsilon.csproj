@@ -66,8 +66,9 @@
     <Compile Include="Entities\Collections\ItemList.cs" />
     <Compile Include="Entities\AItem.cs" />
     <Compile Include="Entities\Collections\ModuleList.cs" />
-    <Compile Include="Entities\Modules\AWeapon.cs" />
-    <Compile Include="Entities\Modules\WeaponType.cs" />
+    <Compile Include="Entities\Weapons\AProjectile.cs" />
+    <Compile Include="Entities\Weapons\AWeapon.cs" />
+    <Compile Include="Entities\Weapons\WeaponType.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Scripts\Vendors\VendorInfo.cs" />
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Entities\AEntity.cs" />
-    <Compile Include="Entities\EntityManager.cs" />
+    <Compile Include="Entities\EntityList.cs" />
     <Compile Include="Modes\Space\Entities\Movement\PlanetRotator.cs" />
     <Compile Include="Modes\Space\Entities\Movement\ShipRotator2D.cs" />
     <Compile Include="Modes\Space\Entities\Movement\ShipRotatorPitchRoll.cs" />

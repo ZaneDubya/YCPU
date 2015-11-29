@@ -1,4 +1,4 @@
-﻿using Ypsilon.Entities.Modules;
+﻿using Ypsilon.Entities.Weapons;
 
 namespace Ypsilon.Scripts.Modules
 {

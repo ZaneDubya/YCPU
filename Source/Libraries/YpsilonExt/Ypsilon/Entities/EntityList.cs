@@ -1,5 +1,5 @@
 ﻿/***************************************************************************
- *   EntityManager.cs
+ *   EntityList.cs
  * 
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -14,7 +14,10 @@ using System.Collections.Generic;
 
 namespace Ypsilon.Entities
 {
-    public class EntityManager
+    /// <summary>
+    /// A collection of entities. Each 'place of interest' is its own world, and will maintain its own copy of these objects.
+    /// </summary>
+    public class EntityList
     {
         private Dictionary<int, AEntity> m_Entities = new Dictionary<int, AEntity>();
         private List<AEntity> m_Entities_Queued = new List<AEntity>();
@@ -30,7 +33,7 @@ namespace Ypsilon.Entities
             }
         }
 
-        public EntityManager()
+        public EntityList()
         {
 
         }

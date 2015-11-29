@@ -26,8 +26,8 @@
     Create a 'hold' module. 1x1. Holds can hold 10t of items. DONE.
     Items held are limited by hold space. DONE
         In both mining [DONE] and vendors [DONE]
-    Add 'laser' module. Laser fires when 'space' is pressed.
-        Laser fires small projectiles.
+    Add 'laser' module. Laser fires when 'space' is pressed. DONE.
+        Laser fires small green projectiles.
     Any open module space becomes a hold by default.
     
     WORLD

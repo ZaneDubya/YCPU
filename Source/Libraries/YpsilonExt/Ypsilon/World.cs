@@ -11,7 +11,7 @@ namespace Ypsilon
         public static float PlayerCredits = 10005;
         public static Serial PlayerSerial = Serial.Null;
 
-        public static EntityManager Entities
+        public static EntityList Entities
         {
             get;
             private set;
@@ -24,7 +24,7 @@ namespace Ypsilon
 
         static World()
         {
-            Entities = new EntityManager();
+            Entities = new EntityList();
         }
     }
 }

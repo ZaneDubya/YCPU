@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Core.Graphics;
+using Ypsilon.Data;
 using Ypsilon.Entities;
+using Ypsilon.Entities.Weapons;
 using Ypsilon.Modes.Space.Entities.Movement;
 using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
-using Ypsilon.Data;
-using Ypsilon.Entities.Modules;
 
 namespace Ypsilon.Modes.Space.Entities
 {

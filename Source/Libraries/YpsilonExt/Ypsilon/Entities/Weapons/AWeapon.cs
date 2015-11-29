@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ypsilon.Entities.Modules
+namespace Ypsilon.Entities.Weapons
 {
     class AWeapon : AModule
     {
@@ -58,7 +58,7 @@ namespace Ypsilon.Entities.Modules
         {
             base.Update(frameSeconds);
 
-            ssm_SecondsBeforeFireEvents -= frameSeconds;
+            m_SecondsBeforeFireEvents -= frameSeconds;
             if (m_SecondsBeforeFireEvents < 0)
                 m_SecondsBeforeFireEvents = 0;
         }
