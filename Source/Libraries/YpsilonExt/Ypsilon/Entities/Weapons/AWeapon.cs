@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Xna.Framework;
+using Ypsilon.Data;
 
 namespace Ypsilon.Entities.Weapons
 {
@@ -15,7 +13,7 @@ namespace Ypsilon.Entities.Weapons
         /// <summary>
         /// Reload speed, in seconds.
         /// </summary>
-        public virtual float Speed { get { return 0.333f; } }
+        public virtual float ReloadSpeed { get { return 0.2f; } }
 
         /// <summary>
         /// 
@@ -30,7 +28,10 @@ namespace Ypsilon.Entities.Weapons
         /// <summary>
         /// The distance, in pixels, that a projectile will travel before being disposed.
         /// </summary>
-        public virtual float Range { get { return 100.0f; } }
+        public virtual float ProjectileRange { get { return 200.0f; } }
+        public virtual Color Color { get { return Colors.Railscasts[11]; } }
+        public virtual float ProjectileSpeed { get { return 180f; } }
+        public virtual float ProjectileSize { get { return 6f; } }
 
         /// <summary>
         /// 
@@ -54,9 +55,9 @@ namespace Ypsilon.Entities.Weapons
             IsWeaponActive = true;
         }
 
-        public override void Update(float frameSeconds)
+        public override void Update(World world, float frameSeconds)
         {
-            base.Update(frameSeconds);
+            base.Update(world, frameSeconds);
 
             m_SecondsBeforeFireEvents -= frameSeconds;
             if (m_SecondsBeforeFireEvents < 0)
@@ -70,7 +71,7 @@ namespace Ypsilon.Entities.Weapons
         {
             if (IsWeaponActive && m_SecondsBeforeFireEvents == 0)
             {
-                m_SecondsBeforeFireEvents = Speed;
+                m_SecondsBeforeFireEvents = ReloadSpeed;
                 return OnFire();
             }
             return false;

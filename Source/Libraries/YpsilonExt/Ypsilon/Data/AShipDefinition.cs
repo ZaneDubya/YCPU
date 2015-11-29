@@ -61,6 +61,6 @@ namespace Ypsilon.Data
         public int DefaultEnergyCapacity = 500;
 
 
-        public float DisplaySize = 7.5f;
+        public float Size = 7.5f;
     }
 }

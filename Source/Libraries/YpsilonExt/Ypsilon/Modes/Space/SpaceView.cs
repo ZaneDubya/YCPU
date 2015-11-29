@@ -55,7 +55,7 @@ namespace Ypsilon.Modes.Space
                 0);
             mouseOver.Reset();
 
-            Ship player = (Ship)World.Entities.GetPlayerEntity();
+            Ship player = (Ship)Model.World.Entities.GetPlayerEntity();
             ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
             // draw backdrop
@@ -100,7 +100,7 @@ namespace Ypsilon.Modes.Space
 
             m_Curses.Clear();
 
-            Ship player = (Ship)World.Entities.GetPlayerEntity();
+            Ship player = (Ship)Model.World.Entities.GetPlayerEntity();
             ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
             m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", player.Position.X, player.Position.Y));
@@ -116,12 +116,11 @@ namespace Ypsilon.Modes.Space
                 m_Curses.WriteString(0, 5 + i, string.Format("{0}: {1}t", item.Name, item.Amount));
             }
 
-            AEntity selected = World.Entities.GetEntity(Model.SelectedSerial);
+            AEntity selected = Model.World.Entities.GetEntity(Model.SelectedSerial);
             if (selected != null)
             {
                 string name = selected.Name;
                 m_Curses.WriteString(64 - name.Length / 2, 2, name);
-                // m_Curses.WriteString(8, 2, "Hello world!");
             }
 
             //if (PlayerState.SelectedSerial != Serial.Null)
@@ -171,7 +170,8 @@ namespace Ypsilon.Modes.Space
                 m_EntitiesOnScreen = new List<AEntity>();
             m_EntitiesOnScreen.Clear();
 
-            foreach (KeyValuePair<int, AEntity> entity in World.Entities.AllEntities)
+            // get all entities
+            foreach (KeyValuePair<int, AEntity> entity in Model.World.Entities.All)
             {
                 AEntity e = entity.Value;
                 ASpaceComponent c = e.GetComponent<ASpaceComponent>();
@@ -183,6 +183,21 @@ namespace Ypsilon.Modes.Space
                     m_EntitiesOnScreen.Add(e);
                 }
             }
+
+            // and all projectiles
+            foreach (KeyValuePair<int, AEntity> entity in Model.World.Projectiles.All)
+            {
+                AEntity e = entity.Value;
+                ASpaceComponent c = e.GetComponent<ASpaceComponent>();
+                if (c == null)
+                    continue;
+
+                if (!e.IsDisposed && c.IsInitialized && c.IsVisible && e.Position.Intersects(bounds, c.DrawSize))
+                {
+                    m_EntitiesOnScreen.Add(e);
+                }
+            }
+
             return m_EntitiesOnScreen;
         }
     }

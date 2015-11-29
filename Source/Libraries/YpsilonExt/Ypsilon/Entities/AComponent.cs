@@ -23,12 +23,12 @@
 
         }
 
-        public void Initialize(AEntity entity)
+        public void Initialize(World world, AEntity entity)
         {
             if (IsInitialized)
                 return;
 
-            OnInitialize(entity);
+            OnInitialize(world, entity);
 
             IsInitialized = true;
         }
@@ -43,7 +43,7 @@
             IsDisposed = true;
         }
 
-        protected virtual void OnInitialize(AEntity entity)
+        protected virtual void OnInitialize(World world, AEntity entity)
         {
 
         }
@@ -53,7 +53,7 @@
 
         }
 
-        public virtual void Update(AEntity entity, float frameSeconds)
+        public virtual void Update(World world, AEntity entity, float frameSeconds)
         {
 
         }

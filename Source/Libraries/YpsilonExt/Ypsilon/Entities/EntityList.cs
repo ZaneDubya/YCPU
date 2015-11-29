@@ -21,11 +21,12 @@ namespace Ypsilon.Entities
     {
         private Dictionary<int, AEntity> m_Entities = new Dictionary<int, AEntity>();
         private List<AEntity> m_Entities_Queued = new List<AEntity>();
+        private World m_World;
 
         private bool m_EntitiesCollectionIsLocked = false;
         private List<int> m_SerialsToRemove = new List<int>();
 
-        public Dictionary<int, AEntity> AllEntities
+        public Dictionary<int, AEntity> All
         {
             get
             {
@@ -33,9 +34,9 @@ namespace Ypsilon.Entities
             }
         }
 
-        public EntityList()
+        public EntityList(World world)
         {
-
+            m_World= world;
         }
 
         public void Reset(bool clearPlayerEntity = false)
@@ -52,7 +53,7 @@ namespace Ypsilon.Entities
             {
                 foreach (AEntity entity in m_Entities.Values)
                 {
-                    if (!entity.IsPlayerEntity)
+                    if (entity.Serial != m_World.PlayerSerial)
                         entity.Dispose();
                 }
                 AEntity player = GetPlayerEntity();
@@ -65,8 +66,8 @@ namespace Ypsilon.Entities
         public AEntity GetPlayerEntity()
         {
             // This could be cached to save time.
-            if (m_Entities.ContainsKey(World.PlayerSerial))
-                return (AEntity)m_Entities[World.PlayerSerial];
+            if (m_Entities.ContainsKey(m_World.PlayerSerial))
+                return (AEntity)m_Entities[m_World.PlayerSerial];
             else
                 return null;
         }
@@ -80,7 +81,7 @@ namespace Ypsilon.Entities
             {
                 if (!entity.Value.IsDisposed)
                 {
-                    entity.Value.Update(frameSeconds);
+                    entity.Value.Update(m_World, frameSeconds);
                 }
                 else
                 {

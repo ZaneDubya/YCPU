@@ -46,12 +46,12 @@ namespace Ypsilon.Modes.Landed
                 else if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
                 {
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
-                    modes.QueuedModel = new SpaceModel();
+                    modes.QueuedModel = new SpaceModel(Model.World);
                 }
             }
             else if (view.State == LandedState.Exchange)
             {
-                Ship player = (Ship)World.Entities.GetPlayerEntity();
+                Ship player = (Ship)Model.World.Entities.GetPlayerEntity();
                 VendorInfo vendor = Model.LandedOn.Exchange;
 
                 if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.Escape, false, false, false))
@@ -99,11 +99,11 @@ namespace Ypsilon.Modes.Landed
                         int price = info.Price;
                         int amount = 1;
 
-                        if (World.PlayerCredits >= price)
+                        if (Model.World.PlayerCredits >= price)
                         {
                             if (player.Inventory.TryAddItem(info.Type, amount))
                             {
-                                World.PlayerCredits -= price;
+                                Model.World.PlayerCredits -= price;
                                 AItem item;
                                 if (!player.Inventory.TryGetItem(info.Type, out item))
                                 {
@@ -138,7 +138,7 @@ namespace Ypsilon.Modes.Landed
                         // if we were tracking amounts, we would want to increment the amount in the sell info...
                         // SellInfo info = vendor.GetSellInfoByItemType(itemType);
                         int price = Model.BuyInfo.GetPurchasePrice(item);
-                        World.PlayerCredits += price;
+                        Model.World.PlayerCredits += price;
                         item.Amount -= 1;
                         if (item.Amount == 0)
                         {

@@ -22,19 +22,19 @@ namespace Ypsilon.Modes.Space.Entities
             
         }
 
-        protected override void OnInitialize(AEntity entity)
+        protected override void OnInitialize(World world, AEntity entity)
         {
             Ship ship = entity as Ship;
 
-            DrawSize = ship.Definition.DisplaySize;
-            ship.Throttle = ship.IsPlayerEntity ? 0.0f : 0.2f;
+            DrawSize = ship.Size;
+            ship.Throttle = (world.PlayerSerial == entity.Serial) ? 0.0f : 0.2f;
             m_ModelVertices = Vertices.SimpleArrow;
 
             m_Trail1 = new Particles.Trail(new Vector3(-0.7f, -0.7f, 0), DrawSize);
             m_Trail2 = new Particles.Trail(new Vector3(0.7f, -0.7f, 0), DrawSize);
         }
 
-        public override void Update(AEntity entity, float frameSeconds)
+        public override void Update(World world, AEntity entity, float frameSeconds)
         {
             Ship ship = entity as Ship;
 
@@ -58,7 +58,7 @@ namespace Ypsilon.Modes.Space.Entities
                         if (weapon.Fire())
                         {
                             // generate a projectile!
-                            AProjectile proj = (AProjectile)World.Entities.AddEntity(typeof(AProjectile), weapon);
+                            AProjectile proj = (AProjectile)world.Projectiles.AddEntity(typeof(AProjectile), weapon);
                             proj.SetComponent(new ProjectileComponent());
                         }
                     }
@@ -74,7 +74,7 @@ namespace Ypsilon.Modes.Space.Entities
 
             DrawMatrix = Matrix.CreateScale(DrawSize) * CreateWorldMatrix(ship, translation);
             DrawVertices = m_ModelVertices;
-            DrawColor = entity.IsPlayerEntity ? Colors.Railscasts[0x0C] : Colors.Railscasts[0x08];
+            DrawColor = ship.Color;
 
             base.Draw(entity, renderer, worldSpaceCenter, mouseOverList);
 

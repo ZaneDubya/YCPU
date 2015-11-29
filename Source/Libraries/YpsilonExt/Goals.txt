@@ -40,4 +40,10 @@
 	GRAPHICS
     During mining operations, effects fly! Beam! Sparks!
     
+    COMBAT
+    Separate world into non-static class. DONE.
+    Track projectiles separately from other entities. DONE.
+    When projectiles interset another entites, they dispose. DONE LOOKS GREAT!
+    Projectiles do damage to armor. When damage > armor remaining, dispose.
+    Display armor in a overlay above target.
     

@@ -19,8 +19,15 @@ namespace Ypsilon.Modes.Landed
             set;
         }
 
-        public LandedModel(Spob landedOn)
+        public World World
         {
+            get;
+            private set;
+        }
+
+        public LandedModel(World world, Spob landedOn)
+        {
+            World = world;
             LandedOn = landedOn;
 
             Ship player = (Ship)World.Entities.GetPlayerEntity();

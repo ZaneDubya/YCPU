@@ -15,7 +15,7 @@ namespace Ypsilon.Modes.Space.Entities
 
         }
 
-        protected override void OnInitialize(AEntity entity)
+        protected override void OnInitialize(World world, AEntity entity)
         {
             Spob spob = entity as Spob;
 
@@ -23,7 +23,7 @@ namespace Ypsilon.Modes.Space.Entities
             m_ModelVertices = Vertices.GetSpobVertices(spob.VertexRandomizationFactor);
         }
 
-        public override void Update(AEntity entity, float frameSeconds)
+        public override void Update(World world, AEntity entity, float frameSeconds)
         {
             Spob spob = entity as Spob;
             spob.Rotator.Rotation = spob.Rotator.Rotation + frameSeconds / spob.RotationPeriod;

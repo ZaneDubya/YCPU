@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Ypsilon.Data;
 
 namespace Ypsilon.Entities.Weapons
 {
@@ -7,11 +6,11 @@ namespace Ypsilon.Entities.Weapons
     {
         public Vector3 Velocity { get; protected set; }
 
-        public virtual Color Color { get { return Colors.Railscasts[11]; } }
-        public virtual float ProjectileSpeed { get { return 120f; } }
-        public virtual float ProjectileLength { get { return 6f; } }
+        public AWeapon FiredFrom { get; private set; }
 
-        protected AWeapon FiredFrom { get; private set; }
+        public override float Size { get { return FiredFrom.ProjectileSize; } }
+
+        public override bool CollidesWithProjectiles { get { return false; } } // not essential, as these are tracked separately...
 
         public AProjectile(AWeapon firedFrom)
         {
@@ -19,8 +18,8 @@ namespace Ypsilon.Entities.Weapons
             Ship ship = (firedFrom.Parent as Ship);
             Vector3 forward = ship.Rotator.Forward;
 
-            Position = ship.Position + forward * ship.Definition.DisplaySize;
-            Velocity = ship.Rotator.Forward * ProjectileSpeed + ship.Velocity;
+            Position = ship.Position + forward * ship.Size;
+            Velocity = ship.Rotator.Forward * FiredFrom.ProjectileSpeed + ship.Velocity;
         }
     }
 }

@@ -12,6 +12,8 @@ namespace Ypsilon.Entities
     public class Ship : AEntity
     {
         public AShipDefinition Definition = new AShipDefinition();
+        public virtual Color Color { get; set; }
+        public override float Size { get { return Definition.Size; } }
 
         public ItemList Inventory
         {
@@ -81,15 +83,15 @@ namespace Ypsilon.Entities
             }
         }
 
-        public override void Update(float frameSeconds)
+        public override void Update(World world, float frameSeconds)
         {
             for (int i = 0; i < Modules.Count; i++)
             {
                 AModule module = Modules[i];
-                module.Update(frameSeconds);
+                module.Update(world, frameSeconds);
             }
 
-            base.Update(frameSeconds);
+            base.Update(world, frameSeconds);
         }
 
     }

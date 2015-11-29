@@ -141,7 +141,7 @@ namespace Ypsilon.Modes.Landed
 
         private void UpdateExchangeScreen()
         {
-            Ship player = (Ship)World.Entities.GetPlayerEntity();
+            Ship player = (Ship)Model.World.Entities.GetPlayerEntity();
             VendorInfo vendor = Model.LandedOn.Exchange;
 
             m_Curses.WriteString(10, 4, string.Format("{0} - Commodity Exchange", Model.LandedOn.Name));
@@ -215,7 +215,7 @@ namespace Ypsilon.Modes.Landed
             // ======================================================================
             // RIGHT - money money money
             // ======================================================================
-            m_Curses.WriteString(80, 4, string.Format("Credits: {0}", World.PlayerCredits));
+            m_Curses.WriteString(80, 4, string.Format("Credits: {0}", Model.World.PlayerCredits));
 
             // ======================================================================
             // RIGHT - explanation of controls.

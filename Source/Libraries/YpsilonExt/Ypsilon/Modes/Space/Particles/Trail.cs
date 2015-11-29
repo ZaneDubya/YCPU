@@ -18,10 +18,11 @@ namespace Ypsilon.Modes.Space.Particles
             m_Offset = offset;
             m_ShipSize = shipSize;
 
-            m_Vertices = new VertexPositionNormalTextureData[10];
+            float fadeout = 5;
+            m_Vertices = new VertexPositionNormalTextureData[6];
             for (int i = 0; i < m_Vertices.Length; i++)
             {
-                float a = i < 8 ? MathHelper.Lerp(0f, 1f, (i / 8f)) : 1;
+                float a = i < fadeout ? MathHelper.Lerp(0f, 1f, (i / fadeout)) : 1;
                 m_Vertices[i].Position = m_Offset;
                 m_Vertices[i].Data = Data.Colors.Railscasts[0x03].ToVector4();
                 m_Vertices[i].Data *= a;

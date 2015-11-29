@@ -33,7 +33,7 @@ namespace Ypsilon.Modes.Space
         public override void Update(float frameSeconds, InputManager input)
         {
             // get the player object.
-            Ship player = (Ship)World.Entities.GetPlayerEntity();
+            Ship player = (Ship)Model.World.Entities.GetPlayerEntity();
             ShipComponent playerComponent = player.GetComponent<ShipComponent>();
 
             // Left-down to select.
@@ -68,7 +68,7 @@ namespace Ypsilon.Modes.Space
             // L is for LAND
             if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.L, false, false, false))
             {
-                AEntity selected = World.Entities.GetEntity(Model.SelectedSerial);
+                AEntity selected = Model.World.Entities.GetEntity(Model.SelectedSerial);
                 if (selected == null)
                 {
                     // do nothing? error noise?
@@ -90,7 +90,7 @@ namespace Ypsilon.Modes.Space
                     // halt any actions
                     playerComponent.Action = new NoAction(player);
                     ModeManager modes = ServiceRegistry.GetService<ModeManager>();
-                    modes.QueuedModel = new LandedModel(selected as Spob);
+                    modes.QueuedModel = new LandedModel(Model.World, selected as Spob);
                 }
             }
 
@@ -106,7 +106,7 @@ namespace Ypsilon.Modes.Space
                 else
                 {
                     // start mining
-                    AEntity selected = World.Entities.GetEntity(Model.SelectedSerial);
+                    AEntity selected = Model.World.Entities.GetEntity(Model.SelectedSerial);
                     if (selected == null)
                     {
                         // do nothing? error noise?
@@ -163,11 +163,11 @@ namespace Ypsilon.Modes.Space
             AEntity nearest = null;
             float distance = float.MaxValue;
 
-            Dictionary<int, AEntity> entites = World.Entities.AllEntities;
+            Dictionary<int, AEntity> entites = Model.World.Entities.All;
 
             foreach (AEntity e in entites.Values)
             {
-                if (e.IsDisposed || e.IsPlayerEntity)
+                if (e.IsDisposed || (e.Serial == Model.World.PlayerSerial))
                     continue;
                 Position3D ePos = e.Position;
                 float eDist = Vector3.Distance(ePos.ToVector3(), aPos);

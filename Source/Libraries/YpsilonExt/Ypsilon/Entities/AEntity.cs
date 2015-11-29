@@ -34,14 +34,6 @@ namespace Ypsilon.Entities
             set;
         }
 
-        public bool IsPlayerEntity
-        {
-            get
-            {
-                return Serial == World.PlayerSerial;
-            }
-        }
-
         public AEntity Parent
         {
             get;
@@ -68,18 +60,28 @@ namespace Ypsilon.Entities
             }
         }
 
+        public virtual float Size { get; set; }
+        public virtual bool CollidesWithProjectiles { get { return true; } }
+
+        public AEntity()
+        {
+
+        }
+
         public virtual void RemoveEntity(AEntity entity)
         {
 
         }
 
-        public virtual void Update(float frameSeconds)
+        public virtual void Update(World world, float frameSeconds)
         {
             if (m_Component != null)
             {
+                if (!m_Component.IsInitialized)
+                    m_Component.Initialize(world, this);
                 if (!m_Component.IsDisposed)
                 {
-                    m_Component.Update(this, frameSeconds);
+                    m_Component.Update(world, this, frameSeconds);
                 }
 
                 if (m_Component.IsDisposed)
@@ -116,8 +118,6 @@ namespace Ypsilon.Entities
             }
 
             m_Component = component;
-            if (!m_Component.IsInitialized)
-                m_Component.Initialize(this);
             return m_Component;
         }
 
