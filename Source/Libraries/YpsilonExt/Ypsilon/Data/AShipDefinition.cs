@@ -48,7 +48,7 @@ namespace Ypsilon.Data
         /// <summary>
         /// Units per second, max speed. 10 units is 1 pixel.
         /// </summary>
-        public int DefaultSpeed = 500;
+        public int DefaultSpeed = 1000;
 
         /// <summary>
         /// Degrees per second rotation.

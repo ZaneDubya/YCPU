@@ -3,6 +3,7 @@ using Ypsilon.Core.Graphics;
 using Ypsilon.Entities;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
+using Ypsilon.Data;
 
 namespace Ypsilon.Modes.Space.Entities
 {
@@ -36,8 +37,8 @@ namespace Ypsilon.Modes.Space.Entities
         {
             Matrix drawMatrixNoRotation = Matrix.CreateScale(DrawSize) * Matrix.Identity;
             drawMatrixNoRotation.Translation = DrawMatrix.Translation;
-            renderer.DrawPolygon(Vertices.SelectionLeft, drawMatrixNoRotation, Color.Yellow, false);
-            renderer.DrawPolygon(Vertices.SelectionRight, drawMatrixNoRotation, Color.Yellow, false);
+            renderer.DrawPolygon(Vertices.SelectionLeft, drawMatrixNoRotation, Colors.Railscasts[11], false);
+            renderer.DrawPolygon(Vertices.SelectionRight, drawMatrixNoRotation, Colors.Railscasts[11], false);
         }
     }
 }

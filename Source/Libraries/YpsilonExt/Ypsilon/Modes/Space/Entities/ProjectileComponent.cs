@@ -20,12 +20,12 @@ namespace Ypsilon.Modes.Space.Entities
         {
             m_ModelVertices = new Vector3[2];
             m_ModelVertices[0] = Vector3.Zero;
-            m_ModelVertices[1] = Vector3.UnitY * (entity as AProjectile).Velocity.Length();
+            m_ModelVertices[1] = Vector3.UnitY * (entity as AProjectile).ProjectileLength;
         }
 
         public override void Update(AEntity entity, float frameSeconds)
         {
-            entity.Position += (entity as AProjectile).Velocity;
+            entity.Position += (entity as AProjectile).Velocity * frameSeconds;
         }
 
         public override void Draw(AEntity entity, VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
@@ -42,13 +42,9 @@ namespace Ypsilon.Modes.Space.Entities
 
         private Matrix CreateWorldMatrix(AProjectile projectile, Vector3 translation)
         {
-            Vector3 forward = -Vector3.UnitZ;
-
-            float dir = (float)(Math.Atan2(forward.Y, forward.X) / (2 * Math.PI));
-            Matrix rot = Matrix.CreateRotationZ(dir);
-            Vector3 up = rot.Up;
-
-            return Matrix.CreateWorld(translation, forward, up);
+            float dir = (float)(Math.Atan2(projectile.Velocity.Y, projectile.Velocity.X));
+            Matrix rotation = Matrix.CreateRotationZ(dir + MathHelper.PiOver2);
+            return Matrix.CreateWorld(translation, rotation.Forward, rotation.Up);
         }
     }
 }
