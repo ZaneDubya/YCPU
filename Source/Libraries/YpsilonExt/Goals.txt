@@ -29,8 +29,9 @@
     Items held are limited by hold space. DONE
         In both mining [DONE] and vendors [DONE]
     Add 'laser' module. Laser fires when 'space' is pressed. DONE.
-        Laser fires small green projectiles.
-    Any open module space becomes a hold by default.
+        Laser fires small yellow projectiles. DONE.
+    ModuleList keeps a local copy of all available hardpoints, and recalculates this when modules are added/removed. DONE.
+    Any open module space becomes a hold by default. DONE.
     
     WORLD
     Asteroids rotate around Planet. BRING IN OLD YPSILON CODE!

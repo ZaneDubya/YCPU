@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System;
 
 namespace Ypsilon.Entities.Collections
 {
@@ -10,6 +11,7 @@ namespace Ypsilon.Entities.Collections
     {
         private Ship m_Parent;
         private List<AModule> m_Modules;
+        private Dictionary<Point, AModule> m_Hardpoints;
 
         public int Count
         {
@@ -36,8 +38,14 @@ namespace Ypsilon.Entities.Collections
             get
             {
                 int holdspace = 0;
+                // add up all hold space from holdspace providing modules.
                 foreach (AModule m in m_Modules)
                     holdspace += m.HoldSpace;
+                // any remaining open hardpoints provide some space each.
+                foreach (Point p in m_Hardpoints.Keys)
+                    if (m_Hardpoints[p] == null)
+                        holdspace += 10;
+
                 return holdspace;
             }
         }
@@ -46,6 +54,8 @@ namespace Ypsilon.Entities.Collections
         {
             m_Parent = parent;
             m_Modules = new List<AModule>();
+            m_Hardpoints = new Dictionary<Point, AModule>();
+            RecalculateHardpoints();
         }
 
         /// <summary>
@@ -59,6 +69,7 @@ namespace Ypsilon.Entities.Collections
                 module.Parent = m_Parent;
                 module.ModuleHardpoint = position;
                 m_Modules.Add(module);
+                RecalculateHardpoints();
                 return true;
             }
             else
@@ -73,10 +84,8 @@ namespace Ypsilon.Entities.Collections
             {
                 for (int x = 0; x < module.ModuleSize.X; x++)
                 {
-                    if (!m_Parent.Definition.Hardpoints.Contains(new Point(position.X + x, position.Y + y)))
-                        return false;
-                    AModule m;
-                    if (TryGetModule(new Point(position.X + x, position.Y + y), out m))
+                    Point p = new Point(position.X + x, position.Y + y);
+                    if (!m_Hardpoints.ContainsKey(p) || m_Hardpoints[p] != null)
                         return false;
                 }
             }
@@ -85,18 +94,12 @@ namespace Ypsilon.Entities.Collections
 
         public bool TryGetModule(Point position, out AModule module)
         {
-            foreach (AModule m in m_Modules)
-            {
-                if (position.X >= m.ModuleHardpoint.X && position.X < m.ModuleHardpoint.X + m.ModuleSize.X &&
-                    position.Y >= m.ModuleHardpoint.Y && position.Y < m.ModuleHardpoint.Y + m.ModuleSize.Y)
-                {
-                    module = m;
-                    return true;
-                }
-            }
-
             module = null;
-            return false;
+            if (!m_Hardpoints.ContainsKey(position) || m_Hardpoints[position] != null)
+                return false;
+
+            module = m_Hardpoints[position];
+            return  true;
         }
 
         public void RemoveModule(AModule module)
@@ -107,6 +110,33 @@ namespace Ypsilon.Entities.Collections
                 {
                     m_Modules.RemoveAt(i);
                     i--;
+                }
+            }
+            RecalculateHardpoints();
+        }
+
+        private void RecalculateHardpoints()
+        {
+            m_Hardpoints.Clear();
+            for (int i = 0; i < m_Parent.Definition.Hardpoints.Count; i++)
+                m_Hardpoints.Add(m_Parent.Definition.Hardpoints[i], null);
+
+            for (int i = 0; i < m_Modules.Count; i++)
+            {
+                for (int y = 0; y < m_Modules[i].ModuleSize.Y; y++)
+                {
+                    for (int x = 0; x < m_Modules[i].ModuleSize.X; x++)
+                    {
+                        Point p = new Point(m_Modules[i].ModuleHardpoint.X + x, m_Modules[i].ModuleHardpoint.Y);
+                        if (m_Hardpoints[p] != null)
+                        {
+                            throw new Exception("Double-filled hardpoint???");
+                        }
+                        else
+                        {
+                            m_Hardpoints[p] = m_Modules[i];
+                        }
+                    }
                 }
             }
         }
