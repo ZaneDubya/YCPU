@@ -198,3 +198,4 @@
     devices.
   * MMU now no longer has execute protection. Still has supervisor-mode only,
     write protection, not-present flag, and access flag.
+  * Considering reducing MMU bank size to 4kb (from 16kb)...

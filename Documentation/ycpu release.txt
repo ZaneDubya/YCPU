@@ -20,11 +20,11 @@ surface. Y100 is an amazing 16-bit CPU for the computers of Yesterday, Today, &
 Tomorrow.
 
 Each Y100 comes with the following features:
-    YCPU with 10Khz and 100Khz operation modes.
+    Core processor running at tens of kilohertz!
     64 kilobytes of on-chip RAM.
     16-64 kilobytes of on-chip ROM, configurable by the developer.
     Memory Management Unit.
-    YBUS expandable to 255 Hardware Devices.
+    YBUS expandable to 15+ Hardware Devices.
 
 The use cases for the Y100 are manifold. Institutions of higher learning are
 using Y100-based networks to stay in touch with their colleagues. Businesses

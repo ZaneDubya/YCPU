@@ -58,7 +58,7 @@ the development of software, including a comprehensive instruction set, eight
 general purpose registers that can be used as data or address registers and are,
 with one small exception, completely orthogonal; support for 32-bit floating
 point operations, a MMU that allows read/write/execute protection and bank
-switching of 4 16 kilobyte banks within the 16-bit logical address space, a real
+switching of 4 16 kilo-byte banks within the 16-bit logical address space, a real
 time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
 modes with different privileges and stack pointers.
 
@@ -66,7 +66,7 @@ modes with different privileges and stack pointers.
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
 
 Internally, all registers and cache words are 16-bit, and all logical addresses
-are likewise 16-bit. Thus instructions can only address 64 kilobytes of memory
+are likewise 16-bit. Thus instructions can only address 64 kilo-bytes of memory
 at any time. All multi-word values are stored in little-endian format.
 
 --- 2.2. INSTRUCTION WIDTH: 16-BIT ---------------------------------------------
@@ -509,7 +509,7 @@ The equivalent MMU register values would be as follows:
 
 While the 'M' status bit in PC is set, the MMU is enabled, and will translate
 memory references to physical addresses. It does so by dividing the processor's
-virtual address space into 4 banks of 16 kilobytes each. The high two bits of
+virtual address space into 4 banks of 16 kilo-bytes each. The high two bits of
 the virtual address select the bank of memory that is accessed, and the low
 fourteen bits of the virtual address select a byte of memory within that bank.
 
@@ -530,9 +530,9 @@ The MMU has access to 26 bits of physical address space. A physical address is:
 
 The 8 'b' bits reference a bank of RAM or ROM from a device on the hardware
 bus. The 4 'D' bits are a 8-bit hardware bus index. Because no hardware device
-can have more than 2^8 = 256 banks, each bank can host no more than 4
-megabytes of memory, and the MMU as a whole can address no more than
-2^26 bytes = 64 megabytes of memory.
+can have more than 2^8 = 256 banks, each bank can host no more than 4096
+kilo-bytes of memory, and the MMU as a whole can address no more than
+2^(4+8+16-2) bytes = 64 mega-bytes of memory.
 
 Note that when selecting memory banks from processor space (device index 0), the
 high bit of the bank selection index (bit 7 of bank/device select) indicates a
