@@ -1,8 +1,8 @@
-﻿using Ypsilon.Entities;
+﻿using Ypsilon.Entities.Modules;
 
 namespace Ypsilon.Scripts.Modules
 {
-    class LaserModule : AModule
+    class LaserModule : AWeapon
     {
         public override string DefaultName { get { return "Small laster"; } }
     }

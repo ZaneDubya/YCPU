@@ -67,6 +67,7 @@
     <Compile Include="Entities\AItem.cs" />
     <Compile Include="Entities\Collections\ModuleList.cs" />
     <Compile Include="Entities\Modules\AWeapon.cs" />
+    <Compile Include="Entities\Modules\WeaponType.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />

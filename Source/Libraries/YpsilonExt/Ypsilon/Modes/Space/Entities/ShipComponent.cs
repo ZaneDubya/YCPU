@@ -6,6 +6,7 @@ using Ypsilon.Modes.Space.Entities.ShipActions;
 using Ypsilon.Modes.Space.Input;
 using Ypsilon.Modes.Space.Resources;
 using Ypsilon.Data;
+using Ypsilon.Entities.Modules;
 
 namespace Ypsilon.Modes.Space.Entities
 {
@@ -88,6 +89,21 @@ namespace Ypsilon.Modes.Space.Entities
 
             if (Action != null)
                 Action.Update(frameSeconds);
+
+            if (IsFiring)
+            {
+                for (int i = 0; i < ship.Modules.Count; i++)
+                {
+                    AWeapon weapon = ship.Modules[i] as AWeapon;
+                    if (weapon != null)
+                    {
+                        if (weapon.Fire())
+                        {
+                            // generate a projectile!
+                        }
+                    }
+                }
+            }
         }
 
         public override void Draw(AEntity entity, VectorRenderer renderer, Position3D worldSpaceCenter, MouseOverList mouseOverList)
@@ -117,5 +133,11 @@ namespace Ypsilon.Modes.Space.Entities
 
             return Matrix.CreateWorld(translation, forward, up);
         }
+
+        // ======================================================================
+        // Input 
+        // ======================================================================
+
+        public bool IsFiring { get; set; }
     }
 }

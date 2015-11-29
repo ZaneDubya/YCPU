@@ -45,6 +45,16 @@ namespace Ypsilon.Modes.Space
                 }
             }
 
+            // SPACE if for FIRE
+            if (input.IsKeyDown(WinKeys.Space))
+            {
+                playerComponent.IsFiring = true;
+            }
+            else
+            {
+                playerComponent.IsFiring = false;
+            }
+
             // T is for TARGET
             if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.T, false, false, false))
             {

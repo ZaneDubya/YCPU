@@ -44,5 +44,17 @@ namespace Ypsilon.Entities
                 throw new Exception(string.Format("Can't remove entity of type {0}", entity.GetType().ToString()));
             }
         }
+
+        public override void Update(float frameSeconds)
+        {
+            for (int i = 0; i < Modules.Count; i++)
+            {
+                AModule module = Modules[i];
+                module.Update(frameSeconds);
+            }
+
+            base.Update(frameSeconds);
+        }
+
     }
 }
