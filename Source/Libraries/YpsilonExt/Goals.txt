@@ -18,6 +18,8 @@
     Add ability to buy and sell items. DONE.
     Track resources on asteroid. DONE
     Update hold GUI to reflect actual hold contents and count of same. DONE.
+    Re organize entities: entities have own position, velocity, etc. DONE.
+        However, entity updating remains the domain of components. DONE.
     
     MODULES
     Create ship equipment, aka Modules.

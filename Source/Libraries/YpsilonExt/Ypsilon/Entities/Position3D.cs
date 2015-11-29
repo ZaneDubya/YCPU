@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using System;
 using Ypsilon.Core;
 
-namespace Ypsilon.Modes.Space
+namespace Ypsilon.Entities
 {
-    struct Position3D
+    public struct Position3D
     {
         public Double X, Y, Z;
 

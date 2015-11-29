@@ -38,13 +38,13 @@ namespace Ypsilon.Modes.Space.Entities.ShipActions
             }
 
             // error conditions.
-            float maxDistance = playerComponent.ViewSize + targetComponent.ViewSize;
+            float maxDistance = playerComponent.DrawSize + targetComponent.DrawSize;
 
-            if (Position3D.Distance(playerComponent.Position, targetComponent.Position) > maxDistance)
+            if (Position3D.Distance(Parent.Position, Target.Position) > maxDistance)
             {
                 Messages.Add(MessageType.Error, "Mining halted. Too far away to mine.");
             }
-            else if (playerComponent.Throttle > 0)
+            else if (Parent.Throttle > 0)
             {
                 Messages.Add(MessageType.Error, "Mining halted. Cannot mine while moving.");
                 playerComponent.Action = new NoAction(Parent);

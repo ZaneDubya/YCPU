@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Ypsilon.Entities
+﻿namespace Ypsilon.Entities
 {
+    /// <summary>
+    /// Components manage state-based update for an entity.
+    /// They do not manage an entity's intrinsic variables.
+    /// </summary>
     public class AComponent
     {
         public bool IsInitialized

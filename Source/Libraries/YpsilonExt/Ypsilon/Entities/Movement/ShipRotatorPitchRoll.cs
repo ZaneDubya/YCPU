@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Ypsilon.Data;
 
-namespace Ypsilon.Modes.Space.Entities.Movement
+namespace Ypsilon.Entities.Movement
 {
     /// <summary>
     /// A rotation handler that rotates an object using pitch and roll

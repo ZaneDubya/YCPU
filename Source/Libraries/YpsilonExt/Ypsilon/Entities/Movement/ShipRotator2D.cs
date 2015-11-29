@@ -2,12 +2,12 @@
 using System;
 using Ypsilon.Data;
 
-namespace Ypsilon.Modes.Space.Entities.Movement
+namespace Ypsilon.Entities.Movement
 {
     /// <summary>
     /// A rotation handler that rotates an object using yaw only, with roll as a graphical extra.
     /// </summary>
-    class ShipRotator2D
+    public class ShipRotator2D
     {
         private float m_Roll, m_Yaw;
         private AShipDefinition m_Definition;

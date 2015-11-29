@@ -1,5 +1,5 @@
-﻿using Ypsilon.Data;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Ypsilon.Entities.Movement;
 using Ypsilon.Scripts.Vendors;
 
 namespace Ypsilon.Entities
@@ -16,9 +16,16 @@ namespace Ypsilon.Entities
         public Color Color = Color.Magenta;
         public float VertexRandomizationFactor = 0f;
 
+        public PlanetRotator Rotator
+        {
+            get;
+            private set;
+        }
+
         public Spob()
         {
             Exchange = new VendorInfo();
+            Rotator = new PlanetRotator();
         }
 
         public int ExtractOre(int extractedUnits)

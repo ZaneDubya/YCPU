@@ -74,7 +74,7 @@ namespace Ypsilon.Modes.Space.Input
             if (component == null)
                 return;
 
-            BoundingSphere bounds = new BoundingSphere(center, component.ViewSize * 1.2f);
+            BoundingSphere bounds = new BoundingSphere(center, component.DrawSize * 1.2f);
             if (bounds.Contains(WorldMousePosition) == ContainmentType.Contains)
             {
                 m_Entities.Add(entity);

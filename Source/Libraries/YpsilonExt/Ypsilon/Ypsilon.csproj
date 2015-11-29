@@ -98,9 +98,9 @@
     <Compile Include="ServiceRegistry.cs" />
     <Compile Include="Entities\AEntity.cs" />
     <Compile Include="Entities\EntityList.cs" />
-    <Compile Include="Modes\Space\Entities\Movement\PlanetRotator.cs" />
-    <Compile Include="Modes\Space\Entities\Movement\ShipRotator2D.cs" />
-    <Compile Include="Modes\Space\Entities\Movement\ShipRotatorPitchRoll.cs" />
+    <Compile Include="Entities\Movement\PlanetRotator.cs" />
+    <Compile Include="Entities\Movement\ShipRotator2D.cs" />
+    <Compile Include="Entities\Movement\ShipRotatorPitchRoll.cs" />
     <Compile Include="Entities\Ship.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\AAction.cs" />
     <Compile Include="Modes\Space\Entities\ShipActions\MiningAction.cs" />
@@ -108,7 +108,7 @@
     <Compile Include="Entities\Spob.cs" />
     <Compile Include="Modes\Space\Input\MouseOverList.cs" />
     <Compile Include="Modes\Space\Particles\Trail.cs" />
-    <Compile Include="Modes\Space\Position3D.cs" />
+    <Compile Include="Entities\Position3D.cs" />
     <Compile Include="Modes\Space\Resources\Textures.cs" />
     <Compile Include="Modes\Space\Resources\Vertices.cs" />
     <Compile Include="Entities\Serial.cs" />

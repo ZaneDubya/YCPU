@@ -58,7 +58,7 @@ namespace Ypsilon.Modes.Space
             // T is for TARGET
             if (input.HandleKeyboardEvent(KeyboardEvent.Down, WinKeys.T, false, false, false))
             {
-                AEntity target = GetClosestEntity(playerComponent.Position);
+                AEntity target = GetClosestEntity(player.Position);
                 if (target != null)
                 {
                     Model.SelectedSerial = target.Serial;
@@ -81,7 +81,7 @@ namespace Ypsilon.Modes.Space
                 {
                     Messages.Add(MessageType.Error, "Cannot land on target.");
                 }
-                else if (playerComponent.Throttle > 0)
+                else if (player.Throttle > 0)
                 {
                     Messages.Add(MessageType.Error, "Landing cancelled. Moving too quickly to land.");
                 }
@@ -119,13 +119,13 @@ namespace Ypsilon.Modes.Space
                     {
                         ASpaceComponent selectedComponent = selected.GetComponent<ASpaceComponent>();
 
-                        float maxDistance = playerComponent.ViewSize + selectedComponent.ViewSize;
+                        float maxDistance = playerComponent.DrawSize + selectedComponent.DrawSize;
 
-                        if (Position3D.Distance(playerComponent.Position, selectedComponent.Position) > maxDistance)
+                        if (Position3D.Distance(player.Position, selected.Position) > maxDistance)
                         {
                             Messages.Add(MessageType.Error, "Too far away to mine. Close distance.");
                         }
-                        else if (playerComponent.Throttle > 0)
+                        else if (player.Throttle > 0)
                         {
                             Messages.Add(MessageType.Error, "Cannot move while moving. Mining cancelled.");
                         }
@@ -149,8 +149,8 @@ namespace Ypsilon.Modes.Space
                 leftrightRotation = -1f;
             if (input.IsKeyDown(WinKeys.Left) || input.IsKeyDown(WinKeys.A))
                 leftrightRotation = 1f;
-            playerComponent.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
-            playerComponent.Throttle = playerComponent.Throttle + acceleration * frameSeconds;
+            player.Rotator.Rotate(0f, leftrightRotation, frameSeconds);
+            player.Throttle = player.Throttle + acceleration * frameSeconds;
 
             // update the mouse over list's mouse position.
             MouseOverList.ScreenMousePosition = new Vector3(input.MousePosition.X, input.MousePosition.Y, 0);
@@ -169,7 +169,7 @@ namespace Ypsilon.Modes.Space
             {
                 if (e.IsDisposed || e.IsPlayerEntity)
                     continue;
-                Position3D ePos = e.GetComponent<ASpaceComponent>().Position;
+                Position3D ePos = e.Position;
                 float eDist = Vector3.Distance(ePos.ToVector3(), aPos);
                 if (eDist < distance)
                 {

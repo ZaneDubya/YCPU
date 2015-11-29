@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using Ypsilon.Data;
 using Ypsilon.Entities.Collections;
+using Ypsilon.Entities.Movement;
 
 namespace Ypsilon.Entities
 {
@@ -23,10 +25,44 @@ namespace Ypsilon.Entities
             private set;
         }
 
+        public float Throttle
+        {
+            get
+            {
+                return m_Throttle;
+            }
+            set
+            {
+                if (value < 0.0f)
+                    m_Throttle = 0f;
+                else if (value >= 1.0f)
+                    m_Throttle = 1f;
+                else
+                    m_Throttle = value;
+            }
+        }
+
+        public ShipRotator2D Rotator
+        {
+            get;
+            private set;
+        }
+
+        public Vector3 Velocity
+        {
+            get
+            {
+                return (Definition.DefaultSpeed / 10f) * Throttle * Rotator.Forward;
+            }
+        }
+
+        private float m_Throttle;
+
         public Ship()
         {
             Inventory = new ItemList(this);
             Modules = new ModuleList(this);
+            Rotator = new ShipRotator2D(Definition);
         }
 
         public override void RemoveEntity(AEntity entity)

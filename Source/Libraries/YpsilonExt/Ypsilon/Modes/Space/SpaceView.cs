@@ -59,15 +59,15 @@ namespace Ypsilon.Modes.Space
             ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
             // draw backdrop
-            m_Stars.Update(playerShip.Velocity * frameSeconds);
+            m_Stars.Update(player.Velocity * frameSeconds);
             m_Stars.Draw(m_SpriteBatch);
 
             // get a list of all entities visible in the world. add them to a local list of visible entities.
-            List<AEntity> visible = GetVisibleEntities(playerShip.Position, new Vector2(screenWidth, screenHeight));
+            List<AEntity> visible = GetVisibleEntities(player.Position, new Vector2(screenWidth, screenHeight));
             foreach (AEntity e in visible)
             {
                 ASpaceComponent c = e.GetComponent<ASpaceComponent>();
-                c.Draw(e, m_Vectors, playerShip.Position, mouseOver);
+                c.Draw(e, m_Vectors, player.Position, mouseOver);
                 if (e.Serial == Model.SelectedSerial)
                     c.DrawSelection(m_Vectors);
             }
@@ -103,8 +103,8 @@ namespace Ypsilon.Modes.Space
             Ship player = (Ship)World.Entities.GetPlayerEntity();
             ShipComponent playerShip = player.GetComponent<ShipComponent>();
 
-            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", playerShip.Position.X, playerShip.Position.Y));
-            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", playerShip.Velocity.X, playerShip.Velocity.Y));
+            m_Curses.WriteString(0, 0, string.Format("P <{0:F2} {1:F2}>", player.Position.X, player.Position.Y));
+            m_Curses.WriteString(0, 1, string.Format("V <{0:F2} {1:F2}>", player.Velocity.X, player.Velocity.Y));
             // m_Curses.WriteString(0, 0, "Player ship");
             m_Curses.WriteString(0, 38, "Sh: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
             m_Curses.WriteString(0, 39, "Ar: \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
@@ -178,7 +178,7 @@ namespace Ypsilon.Modes.Space
                 if (c == null)
                     continue;
 
-                if (!e.IsDisposed && c.IsInitialized && c.IsVisible && c.Position.Intersects(bounds, c.ViewSize))
+                if (!e.IsDisposed && c.IsInitialized && c.IsVisible && e.Position.Intersects(bounds, c.DrawSize))
                 {
                     m_EntitiesOnScreen.Add(e);
                 }

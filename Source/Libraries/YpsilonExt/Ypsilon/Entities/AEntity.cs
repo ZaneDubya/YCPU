@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Ypsilon.Entities
 {
@@ -49,9 +48,15 @@ namespace Ypsilon.Entities
             set;
         }
 
+        public Position3D Position
+        {
+            get;
+            set;
+        }
+
         public AEntity()
         {
-            
+            Position = Position3D.Zero;
         }
 
         public virtual void RemoveEntity(AEntity entity)
