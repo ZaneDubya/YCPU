@@ -48,15 +48,24 @@ namespace Ypsilon.Entities
             set;
         }
 
+        private Position3D m_Position = Position3D.Zero;
         public Position3D Position
         {
-            get;
-            set;
-        }
-
-        public AEntity()
-        {
-            Position = Position3D.Zero;
+            get
+            {
+                if (Parent != null)
+                {
+                    return Parent.Position + m_Position;
+                }
+                else
+                {
+                    return m_Position;
+                }
+            }
+            set
+            {
+                m_Position = value;
+            }
         }
 
         public virtual void RemoveEntity(AEntity entity)

@@ -69,6 +69,7 @@
     <Compile Include="Entities\Weapons\AProjectile.cs" />
     <Compile Include="Entities\Weapons\AWeapon.cs" />
     <Compile Include="Entities\Weapons\WeaponType.cs" />
+    <Compile Include="Modes\Space\Entities\ProjectileComponent.cs" />
     <Compile Include="Scripts\Items\Chocolate.cs" />
     <Compile Include="Scripts\Items\Food.cs" />
     <Compile Include="Scripts\Items\Industrial.cs" />

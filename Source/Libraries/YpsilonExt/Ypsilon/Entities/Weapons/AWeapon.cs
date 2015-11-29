@@ -15,7 +15,7 @@ namespace Ypsilon.Entities.Weapons
         /// <summary>
         /// Reload speed, in seconds.
         /// </summary>
-        public virtual float Speed { get { return 10.0f; } }
+        public virtual float Speed { get { return 0.1f; } }
 
         /// <summary>
         /// 

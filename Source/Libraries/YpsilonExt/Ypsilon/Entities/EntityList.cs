@@ -122,9 +122,9 @@ namespace Ypsilon.Entities
             return null;
         }
 
-        public AEntity AddEntity(Type type)
+        public AEntity AddEntity(Type type, params object[] args)
         {
-            AEntity entity = InternalAddEntity(type);
+            AEntity entity = InternalAddEntity(type, args);
             return entity;
         }
 

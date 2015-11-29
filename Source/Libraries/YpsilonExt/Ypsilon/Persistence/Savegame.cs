@@ -21,7 +21,7 @@ namespace Ypsilon.Persistence
             player.Modules.TryAddModule(new LaserModule(), new Point(1, 0));
             
             // create other dudes.
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Ship ship = (Ship)World.Entities.AddEntity(typeof(Ship));
                 ship.Name = "Enemy ship";

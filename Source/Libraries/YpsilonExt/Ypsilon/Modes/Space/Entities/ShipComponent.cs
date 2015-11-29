@@ -58,6 +58,8 @@ namespace Ypsilon.Modes.Space.Entities
                         if (weapon.Fire())
                         {
                             // generate a projectile!
+                            AProjectile proj = (AProjectile)World.Entities.AddEntity(typeof(AProjectile), weapon);
+                            proj.SetComponent(new ProjectileComponent());
                         }
                     }
                 }
