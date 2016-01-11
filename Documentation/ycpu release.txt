@@ -12,7 +12,7 @@ and flexible, with a simple yet comprehensive instruction set and enhanced
 memory addressing modes, and at less than #300, exceptionally affordable. Each
 Y100 includes a powerful memory management unit, on-chip ROM and RAM, built-in
 and user-modifiable interrupt handling routines, and an modular bi-directional
-hardware bus that allows communication with up to 255 devices, including
+hardware bus that allows communication with up to 15 devices, including
 additional Random Access Modules, storage, communication links, input devices,
 printing and visual output devices, real- time clocks, and anything else our
 engineers and third parties can dream up. And these features only scratch the

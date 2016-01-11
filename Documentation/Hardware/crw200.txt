@@ -1,0 +1,68 @@
+
+                          April 1, 1978
+
+                        For Immediate Release
+
+                         YPSILONTECH's CRW200
+                        
+                           A data cartridge for
+                          all your storage needs
+
+    The memo to your boss. Your kid's school work. The latest software. At
+YPSILONTECH, we know you need a place to keep all your data. You need storage
+that is portable and reliable. That's why you need the CRW200 - the
+revolutionary solid state storage device that is readable, writable, and
+hardened against anomolous bit flips.
+
+=== Drive speed ================================================================
+
+    The drive can read a single 512b sector to its buffer in approximately
+    5.04ms
+
+=== Cartridge size =============================================================
+
+    The CRW200 provides 4096 512b (256x2b) sectors of data. The total size
+    on cartridge is 2 mega-bytes.
+
+=== Interface details ==========================================================
+
+    DeviceType:     0x0003 (Storage)
+    ManufacturerID: 0x0000 (Ypsilon)
+    DeviceID:       0x0200
+    DeviceRevision: 0x0009
+    
+    HWQ $02 Message:
+    
+    R1  R2?     Message
+    $00 Y       Query state. R0 is set to state code:
+                fedcba98 76543210
+                eip..... ......bm
+                e = error state, query for error
+                i = interrupt enabled.
+                w = write protected.
+                b = busy read/write
+                m = media present.
+                
+                R2 is used to set/disable interrupt. If R2 is 0, disables
+                interrupt. Else, enables interrupt. While interrupt is active,
+                drive will cause hardware interrupt when STATE e:0->1,
+                b:1->0 or m bit changes.
+                
+    $01         Query error. Last error status is returned in R0. Error status
+                cleared on read.
+                0x0000 ERROR_NONE       No error since last poll.
+                0x0001 ERROR_BUSY       Drive is busy performing an action
+                0x0002 ERROR_NO_MEDIA   Attempted to read or write with no cartridge inserted.
+                0x0003 ERROR_PROTECTED  Attempted to write to write protected cartridge.
+                0x0004 ERROR_EJECT      The cartridge was removed while reading or writing.
+                0x0005 ERROR_BAD_SECTOR The requested sector is broken, the data on it is lost.
+                0xffff ERROR_BROKEN     There's been some major software or hardware problem,
+                                        try turning off and turning on the device again.
+    
+    $02 Y       Read sector. Begin read sector index in R2 to buffer. R0 set to 0 if reading
+                is possible and started, else set to 1 and internal error code set.
+                Reading is only possible if the state is STATE_READY or STATE_READY_WP.
+                
+    $03 Y       Write sector. Write buffer to sector index R2. 0 set to 0 if writing
+                is possible and started, else set to 1 and internal error code set.
+                Writing is only possible if the state is STATE_READY.
