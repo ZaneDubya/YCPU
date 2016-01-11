@@ -27,10 +27,12 @@ Clock:
         asr     r0, 4
         and     r1, $000f
         add     r1, $2830
-        sto     r1, [-r2]
+        sbi     r2, 2
+        sto     r1, [r2]
         lod     r1, r0
         add     r1, $2830
-        sto     r1, [-r2]
+        sbi     r2, 2
+        sto     r1, [r2]
     pop r0, r1, r2, r3, fl
     rti
 .scend
@@ -55,14 +57,16 @@ Start:
         lod     b, $2800            ; yellow on blue
         lod     y, $7002            ; get first char
         writeSingleChar:
-            lod     c, [y+]
+            lod     c, [y]
+            adi     y, 2
             and     c, 0x00ff
             cmp     c, 0x0D
             bne     writeChar
             baw     writeSingleChar
         writeChar:
             orr     c, b
-            sto     c, [x+]
+            sto     c, [x]
+            adi     x, 2
             dec     a
             bne     writeSingleChar
         baw     checkForKB
@@ -149,7 +153,7 @@ ShowStartScreen:
         beq     LastLine
         bne     writeLine
     lastLine:
-        add     x, $3C ; skip line, left 4 chars
+        add     x, $3C          ; skip line, left 4 chars
         add     c, 4
         jsr     WriteChars
     rts
@@ -162,14 +166,17 @@ ShowStartScreen:
 WriteChars:
 .scope
     psh a, x                    ; push a x  to the stack
-    writeChar:                 ; copy c chars from y to x
-        lod.8   a, [y+]
-        beq return
+    writeChar:                  ; copy c chars from y to x
+        lod.8   a, [y]
+        beq     return
+        inc     y
         orr     a, b
-        sto     a, [x+]
+        sto     a, [x]
+        adi     x, 2
         baw     writeChar
     return:
-        pop a, x                 ; pop a x from the stack
+        inc     y
+        pop     a, x            ; pop a x from the stack
         rts
 .scend
 
@@ -184,7 +191,8 @@ FillMemoryWords:
     asl c, 1                    ; c = count of bytes
     add c, x                    ; c = first address after all bytes are written
     copyWord:
-        sto     b, [x+]         ; save word in b to [x], x = x + 2
+        sto     b, [x]          ; save word in b to [x], x = x + 2
+        adi     x, 2
         cmp     x, c            ; if x
         bne     copyWord
     pop c, x                    ; restore c and x

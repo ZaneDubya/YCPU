@@ -145,9 +145,9 @@ namespace Ypsilon.Assembler
             Sanity.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
 
             List<ushort> code = state.Parser.AssembleALU((ushort)0x0088, param[0], param[1], opcodeFlag, state);
-            if ((code[0] & 0xFE00) == 0x0000) // no sto immediate
+            if ((code[0] & 0xF000) == 0x1000) // no sto register - should lod r0, r1, not sto r0, r1
                 throw new Exception("Store register instructions not supported.");
-            else if ((code[0] & 0xF000) == 0x2000) // no sto immediate.
+            else if ((code[0] & 0xFE00) == 0x0000) // no sto immediate.
                 throw new Exception("Store immediate instructions not supported.");
             return code;
         }
@@ -521,29 +521,20 @@ namespace Ypsilon.Assembler
                 case AddressingMode.Absolute:
                     addressingmode = 0x0200;
                     break;
+                case AddressingMode.Register:
+                    addressingmode = 0x1000;
+                    break;
+                case AddressingMode.Indirect:
+                    addressingmode = 0x2000;
+                    break;
+                case AddressingMode.IndirectOffset:
+                    addressingmode = 0x3000;
+                    break;
                 case AddressingMode.StatusRegister:
                     // can't use eightbit mode with proc regs...
                     if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
                         throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
-                    addressingmode = 0x1000;
-                    break;
-                case AddressingMode.Register:
-                    addressingmode = 0x2000;
-                    break;
-                case AddressingMode.Indirect:
-                    addressingmode = 0x3000;
-                    break;
-                case AddressingMode.IndirectOffset:
                     addressingmode = 0x4000;
-                    break;
-                case AddressingMode.StackAccess:
-                    addressingmode = 0x5000;
-                    break;
-                case AddressingMode.IndirectPostInc:
-                    addressingmode = 0x6000;
-                    break;
-                case AddressingMode.IndirectPreDec:
-                    addressingmode = 0x7000;
                     break;
                 case AddressingMode.IndirectIndexed:
                     int index_register = (p2.OpcodeWord & 0x0700) << 4;
@@ -737,22 +728,13 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x0200;
                     break;
                 case AddressingMode.Register:
-                    addressingmode = 0x2000;
+                    addressingmode = 0x1000;
                     break;
                 case AddressingMode.Indirect:
-                    addressingmode = 0x3000;
+                    addressingmode = 0x2000;
                     break;
                 case AddressingMode.IndirectOffset:
-                    addressingmode = 0x4000;
-                    break;
-                case AddressingMode.StackAccess:
-                    addressingmode = 0x5000;
-                    break;
-                case AddressingMode.IndirectPostInc:
-                    addressingmode = 0x8000;
-                    break;
-                case AddressingMode.IndirectPreDec:
-                    addressingmode = 0xA000;
+                    addressingmode = 0x3000;
                     break;
                 case AddressingMode.IndirectIndexed:
                     int index_register = (p1.OpcodeWord & 0x0700) << 4;

@@ -34,27 +34,6 @@ namespace Ypsilon.Assembler
                 ParsedOpcode.OpcodeWord = (ushort)m_StatusRegisters[param];
                 ParsedOpcode.AddressingMode = AddressingMode.StatusRegister;
             }
-            else if (isStackOffset(param))
-            {
-                string stackOffset = param.Substring(2, param.Length - 3);
-                if (CanDecodeLiteral(stackOffset))
-                {
-                    TryParseLiteralParameter(ParsedOpcode, stackOffset);
-                    if (ParsedOpcode.ImmediateWord < 8)
-                    {
-                        ParsedOpcode.OpcodeWord = ParsedOpcode.ImmediateWord;
-                        ParsedOpcode.AddressingMode = AddressingMode.StackAccess;
-                    }
-                    else
-                    {
-                        throw new Exception(string.Format("Stack offset exceeds bounds of 0 - 7: '{0}'", originalParam));
-                    }
-                }
-                else
-                {
-                    throw new Exception(string.Format("Stack offset must be a liternal: '{0}'", originalParam));
-                }
-            }
             else if (isParamBracketed(param))
             {
                 param = removeBrackets(param);
@@ -64,26 +43,6 @@ namespace Ypsilon.Assembler
                     // Indirect: [R0]
                     ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
                     ParsedOpcode.AddressingMode = AddressingMode.Indirect;
-                }
-                else if (param.IndexOf('+') == param.Length - 1)
-                {
-                    // Indirect Post-Increment: [R0+]
-                    param = param.Substring(0, param.Length - 1);
-                    if (m_Registers.ContainsKey(param))
-                    {
-                        ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
-                    }
-                    ParsedOpcode.AddressingMode = AddressingMode.IndirectPostInc;
-                }
-                else if (param.IndexOf('-') == 0)
-                {
-                    // Indirect Pre-Decrement: [-R0]
-                    param = param.Substring(1, param.Length - 1);
-                    if (m_Registers.ContainsKey(param))
-                    {
-                        ParsedOpcode.OpcodeWord = (ushort)m_Registers[param];
-                    }
-                    ParsedOpcode.AddressingMode = AddressingMode.IndirectPreDec;
                 }
                 else if (param.IndexOf(',') != -1)
                 {
@@ -224,16 +183,6 @@ namespace Ypsilon.Assembler
         bool isParamBracketed(string param)
         {
             if ((param.StartsWith("[") && param.EndsWith("]")) || (param.StartsWith("(") && param.EndsWith(")")))
-                return true;
-            else
-                return false;
-        }
-
-        bool isStackOffset(string param)
-        {
-            if (param[0].ToString().ToUpperInvariant() == "S" && 
-                param.Length >= 4 && param.IndexOf('[') == 1 && 
-                param.IndexOf(']') == param.Length - 1)
                 return true;
             else
                 return false;

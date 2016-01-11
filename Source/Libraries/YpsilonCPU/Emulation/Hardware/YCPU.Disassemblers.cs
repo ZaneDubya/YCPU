@@ -62,7 +62,31 @@ namespace Ypsilon.Emulation.Hardware
                             disasm = AppendMemoryContents(disasm, absolute ? DebugReadMemory(nextword) : nextword);
                         return disasm;
                     }
-                case 1: // Status Register
+                case 1: // Register
+                    usesNextWord = false;
+                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        R[(int)regSrc]);
+
+                case 2: // Indirect
+                    usesNextWord = false;
+                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        DebugReadMemory(R[(int)regSrc]));
+
+                case 3: // Indirect Offset (also Absolute Offset)
+                    usesNextWord = true;
+                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
+                        name + (isEightBit ? ".8" : string.Empty), 
+                        NameOfRegGP(regDest),
+                        NameOfRegGP((RegGPIndex)((int)regSrc)), 
+                        nextword,
+                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
+                case 4: // Status Register
                     usesNextWord = false;
                     {
                         string disasm = string.Format("{0,-8}{1}, {2,-12}",
@@ -73,55 +97,12 @@ namespace Ypsilon.Emulation.Hardware
                             disasm = AppendMemoryContents(disasm, ReadStatusRegister((RegSPIndex)regSrc));
                         return disasm;
                     }
-                case 2: // Register
+                case 5:
+                case 6:
+                case 7:
                     usesNextWord = false;
-                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        R[(int)regSrc]);
-
-                case 3: // Indirect
-                    usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        DebugReadMemory(R[(int)regSrc]));
-
-                case 4: // Indirect Offset (also Absolute Offset)
-                    usesNextWord = true;
-                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)), 
-                        nextword,
-                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
-
-                case 5: // Stack offset
-                    usesNextWord = true;
-                    return string.Format("{0,-8}{1}, S[${2:X1}]       (${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest), 
-                        (int)regSrc,
-                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
-
-                case 6: // Indirect PostInc
-                    usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [{2}+]       (${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        DebugReadMemory(R[(int)regSrc]));
-
-                case 7: // Indirect PreDec
-                    usesNextWord = false;
-                    return string.Format("{0,-8}{1}, [-{2}]       (${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        DebugReadMemory(R[(int)regSrc]));
-
+                    nextword = 0;
+                    return "???";
                 default: // $8 - $F are Indirect Indexed
                     usesNextWord = false;
                     return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})",
@@ -195,7 +176,7 @@ namespace Ypsilon.Emulation.Hardware
 
             switch (addressingmode)
             {
-                case 0: // Immediate
+                case 0: // Immediate or Absolute
                     usesNextWord = true;
                     bool absolute = (operand & 0x0100) != 0;
                     return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword,
@@ -216,33 +197,20 @@ namespace Ypsilon.Emulation.Hardware
                     return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name,
                         NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
                         DebugReadMemory((ushort)(R[(int)r_src] + nextword)));
-                case 4: // Indirect PostInc
+                case 4:
+                case 5:
+                case 6:
+                case 7:
                     usesNextWord = false;
-                    return string.Format("{0,-8}[{1}+]           (${2:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        DebugReadMemory(R[(int)r_src]));
-                case 5: // Indirect PreDec
+                    return "ERROR JMP Unknown Format";
+                default: // $8 - $f = Indirect Indexed
                     usesNextWord = false;
-                    return string.Format("{0,-8}[-{1}]           (${2:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        DebugReadMemory(R[(int)r_src]));
-                case 6: // Indirect Indexed
-                    usesNextWord = false;
+                    index_bits += (operand & 0x4000) >> 12;
                     return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name,
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         NameOfRegGP((RegGPIndex)index_bits),
                         DebugReadMemory((ushort)
                             (R[(int)r_src] + R[index_bits])));
-                case 7:
-                    usesNextWord = false;
-                    return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name,
-                       NameOfRegGP((RegGPIndex)((int)r_src)),
-                       NameOfRegGP((RegGPIndex)(index_bits + 4)),
-                       DebugReadMemory((ushort)
-                           (R[(int)r_src] + R[index_bits + 4])));
-                default:
-                    usesNextWord = false;
-                    return "ERROR JMP Unsigned Format";
             }
         }
 

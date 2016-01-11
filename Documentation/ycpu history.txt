@@ -199,3 +199,7 @@
   * MMU now no longer has execute protection. Still has supervisor-mode only,
     write protection, not-present flag, and access flag.
   * Considering reducing MMU bank size to 4kb (from 16kb)...
+0.7     1/11/2016
+  * Eliminated stack offset, post-inc, and pre-dec addressing modes!
+  * Processor can now LOD all special registers in user mode, but cannot write
+    to many...

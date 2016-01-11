@@ -1,5 +1,5 @@
 ﻿YCPU Specification
-Version 0.6A RC3
+Version 0.7
 
 ### Table of Contents ##########################################################
 
@@ -56,11 +56,11 @@ http://creativecommons.org/about/cc0
 The YCPU is a 16-bit processor. The processor includes features intended to ease
 the development of software, including a comprehensive instruction set, eight
 general purpose registers that can be used as data or address registers and are,
-with one small exception, completely orthogonal; support for 32-bit floating
-point operations, a MMU that allows read/write/execute protection and bank
-switching of 4 16 kilo-byte banks within the 16-bit logical address space, a real
-time clock, a hardware bus that supports up to 255 devices, and Supervisor/User
-modes with different privileges and stack pointers.
+with a few small exceptions, completely orthogonal; a MMU that allows
+read/write/execute protection and bank switching of 4 16 kilo-byte banks within
+the 16-bit logical address space, a real time clock, a hardware bus that
+supports up to 15 devices, and Supervisor/User modes with different privileges
+and stack pointers.
 
 
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
@@ -128,12 +128,16 @@ R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
 used as both data and address registers, are completely interchangeable
 (orthogonal), and are directly referenced and modified by most instructions.
 
-There is one exception to general purpose register interchangeability: R0 is the
-destination of the high 16-bits of the result of MUL (multiply) and MLI (signed
-multiply) operations, which have 32-bit results. If R0 is also the src/dest
-register, then the high 16-bits are lost, and R0 will contain the low 16-bits
-after the instruction completes.
+There are a few exceptions to general purpose register interchangeability.
 
+*   R0 is the destination of the high 16-bits of the result of MUL (multiply)
+    and MLI (signed multiply) operations, which have 32-bit results. If R0 is
+    also the src/dest register, then the high 16-bits are lost, and R0 will
+    contain the low 16-bits after the instruction completes.
+    
+*   When executing a far jump with register addressing (JMP.F R0), the far 
+    address word is taken from the next register. See "JMI Bit Pattern", Note 2.
+    
 
 --- 2.A.2. PROCESSOR STATUS REGISTERS ------------------------------------------
 
@@ -155,8 +159,8 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         hardware interrupt.
     
     PC: The Program Counter. Contains the address of the next instruction to
-        execute. It is incremented by 1 after executing an opcode that does
-        not reference a next word, or 2 after executing an opcode that does
+        execute. It is incremented by 2 after executing an opcode that does
+        not reference a next word, or 4 after executing an opcode that does
         reference a next word value.
     
     PS: The Processor Status. Setting or clearing bits in this register enables
@@ -170,14 +174,15 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
             [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
             [W] -   Bank Fault, Attempt to Write to Read-Only Memory
             
-    P2: Processor Status 2. Set during bank fault interrupt.
+    P2: Processor Bank Fault Address. Set during bank fault interrupt.
+        See 2.D.4. and 2.D.6.
     
     SP: The Stack Pointer is the address of the first full stack space. It is
         decremented before a stack value is pushed onto the stack, and is
-        incremented after a stack value is popped from the stack. Thus the
+        incremented after a stack value is popped from the stack. The stack
         grows downward from its initial address, and should be initialized to
         an address at (Stack Bottom + 1). Example: If SP is set to $0000, the
-        first pushed value will be at $ffff, and the first pulled value will
+        first pushed value will be at $fffe, and the first pulled value will
         be read from $0000.
         
         The processor has two different stack pointers - the Supervisor Stack
@@ -198,17 +203,17 @@ In Supervisor mode, the processor:
     * Raises a 'Bank fault' interrupt on attempting to write to read-only
       memory.
     * Can set and clear all bits in the process status registers.
-    * Has access to all Special Registers.
+    * Can read and write to all special registers.
     * Can directly access the hardware bus.
-    * Uses the Supervisor Stack Pointer (SSP).
+    * Uses the Supervisor Stack Pointer (SSP) for stack operations.
 
 In User mode, the processor:
     * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
     * Raises a 'Bank fault' interrupt on attempting to read or write
       supervisor-only memory, or write to read-only memory.
-    * Cannot access any special registers.
+    * Cannot write to any special registers, but can read from the same.
     * Cannot directly access the hardware bus.
-    * Uses the User Stack Pointer (USP).
+    * Uses the User Stack Pointer (USP) for stack operations.
 
 
 === 2.C. Hardware Devices ======================================================
@@ -237,7 +242,7 @@ Software interacts with hardware using the HWQ (HardWare Query) instruction.
 This instruction accepts one operand, a 8-bit 'operation index'. Calling HWQ
 operation $00 will query the Bus for the number of devices connected, and
 the YCPU will save this value in R0. The YCPU can also determine what device is
-present in each of the 255 Bus Slots by calling HWQ operation $01 with the index
+present in each of the 16 Bus Slots by calling HWQ operation $01 with the index
 of the Bus Slot to check in R0. If no device is present, R0 will be set to
 "ERR_NO_DEVICE" ($0000). If a device is present, the registers of the YCPU will
 be set as follows:
@@ -284,7 +289,7 @@ A device on the CPU's hardware bus may request the CPU's attention by asserting
 an interrupt request (IRQ). While the Q status bit is clear and the I status bit
 is set, the processor checks for IRQs before executing every opcode. If a
 hardware device is asserting an IRQ when the processor checks, the processor
-will load the bus index of the first device on thus bus which is asserting an
+will load the bus index of the first device on the bus which is asserting an
 IRQ into the II register, and then raise the 'hardware interrupt' interrupt.
 
 Note that devices in lower index slots in the hardware bus always have
@@ -408,8 +413,8 @@ the write-protect bit is set, which will generate a bank fault.
 
 === 2.E. Addressing Modes ======================================================
 Many instructions are register-only: they can take only data loaded in registers
-as their source. But all Load, Store, ALU, and Jump instructions can access
-memory using these nine addressing modes:
+as their source. ALU (including LOD and STO) and JMP/JSR instructions can access
+memory using these seven addressing modes:
 
 Addressing Mode     Syntax      Value is...
 Immediate           $1234       Value of Next Word
@@ -418,9 +423,6 @@ Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
 Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
-Stack Offset        S[$0-$7]    Stack[Offset]       // Offset limited to 0-7
-Indirect Post-inc   [Rx+]       Mem[R], R is post-incremented. (See 2.E.2.)
-Indirect Pre-dec    [-Rx]       Mem[R], R is pre-decremented. (See 2.E.2.)
 Indirect Indexed    [Rx,Rx]     Mem[R+R]
 
 --- 2.E.1. BIT WIDTH OF INSTRCTIONS --------------------------------------------
@@ -440,24 +442,13 @@ of the instruction is memory, only a single byte is stored in memory. If the
 target is another register, the lower 8 bits of memory are stored, and the high
 8 bits of the destination register are cleared.
 
---- 2.E.2. POST-INCREMENT AND PRE-DECREMENT VALUES -----------------------------
-
-When using post-increment and pre-decrement, the value of the register is
-changed the value of the register is changed by the byte-size of the data
-operated on by the instruction. Thus:
-
-    ADD.8   R0, [R1+]           ; will post-increment R1 by '1'.
-    LOD.8   R0, [R1+]           ; will post-increment R1 by '1'.
-    ADD.8   R0  [R1+]           ; will post-increment R1 by '2'.
-    LOD.16  R0, [R1+]           ; will post-increment R1 by '2'.
-
 
 === 2.F. Memory Management =====================================================
 Because the processor has a 16-bit logical address space, it can only address
-$10000 bytes of linear address space at a time. This limited address space is
-augmented by the processor's integrated memory management unit (MMU) which,
-when enabled, implements bankable memory and thus a limited form of virtual
-address translation.
+$10000 (65,536) bytes of linear address space at a time. This limited address
+space is augmented by the processor's integrated memory management unit (MMU)
+which, when enabled, implements bankable memory and thus a limited form of
+virtual address translation.
 
 
 --- 2.F.1. THE MMU CACHE -------------------------------------------------------
@@ -788,60 +779,51 @@ ALU Bit Pattern
         R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
-        r = Second Operand Register. Can be used as:
-            Index Register. See Note 1, below.
-            Stack Offset. See Note 2, below.
-            Processor register. See Note 4, below.
-        E = 8-bit Mode. See Note 3, below.
+        r = Second Operand Register.
+        i = Third Operard Register.
+        E = 8-bit Mode. See Note 1, below.
     
     AAAA rrrE OOOO ORRR     Addressing Mode     Example Syntax      Cycles  Note
-    0000 000E       RRR     Immediate           LOD R0, $1234       +1m     
-    0000 001E       RRR     Absolute            LOD R0, [$1234]     +2m     
-    0001 ppp.       RRR     ProcReg             LOD R0, SP                  4
-    0010 rrrE       RRR     Register            LOD R0, R1                  
-    0011 rrrE       RRR     Indirect            LOD R0, [R1]        +1m     
-    0100 rrrE       RRR     Absolute Offset     LOD R0, [$1234,R1]  +2m     
-                            Indirect Offset     LOD R0, [R1,$1234]  +2m
-    0101 rrrE       RRR     Stack Offset        LOD R0, S[$00]      +1m     2
-    0110 rrrE       RRR     Indirect PostInc    LOD R0, [R1+]       +1m
-    0111 rrrE       RRR     Indirect PreDec     LOD R0, [-R1]       +1m
-    1iii rrrE       RRR     Indirect Indexed    LOD R0, [r1,i2]     +1m     1
+    0000 000E               Immediate           LOD R0, $1234       +1m     
+    0000 001E               Absolute            LOD R0, [$1234]     +2m     
+    0001 rrrE               Register            LOD R0, R1                  
+    0010 rrrE               Indirect            LOD R0, [R1]        +1m     
+    0011 rrrE               Indirect Offset     LOD R0, [R1,$1234]  +2m
+    0100 ppp.               Processor Register  LOD R0, SP                  2
+    1iii rrrE               Indirect Indexed    LOD R0, [r1,i2]     +1m
     
-        Note 1: The 'r' bits in the ALU Bit Pattern are used to determine
-                the index register in the 'Indirect Indexed' addressing mode.
-        Note 2: The 'r' bits describe a value between $00 and $07. This value
-                is used as an offset into the stack. S[$00] returns the value
-                at the stack pointer; S[$07] returns the value at [StckPtr + 7].
-        Note 3: When the 'E' bit is set, the ALU processes values in its 8-bit
+        Note 1: When the 'E' bit is set, the ALU processes values in its 8-bit
                 mode. To use 8-bit mode for ALU instructions, follow the normal
                 opcode with a ".8" flag. Examples follow:
                 
                 Instruction             Compiled as:
-                LOD.8   R0, $34         LOD R0 = $34, 8-bit operation.
+                LOD.8   R0, $34         LOD R0 = $34, 8-bit operation. Hi-8 bits
+                                        of immediate value are ignored.
+                LOD.8   R0, $1234       LOD R0 = $34, 8-bit operation. Hi-8 bits
+                                        of immediate value are ignored.              
                 STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
-                LOD.8   R0, $1234       Will raise an error during assembly, as
-                                        $1234 is greater than an 8-bit value.
-        Note 4: The processor can also use a processor register as an operand.
+                
+            The ALU operating in 8-bit mode has the following modified behavior:
+            1.  Only the low 8-bits of the input registers are used.
+            2.  Only the low 8-bits of the output register are set. The high 
+                8-bits of the output register are cleared (set to '0').
+            3.  The [N]egative flag bit is set if bit 7 is set (with 16-bit
+                operations, the N flag is set if bit 15 is set).
+            4.  Only the low 8 bits of an immediate value are loaded, and the
+                following byte is skipped (the entire 16 bits of offsets and
+                absolute values are still used).
+                
+        Note 2: The ALU bit pattern can take a processor register as an operand.
                 Processor register indexes are as follows:
-                Index   Desc.                                   Supervisor only?
-                $00     FL register                                     N
-                $01     PC register                                     N
-                $02     PS register                                     Y
-                $03     P2 register                                     Y
-                $04     II register                                     Y
-                $05     IA register                                     Y
-                $06     USP                                             N
-                $07     current Stack Pointer (USP / SSP)               N
-                                        
-    The ALU operating in 8-bit mode has the following modified behaviour:
-        1.  Only the low 8-bits of the input registers are used.
-        2.  Only the low 8-bits of the output register are set. The high 8-bits
-            of the output register are cleared (set to '0').
-        3.  The [N]egative flag bit is set if bit 7 is set (with 16-bit
-            operations, the N flag is set if bit 15 is set).
-        4.  Only the low 8 bits of an immediate value are loaded, and the
-            following byte is skipped (the entire 16 bits of offsets and
-            absolute values are still used).
+                Index   Desc.                                       User write?
+                $00     FL register                                 Y
+                $01     PC register                                 Y
+                $02     PS register                                 N
+                $03     P2 register                                 N
+                $04     II register                                 N
+                $05     IA register                                 N
+                $06     USP                                         Y
+                $07     current Stack Pointer (USP / SSP)           Y*
 
 BTI Bit Pattern
     FEDC BA98 7654 3210
@@ -899,33 +881,22 @@ IMM Bit Pattern
     
     
 JMI Bit Pattern
-    FEDC BA98 7654 3210 
     AAAA rrrF OOOO OOOO
         O = Opcode
         A = Addressing mode
         r = Source register
-        i = Index Register. See Note 1, below.
-        s = Stack Offset. See Note 2, below.
-        F = Far Mode. See Note 3, below.
+        i = Index Register.
+        F = Far Mode. See Note 1, below.
         
     AAAA rrrF OOOO OOOO     Addressing Mode     Example Syntax          Cycles
     0000 000F               Immediate           JMP $1234               +1m
     0000 001F               Absolute            JMP [$1234]             +2m
-    0010 rrrF               Register            JMP R              
-    0011 rrrF               Indirect            JMP [R]                 +1m
-    0100 rrrF               Absolute Offset     JMP [$1234,R]           +2m
-                            Indirect Offset     JMP [R,$1234]           +2m
-    0101 sssF               Stack Offset        JMP S[$00]              +1m
-    0110 rrrF               Indirect PostInc    JMP [R+]                +1m
-    0111 rrrF               Indirect PreDec     JMP [-R]                +1m
+    0001 rrrF               Register            JMP R              
+    0010 rrrF               Indirect            JMP [R]                 +1m
+    0011 rrrF               Indirect Offset     JMP [R,$1234]           +2m
     1iii rrrF               Indirect Indexed    JMP [R,i]               +1m
-    
-        Note 1: The 'i' bits in the ALU Bit Pattern are used to determine
-                the index register in the 'Indirect Indexed' addressing mode.
-        Note 2: The 's' bits describe a value between $00 and $07. This value
-                is used as an offset into the stack. S[$00] returns the value
-                at the stack pointer; S[$07] returns the value at [StckPtr + 7].
-        Note 3: When the 'F' bit is clear, the jump is 'short', and the PC will
+
+        Note 1: When the 'F' bit is clear, the jump is 'short', and the PC will
                 be set to the value implied by the addressing mode, within the 
                 currently loaded 16-bit logical memory space.
                 When the 'F' bit is set, the jump is 'far', and will not only
@@ -937,16 +908,12 @@ JMI Bit Pattern
                 Addressing Mode     Upper Address   Lower Address...    
                 Immediate           PC + 4          PC + 2
                 Absolute            [(PC + 2) + 2]  [PC + 2]
-                Register            R[+1]           R       // See Note 4.
+                Register            RY              RX       (See Note 2)
                 Indirect            [R + 2]         [R]
-                Absolute Offset     [($1234,R) + 2] [$1234,R]
                 Indirect Offset     [(R,$1234) + 2] [R,$1234]
-                Stack Offset        S[s + 1]        S[s]    // +1 stk = +2 bytes
-                Indirect PostInc    [R + 2]         [R]     // post-increment
-                Indirect PreDec     [R - 4]         [R - 2] // pre-decrement
                 Indirect Indexed    [R,i + 2]       [R,i]
                 
-        Note 4: Register addressing with far jumps takes the PC address from the
+        Note 2: Register addressing with far jumps takes the PC address from the
                 specified register, and the 'upper address' from the register
                 with the next index. Register indexes wrap at 8. Examples:
                 JMP.F   R0      ; PC=R0 @ R1

@@ -27,7 +27,7 @@ namespace Ypsilon.Emulation.Hardware
             switch (addressingMode) // will always be between 0x0 and 0xf
             {
                 case 0: // Immediate (r == 0) or Absolute (r == 1)
-                    if ((int)source == 0)
+                    if (source == 0)
                     {
                         value = eightBitMode ? ReadMemInt8(PC, true) : ReadMemInt16(PC, true);
                     }
@@ -39,53 +39,30 @@ namespace Ypsilon.Emulation.Hardware
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
-                case 1: // Processor Register
-                    value = ReadStatusRegister((RegSPIndex)source);
-                    break;
-
-                case 2: // Register
+                case 1: // Register
                     value = R[(int)source];
                     break;
 
-                case 3: // Indirect
+                case 2: // Indirect
                     value = eightBitMode ? ReadMemInt8(R[(int)source]) : ReadMemInt16(R[(int)source]);
                     break;
 
-                case 4: // Absolute Offset AKA Indirect Offset
+                case 3: // Absolute Offset AKA Indirect Offset
                     address = (ushort)(R[(int)source] + ReadMemInt16(PC, true));
                     value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
-                case 5: // Stack offset.
-                    address = (ushort)(SP + (int)source * 2);
-                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                case 4: // Processor Register
+                    value = ReadStatusRegister((RegSPIndex)source);
                     break;
 
-                case 6: // Indirect PostInc.
-                    if (eightBitMode)
-                    {
-                        value = ReadMemInt8(R[(int)source]);
-                        R[(int)source] += (ushort)1; // post increment by data size in bytes (8-bit = 1 byte).
-                    }
-                    else
-                    {
-                        value = ReadMemInt16(R[(int)source]);
-                        R[(int)source] += (ushort)2; // post increment by data size in bytes (16-bit = 2 bytes).
-                    }
-                    break;
-
-                case 7: // Indirect PreDec.
-                    if (eightBitMode)
-                    {
-                        R[(int)source] -= (ushort)1; // pre decrement by data size in bytes (8-bit = 1 bytes).
-                        value = ReadMemInt8(R[(int)source]);
-                    }
-                    else
-                    {
-                        R[(int)source] -= (ushort)2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-                        value = ReadMemInt16(R[(int)source]);
-                    }
+                case 5:
+                case 6:
+                case 7:
+                    source = RegGPIndex.None;
+                    value = 0;
+                    Interupt_UndefOpcode();
                     break;
 
                 default: // addressing of 0x8 ~ 0xF is an Indirect Indexed operation.
@@ -132,40 +109,34 @@ namespace Ypsilon.Emulation.Hardware
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
-                case 1: // Processor Register
+                case 1: // Register - no such addressing mode for STO.
+                    source = RegGPIndex.None;
+                    destAddress = 0;
+                    Interupt_UndefOpcode();
+                    break;
+
+                case 2: // Indirect
+                    destAddress = R[(int)addrRegister];
+                    break;
+
+                case 3: // Absolute Offset AKA Indirect Offset
+                    destAddress = (ushort)(R[(int)addrRegister] + ReadMemInt16(PC, true));
+                    PC += 2; // advance PC two bytes because we're reading an immediate value.
+                    break;
+
+                case 4: // Processor Register
                     WriteStatusRegister((RegSPIndex)addrRegister, R[(int)source]);
                     // set source = none so calling function doesn't attempt to interpret this as well.
                     source = RegGPIndex.None;
                     destAddress = 0;
                     break;
 
-                case 2: // Register - no such addressing mode for STO.
+                case 5:
+                case 6:
+                case 7:
                     source = RegGPIndex.None;
                     destAddress = 0;
                     Interupt_UndefOpcode();
-                    break;
-
-                case 3: // Indirect
-                    destAddress = R[(int)addrRegister];
-                    break;
-
-                case 4: // Absolute Offset AKA Indirect Offset
-                    destAddress = (ushort)(R[(int)addrRegister] + ReadMemInt16(PC, true));
-                    PC += 2; // advance PC two bytes because we're reading an immediate value.
-                    break;
-
-                case 5: // Stack offset
-                    destAddress = (ushort)(SP + (int)addrRegister * 2);
-                    break;
-
-                case 6: // Indirect PostInc.
-                    destAddress = R[(int)addrRegister];
-                    R[(int)addrRegister] += (ushort)(eightBitMode ? 1 : 2); // post increment by data size in bytes (16-bit = 2 bytes).
-                    break;
-
-                case 7: // Indirect PreDec.
-                    R[(int)addrRegister] -= (ushort)(eightBitMode ? 1 : 2); // pre decrement by data size in bytes (16-bit = 2 bytes).
-                    destAddress = R[(int)addrRegister];
                     break;
 
                 default: // $8-$F are Indirect Indexed operations.
@@ -250,24 +221,19 @@ namespace Ypsilon.Emulation.Hardware
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
-                case 1: // DOES NOT EXIST
-                    address = PC;
-                    Interupt_UndefOpcode();
-                    break;
-
-                case 2: // Register
+                case 1: // Register
                     address = R[(int)source];
                     if (isFarJump)
                         addressFar = R[(((int)source) + 1) & 0x0007];
                     break;
 
-                case 3: // Indirect
+                case 2: // Indirect
                     address = ReadMemInt16(R[(int)source]);
                     if (isFarJump)
                         addressFar = ReadMemInt16((ushort)(R[(int)source] + 2));
                     break;
 
-                case 4: // Indirect Offset AKA Absolute Offset
+                case 3: // Indirect Offset AKA Absolute Offset
                     nextword = ReadMemInt16(PC, true);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     address = ReadMemInt16((ushort)(R[(int)source] + nextword));
@@ -275,31 +241,12 @@ namespace Ypsilon.Emulation.Hardware
                         addressFar = ReadMemInt16((ushort)(R[(int)source] + nextword + 2));
                     break;
 
-                case 5: // Stack offset
-                    int sp = SP + (int)source * 2;
-                    address = ReadMemInt16((ushort)sp);
-                    if (isFarJump)
-                        addressFar = ReadMemInt16((ushort)(sp + 2));
-                    break;
-
-                case 6: // Indirect PostInc
-                    address = ReadMemInt16(R[(int)source]);
-                    R[(int)source] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
-                    if (isFarJump)
-                    {
-                        addressFar = ReadMemInt16(R[(int)source]);
-                        R[(int)source] += 2; // post increment by data size in bytes (16-bit = 2 bytes).
-                    }
-                    break;
-
-                case 7: // Indirect PreDec
-                    R[(int)source] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-                    address = ReadMemInt16(R[(int)source]);
-                    if (isFarJump)
-                    {
-                        R[(int)source] -= 2; // pre decrement by data size in bytes (16-bit = 2 bytes).
-                        addressFar = ReadMemInt16(R[(int)source]);
-                    }
+                case 4: // DOES NOT EXIST
+                case 5:
+                case 6:
+                case 7:
+                    address = PC;
+                    Interupt_UndefOpcode();
                     break;
 
                 default: // Indirect Indexed
