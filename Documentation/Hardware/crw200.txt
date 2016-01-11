@@ -14,6 +14,18 @@ that is portable and reliable. That's why you need the CRW200 - the
 revolutionary solid state storage device that is readable, writable, and
 hardened against anomolous bit flips.
 
+=== On-board Buffer ============================================================
+
+    The CRW200 drive unit has an on-board 512b buffer. This buffer can be made
+    accessible to the YCPU bus by using the MMU. Note that the CRW200 has only
+    a single bank, and this bank is only 512b; this 512b of memory is mirrored
+    throughout the 16kb bank address space.
+    
+    Note also that when the drive is busy, the buffer is taken off the bus.
+    Attempting to write to the buffer while the drive is busy will fail
+    silently. Attempting to read from the buffer while the drive is busy will
+    return garbage data.
+
 === Drive speed ================================================================
 
     The drive can read a single 512b sector from a cartridge to its buffer in 
