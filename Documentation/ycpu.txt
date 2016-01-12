@@ -707,16 +707,18 @@ changing might be used in all banks).
     
 ### 3. Instructions ############################################################
 
-The YCPU's instruction set is comprised of 67 instructions (and four 'macros',
-where an opcode is known by two names: "NOP" is a second code for "LOD R0, R0").
+The YCPU's instruction set is comprised of 58 unique instructions (although an
+assembler may define other instructions as 'macros' - for example, a one-cycle
+NOP instruction could be defined as 'LOD R0, R0').
 
-Each instruction is represented by an 8-bit opcode within the low octet of a
-16-bit program word. The program word can be followed by 1, or in rare cases,
-two immediate word values.
+All instructions are comprised of single 16-bit program words. Some instructions
+may be suffixed by a single 16-bit immediate value. One instruction - the jump
+far immediate instruction - is suffixed by two 16-bit immediate values.
 
-There are 68 undefined opcodes: STO Immediate (0x00A8), STO Register (0x00AA),
-0x00AD, 0x00B4, and 0x00C0 through 0x00FF inclusive. Undefined opcodes will
-raise the 'undefined' interrupt on execution.
+All instructions, with the exception of the four MMU instructions, are defined
+by the 8-bit low octet of the 16-bit program word. Attempted execution of a 
+program word that does not have a defined 8-bit low octet will raise the
+'undefined' interrupt.
 
 Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
@@ -1126,12 +1128,12 @@ Operation:  Rx - M - (1-C) -> Rx, C
     V [Overflow] Set if sign bit (bit 15) is incorrect.
 
 
-STO         Stores the value of a register into another register or memory
+STO         Stores the value of a register into memory
 Operation:  Rx -> M
 NOTE:   Immediate and Register addressing is not available with STO opcodes.
         Thus the two opcodes that would code for STO with these addressing
-        modes are UNDEFINED.
-        STO Rx, Ry is an assembler macro for LOD Ry, Rx
+        modes are UNDEFINED and will raise the raise the 'undefined' interrupt
+        on execution.
     N [Negative] Not effected.
     Z [Zero] Not effected.
     C [Carry] Not effected.
@@ -1140,7 +1142,7 @@ NOTE:   Immediate and Register addressing is not available with STO opcodes.
     
 SUB         Subtract value from register, ignoring carry.
 Operation:  Rx - M -> Rx, C
-For small immediate values, ($01-$20), SUB should be replaced with SBI.
+NOTE:   For small immediate values, ($01-$20), SUB should be replaced with SBI.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Set if overflow in bit 15.

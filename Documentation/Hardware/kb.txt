@@ -1,6 +1,6 @@
 Keyboard
 
-DeviceType:     0x0002 (Keyboard)
+DeviceType:     0x0002 (Input, Keyboard)
 ManufacturerID: 0
 DeviceID:       0
 DeviceRevision: 0
