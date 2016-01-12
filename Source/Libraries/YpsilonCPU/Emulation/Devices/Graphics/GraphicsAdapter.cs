@@ -53,16 +53,6 @@ namespace Ypsilon.Emulation.Devices.Graphics
                 case 0x0000: // SET_MODE
                     SetMode(param_1);
                     break;
-                case 0x0001: // READ CHR RAM
-                    break;
-                case 0x0002: // READ PAL RAM
-                    break;
-                case 0x0003: // SET BORDER COLOR
-                    break;
-                case 0x0004: // DUMP CHR RAM
-                    break; 
-                case 0x0005: // DUMP PAL RAM
-                    break;
                 default:
                     return MSG_ERROR;
             }
