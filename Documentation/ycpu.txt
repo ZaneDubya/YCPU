@@ -331,7 +331,7 @@ It then executes the following sequence:
     6.  Set PC to Mem[II + (InterruptIndex * 2)].
     7.  Execution continues.  
 
-* For the interrupts which are raised by an error condition, the PC is rewound
+* For the interrupts that are raised by an error condition, the PC is rewound
   to the instruction that *caused* the the interrupt. Interrupts raised by error
   conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
   BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
@@ -359,7 +359,7 @@ The RTI instruction follows this sequence:
 
 There are 16 interrupts in the Interrupt Vector Table. The software interrupt
 is raised by the instruction SWI, and the Hardware Interrupt is raised by a 
-hardware which asserts an interrupt request. All other interrupts are raised
+hardware that asserts an interrupt request. All other interrupts are raised
 by the processor itself on specified error states. The 16 interrupts are:
 
 Idx Name            Description
@@ -377,7 +377,7 @@ $4  StackFault      Raised when the processor executes a Pull opcode with SP
                     Note that limits to the Stack are not yet included in this
                     Specification.
 $5  BankFault       Raised when the processor attempts to read from or write to 
-                    an address within a Bank which has been protected from these
+                    an address within a Bank that has been protected from these
                     operations. The UW bits in the PS register will describe the
                     error, and the P2 register will contain the memory address
                     that the processor attempted to access.
@@ -408,7 +408,7 @@ the operation that caused the bank fault:
         1 1     Attempted user write to supervisor-only memory.
         
 Note that writes to ROM banks will fail silently unless the MMU is enabled and
-the write-protect bit is set, which will generate a bank fault.
+the write-protect bit is set, which will result in a bank fault.
 
 
 === 2.E. Addressing Modes ======================================================
@@ -561,15 +561,15 @@ operand as the second operand, as follows:
     OOOO OOOO OOOO OOOO bbaa aaaa aaaa aaaa .... DDDD BBBB BBBB
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
-    b = the bank which will contain the new PC value.
+    b = the bank that will contain the new PC value.
     a = the address of the PC within that bank.
-    D = the index of the Device which will provide the bank.
+    D = the index of the Device that will provide the bank.
     B = the index of the Bank within the Device.
     
-The two 'b' bits indicate the MMU bank which the new device bank will be
+The two 'b' bits indicate the MMU bank that the new device bank will be
 'switched' into. The top two bits of '$F006' are '11', or '3'. Thus, the bank
 will switch bank $0E from device $01 into the fourth MMU address space (MMU
-banks are zero indexed) which extends from $C000 to $FFFF.
+banks are zero indexed) that extends from $C000 to $FFFF.
     
 Following the operation, the PC will be set to $F006, and the fourth MMU bank
 will contain Bank index $0E from Device $01.
@@ -588,14 +588,14 @@ Note 3: when the MMU is disabled, a far jump will still set the lower word for
 
 --- 2.F.7. UNLOADED MEMORY -----------------------------------------------------
 
-Any memory accesses to addresses which are not connected to real memory will
+Any memory accesses to addresses that are not connected to real memory will
 result in reads with all bits set. Thus, a 16-bit read of address $C000, when
 the fourth MMU bank is set to memory that does not exist, will result in a 
 value of $FFFF.
         
 === 2.G. Boot Sequence =========================================================
 At initial power on, the state of all memory, registers, and cache is unknown.
-The processor raises the RESET interrupt at power on, which puts the processor
+The processor raises the RESET interrupt at power on, placing the processor
 in the following known state:
 
     RTC Tick <- Disabled            ; RTC will not raise interrupts.
@@ -641,10 +641,10 @@ software written without this assistance, and thus experience a "Y2156" bug.
 
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
 
-The RTC also provides a CLOCK interrupt, which can be enabled, disabled, and the
-frequency of which can be specified. When the RTC interrupt is enabled, the RTC
-will raise the CLOCK interrupt at an interval which is specified by the
-processor. The RESET interrupt disables the RTC.
+The RTC also provides a CLOCK interrupt that can be enabled or disabled. The
+frequency of this interrupt can also be specified. When the RTC interrupt is
+enabled, the RTC will raise the CLOCK interrupt at the specified interval. The
+RESET interrupt disables the RTC.
 
 The processor can set the desired interrupt interval with HWQ $81, with a value
 indicating the desired interrupt frequency in R0. If R0 is $0000, the interrupt
