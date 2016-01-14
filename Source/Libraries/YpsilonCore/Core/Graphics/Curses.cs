@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
@@ -120,7 +120,7 @@ namespace Ypsilon.Core.Graphics
                 }
                 else
                 {
-                    if ((c == ' ') || (c == '-') || (c == '.')) // break here
+                    if ((c == ' ') || (c == '-') || (c == '.') || i == (s.Length - 1)) // break here
                     {
                         breakHere = true;
                     }
@@ -138,16 +138,14 @@ namespace Ypsilon.Core.Graphics
                             if (y0 >= ScreenHeight)
                                 return;
                         }
-                        else
+
+                        int begin = y0 * ScreenWidth + x0;
+                        for (int j = 0; j < length; j++)
                         {
-                            int begin = y0 * ScreenWidth + x0;
-                            for (int j = 0; j < length; j++)
-                            {
-                                m_CharBuffer[begin + j] = (byte)s[last + j];
-                            }
-                            last = i + 1;
-                            x0 += length + (trailingSpace ? 1 : 0);
+                            m_CharBuffer[begin + j] = (byte)s[last + j];
                         }
+                        last = i + 1;
+                        x0 += length + (trailingSpace ? 1 : 0);
                     }
                 }
 
@@ -199,6 +197,8 @@ namespace Ypsilon.Core.Graphics
                 for (int x = 0; x < ScreenWidth; x++)
                 {
                     byte ch = m_CharBuffer[x + y * ScreenWidth];
+                    if (ch == 0)
+                        continue;
                     float u = (ch % 16) * sixteenth;
                     float v = (ch / 16) * sixteenth;
 

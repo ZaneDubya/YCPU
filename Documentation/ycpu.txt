@@ -453,15 +453,16 @@ virtual address translation.
 
 --- 2.F.1. THE MMU CACHE -------------------------------------------------------
 
-The MMU has 8 16-bit words of internal cache. Each pair of words describes
-the physical address that is mapped to a single MMU bank. 4 of these 16-bit
-words describe the configuration of the 4 banks of memory in supervisor mode,
-and the other 4 describe the configuration of the 4 banks of memory in user
-mode. 
+The MMU has 8 16-bit words of internal cache. Each word describes the physical
+address that is mapped to the logical addresses within the 16-kb address space
+of a single MMU bank. Four of these 16-bit words describe the configuration of
+the four banks of memory in supervisor mode, and the other four describe the
+configuration of the four banks of memory in user mode. 
 
-Word $00___________
-FEDC BA98 7654 3210
-SWPA DDDD bbbb bbbb
+The format of a MMU cache word is as follows:
+
+    FEDC BA98 7654 3210
+    SWPA DDDD bbbb bbbb
     
     S - Supervisor only flag:
         0:  User mode and Supervisor mode may access this bank.
@@ -469,8 +470,8 @@ SWPA DDDD bbbb bbbb
             cause a bank fault.
     W - Write protection flag:
         0:  Write operations to this bank will succeed.
-        1:  Write-protected. Writing to this bank will fail and cause a bank
-            fault.
+        1:  Write-protected. Writing to this bank will fail and raise a bank
+            fault interrupt.
     P - Not present flag:
         If this bit is set, any access to this bank will raise a bank fault.
     A - Accessed flag:

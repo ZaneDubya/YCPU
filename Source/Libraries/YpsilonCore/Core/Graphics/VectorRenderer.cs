@@ -1,54 +1,35 @@
-﻿#region File Description
-//-----------------------------------------------------------------------------
-// LineBatch.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using Statements
-using Microsoft.Xna.Framework;
+﻿﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-#endregion
 
 namespace Ypsilon.Core.Graphics
 {
     /// <summary>
-    /// Batches line "draw" calls from the game, and renders them at one time.
+    /// A 3D line and tri renderer. Currently no support for textures, but could be extended.
     /// </summary>
     public class VectorRenderer
     {
-        GraphicsDevice m_Graphics;
-        Effect m_Effect;
+        private GraphicsDevice m_Graphics;
+        private Effect m_Effect;
 
         private const int c_MaxPrimitives = 0x1000;
-        private VertexPositionNormalTextureData[] m_WorldVertices, m_ScreenVertices;
-        private Texture2D m_Texture;
-        private short[] m_Indices;
-        private int m_CurrentIndex;
-        private int m_LineCount;
+        private VertexList m_WorldLines, m_WorldTris;
+        private short[] m_LineIndices, m_TriIndices;
 
         public VectorRenderer(GraphicsDevice g, ContentManager c)
         {
             m_Graphics = g;
             m_Effect = c.Load<Effect>("DataEffect");
 
-            Color[] data = new Color[] { Color.White };
-            m_Texture = new Texture2D(m_Graphics, 1, 1);
-            m_Texture.SetData<Color>(data);
-
-            // create the vertex and indices array
-            m_WorldVertices = new VertexPositionNormalTextureData[c_MaxPrimitives * 2];
-            m_ScreenVertices = new VertexPositionNormalTextureData[c_MaxPrimitives * 2];
-            m_Indices = CreateIndexBuffer(c_MaxPrimitives);
-            m_CurrentIndex = 0;
-            m_LineCount = 0;
+            // create vertex and index collections
+            m_WorldLines = new VertexList(c_MaxPrimitives, 2);
+            m_WorldTris = new VertexList(c_MaxPrimitives, 3);
+            m_LineIndices = CreateLineBuffer(c_MaxPrimitives);
+            m_TriIndices = CreateTriBuffer(c_MaxPrimitives);
         }
 
-        private short[] CreateIndexBuffer(int primitiveCount)
+        private short[] CreateLineBuffer(int primitiveCount)
         {
             short[] indices = new short[primitiveCount * 2];
             for (int i = 0; i < primitiveCount; i++)
@@ -59,15 +40,22 @@ namespace Ypsilon.Core.Graphics
             return indices;
         }
 
-        /*public void SetColorLookupTable(Vector4[] clut)
+        private short[] CreateTriBuffer(int primitiveCount)
         {
-            m_Effect.Parameters["ColorLookupTable"].SetValue(clut);
-        }*/
+            short[] indices = new short[primitiveCount * 3];
+            for (int i = 0; i < primitiveCount; i++)
+            {
+                indices[i * 3] = (short)(i * 3);
+                indices[i * 3 + 1] = (short)(i * 3 + 1);
+                indices[i * 3 + 2] = (short)(i * 3 + 2);
+            }
+            return indices;
+        }
 
         /// <summary>
-        /// Draws the given polygon.
+        /// Draws the given poly line (wireframe).
         /// </summary>
-        public void DrawPolygon(Vector3[] polygon, Matrix matrix, Color color, bool closePolygon)
+        public void DrawLines(Vector3[] polygon, Matrix matrix, Color color, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -77,18 +65,21 @@ namespace Ypsilon.Core.Graphics
             int length = polygon.Length - (closePolygon ? 0 : 1);
             for (int i = 0; i < length; i++)
             {
-                if (m_LineCount >= c_MaxPrimitives)
+                if (m_WorldLines.Count >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit.");
 
-                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
-                m_WorldVertices[m_CurrentIndex++].Data = data;
-                m_WorldVertices[m_CurrentIndex].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
-                m_WorldVertices[m_CurrentIndex++].Data = data;
-                m_LineCount++;
+                m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
+                m_WorldLines.Vertices[m_WorldLines.Index++].Data = data;
+                m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
+                m_WorldLines.Vertices[m_WorldLines.Index++].Data = data;
+                m_WorldLines.Count++;
             }
         }
 
-        public void DrawPolygon(VertexPositionNormalTextureData[] polygon, Vector3 translation, bool closePolygon)
+        /// <summary>
+        /// Draws the given poly line (wireframe).
+        /// </summary>
+        public void DrawLines(VertexPositionNormalTextureData[] polygon, Vector3 translation, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -96,23 +87,45 @@ namespace Ypsilon.Core.Graphics
             int length = polygon.Length - (closePolygon ? 0 : 1);
             for (int i = 0; i < length; i++)
             {
-                if (m_LineCount >= c_MaxPrimitives)
+                if (m_WorldLines.Count >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit.");
 
-                m_WorldVertices[m_CurrentIndex] = polygon[i % polygon.Length];
-                m_WorldVertices[m_CurrentIndex++].Position += translation;
-                m_WorldVertices[m_CurrentIndex] = polygon[(i + 1) % polygon.Length];
-                m_WorldVertices[m_CurrentIndex++].Position += translation;
-                m_LineCount++;
+                m_WorldLines.Vertices[m_WorldLines.Index] = polygon[i % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index++].Position += translation;
+                m_WorldLines.Vertices[m_WorldLines.Index] = polygon[(i + 1) % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index++].Position += translation;
+                m_WorldLines.Count++;
             }
         }
 
-        public void Render(Matrix projection, Matrix view, Matrix world)
+        /// <summary>
+        /// Draws the given tri list.
+        /// </summary>
+        public void DrawTris(Vector3[] polygon, Matrix matrix, Color color)
         {
-            // if we don't have any vertices, then we can exit early
-            if (m_CurrentIndex == 0)
+            if (polygon == null)
                 return;
 
+            Vector4 data = color.ToVector4();
+
+            int count = polygon.Length / 3;
+            for (int i = 0; i < count; i++)
+            {
+                if (m_WorldTris.Count >= c_MaxPrimitives)
+                    throw new Exception("Raster graphics count has exceeded limit.");
+
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 1], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 2], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Count++;
+            }
+        }
+
+        public void Render(Matrix projection, Matrix view, Matrix world, Texture2D texture)
+        {
             m_Graphics.BlendState = BlendState.AlphaBlend;
             m_Graphics.DepthStencilState = DepthStencilState.Default;
             m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
@@ -125,38 +138,18 @@ namespace Ypsilon.Core.Graphics
 
             m_Effect.CurrentTechnique.Passes[0].Apply();
 
-            m_Graphics.Textures[0] = m_Texture;
-            m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
+            m_Graphics.Textures[0] = texture;
 
-            m_CurrentIndex = 0;
-            m_LineCount = 0;
-        }
-
-        public void Render_ViewportSpace()
-        {
-            // if we don't have any vertices, then we can exit early
-            if (m_CurrentIndex == 0)
-                return;
-
-            m_Graphics.BlendState = BlendState.AlphaBlend;
-            m_Graphics.DepthStencilState = DepthStencilState.Default;
-            m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
-            m_Graphics.RasterizerState = RasterizerState.CullNone;
-
-            Matrix view = Matrix.CreateLookAt(new Vector3(0, 0, 100), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-
-            m_Effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.ProjectionMatrixScreen);
-            m_Effect.Parameters["ViewMatrix"].SetValue(view);
-            m_Effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
-            m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
-
-            m_Effect.CurrentTechnique.Passes[0].Apply();
-
-            m_Graphics.Textures[0] = m_Texture;
-            m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldVertices, 0, m_CurrentIndex, m_Indices, 0, m_LineCount);
-
-            m_CurrentIndex = 0;
-            m_LineCount = 0;
+            if (m_WorldLines.Count > 0)
+            {
+                m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldLines.Vertices, 0, m_WorldLines.Index, m_LineIndices, 0, m_WorldLines.Count);
+                m_WorldLines.Reset();
+            }
+            if (m_WorldTris.Count > 0)
+            {
+                m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.TriangleList, m_WorldTris.Vertices, 0, m_WorldTris.Index, m_TriIndices, 0, m_WorldTris.Count);
+                m_WorldTris.Reset();
+            }
         }
     }
 }
