@@ -203,3 +203,7 @@
   * Eliminated stack offset, post-inc, and pre-dec addressing modes!
   * Processor can now LOD all special registers in user mode, but cannot write
     to many...
+0.7A    1/15/16
+  * Assigned RTS instruction to opcode 0xB4.
+  * Created RTS bit pattern (has 'far' return bit).
+  * Described processor function during far jump, jsr, and rts.f

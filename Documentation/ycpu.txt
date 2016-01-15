@@ -1,5 +1,5 @@
 ﻿YCPU Specification
-Version 0.7
+Version 0.7A
 
 ### Table of Contents ##########################################################
 
@@ -575,8 +575,9 @@ banks are zero indexed) that extends from $C000 to $FFFF.
 Following the operation, the PC will be set to $F006, and the fourth MMU bank
 will contain Bank index $0E from Device $01.
 
-Note 1: far jumps will clear all flags in the upper word for the MMU cache entry
-        containing that bank.
+Note 1: With respect to MMU cache entry flags (bits 12-15), far jumps will copy
+        the flags from the bank containing the far jump instruction to the
+        bank containing the destination address.
 Note 2: far jumps are only accessible from Supervisor mode. If the processor
         attempts to execute a far jump while in user mode, the processor will
         raise an 'UnprivOpcode' exception. Thus, these instructions could still
@@ -708,7 +709,7 @@ changing might be used in all banks).
     
 ### 3. Instructions ############################################################
 
-The YCPU's instruction set is comprised of 58 unique instructions (although an
+The YCPU's instruction set is comprised of 59 unique instructions (although an
 assembler may define other instructions as 'macros' - for example, a one-cycle
 NOP instruction could be defined as 'LOD R0, R0').
 
@@ -760,13 +761,13 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
-1011 0100   ---                 ---             UNDEFINED                     -
+1011 0100   RTS                 RTS             Return from subroutine       2/8
 1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
 1011 011x   SET                 SEI             Set register to value         1
 1011 1000   INC/ADI             IMM             Inc / Add immediate           1
 1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
-1011 1010   JMP         /       JMI             Jump                          2 
-1011 1011   JSR         /       JMI             Jump to Subroutine            3 
+1011 1010   JMP         /       JMI             Jump                          2
+1011 1011   JSR         /       JMI             Jump to Subroutine            4
 1011 1100   HWQ         X       HWI             Hardware Bus Query            4
 1011 1101   SLP         X       ---             Sleep until Interrupt         1
 1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
@@ -922,7 +923,17 @@ JMI Bit Pattern
                 JMP.F   R0      ; PC=R0 @ R1
                 JMP.F   R4      ; PC=R4 @ R5
                 JMP.F   R7      ; PC=R7 @ R0
-
+        Note 3: Far jumps double the cycles taken to execute the instruction:
+                Instruction         Cycles
+                JMP     A           2
+                JMP.F   A           4
+                JSR     A           4
+                JSR.F   A           8    
+                JMP     $1234       2+1m
+                JSR     $1234       4+1m
+                JMP.F   $1234:1234  4+2m
+                JSR     $1234:1234  8+2m
+                
                 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
@@ -935,6 +946,13 @@ MMU Bit Pattern
             $3 = MMS
         r = Ra
         R = Rv
+        
+
+RTS Bit Pattern
+    FEDC BA98 7654 3210
+    .... ...F OOOO OOOO
+        O = Opcode
+        F = Far return
 
 
 SEI Bit Pattern
@@ -1374,20 +1392,46 @@ See 2.D.4. for a description of this opcode's function.
 === 3.H. Jump & Call Instructions ==============================================
 
 JMP         Unconditional Jump to new address.
-    1. PC is set to the value of M.
-    2. Execution continues.
-
+    If jump is 'near' (far bit clear):
+        1. PC is set to the value of M.
+        2. Execution continues.
+    If jump is 'far' (far bit set):
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
+        2. Bank index (0-3) is taken from bits 14-15 of M0.
+        3. Bits 12-15 of M1 are copied from bits 12-15 of the MMU word
+           describing the bank containing the current executing PC address.
+        4. MMU word at Bank index is set to M1.
+        5. PC is set to the value of M0.
+        6. Execution continues.
 
 JSR         Unconditional Jump, saving return address.
-    1. PC is pushed to the stack. [PC is the address of the NEXT operation]
-    2. PC is set to the value of M.
-    3. Execution continues.
-
+    If jump is 'near' (far bit clear):
+        1. PC is pushed to the stack. [PC is the address of the NEXT operation]
+        2. PC is set to the value of M.
+        3. Execution continues.
+    If jump is 'far' (far bit set):
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
+        2. Bank index (0-3) is taken from bits 14-15 of M0.
+        3. MMU word at Bank index is pushed to stack.
+        4. PC is pushed to the stack. [PC is the address of the NEXT operation]
+        5. Bits 12-15 of M1 are copied from bits 12-15 of the MMU word
+           describing the bank containing the current executing PC address.
+        6. MMU word at Bank index is set to M1.
+        7. PC is set to the value of M0.
+        8. Execution continues.
 
 RTS         Return from Subroutine
-NOTE: Assembler macro for 'POP PC'; no opcode is assigned to this instruction.
-    1. M is popped from the stack. PC is set to M.
-    2. Execution continues.
+    If return is 'near' (far bit clear):
+        1. M is popped from the stack. PC is set to M.
+        2. Execution continues.
+    If return is 'far' (far bit set):
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
+        2. M0 is popped from the stack.
+        3. Bank index (0-3) is taken from bits 14-15 of M0.
+        4. PC is set to M0.
+        5. M1 is popped from the stack.
+        6. M1 is set to MMU word at Bank index.
+        7. Execution continues.
     
     
 === 3.I. Stack Instructions ====================================================
