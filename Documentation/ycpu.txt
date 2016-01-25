@@ -581,9 +581,10 @@ Note 1: With respect to MMU cache entry flags (bits 12-15), far jumps will copy
 Note 2: far jumps are only accessible from Supervisor mode. If the processor
         attempts to execute a far jump while in user mode, the processor will
         raise an 'UnprivOpcode' exception. Thus, these instructions could still
-        be used while in User mode; the processor interrupt would have to 'trap'
-        these instructions. Alternatively, software running in User mode could
-        use a SWI instruction for the same purpose.
+        be used while in User mode; the processor interrupt would be used to
+        'trap' these instructions. Alternatively, software running in User mode
+        could use a SWI instruction for the same purpose, if the Supervisor mode
+        program was designed to interpret this function.
 Note 3: when the MMU is disabled, a far jump will still set the lower word for 
         the MMU cache entry for the specified bank, but (because the MMU is
         disabled) the address space will remain unchanged.
@@ -900,7 +901,7 @@ JMI Bit Pattern
     0011 rrrF               Indirect Offset     JMP [R,$1234]           +2m
     1iii rrrF               Indirect Indexed    JMP [R,i]               +1m
 
-        Note 1: When the 'F' bit is clear, the jump is 'short', and the PC will
+        Note 1: When the 'F' bit is clear, the jump is 'near', and the PC will
                 be set to the value implied by the addressing mode, within the 
                 currently loaded 16-bit logical memory space.
                 When the 'F' bit is set, the jump is 'far', and will not only
@@ -1414,7 +1415,7 @@ JSR         Unconditional Jump, saving return address.
         2. Bank index (0-3) is taken from bits 14-15 of M0.
         3. MMU word at Bank index is pushed to stack.
         4. PC is pushed to the stack. [PC is the address of the NEXT operation]
-        5. Bits 12-15 of M1 are copied from bits 12-15 of the MMU word
+        5. Bits 14-15 of M1 are copied from bits 14-15 of the MMU word
            describing the bank containing the current executing PC address.
         6. MMU word at Bank index is set to M1.
         7. PC is set to the value of M0.
