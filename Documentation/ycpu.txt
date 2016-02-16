@@ -1,4 +1,4 @@
-﻿YCPU Specification
+YCPU Specification
 Version 0.7A
 
 ### Table of Contents ##########################################################
@@ -57,10 +57,9 @@ The YCPU is a 16-bit processor. The processor includes features intended to ease
 the development of software, including a comprehensive instruction set, eight
 general purpose registers that can be used as data or address registers and are,
 with a few small exceptions, completely orthogonal; a MMU that allows
-read/write/execute protection and bank switching of 4 16 kilo-byte banks within
-the 16-bit logical address space, a real time clock, a hardware bus that
-supports up to 15 devices, and Supervisor/User modes with different privileges
-and stack pointers.
+read/write/execute protection and selection of multiple 16-bit logical address
+segments, a real time clock, a hardware bus that supports up to 15 devices, and
+Supervisor/User modes with different privileges and stack pointers.
 
 
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
@@ -123,10 +122,9 @@ is available by querying 'Hardware Device 0' on the Hardware Bus.
 
 --- 2.A.1. GENERAL PURPOSE REGISTERS -------------------------------------------
 
-The processor has 8 general purpose 16-bit registers, which can be referenced as
-R0~R7 or by alternate names A, B, C, I, J, X, Y, and Z. These registers are
-used as both data and address registers, are completely interchangeable
-(orthogonal), and are directly referenced and modified by most instructions.
+The processor has 8 general purpose 16-bit registers. These registers are used
+as both data and address registers, are completely interchangeable (orthogonal),
+and are directly referenced and modified by most instructions.
 
 There are a few exceptions to general purpose register interchangeability.
 
@@ -136,7 +134,10 @@ There are a few exceptions to general purpose register interchangeability.
     contain the low 16-bits after the instruction completes.
     
 *   When executing a far jump with register addressing (JMP.F R0), the far 
-    address word is taken from the next register. See "JMI Bit Pattern", Note 2.
+    address word is taken from the next register. See "JMI Bit Pattern", Note 2,
+    supra.
+
+*   Only registers R4 - R7 are allowed as index registers.
     
 
 --- 2.A.2. PROCESSOR STATUS REGISTERS ------------------------------------------
@@ -423,9 +424,9 @@ Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
 Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
-Indirect Indexed    [Rx,Rx]     Mem[R+R]
+Indirect Indexed    [Rx,Rx]     Mem[R+R] At least one of these registers must be R4-R7.
 
---- 2.E.1. BIT WIDTH OF INSTRCTIONS --------------------------------------------
+--- 2.E.1. BIT WIDTH OF INSTRUCTIONS -------------------------------------------
 
 ALU instructions are by default 16 bits wide. Thus, all LOD instructions take
 16 bits from memory, and ADD instructions operate on all 16 bits of memory.
@@ -451,70 +452,78 @@ which, when enabled, implements bankable memory and thus a limited form of
 virtual address translation.
 
 
---- 2.F.1. THE MMU CACHE -------------------------------------------------------
+--- 2.F.1. THE MMU CACHE ------------------------------------------------------- SEGMENTS
 
-The MMU has 8 16-bit words of internal cache. Each word describes the physical
-address that is mapped to the logical addresses within the 16-kb address space
-of a single MMU bank. Four of these 16-bit words describe the configuration of
-the four banks of memory in supervisor mode, and the other four describe the
-configuration of the four banks of memory in user mode. 
+The processor’s Memory Management Unit allows access to segmented memory. There
+are four segments available for access: the code segment (CS), data segment and
+extra data segment (DS and ES), and the stack segment (SS). Each segment is
+described by two 16-bit registers as follows:
 
-The format of a MMU cache word is as follows:
+    FEDC BA98 7654 3210     FEDC BA98 7654 3210
+    ssss ssss SWPA dddd     bbbb bbbb bbbb bbbb
 
-    FEDC BA98 7654 3210
-    SWPA DDDD bbbb bbbb
-    
     S - Supervisor only flag:
-        0:  User mode and Supervisor mode may access this bank.
-        1:  Supervisor only. User mode accesses to this bank will fail and
-            cause a bank fault.
+        0:  User mode and Supervisor mode may access this segment.
+        1:  Supervisor only. User mode accesses to this segment will fail and
+            cause a segment fault.
     W - Write protection flag:
-        0:  Write operations to this bank will succeed.
-        1:  Write-protected. Writing to this bank will fail and raise a bank
-            fault interrupt.
+        0:  Write operations to this segment will succeed.
+        1:  Write-protected. Writing to this segment will fail and cause a
+            segment fault interrupt.
     P - Not present flag:
-        If this bit is set, any access to this bank will raise a bank fault.
+        If this bit is set, access to this segment will cause a segment fault.
     A - Accessed flag:
-        This bit is set every time this bank is written to.
-    D - These bits determine the device that the bank of memory if mapped from.
-    b - These bits determine the bank of memory that is mapped to this bank of
-        virtual address space (note that the YCPU's ROM is indicated by setting
-        the high 'b' bit for device 0).
+        This bit is set every time this segment is written to.
+    d - These bits determine the device that the bank of memory if mapped from.
+    b - These bits determine the base address of the memory that is mapped to
+        this segment within virtual address space (note that the YCPU's ROM
+        is indicated by setting the high 'b' bit for device 0).
+        The base address is left shifted by 8 for a range of 0 - 2^24-256.
+    s - These bits determine the size of the segment. This value is left shifted
+        by 8 and incremented by 256 for a range of 256 - 2^16.
 
---- 2.F.2. ADDRESS SPACE WHEN THE MMU IS DISABLED ------------------------------
+--- 2.F.2. ADDRESS SPACE WHEN THE MMU IS DISABLED ------------------------------ SEGMENTS
 
-When the 'M' status bit is in PC clear, the MMU is disabled, and the processor's
+When the 'M' status bit is in PC clear, the MMU is disabled, and the processor
 address space is mapped as follows:
-    $0000-$0FFF : Internal ROM Bank $00
-    $4000-$7FFF : Internal RAM Bank $01
-    $8000-$BFFF : Internal RAM Bank $02
-    $C000-$FFFF : Internal RAM Bank $03
+    
+    CS: Device 0 @ $0008 0000
+    DS: Device 0 @ $0000 0000
+    ES: Device 0 @ $0000 0000
+    SS: Device 0 @ $0000 0000
 
-The equivalent MMU register values would be as follows:
+The equivalent MMU segment register values would be as follows:
+              
+    CS: $0000 $8000             ; bank hi bit for device zero selects ROM banks.
+    DS, ES, SS: $0000 $0000
 
-    $00 : $0080                 ; bank hi bit for device zero selects ROM banks.
-    $01 : $0001
-    $02 : $0002
-    $03 : $0003
-
---- 2.F.3. ADDRESS SPACE WHEN THE MMU IS ENABLED -------------------------------
+--- 2.F.3. ADDRESS SPACE WHEN THE MMU IS ENABLED ------------------------------- SEGMENTS
 
 While the 'M' status bit in PC is set, the MMU is enabled, and will translate
-memory references to physical addresses. It does so by dividing the processor's
-virtual address space into 4 banks of 16 kilo-bytes each. The high two bits of
-the virtual address select the bank of memory that is accessed, and the low
-fourteen bits of the virtual address select a byte of memory within that bank.
+memory references to physical addresses. It does so by adding the segment base
+address to the address of the specified reference. The translation is as follows:
+
+Virtual address      $----1234
+Segment base address $-D8765--
+Physical address:    $0D567734
+
+The segment used for a given memory address is determined by the instruction.
+All operands and immediate values are taken from the Code Segment. All stack
+operations (push, pop) are taken from the Stack Segment. All other instructions
+can use either the Data Segment or the Extra data Segment.
 
 Note that there are different MMU caches for both user and supervisor mode. The
-supervisor can set both caches, while the user mode can set neither. 
+supervisor can set both caches, while the user mode can set neither.
 
         
 --- 2.F.4. ADDRESS TRANSLATION -------------------------------------------------
 
-The MMU has access to 26 bits of physical address space. A physical address is:
+>>>>> REVISION
+
+The MMU has access to 28 bits of physical address space. A physical address is:
 
         FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        .... ..DD DDbb bbbb     bbaa aaaa aaaa aaaa
+        .... DDDD bbbb bbbb     cccc cccc aaaa aaaa
 
 'a' is the 14-bit address of a byte within that bank.
 'b' is the 8-bit index of the device bank mapped to that 16kb bank.
@@ -781,25 +790,24 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 
 ALU Bit Pattern
     FEDC BA98 7654 3210                             
-    aaas iiie oooo orrr
-        a = Addressing Mode
-        b = Base register. See Note 1, below.
-        s = Segment select. See Note 2, below.
-        i = Index register (R0-R7)
-        e = 8-bit Mode. See Note 3, below.
-        o = Opcode
-        r = Destination/Source Register
+    sAAA rrrE OOOO ORRR
+        R = Destination/Source Register
+        O = Opcode
+        A = Addressing Mode
+        r = Second Operand Register.
+        E = 8-bit Mode. See Note 1, below.
+        s = Extra Data Segment select. See Note 2, below.
+        i = Index Register. See Note 3, below.
     
-    aaas rrre oooo orrr     Addressing Mode     Example Syntax      Cycles  Note
-    0000 000e               Immediate           LOD R0, $1234       +1m     
-    000s 001e               Absolute            LOD R0, [$1234]     +2m     
-    001s rrre               Register            LOD R0, R1                  
-    010s rrre               Indirect            LOD R0, [R1]        +1m     
-    011s rrre               Indirect Offset     LOD R0, [R1,$1234]  +2m
-    011s rrre               Indirect Offset     LOD R0, [R1,$1234]  +2m
-    s1is rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
+    sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
+    s000 000e               Immediate           LOD R0, $1234       +1m     
+    s000 001e               Absolute            LOD R0, [$1234]     +2m     
+    s001 rrre               Register            LOD R0, r1                  
+    s010 rrre               Indirect            LOD R0, [r1]        +1m     
+    s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
+    s1ii rrre               Indirect Indexed    LOD R0, [r1,[i2]    +1m
     
-        Note 1: When the 'E' bit is set, the ALU processes values in its 8-bit
+        Note 1: When the ‘e’ bit is set, the ALU processes values in its 8-bit
                 mode. To use 8-bit mode for ALU instructions, follow the normal
                 opcode with a ".8" flag. Examples follow:
                 
@@ -819,6 +827,17 @@ ALU Bit Pattern
             4.  Only the low 8 bits of an immediate value are loaded, and the
                 following byte is skipped (the entire 16 bits of offsets and
                 absolute values are still used).
+
+        Note 2: When the ’s’ bit is clear, all accesses to memory are within the
+                Data Segment (DS). When ’s’ is set, all access are within the Extra
+                Data Segment (ES).
+
+        Note 3: There are two index register bits, which select register R4-R7:
+                ii     register
+                00     R4
+                01     R5
+                10     R6
+                11     R7
 
 BTI Bit Pattern
     FEDC BA98 7654 3210
