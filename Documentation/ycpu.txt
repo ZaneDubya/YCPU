@@ -100,7 +100,7 @@ as fast as a 16-bit load.
 
 --- 2.4. ON-CHIP HARDWARE ------------------------------------------------------
 
-All models of the YCPU are guaranteed to have 4 x 16kb of internal RAM on board.
+All models of the YCPU are guaranteed to have 64kb of internal RAM on board.
 The YCPU will also have a variable amount of ROM on chip, depending on the
 model of the YCPU and the needs of the processor distributor. Generally, this
 ROM will consist of a basic input/output system that will bootstrap the system
@@ -757,7 +757,8 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1001   BTX                 BTI             Test a bit and change it      2
 1010 1010   BTC                 BTI             Test a bit and clear it       2
 1010 1011   BTS                 BTI             Test a bit and set it         2    
-1010 110x   ---                 ---             UNDEFINED                     -
+1010 1100   XSR                 XSR             Processor register read/write 1
+1010 1101   ---                 ---             UNDEFINED                     -
 1010 1110   SEF                 FLG             Set flag bit                  1
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
@@ -780,22 +781,23 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 
 ALU Bit Pattern
     FEDC BA98 7654 3210                             
-    AAAA rrrE OOOO ORRR
-        R = Destination/Source Register
-        O = Opcode
-        A = Addressing Mode
-        r = Second Operand Register.
-        i = Third Operard Register.
-        E = 8-bit Mode. See Note 1, below.
+    aaas iiie oooo orrr
+        a = Addressing Mode
+        b = Base register. See Note 1, below.
+        s = Segment select. See Note 2, below.
+        i = Index register (R0-R7)
+        e = 8-bit Mode. See Note 3, below.
+        o = Opcode
+        r = Destination/Source Register
     
-    AAAA rrrE OOOO ORRR     Addressing Mode     Example Syntax      Cycles  Note
-    0000 000E               Immediate           LOD R0, $1234       +1m     
-    0000 001E               Absolute            LOD R0, [$1234]     +2m     
-    0001 rrrE               Register            LOD R0, R1                  
-    0010 rrrE               Indirect            LOD R0, [R1]        +1m     
-    0011 rrrE               Indirect Offset     LOD R0, [R1,$1234]  +2m
-    0100 ppp.               Processor Register  LOD R0, SP                  2
-    1iii rrrE               Indirect Indexed    LOD R0, [r1,i2]     +1m
+    aaas rrre oooo orrr     Addressing Mode     Example Syntax      Cycles  Note
+    0000 000e               Immediate           LOD R0, $1234       +1m     
+    000s 001e               Absolute            LOD R0, [$1234]     +2m     
+    001s rrre               Register            LOD R0, R1                  
+    010s rrre               Indirect            LOD R0, [R1]        +1m     
+    011s rrre               Indirect Offset     LOD R0, [R1,$1234]  +2m
+    011s rrre               Indirect Offset     LOD R0, [R1,$1234]  +2m
+    s1is rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
     
         Note 1: When the 'E' bit is set, the ALU processes values in its 8-bit
                 mode. To use 8-bit mode for ALU instructions, follow the normal
@@ -817,18 +819,6 @@ ALU Bit Pattern
             4.  Only the low 8 bits of an immediate value are loaded, and the
                 following byte is skipped (the entire 16 bits of offsets and
                 absolute values are still used).
-                
-        Note 2: The ALU bit pattern can take a processor register as an operand.
-                Processor register indexes are as follows:
-                Index   Desc.                                       User write?
-                $00     FL register                                 Y
-                $01     PC register                                 Y
-                $02     PS register                                 N
-                $03     P2 register                                 N
-                $04     II register                                 N
-                $05     IA register                                 N
-                $06     USP                                         Y
-                $07     current Stack Pointer (USP / SSP)           Y*
 
 BTI Bit Pattern
     FEDC BA98 7654 3210
@@ -1003,6 +993,31 @@ STK Bit Pattern < 2 / 2 >
         a = push/pop IA register                                Y
         u = push/pop USP                                        N
         s = push/pop current Stack Pointer (USP / SSP)          N
+        
+        
+XSR Bit Pattern
+    FEDC BA98 7654 3210                        
+    .rrr wxxx OOOO OOOO
+        O = opcode
+        r = register index to read to or write from.
+        w = read/write select:  0 = read from proc register to gp register
+                                1 = read from gp register to proc register
+        x = Index of processor register. See note 2, below.
+        
+        Note 1: It is always possible to read processor registers to general
+                purpose registers, regardless of supervisor/user mode. However,
+                user mode is limited in which processors it can write to, as
+                detailed in Note 2.
+        Note 2: The processor register operand indexes are as follows:
+                Index   Desc.                                       User write?
+                $00     FL register                                 Y
+                $01     PC register                                 Y
+                $02     PS register                                 N
+                $03     P2 register                                 N
+                $04     II register                                 N
+                $05     IA register                                 N
+                $06     USP                                         Y
+                $07     current Stack Pointer (USP / SSP)           Y
 
         
 === 3.B. ALU Instructions ======================================================
