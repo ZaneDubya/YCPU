@@ -31,17 +31,29 @@ Version 0.7A
 
 ### 1. Introduction ############################################################
 
-The YCPU Specification describes a processor with a comprehensive instruction
-set and features that make a processor built to the specification powerful yet
-easy to wrote software for. The specification is released to the public domain,
-and can be used in derivative works without permission.
+The YCPU Specification describes a processor that is first and foremost easy to
+write software for, but without compromising on features or instruction set. It
+takes the best of the features of the processors from the late 70’s/early 80’s:
+
+  * eight orthogonal 16-bit data/address registers;
+  * user/supervisor modes with different privileges and stack pointers;
+  * memory segmentation with resizable segments for code, stack, interrupts,
+    and two segments for data;
+  * memory protection for read/write/execute/supervisor-only attributes;
+  * 28 bits of address space for memory access;
+  * real time clock with a interrupt timer;
+  * hardware bus that supports up to 15 devices with 24 bits of address space
+    each.
+
+The specification is released to the public domain, and can be used in
+derivative works without permission or attribution.
 
 
 === 1.A. Public Domain Dedication ==============================================
 
 This document is dedicated to the public domain under the terms of the Creative
 Commons Zero (CC0) waiver. All rights have been waived with regard to
-copyright law, including all related and neighbouring rights, to the extent
+copyright law, including all related and neighboring rights, to the extent
 allowed by law.
 
 You can copy, modify, and distribute this document, and use it to create
@@ -53,20 +65,39 @@ http://creativecommons.org/about/cc0
 
 ### 2. Hardware Information ####################################################
 
-The YCPU is a 16-bit processor. The processor includes features intended to ease
-the development of software, including a comprehensive instruction set, eight
-general purpose registers that can be used as data or address registers and are,
-with a few small exceptions, completely orthogonal; a MMU that allows
-read/write/execute protection and selection of multiple 16-bit logical address
-segments, a real time clock, a hardware bus that supports up to 15 devices, and
-Supervisor/User modes with different privileges and stack pointers.
+The YCPU is a 16-bit processor designed to be powerful without being complex. A
+hobbyist can begin programming software knowing only the syntax of their
+assembler of choice and the way the RESET interrupt functions. Experts and
+developers of operating systems will enjoy the processor’s many features and the
+easy transfer between supervisor, user, and interrupt modes. 
 
 
 --- 2.1. MEMORY MODEL ----------------------------------------------------------
 
-Internally, all registers and cache words are 16-bit, and all logical addresses
-are likewise 16-bit. Thus instructions can only address 64 kilo-bytes of memory
-at any time. All multi-word values are stored in little-endian format.
+The YCPU’s eight data/address registers are each 16-bit. This means that all
+data handled by a single register can only address values between 0-65,536 when
+unsigned, or -32,768 to 32,767 when signed. The processor does have several
+operations where two 16-bit operands combine to create a 32-bit results (for
+example, multiplication). When this occurs, the ‘high’ 16-bits of the result
+are stored in R0. The programmer has the choice to also store the low 16-bits
+of the result in R0, which would overwrite the high bits, or choose a different
+register for the destination of the low bits.
+
+With regards to addresses, the 16-bit limit means that all logical addresses
+can only address 64 kilobytes of memory at any time. However, using a memory
+management unit (MMU), the processor can access multiple 64 kilobyte areas of
+the processor at once. These areas are called ‘segments’. For example, the
+processor might read code from one segment while copying data from a second 
+segment to a third segment, while the stack operated on a fourth segment.
+
+Where segments are located in memory memory, and how large they are, is
+described by the processor’s segment registers. There are nine of these: four
+describing the code, data, extra data, and stack segments for the processor’s
+supervisor mode, and an identical four for the processor’s user mode. In
+addition, there is one segment that describes the segment used when the 
+processor is responding to an interrupt. The segment registers are 32-bits in
+size.
+
 
 --- 2.2. INSTRUCTION WIDTH: 16-BIT ---------------------------------------------
 
@@ -82,11 +113,11 @@ at the address, and the upper 8-bits of the destination register will be
 cleared.
 
 For all other instructions there is no support for 8-bit maths. All other
-instructions operate on 16-bit vales at all times (with the exception of MUL/MLI
+instructions operate on 16-bit vales at all times (with the exception of MUL/MLI, 
 which has a 32-bit result with the upper 16 bits of the result stored in R0).
 
 
---- 2.3. MEMORY ACCESS ---------------------------------------------------------
+--- 2.3. MEMORY ACCESS TO UNALIGNED ADDRESSES ----------------------------------
 
 For 16-bit memory access, access is quickest when aligned to 2-byte boundaries,
 and slower when accesses are unaligned. Thus, memory accesses from $0000 and
@@ -97,27 +128,44 @@ For 8-bit access, the YCPU loads only one 8-bit value. A single 8-bit load is
 as fast as a 16-bit load.
 
 
---- 2.4. ON-CHIP HARDWARE ------------------------------------------------------
+--- 2.4. REQUIRED HARDWARE ------------------------------------------------------
 
-All models of the YCPU are guaranteed to have 64kb of internal RAM on board.
-The YCPU will also have a variable amount of ROM on chip, depending on the
-model of the YCPU and the needs of the processor distributor. Generally, this
-ROM will consist of a basic input/output system that will bootstrap the system
-and prepare it to load other software. The YCPU can determine how much RAM/ROM
-is available by querying 'Hardware Device 0' on the Hardware Bus.
+When the processor first powers on and each time it is RESET, it returns to a
+known state described in 2.G. The processor then executes instructions located
+in an on-board read only memory (ROM) chip. To access this chip, the processor
+relies on a hardware bus (YBUS). Thus, to execute any instructions the processor
+must be connected to a bus and a ROM chip. Of course, any useful work will likely
+require random access memory (RAM) as well, but RAM is not required to use the
+processor. Note that the amount of RAM and ROM available to the processor is not 
+known to the processor. However, a programmer can query how much RAM/ROM is
+available by querying 'Hardware Device 0' on the bus. For more information about
+this query operation, please refer to 2.C.1.
 
 
 === 2.A. Registers =============================================================
 
-    R0-R7: General Purpose Registers (also commonly named A,B,C,I,J,X,Y, and Z)
+    The processor has access to the following 16 16-bit registers:
+
+    R0-R7: General Purpose Registers (commonly named A,B,C,I,J,X,Y, and Z)
     FL: Flags register
-    IA: Interrupt Address
-    II: IRQ Index
+    IA: Interrupt Table Address
+    II: Interrupt Device Address
     PC: Program Counter
     PS: Processor Status
-    P2: Processor Bank Fault Address
+    P2: Processor Fault Address
     SP: Stack Pointer. The YCPU has separate stack pointers for user mode (USP)
         and supervisor mode (SSP). See 2.A.2.
+
+    The processor has access to 9 32-bit segment registers. Four each of CS, DS,
+    ES, and SS for the Supervisor and User modes, respectively, and one interrupt
+    segment (IS):
+
+    CS: Code Segment. One for Supervisor (CSS) and one for user mode (CSU).
+    DS: Data segment. One for Supervisor (CSS) and one for user mode (CSU).
+    ES: Extra Data segment. One for Supervisor (ESS) and one for user mode (ESU).
+    SS: Stack segment. One for Supervisor (SSS) and one for user mode (SSU).
+    
+    IS: Interrupt segment. Used in place of CS when I and M are set.
 
 
 --- 2.A.1. GENERAL PURPOSE REGISTERS -------------------------------------------
@@ -132,13 +180,16 @@ There are a few exceptions to general purpose register interchangeability.
     and MLI (signed multiply) operations, which have 32-bit results. If R0 is
     also the src/dest register, then the high 16-bits are lost, and R0 will
     contain the low 16-bits after the instruction completes.
-    
-*   When executing a far jump with register addressing (JMP.F R0), the far 
-    address word is taken from the next register. See "JMI Bit Pattern", Note 2,
-    supra.
 
-*   Only registers R4 - R7 are allowed as index registers.
+*   Only registers R4 - R7 can be used as index registers for indirect indexed 
+    memory addressing. Thus, when executing an instruction with this addressing
+    mode, at least one of the registers which are combined to create the memory
+    address must be R4, R5, R6, or R7:
     
+        Allowed:     LOD R1, [R0, R4] ; one register is R4-R7.
+        Allowed:     LOD R1, [R4, R5] ; both registers are R4-R7.
+        Disallowed:  LOD R1, [R0, R2] ; neither register is R4-R7.
+
 
 --- 2.A.2. PROCESSOR STATUS REGISTERS ------------------------------------------
 
@@ -153,7 +204,7 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         NZCV .... .... ....
             [N]egative, [Z]ero, [C]arry, o[V]erflow
          
-    IA: The Interrupt Address. This is the base address of the interrupt address
+    IA: Interrupt Table Address. This is the base address of the interrupt address
         table, comprised of 16 x 16-bit words. IA is initialized to $0000.
         
     II: The IRQ Index. This is the bus index of the device that raised the last
@@ -167,15 +218,15 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMI. QUW. .... ....
+        SMIP QUW. .... ....
             [S] -   [S]upervisor Mode enabled
-            [M] -   [M]emory Management hardware enabled
+            [M] -   [M]emory segmenting hardware enabled
             [I] -   Hardware [I]nterrupts enabled.
             [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
-            [U] -   Bank Fault, User Attempt to Access Supervisor-Only Memory
-            [W] -   Bank Fault, Attempt to Write to Read-Only Memory
+            [U] -   User-mode Fault
+            [W] -   Segment Fault.
             
-    P2: Processor Bank Fault Address. Set during bank fault interrupt.
+    P2: Processor Memory Fault Address. Set during segment fault interrupt.
         See 2.D.4. and 2.D.6.
     
     SP: The Stack Pointer is the address of the first full stack space. It is
@@ -200,33 +251,31 @@ bit is clear, the processor is in User mode.
 
 In Supervisor mode, the processor:
     * Can execute privileged opcodes.
-    * Can access Supervisor-only memory banks.
-    * Raises a 'Bank fault' interrupt on attempting to write to read-only
-      memory.
-    * Can set and clear all bits in the process status registers.
-    * Can read and write to all special registers.
+    * Can set and clear all bits in the process status register.
+    * Can read and write to all processor registers.
     * Can directly access the hardware bus.
     * Uses the Supervisor Stack Pointer (SSP) for stack operations.
+    * Uses the Supervisor segment registers.
 
 In User mode, the processor:
     * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
-    * Raises a 'Bank fault' interrupt on attempting to read or write
-      supervisor-only memory, or write to read-only memory.
-    * Cannot write to any special registers, but can read from the same.
+    * Cannot set or clear any bits in the process status register.
+    * Cannot write to any processor registers, but can read from the same.
     * Cannot directly access the hardware bus.
     * Uses the User Stack Pointer (USP) for stack operations.
+    * Users the User segment registers.
 
 
 === 2.C. Hardware Devices ======================================================
 All additional Devices connect to the processor through a modular Hardware Bus.
 This Hardware Bus can host up to 15 Devices. The processor can directly address
-memory banks exposed by the Devices, and can also directly communicate with a
+memory segments exposed by the Devices, and can also directly communicate with a
 Device by executing a Hardware Query instruction. Devices can request the
 processor's attention by raising an interrupt.
 
 Possible hardware Devices can include input (keyboard, mouse, touch), storage
-(disk, hard drive), networking, RAM, ROM, and interfaces for other hardware
-Devices not directly connected to the Hardware Bus.
+(disk, hard drive), networking, additional memory, and interfaces for hardware
+not directly connected to the Hardware Bus.
 
 Device Index 0 on the Hardware Bus refers to the YCPU itself. Software can
 retrieve information about the YCPU by using the Hardware Query instruction to
@@ -237,21 +286,40 @@ only one device or the processor can access memory at once. Thus, while a
 device is reading or writing memory, the processor is stalled.
 
 
---- 2.C.1. INTERACTING WITH HARDWARE --------------------------------------------
+--- 2.C.1. INTERACTING WITH HARDWARE -------------------------------------------
 
 Software interacts with hardware using the HWQ (HardWare Query) instruction.
-This instruction accepts one operand, a 8-bit 'operation index'. Calling HWQ
-operation $00 will query the Bus for the number of devices connected, and
-the YCPU will save this value in R0. The YCPU can also determine what device is
-present in each of the 16 Bus Slots by calling HWQ operation $01 with the index
-of the Bus Slot to check in R0. If no device is present, R0 will be set to
-"ERR_NO_DEVICE" ($0000). If a device is present, the registers of the YCPU will
-be set as follows:
+This instruction includes one immediate 8-bit operation index. The possible
+indexes are as follows:
+
+    HWQ Index  Description
+    $00        Query number of devices connected
+    $01        Query device attached to bus in slot R0
+    $02        Send message to hardware device
+    $03        Get RAM/ROM amounts in R0-R3.
+    $80        Get RTC time
+    $81        Set RTC time
+    $82        Get RTC interrupt interval
+    $83        Set RTC interval
+
+2.C.1.i. HWQ $00
+
+Calling HWQ operation $00 will query the Bus for the number of devices
+connected, and the YCPU will save this value in R0.
+
+2.C.1.ii. HWQ $01
+
+Software can determine what device is present in each of the 16 Bus Slots by
+calling HWQ operation $01 with the index of the Bus Slot to check in R0. If no
+device is present, R0 will be set to "ERR_NO_DEVICE" ($ffff). If a device is
+present, the registers of the YCPU will be set as follows:
 
         R0: Device Type
         R1: Manufacturer ID
         R2: Device ID
         R3: Device Flags
+
+2.C.1.iii. HWQ $02
         
 Software can send messages to a Bus Device by calling HWQ operation $02. This
 will send a two-word message, consisting of the words in R1 and R2, to the
@@ -277,6 +345,15 @@ one of several results will occur:
     acknowledge the message by setting R0 to "MSG_ERROR" ($FFFF). R1 and R2
     will remain unchanged.
 
+2.C.1.iv. HWQ $03
+
+Software can query the YBUS for the total amount of attached RAM and ROM by
+calling HWQ operation $03. After this operation, the total amount of RAM will
+be set in R0 and R1, with the high 16-bits set in R1, and the total amount of
+ROM will be set in R2 and R3, with the high 16-bits set in R3. If no RAM
+exists, both R0 and R1 will be set to “NO_MEMORY” ($FFFF). If no rom exists,
+both R2 and R3 will be set to “NO MEMORY” ($FFFF).
+
 
 === 2.D. Interrupts ============================================================
 An interrupt is a signal which indicates that an event requires immediate
@@ -288,7 +365,7 @@ the SWI opcode, or when the processor encounters an error state.
 
 A device on the CPU's hardware bus may request the CPU's attention by asserting
 an interrupt request (IRQ). While the Q status bit is clear and the I status bit
-is set, the processor checks for IRQs before executing every opcode. If a
+is set, the processor checks for IRQs before executing each opcode. If a
 hardware device is asserting an IRQ when the processor checks, the processor
 will load the bus index of the first device on the bus which is asserting an
 IRQ into the II register, and then raise the 'hardware interrupt' interrupt.
@@ -310,11 +387,11 @@ regardless of the status of the Q status bit
 The I status bit only applies to hardware interrupts, and thus software
 interrupts will be acknowledged by the CPU if the I status bit is clear. 
     
+
 --- 2.D.3. OTHER INTERRUPTS ----------------------------------------------------
 
 The processor can also raise interrupts on its own in response to error
-states. These interrupts are named and described in the Interrupt Vector Table,
-below.
+states. These interrupts are named and described 2.D.6., supra.
 
     
 --- 2.D.4. THE INTERRUPT SEQUENCE ----------------------------------------------
@@ -322,37 +399,44 @@ below.
 When an interrupt is raised, the processor halts the current executing process.
 It then executes the following sequence:
     1.  Save the state of PS to a temporary register.
-    2.  Set the S status bit. The processor is now in Supervisor mode.
-    3.  If this is a hardware interrupt, the Q status bit will be set. This
+    2.  If the processor is in User mode, set the U status bit in PS.
+    3.  Set the S status bit in PS. The processor is now in Supervisor mode.
+    4.  If this is a hardware interrupt, the Q status bit will be set. This
         blocks other hardware interrupts from occurring while the current
-        interrupt is being processed. If this is a BankFault, P2 is set to the
-        address of the memory address that raised the BankFault.
-    4.  Push the saved PS to the Stack.
-    5.  Push PC* to the Stack.
-    6.  Set PC to Mem[II + (InterruptIndex * 2)].
-    7.  Execution continues.  
+        interrupt is being processed.
+    5.  If this is a Segment Fault, P2 is set to the address of the memory 
+        address that raised the Segment Fault.
+    6.  Push the saved PS to the Stack.
+    7.  If the interrupt was caused by an error condition, PC is rewound to
+        the instruction that caused the interrupt. See 2.D.4.i. for a list of 
+        interrupts in which this occurs.
+    8.  Push PC (possibly rewound above) to the Stack.
+    9.  Set PC to Mem[IA + (InterruptIndex * 2)].
+   10.  Execution continues.  
 
-* For the interrupts that are raised by an error condition, the PC is rewound
-  to the instruction that *caused* the the interrupt. Interrupts raised by error
-  conditions are: DivideByZero ($02), FPUError ($03), StackFault ($04),
-  BankFault ($05), UnprivOpcode ($06), and UndefOpcode ($07). For all other
-  interrupts, the PC is unchanged, pointing to the address following the
-  instruction the processor was executing immediately prior to the interrupt.
+2.D.4.i. Interrupts raised by error conditions:
+    For interrupts caused by an error condition, the PC is rewound to the 
+    address of the instruction that caused the interrupt. These interrupts are:
+    DivideByZero ($02), FPUError ($03), StackFault ($04), SegFault ($05),
+    UnprivOpcode ($06), and UndefOpcode ($07). For all other interrupts, the
+    PC is unchanged, pointing to the address following the instruction the
+    processor was executing immediately prior to the interrupt.
 
 
 --- 2.D.5. RETURNING FROM AN INTERRUPT -----------------------------------------
 
 When an interrupt handler ends, it should call RTI, which restores the values of
 PS and PC from the stack. If an interrupt handler modifies a register or changes
-the MMU cache, it should save the state of the registers and/or cache before
-doing so, and restore the same before returning from the interrupt handler.
+the segment registers, it should save the state of the registers and/or cache
+before doing so, and restore the same before returning from the interrupt
+handler.
 
 Note that on RTI, PS bits are restored to the value they had prior to the
 interrupt.
 
 The RTI instruction follows this sequence:
     1.  Pop PC, PS from the Stack.
-        PC bits Q, U, W, and E are cleared.
+        PS bits Q, U, W, and E are cleared.
     2.  Execution Continues.
     
 
@@ -377,11 +461,11 @@ $4  StackFault      Raised when the processor executes a Pull opcode with SP
                     of the Stack.
                     Note that limits to the Stack are not yet included in this
                     Specification.
-$5  BankFault       Raised when the processor attempts to read from or write to 
-                    an address within a Bank that has been protected from these
-                    operations. The UW bits in the PS register will describe the
-                    error, and the P2 register will contain the memory address
-                    that the processor attempted to access.
+$5  SegFault        Raised when the processor attempts to read from or write to 
+                    an address within a Segment that has been protected from 
+                    these operations. The UW bits in the PS register will 
+                    describe the error, and the P2 register will contain the 
+                    memory address that the processor attempted to access.
 $6  UnprivOpcode    Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
 $7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
@@ -398,18 +482,18 @@ $E  DebugQuery      Raised when the processor's DEBUG line is pulled high.
 $F  SWI             Raised by the SWI opcode.
 
 
---- 2.D.6. BANK FAULTS ---------------------------------------------------------
+--- 2.D.6. SEGMENT FAULTS ------------------------------------------------------
 
-When a bank fault is raised, the processor status bits U, W, and E will describe
-the operation that caused the bank fault:
-        U W     Bank Fault Type
-        0 0     Attempted access to bank that is not loaded. (P bit set)
+When a segment fault is raised, the processor status bits U, W, and E will
+describe the operation that caused the segment fault:
+        U W     Segment Fault Type
+        0 0     Attempted access to segment that is not loaded. (P bit set)
         0 1     Attempted supervisor write of write-protected memory.
-        1 0     Attempted user read of supervisor-only memory.
-        1 1     Attempted user write to supervisor-only memory.
+        1 0     RESERVED VALUE. Not currently used, never set.
+        1 1     Attempted user write to write-protected memory.
         
-Note that writes to ROM banks will fail silently unless the MMU is enabled and
-the write-protect bit is set, which will result in a bank fault.
+Note that writes to ROM memory will fail silently unless the MMU is enabled and
+the write-protect bit is set, which will result in a segment fault.
 
 
 === 2.E. Addressing Modes ======================================================
@@ -424,7 +508,8 @@ Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
 Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
-Indirect Indexed    [Rx,Rx]     Mem[R+R] At least one of these registers must be R4-R7.
+Indirect Indexed    [Rx,Rx]     Mem[R+R] At least one of these registers must be
+                                R4, R5, R6, or R7.
 
 --- 2.E.1. BIT WIDTH OF INSTRUCTIONS -------------------------------------------
 
@@ -448,24 +533,31 @@ target is another register, the lower 8 bits of memory are stored, and the high
 Because the processor has a 16-bit logical address space, it can only address
 $10000 (65,536) bytes of linear address space at a time. This limited address
 space is augmented by the processor's integrated memory management unit (MMU)
-which, when enabled, implements bankable memory and thus a limited form of
+which, when enabled, implements segmented memory and thus a limited form of
 virtual address translation.
 
 
---- 2.F.1. THE MMU CACHE ------------------------------------------------------- SEGMENTS
+--- 2.F.1. THE SEGMENT REGISTERS -----------------------------------------------
 
 The processor’s Memory Management Unit allows access to segmented memory. There
-are four segments available for access: the code segment (CS), data segment and
-extra data segment (DS and ES), and the stack segment (SS). Each segment is
-described by two 16-bit registers as follows:
+are four segments available for access during normal program operation (the code
+segment (CS), data segment and extra data segment (DS and ES), and the stack
+segment (SS)) and a fifth segment (the Interrupt Segment (IS)) used as the code
+segment when the processor is in Interrupt mode (‘I’ bit set in PS) and the
+Memory Management Unit is enabled (‘M’ bit set in PS).
 
+Each segment register is 32 bits in size:
+
+    $01                     $00
     FEDC BA98 7654 3210     FEDC BA98 7654 3210
-    ssss ssss SWPA dddd     bbbb bbbb bbbb bbbb
+    DWPA ssss ssss bbbb     bbbb bbbb bbbb bbbb
 
-    S - Supervisor only flag:
-        0:  User mode and Supervisor mode may access this segment.
-        1:  Supervisor only. User mode accesses to this segment will fail and
-            cause a segment fault.
+    D - Hardware device flag:
+        0:  Accesses to this segment will come from main memory.
+        1:  Accesses to this segment will come from the hardware device at 
+            the index equal to the upper four ‘b’ bits (0-15). Where these bits
+            are 0000, the accesses will come from the computer’s onboard ROM 
+            chip.
     W - Write protection flag:
         0:  Write operations to this segment will succeed.
         1:  Write-protected. Writing to this segment will fail and cause a
@@ -474,101 +566,97 @@ described by two 16-bit registers as follows:
         If this bit is set, access to this segment will cause a segment fault.
     A - Accessed flag:
         This bit is set every time this segment is written to.
-    d - These bits determine the device that the bank of memory if mapped from.
+    s - These bits determine the size of the segment. This value is left shifted
+        by 8 and incremented by 256 for a range of 256 - 2^16.
     b - These bits determine the base address of the memory that is mapped to
         this segment within virtual address space (note that the YCPU's ROM
         is indicated by setting the high 'b' bit for device 0).
         The base address is left shifted by 8 for a range of 0 - 2^24-256.
-    s - These bits determine the size of the segment. This value is left shifted
-        by 8 and incremented by 256 for a range of 256 - 2^16.
-
---- 2.F.2. ADDRESS SPACE WHEN THE MMU IS DISABLED ------------------------------ SEGMENTS
-
-When the 'M' status bit is in PC clear, the MMU is disabled, and the processor
-address space is mapped as follows:
     
-    CS: Device 0 @ $0008 0000
-    DS: Device 0 @ $0000 0000
-    ES: Device 0 @ $0000 0000
-    SS: Device 0 @ $0000 0000
 
-The equivalent MMU segment register values would be as follows:
-              
-    CS: $0000 $8000             ; bank hi bit for device zero selects ROM banks.
-    DS, ES, SS: $0000 $0000
+--- 2.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
 
---- 2.F.3. ADDRESS SPACE WHEN THE MMU IS ENABLED ------------------------------- SEGMENTS
+When the 'M' status bit is in PC clear, the MMU is disabled, and the segment
+registers are not used for memory access. Accesses to memory occur as if the
+segments were set to these values:
+    
+    CS: $8000 0000   ; CS in ROM, base = $00000000, size = $10000
+    DS: $0000 0000   ; DS in RAM, base = $00000000, size = $10000
+    ES: $0000 0000   ; ES in RAM, base = $00000000, size = $10000
+    SS: $0000 0000   ; SS in RAM, base = $00000000, size = $10000
+    IS: $8000 0000   ; IS in ROM, base = $00000000, size = $10000,
+                       interrupt table in ROM @ $00000000
+
+--- 2.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
 While the 'M' status bit in PC is set, the MMU is enabled, and will translate
-memory references to physical addresses. It does so by adding the segment base
-address to the address of the specified reference. The translation is as follows:
+memory references to physical addresses using the contents of the segment
+registers. This is done by adding the segment base address to the address of
+the specified reference. The translation is as follows:
 
-Virtual address      $----1234
-Segment base address $-D8765--
-Physical address:    $0D567734
+If the ‘D’ bit is set, then the YCPU requests device memory space from the YBUS
+from the device with index equal to the upper 4-bits of the ‘d’ bits. If this
+index equals 0, then the memory access is to on-board read only memory.
+    1. The low 16-bit ‘base address’ portion of the segment register is
+       shifted left by 8 (multiplied by 256).
+    2. The logical address of the instruction is added to the base address.
+    3. The combined value is the physical address.
 
-The segment used for a given memory address is determined by the instruction.
-All operands and immediate values are taken from the Code Segment. All stack
-operations (push, pop) are taken from the Stack Segment. All other instructions
-can use either the Data Segment or the Extra data Segment.
+       
+       Logical address      $----1234
+       Segment device index $-D------
+       Segment base address $--8765--
+       Device ‘D’ address:  $--877734
 
-Note that there are different MMU caches for both user and supervisor mode. The
-supervisor can set both caches, while the user mode can set neither.
+If the ‘D’ bit is clear, then the YCPU requests memory space from random
+access memory (RAM) on the YBUS.
+    1. The 20-bit ‘base address’ portion of the segment register is shifted
+       left by 8 (multiplied by 256).
+    2. The logical address of the instruction is added to the base address.
+    3. The combined value is the physical address.
 
-        
---- 2.F.4. ADDRESS TRANSLATION -------------------------------------------------
+       Logical address      $----1234
+       Segment base address $-98765--
+       Memory address:      $-9877734
 
->>>>> REVISION
+The segment used for a given memory address is implied by the opcode of the
+executing instruction. All instructions, operands and immediate values are
+taken from the Code Segment. All stack operations (push, pop) are taken
+from the Stack Segment. All other instructions can use either the Data
+Segment or the Extra data Segment.
 
-The MMU has access to 28 bits of physical address space. A physical address is:
-
-        FEDC BA98 7654 3210     FEDC BA98 7654 3210
-        .... DDDD bbbb bbbb     cccc cccc aaaa aaaa
-
-'a' is the 14-bit address of a byte within that bank.
-'b' is the 8-bit index of the device bank mapped to that 16kb bank.
-'D' is the 4-bit hardware bus index that the bank is taken from.
-
-The 8 'b' bits reference a bank of RAM or ROM from a device on the hardware
-bus. The 4 'D' bits are a 8-bit hardware bus index. Because no hardware device
-can have more than 2^8 = 256 banks, each bank can host no more than 4096
-kilo-bytes of memory, and the MMU as a whole can address no more than
-2^(4+8+16-2) bytes = 64 mega-bytes of memory.
-
-Note that when selecting memory banks from processor space (device index 0), the
-high bit of the bank selection index (bit 7 of bank/device select) indicates a
-ROM bank. When this is clear, a RAM bank is selected.
+Note that there are different Segment Registers for user and supervisor mode.
+The supervisor can set both sets of Segment Registers, while the user mode can
+set neither.
 
 
---- 2.F.5. FAR JUMPS -----------------------------------------------------------
+--- 2.F.4. FAR JUMPS -----------------------------------------------------------
 
-The YCPU is internally 16-bit, and can address only 16-bits of logical address
-space. When the MMU is active, this memory is comprised of four 'banks', each of
-16k bytes. Which banks of memory are placed in memory is determined by the
-MMU. As noted in 2.F.3., supra, software may manipulate the MMU cache using the
-MML/MMR/MMW/MMS instructions to load and save values from the MMU cache; this
-will change which banks are loaded within the logical address space.
+The YCPU is internally 16-bit, and each segment can only address only 16-bits of 
+logical address space. This includes the executing instructions in the code
+segment. As noted infra, software may manipulate the segment registers using the
+LSG (Load Segment Register) and SSG (Store Segment Register). This will change
+the segments that are currently active in memory.
 
-Running software may also replace a bank in memory using a 'far jump'. Where a
-normal jump instruction sets only the PC register, a far jump will also switch a
-new bank of memory into the address space containing the new PC value. The
-addressing mode of the instruction will indicate where the processor will find
-the word describing which Device and which Bank will occupy the address space
-containing the new address of the PC.
+Running software may also replace the code segment register in memory using a
+'far jump'. Where a normal jump instruction sets only the PC register, a far
+jump will also write a new 32-bit value to the code segment register, which 
+will now describe a new code segment containing the address the new PC value
+will reference.
 
 An example of a far jump with immediate addressing will help illustrate how this
 works. Note that 'immediate addressing' indicates that the processor uses the
 next word following the current instruction as the new value of the new PC. With
-a far jump, the processor will use a second word immediately following the first
-operand as the second operand, as follows:
+a far jump, the processor will us two words immediately following the first
+operand as the second operand, least significant byte first, as follows:
 
-    JMP.F $FF06:$010E ; far jump to address $F006 in bank $0E in device $01.
+    JMP.F $83600008:FF06
     
-    The processor sees this instruction as 3 words (6 bytes) containing five
+    The processor sees this instruction as 4 words (8 bytes) containing four
     sets of data:
     
-    $00________________ $01________________ $02________________
-    OOOO OOOO OOOO OOOO bbaa aaaa aaaa aaaa .... DDDD BBBB BBBB
+    $00_____________ $01_____________ $02_____________ $03_____________
+    OOOOOOOOOOOOOOOO aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb DWPAssssssssbbbb
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
     b = the bank that will contain the new PC value.
@@ -576,34 +664,32 @@ operand as the second operand, as follows:
     D = the index of the Device that will provide the bank.
     B = the index of the Bank within the Device.
     
-The two 'b' bits indicate the MMU bank that the new device bank will be
-'switched' into. The top two bits of '$F006' are '11', or '3'. Thus, the bank
-will switch bank $0E from device $01 into the fourth MMU address space (MMU
-banks are zero indexed) that extends from $C000 to $FFFF.
-    
-Following the operation, the PC will be set to $F006, and the fourth MMU bank
-will contain Bank index $0E from Device $01.
+Following the operation, the PC will be set to $FF06, and CS will be set to 
+$80000008, indicating that the code segment points to ROM (‘D’evice bit set,
+upper ‘b’ bits equal zero) with the base of the segment at $00000800, and the
+size of the segment equal to $03600.
 
-Note 1: With respect to MMU cache entry flags (bits 12-15), far jumps will copy
-        the flags from the bank containing the far jump instruction to the
-        bank containing the destination address.
-Note 2: far jumps are only accessible from Supervisor mode. If the processor
+Note 1: Far jumps are only accessible from Supervisor mode. If the processor
         attempts to execute a far jump while in user mode, the processor will
         raise an 'UnprivOpcode' exception. Thus, these instructions could still
         be used while in User mode; the processor interrupt would be used to
         'trap' these instructions. Alternatively, software running in User mode
         could use a SWI instruction for the same purpose, if the Supervisor mode
         program was designed to interpret this function.
-Note 3: when the MMU is disabled, a far jump will still set the lower word for 
-        the MMU cache entry for the specified bank, but (because the MMU is
-        disabled) the address space will remain unchanged.
+Note 2: When the MMU is disabled, a far jump will still set the code segment
+        register, but because the MMU is disabled, this will not effect the
+        segment of the current executing code.
 
---- 2.F.7. UNLOADED MEMORY -----------------------------------------------------
+--- 2.F.5. ACCESSES TO MEMORY --------------------------------------------------
+
+Any memory accesses to segments that are not loaded (‘P’ bit in segment register
+set) or outside of a segment’s defined space (ex. read to address $c000 when
+segment size is $08000), will result in a segment fault. 
 
 Any memory accesses to addresses that are not connected to real memory will
-result in reads with all bits set. Thus, a 16-bit read of address $C000, when
-the fourth MMU bank is set to memory that does not exist, will result in a 
-value of $FFFF.
+result in a return of all bits set: ‘$ffff’).
+
+
         
 === 2.G. Boot Sequence =========================================================
 At initial power on, the state of all memory, registers, and cache is unknown.
@@ -646,7 +732,7 @@ This data is saved to R0-R3 upon calling HWQ $80, in this format:
                     R3: 16 bits Tick                tttt tttt tttt tttt
                     
 The original epoch for this device is 1 January 1900 at Midnight. This device
-will 'roll over' at 1 Janaury 2156. YpsilonTech offers technical assistance at
+will 'roll over' at 1 January 2156. YpsilonTech offers technical assistance at
 exceptionally reasonable rates to companies who wish their software to
 gracefully handle this roll-over. YpsilonTech accepts no responsibility for
 software written without this assistance, and thus experience a "Y2156" bug.
@@ -661,7 +747,7 @@ RESET interrupt disables the RTC.
 The processor can set the desired interrupt interval with HWQ $81, with a value
 indicating the desired interrupt frequency in R0. If R0 is $0000, the interrupt
 will be disabled. Otherwise,  the CLOCK interrupt will be raised at a frequency
-of R0 hz, capped to a maximum of cpu frequency divided by 1024.
+of R0 hertz, capped to a maximum of cpu frequency divided by 1024.
 
 After this operation, R0 will be set to the actual CLOCK interrupt frequency.
 Software can thus request a high CLOCK rate, and be informed of the actual CLOCK
@@ -670,7 +756,7 @@ rate by examining R0.
 
 === 2.I. Switching Context =====================================================
 The RTI instruction can also be used to switch the processor into user mode,
-even switiching contexts entirely when doing so. 
+even switching contexts entirely when doing so. 
 
 --- 2.I.1. Switching from Supervisor Context to User Context -------------------
 
@@ -679,22 +765,29 @@ User modes. Thus, as long as the MMU's User mode memory has been set ahead of
 time, the RTI instruction can be used to switch the context of a running
 program.
 
-To change context from supervisor to user mode, the MMU's user mode memory
-should be set, and the stack should be loaded with user-mode values for the 
-R0-R7, FL, USP, PS, and PC registers:
+To change context from supervisor to user mode, the MMU's user mode segment
+registers should be set, and the stack should be loaded with user-mode values
+for R0-R7, FL, USP, PS, and PC registers. The PS register value in the stack
+should be set with the ’S’ bit clear (for user mode).
 
-    1. Load the MMU cache with the necessary user data.
+    1. Load the segment registers with the necessary user data (in this
+       example, these stacks are stored as 8 16-bits words on the stack).
     2. Pop R0-R7 from the stack.
     3. Pop FL, USP.
     4. Use RTI to pop PS, PC from the stack (PC should have S bit cleared).
     5. Execution will continue.
             
+            LSG USS
+            LSG UES
+            LSG UDS
+            LSG UCS
             POP R0, R1, R2, R3, R4, R5, R6, R7
             POP FL, USP
             RTI ; pops PS and PC
 
-To save context (when responding to an interrupt from user mode). Note that upon
-entering the interrupt, the stack looks like this:
+To save the same context (when responding to an interrupt from user mode):
+
+Note that upon entering the interrupt, the stack looks like this:
 
                             [ ... ]
                             [ PS  ]
@@ -702,12 +795,18 @@ entering the interrupt, the stack looks like this:
 
     1. Push FL and USP to the stack.
     2. Push R0-R7 to the stack.
-    3. Save the user MMU cache to the stack.
+    3. Save the user segment registers to the stack.
 
             PSH FL, USP
             PSH R0, R1, R2, R3, R4, R5, R6, R7
+            SSG UCS
+            SSG UDS
+            SSG UES
+            SSG USS
 
---- 2.I.2. Switching Context while in Superivosr Mode --------------------------
+As an interesting aside, this context is only 40 bytes.
+
+--- 2.I.2. Switching Context while in Supervisor Mode --------------------------
 
 Switching context from supervisor to supervisor is more difficult, as modifying
 the active MMU cache will change the instruction that PC is operating on. It is
@@ -719,20 +818,20 @@ changing might be used in all banks).
     
 ### 3. Instructions ############################################################
 
-The YCPU's instruction set is comprised of 59 unique instructions (although an
+The YCPU's instruction set is comprised of 61 unique instructions (although an
 assembler may define other instructions as 'macros' - for example, a one-cycle
 NOP instruction could be defined as 'LOD R0, R0').
 
 All instructions are comprised of single 16-bit program words. Some instructions
-may be suffixed by a single 16-bit immediate value. One instruction - the jump
-far immediate instruction - is suffixed by two 16-bit immediate values.
+may be suffixed by a single 16-bit immediate value. One instruction - the far
+jump immediate instruction - is suffixed by three 16-bit immediate values.
 
 All instructions, with the exception of the four MMU instructions, are defined
 by the 8-bit low octet of the 16-bit program word. Attempted execution of a 
 program word that does not have a defined 8-bit low octet will raise the
 'undefined' interrupt.
 
-Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
+LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
 0000 1RRR   NEG                 ALU             R = 0 - R (two's complement)  1
 0001 0RRR   ADD                 ALU             R = R + M                     1
@@ -765,24 +864,23 @@ Low octet   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1000   BTT                 BTI             Test a bit                    2
 1010 1001   BTX                 BTI             Test a bit and change it      2
 1010 1010   BTC                 BTI             Test a bit and clear it       2
-1010 1011   BTS                 BTI             Test a bit and set it         2    
-1010 1100   XSR                 XSR             Processor register read/write 1
-1010 1101   ---                 ---             UNDEFINED                     -
+1010 1011   BTS                 BTI             Test a bit and set it         2
+1010 110x   SET                 SEI             Set register to value         1
 1010 1110   SEF                 FLG             Set flag bit                  1
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
 1011 0100   RTS                 RTS             Return from subroutine       2/8
-1011 0101   MM[R/W/L/S] X       MMU             MMU Rd/Wri/Lod/Sto            1
-1011 011x   SET                 SEI             Set register to value         1
-1011 1000   INC/ADI             IMM             Inc / Add immediate           1
-1011 1001   DEC/SBI             IMM             Dec / Subtract immediate      1
-1011 1010   JMP         /       JMI             Jump                          2
-1011 1011   JSR         /       JMI             Jump to Subroutine            4
-1011 1100   HWQ         X       HWI             Hardware Bus Query            4
-1011 1101   SLP         X       ---             Sleep until Interrupt         1
-1011 1110   SWI                 ---             Raise SOFTWARE Interrupt      2     
-1011 1111   RTI         X       ---             Return from Interrupt         4 
+1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    2
+1011 0110   INC/ADI             IMM             Inc / Add immediate           1
+1011 0111   DEC/SBI             IMM             Dec / Subtract immediate      1
+1011 1000   JMP         /       JMI             Jump                          2
+1011 1001   JSR         /       JMI             Jump to Subroutine            4
+1011 1010   HWQ         X       HWI             Hardware Bus Query            4
+1011 1011   SLP         X       ---             Sleep until Interrupt         1
+1011 1100   SWI                 ---             Raise SOFTWARE Interrupt      2     
+1011 1101   RTI         X       ---             Return from Interrupt         4 
+1011 111x   ---                 ---             UNDEFINED (2  opcodes)        -
 11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
 
 
@@ -798,14 +896,16 @@ ALU Bit Pattern
         E = 8-bit Mode. See Note 1, below.
         s = Extra Data Segment select. See Note 2, below.
         i = Index Register. See Note 3, below.
+        p = Processor Register index. See Note 4, below.
     
     sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
-    s000 000e               Immediate           LOD R0, $1234       +1m     
-    s000 001e               Absolute            LOD R0, [$1234]     +2m     
-    s001 rrre               Register            LOD R0, r1                  
-    s010 rrre               Indirect            LOD R0, [r1]        +1m     
+    .000 000e               Immediate           LOD R0, $1234       +1m
+    s000 001e               Absolute            LOD R0, [$1234]     +2m
+    .000 1ppp               Processor Register  LOD R0, PS             
+    .001 rrre               Register            LOD R0, r1             
+    s010 rrre               Indirect            LOD R0, [r1]        +1m
     s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
-    s1ii rrre               Indirect Indexed    LOD R0, [r1,[i2]    +1m
+    s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
     
         Note 1: When the ‘e’ bit is set, the ALU processes values in its 8-bit
                 mode. To use 8-bit mode for ALU instructions, follow the normal
@@ -829,15 +929,31 @@ ALU Bit Pattern
                 absolute values are still used).
 
         Note 2: When the ’s’ bit is clear, all accesses to memory are within the
-                Data Segment (DS). When ’s’ is set, all access are within the Extra
-                Data Segment (ES).
+                Data Segment (DS). When ’s’ is set all access are within the 
+                Extra Data Segment (ES).
 
-        Note 3: There are two index register bits, which select register R4-R7:
-                ii     register
+        Note 3: There are two index register bits, which select register R4-R7.
+                ii     Register
                 00     R4
                 01     R5
                 10     R6
                 11     R7
+        
+        Note 4: The processor register operand indexes are as follows:
+                Index   Desc.                                       User write?
+                $00     FL register                                 Y
+                $01     PC register                                 Y
+                $02     PS register                                 N
+                $03     P2 register                                 N
+                $04     II register                                 N
+                $05     IA register                                 N
+                $06     USP                                         Y
+                $07     current Stack Pointer (USP / SSP)           Y
+
+                It is always possible to read processor registers to general
+                purpose registers, regardless of supervisor/user mode. However,
+                user mode is limited in which processors it can write to.
+
 
 BTI Bit Pattern
     FEDC BA98 7654 3210
@@ -847,22 +963,15 @@ BTI Bit Pattern
         R = 0: test bit with value = s ($0 - $f)
             1: test bit with value = (Rx & $0F), (ssss used as .rrr)
 
+
 BRA Bit Pattern
     FEDC BA98 7654 3210                        
     bbbb bbbb OOOO Occc                    
         O = opcode
         b = signed 8-bit offset (multiplied by 2)
         c = condition (See 3.E. 'Branch Operations')
-     
-FLG Bit Pattern
-    FEDC BA98 7654 3210
-    NZCV .... OOOO OOOO
-        O = Opcode
-        N = Negative flag bit
-        Z = Zero flag bit
-        C = Carry flag bit
-        V = oVerflow flag bit
         
+
 HWI Bit Pattern
     FEDC BA98 7654 3210
     iiii iiii OOOO OOOO
@@ -885,7 +994,6 @@ HWI Bit Pattern
                     See 2.H.2. for the input format of R0.
             
     
-    
 IMM Bit Pattern
     FEDC BA98 7654 3210
     RRRv vvvv OOOO OOOO
@@ -895,20 +1003,24 @@ IMM Bit Pattern
     
     
 JMI Bit Pattern
-    AAAA rrrF OOOO OOOO
+    FEDC BA98 7654 3210                             
+    sAAA rrrE OOOO ORRR
+        R = Destination/Source Register
         O = Opcode
-        A = Addressing mode
-        r = Source register
-        i = Index Register.
-        F = Far Mode. See Note 1, below.
-        
-    AAAA rrrF OOOO OOOO     Addressing Mode     Example Syntax          Cycles
-    0000 000F               Immediate           JMP $1234               +1m
-    0000 001F               Absolute            JMP [$1234]             +2m
-    0001 rrrF               Register            JMP R              
-    0010 rrrF               Indirect            JMP [R]                 +1m
-    0011 rrrF               Indirect Offset     JMP [R,$1234]           +2m
-    1iii rrrF               Indirect Indexed    JMP [R,i]               +1m
+        A = Addressing Mode
+        r = Second Operand Register.
+        F = Far Mode. See Note 1, supra.
+        s = Extra Data Segment select. See ALU Bit Pattern Note 2, infra.
+        i = Index Register. See ALU Bit Pattern Note 3, infra.
+    
+    sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
+    .000 000F               Immediate           LOD R0, $1234       +1m
+    s000 001F               Absolute            LOD R0, [$1234]     +2m     
+    .001 rrre               Register            LOD R0, r1             
+    s010 rrre               Indirect            LOD R0, [r1]        +1m
+    s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
+    s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
+
 
         Note 1: When the 'F' bit is clear, the jump is 'near', and the PC will
                 be set to the value implied by the addressing mode, within the 
@@ -918,45 +1030,43 @@ JMI Bit Pattern
                 within the bank of the upper address. This process is detailed
                 in 2.F.5., supra.
                 Far jumps are only available in Supervisor mode.
+                Far jumps cannot use Register addressing.
                 
-                Addressing Mode     Upper Address   Lower Address...    
-                Immediate           PC + 4          PC + 2
-                Absolute            [(PC + 2) + 2]  [PC + 2]
-                Register            RY              RX       (See Note 2)
-                Indirect            [R + 2]         [R]
-                Indirect Offset     [(R,$1234) + 2] [R,$1234]
-                Indirect Indexed    [R,i + 2]       [R,i]
-                
-        Note 2: Register addressing with far jumps takes the PC address from the
-                specified register, and the 'upper address' from the register
-                with the next index. Register indexes wrap at 8. Examples:
-                JMP.F   R0      ; PC=R0 @ R1
-                JMP.F   R4      ; PC=R4 @ R5
-                JMP.F   R7      ; PC=R7 @ R0
-        Note 3: Far jumps double the cycles taken to execute the instruction:
-                Instruction         Cycles
-                JMP     A           2
-                JMP.F   A           4
-                JSR     A           4
-                JSR.F   A           8    
-                JMP     $1234       2+1m
-                JSR     $1234       4+1m
-                JMP.F   $1234:1234  4+2m
-                JSR     $1234:1234  8+2m
+                Addressing Mode     32-bit Segment:      16-bit Address:
+                Immediate           PC + 4               PC + 2
+                Absolute            [(PC + 2) + 2]       [PC + 2]
+                Indirect            [R + 2]              [R]
+                Indirect Offset     [(R,$1234) + 2]      [R,$1234]
+                Indirect Indexed    [R,i + 2]            [R,i]
+
+        Note 2: Far jumps triple the cycles taken to execute the instruction:
+                Instruction             Cycles
+                JMP     A               2
+                JMP.F   A               6
+                JSR     A               4
+                JSR.F   A               12    
+                JMP     $1234           2+1m
+                JSR     $1234           4+1m
+                JMP.F   $1234:12345678  6+3m
+                JSR.F   $1234:12345678  12+3m
                 
                 
 MMU Bit Pattern
     FEDC BA98 7654 3210 
-    RRRr rroo OOOO OOOO
+    u... rrro OOOO OOOO
         O = Opcode
         o = MMU operation:
-            $0 = MMR
-            $1 = MMW
-            $2 = MML
-            $3 = MMS
-        r = Ra
-        R = Rv
-        
+            $0 = Pull one segment register from stack (4 bytes, 2 words).
+            $1 = Push one segment register to stack (4 bytes, 2 words). 
+                 Single segment register can be cs,ds,es,ss,csu,dsu,esu,ssu,is.
+        r = segment register:
+            $0 = cs (u = 0: css, u = 1: csu)
+            $1 = ds (u = 0: dss, u = 1: dsu)
+            $2 = es (u = 0: ess, u = 1: esu)
+            $3 = ss (u = 0: sss, u = 1: ssu)
+            $4 = is (u must be 0, raises UndefOpcode interrupt otherwise).
+            $5-$7 = undefined, raises UndefOpcode interrupt.
+
 
 RTS Bit Pattern
     FEDC BA98 7654 3210
@@ -1012,31 +1122,6 @@ STK Bit Pattern < 2 / 2 >
         a = push/pop IA register                                Y
         u = push/pop USP                                        N
         s = push/pop current Stack Pointer (USP / SSP)          N
-        
-        
-XSR Bit Pattern
-    FEDC BA98 7654 3210                        
-    .rrr wxxx OOOO OOOO
-        O = opcode
-        r = register index to read to or write from.
-        w = read/write select:  0 = read from proc register to gp register
-                                1 = read from gp register to proc register
-        x = Index of processor register. See note 2, below.
-        
-        Note 1: It is always possible to read processor registers to general
-                purpose registers, regardless of supervisor/user mode. However,
-                user mode is limited in which processors it can write to, as
-                detailed in Note 2.
-        Note 2: The processor register operand indexes are as follows:
-                Index   Desc.                                       User write?
-                $00     FL register                                 Y
-                $01     PC register                                 Y
-                $02     PS register                                 N
-                $03     P2 register                                 N
-                $04     II register                                 N
-                $05     IA register                                 N
-                $06     USP                                         Y
-                $07     current Stack Pointer (USP / SSP)           Y
 
         
 === 3.B. ALU Instructions ======================================================
@@ -1539,40 +1624,21 @@ Sends a message with the specified identified to the Hardware Bus. This may
 query the bus directly, or send a message to a hardware device.
 
 
-MML         Pushes 4 words of MMU cache data onto the stack.
-Syntax: MML Rv
-Reads the 4 word MMU cache and pushes it onto the stack. The lowest bit of Rv
-determines whether the user or supervisor MMU cache is loaded in this way; if
-the bit is clear, the user cache is loaded; if the bit is set, the supervisor
-is loaded.
+LSG         Load Segment Register from Stack
+Syntax: LSG [CS/DS/ES/SS/IS][_/S/U]
+Pulls two 16-bit words from the stack. Loads these values as a little-endian
+32-bit value into the specified register. A programmer may indicate which of
+the nine segment registers should be loaded as follows:
 
-
-MMR         Reads a word from the Memory Management Cache into a register.
-Syntax: MMR Ra, Rv
-Retrieves a value from Memory Management Cache at index Ra and loads it into
-register Rv. The value in Ra is interpreted as follows:
-        $0000 - first word of user cache
-        ...
-        $0007 - last word of user cache
-        $0008 - first word of supervisor cache
-        ...
-        $000F - last word of supervisor cache  
-
-
-MMS         Pulls 4 words from stack and write these to the MMU cache.
-Syntax: MMS Rv
-Pulls 4 words from the stack and writes these to the MMU cache. As with MML, the
-lowest bit of Rv determines whether the user or supervisor MMU cache is loaded
-in this way; if the bit is clear, the user cache is loaded; if the bit is set,
-the supervisor is loaded. Note that if the M processor status bit is set when
-this operation runs, the instructions the processor is operating on will almost
-certainly be changed.
-
-
-MMW         Writes a word to the Memory Management Cache from a register.
-Syntax: MMR Ra, Rv
-Loads a value from Rv into the Memory Management Cache at index Ra. See MMR for
-how value of Ra is interpreted.
+        LSG CS or LSG CSS ; loads Supervisor Code Segment from Stack
+        LSG DS or LSG DSS ; loads Supervisor Data Segment from Stack
+        LSG ES or LSG ESS ; loads Supervisor Extra Data Segment from Stack
+        LSG SS or LSG SSS ; loads Supervisor stack Segment from Stack
+        LSG CSU           ; loads User Code Segment from Stack
+        LSG DSU           ; loads User Data Segment from Stack
+        LSG ESU           ; loads User Extra Data Segment from Stack
+        LSG SSU           ; loads User Stack Segment from Stack
+        LSG IS            ; loads Interrupt Segment from Stack
 
 
 NOP         No effect, cycle count increases by 1.
@@ -1592,6 +1658,13 @@ Places the processor into a halted state. No further instructions will be
 executed until a hardware interrupt is received, at which point the processor
 will exit the halted state and continue execution after the interrupt is
 handled.
+
+
+SSG         Store Segment Register to Stack
+Syntax: SSG [CS/DS/ES/SS/IS][_/S/U]
+Pushes the value of the indicated segment register to the stack as two 16-bit
+word values. A programmer may indicate which of the nine segment registers 
+should be stored using the mnemonic seen in the LSG instruction description.
 
 
 ### 4. History #################################################################
