@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.7A
+Version 0.8
 
 ### Table of Contents ##########################################################
 
@@ -218,7 +218,7 @@ processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMIP QUW. .... ....
+        SMI. QUW. .... ....
             [S] -   [S]upervisor Mode enabled
             [M] -   [M]emory segmenting hardware enabled
             [I] -   Hardware [I]nterrupts enabled.
@@ -698,13 +698,11 @@ in the following known state:
 
     RTC Tick <- Disabled            ; RTC will not raise interrupts.
     PS <- $8000                     ; Supervisor mode is enabled, all other
-                                    ; processor features disabled.
+                                    ; processor features are disabled.
+                                    ; Because the MMU is disabled, memory 
+                                    ; accesses will be translated as per 2.F.2.
     IA <- $0000                     ; Interrupt vector table begins at $0000
     PC <- [InterruptTable[$0]]      ; Execute 'RESET' interrupt code.
-
-Because Memory Banking is disabled, the processor's virtual address space is set
-up as follows: $0000-$3FFF is processor ROM bank 0, and $4000-$FFFF is processor
-RAM. This is discussed in further detail in 2.F.1., supra.
     
 
 === 2.H. The Real Time Clock ===================================================
@@ -737,14 +735,21 @@ exceptionally reasonable rates to companies who wish their software to
 gracefully handle this roll-over. YpsilonTech accepts no responsibility for
 software written without this assistance, and thus experience a "Y2156" bug.
 
+A programmer may set the clock data by placing the appropriate data in R0-R3,
+and calling HWQ $81.
+
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
 
 The RTC also provides a CLOCK interrupt that can be enabled or disabled. The
-frequency of this interrupt can also be specified. When the RTC interrupt is
-enabled, the RTC will raise the CLOCK interrupt at the specified interval. The
-RESET interrupt disables the RTC.
+frequency of this interrupt, in hertz (times per second) can also be specified.
+For example, an interval value of 1 would raise the CLOCK interrupt once per
+second. An interval value of 100 would raise the CLOCK interrupt 100 times
+per second.
 
-The processor can set the desired interrupt interval with HWQ $81, with a value
+A programmer may query the current interrupt interval with HWQ $82. After this
+instruction, R0 will be set to the actual CLOCK interrupt rate.
+
+The processor can set the desired interrupt interval with HWQ $83, with a value
 indicating the desired interrupt frequency in R0. If R0 is $0000, the interrupt
 will be disabled. Otherwise,  the CLOCK interrupt will be raised at a frequency
 of R0 hertz, capped to a maximum of cpu frequency divided by 1024.
@@ -752,7 +757,6 @@ of R0 hertz, capped to a maximum of cpu frequency divided by 1024.
 After this operation, R0 will be set to the actual CLOCK interrupt frequency.
 Software can thus request a high CLOCK rate, and be informed of the actual CLOCK
 rate by examining R0.
-
 
 === 2.I. Switching Context =====================================================
 The RTI instruction can also be used to switch the processor into user mode,
@@ -818,7 +822,7 @@ changing might be used in all banks).
     
 ### 3. Instructions ############################################################
 
-The YCPU's instruction set is comprised of 61 unique instructions (although an
+The YCPU's instruction set is comprised of 58 unique instructions (although an
 assembler may define other instructions as 'macros' - for example, a one-cycle
 NOP instruction could be defined as 'LOD R0, R0').
 
@@ -1639,11 +1643,6 @@ the nine segment registers should be loaded as follows:
         LSG ESU           ; loads User Extra Data Segment from Stack
         LSG SSU           ; loads User Stack Segment from Stack
         LSG IS            ; loads Interrupt Segment from Stack
-
-
-NOP         No effect, cycle count increases by 1.
-Syntax: NOP
-Nothing happens. This is a macro for LOD R0, R0
 
 
 SEF         Sets bit(s) in the FL register.
