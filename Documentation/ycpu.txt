@@ -191,11 +191,11 @@ There are a few exceptions to general purpose register interchangeability.
         Disallowed:  LOD R1, [R0, R2] ; neither register is R4-R7.
 
 
---- 2.A.2. PROCESSOR STATUS REGISTERS ------------------------------------------
+--- 2.A.2. PROCESSOR CONTROL REGISTERS -----------------------------------------
 
-The processor has eight processor status 16-bit registers. Unlike the general
+The processor has eight 16-bit processor control registers. Unlike the general
 purpose registers, these are not accessible by most instructions. The eight
-processor status registers are FL, IA, II, PC, PS, P2, SSP, and USP.
+processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
 
     FL: The FLag register. This register contains flags that are set by ALU
         operations.
@@ -252,7 +252,7 @@ bit is clear, the processor is in User mode.
 In Supervisor mode, the processor:
     * Can execute privileged opcodes.
     * Can set and clear all bits in the process status register.
-    * Can read and write to all processor registers.
+    * Can read and write to all processor control registers.
     * Can directly access the hardware bus.
     * Uses the Supervisor Stack Pointer (SSP) for stack operations.
     * Uses the Supervisor segment registers.
@@ -260,7 +260,7 @@ In Supervisor mode, the processor:
 In User mode, the processor:
     * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
     * Cannot set or clear any bits in the process status register.
-    * Cannot write to any processor registers, but can read from the same.
+    * Cannot write to any processor control registers, but can read from them.
     * Cannot directly access the hardware bus.
     * Uses the User Stack Pointer (USP) for stack operations.
     * Users the User segment registers.
@@ -900,12 +900,12 @@ ALU Bit Pattern
         E = 8-bit Mode. See Note 1, below.
         s = Extra Data Segment select. See Note 2, below.
         i = Index Register. See Note 3, below.
-        p = Processor Register index. See Note 4, below.
+        p = processor control register index. See Note 4, below.
     
     sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
     .000 000e               Immediate           LOD R0, $1234       +1m
     s000 001e               Absolute            LOD R0, [$1234]     +2m
-    .000 1ppp               Processor Register  LOD R0, PS             
+    .000 1ppp               Control register    LOD R0, PS             
     .001 rrre               Register            LOD R0, r1             
     s010 rrre               Indirect            LOD R0, [r1]        +1m
     s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
@@ -937,13 +937,16 @@ ALU Bit Pattern
                 Extra Data Segment (ES).
 
         Note 3: There are two index register bits, which select register R4-R7.
+                Thus, at least one register in indirect indexed addressing must
+                be R4-R7; the other can be any of R0-R7. The index register bits
+                select a register as follows:
                 ii     Register
                 00     R4
                 01     R5
                 10     R6
                 11     R7
         
-        Note 4: The processor register operand indexes are as follows:
+        Note 4: The control register operand indexes are as follows:
                 Index   Desc.                                       User write?
                 $00     FL register                                 Y
                 $01     PC register                                 Y
@@ -954,7 +957,7 @@ ALU Bit Pattern
                 $06     USP                                         Y
                 $07     current Stack Pointer (USP / SSP)           Y
 
-                It is always possible to read processor registers to general
+                It is always possible to read control registers to general
                 purpose registers, regardless of supervisor/user mode. However,
                 user mode is limited in which processors it can write to.
 
@@ -1566,7 +1569,7 @@ that register.
 
 There are two separate operations for pop and two for pull, each addressing a
 different set of registers. The first operation pops or pulls the eight general
-purpose registers, R0-R7. The second operation pops or pulls processor status
+purpose registers, R0-R7. The second operation pops or pulls processor control
 registers SP, Fl, PC, PS, USP, P2, II, and IA. 
 
 Two notes on pushing and pulling the stack pointers. First, 'SP' and 'USP' is
