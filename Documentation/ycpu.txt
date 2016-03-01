@@ -113,8 +113,9 @@ at the address, and the upper 8-bits of the destination register will be
 cleared.
 
 For all other instructions there is no support for 8-bit maths. All other
-instructions operate on 16-bit vales at all times (with the exception of MUL/MLI, 
-which has a 32-bit result with the upper 16 bits of the result stored in R0).
+instructions operate on 16-bit vales at all times (with the exception of
+MUL/MLI,  which has a 32-bit result with the upper 16 bits of the result stored
+in R0).
 
 
 --- 2.3. MEMORY ACCESS TO UNALIGNED ADDRESSES ----------------------------------
@@ -128,18 +129,18 @@ For 8-bit access, the YCPU loads only one 8-bit value. A single 8-bit load is
 as fast as a 16-bit load.
 
 
---- 2.4. REQUIRED HARDWARE ------------------------------------------------------
+--- 2.4. REQUIRED HARDWARE -----------------------------------------------------
 
 When the processor first powers on and each time it is RESET, it returns to a
 known state described in 2.G. The processor then executes instructions located
 in an on-board read only memory (ROM) chip. To access this chip, the processor
 relies on a hardware bus (YBUS). Thus, to execute any instructions the processor
-must be connected to a bus and a ROM chip. Of course, any useful work will likely
-require random access memory (RAM) as well, but RAM is not required to use the
-processor. Note that the amount of RAM and ROM available to the processor is not 
-known to the processor. However, a programmer can query how much RAM/ROM is
-available by querying 'Hardware Device 0' on the bus. For more information about
-this query operation, please refer to 2.C.1.
+must be connected to a bus and a ROM chip. Of course, any useful work will
+likely require random access memory (RAM) as well, but RAM is not required to
+use the processor. Note that the amount of RAM and ROM available to the
+processor is not known to the processor. However, a programmer can query the
+amount of RAM/ROM with the instruction HWQ #$03. For more information about this
+query operation, please refer to 2.C.1.
 
 
 === 2.A. Registers =============================================================
@@ -157,13 +158,13 @@ this query operation, please refer to 2.C.1.
         and supervisor mode (SSP). See 2.A.2.
 
     The processor has access to 9 32-bit segment registers. Four each of CS, DS,
-    ES, and SS for the Supervisor and User modes, respectively, and one interrupt
-    segment (IS):
+    ES, and SS for the Supervisor and User modes, respectively, and one
+    interrupt segment (IS):
 
-    CS: Code Segment. One for Supervisor (CSS) and one for user mode (CSU).
-    DS: Data segment. One for Supervisor (CSS) and one for user mode (CSU).
-    ES: Extra Data segment. One for Supervisor (ESS) and one for user mode (ESU).
-    SS: Stack segment. One for Supervisor (SSS) and one for user mode (SSU).
+    CS: Code Segment. One for Supervisor (CSS), one for user mode (CSU).
+    DS: Data segment. One for Supervisor (CSS), one for user mode (CSU).
+    ES: Extra Data segment. One for Supervisor (ESS), one for user mode (ESU).
+    SS: Stack segment. One for Supervisor (SSS), one for user mode (SSU).
     
     IS: Interrupt segment. Used in place of CS when I and M are set.
 
@@ -204,8 +205,9 @@ processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         NZCV .... .... ....
             [N]egative, [Z]ero, [C]arry, o[V]erflow
          
-    IA: Interrupt Table Address. This is the base address of the interrupt address
-        table, comprised of 16 x 16-bit words. IA is initialized to $0000.
+    IA: Interrupt Table Address. This is the base address of the interrupt
+        address table, comprised of 16 x 16-bit words.
+        IA is initialized to $0000.
         
     II: The IRQ Index. This is the bus index of the device that raised the last
         hardware interrupt.
@@ -979,6 +981,16 @@ BRA Bit Pattern
         c = condition (See 3.E. 'Branch Operations')
         
 
+FLG Bit Pattern
+    FEDC BA98 7654 3210
+    NZCV .... OOOO OOOO
+        O = Opcode
+        N = Negative flag bit
+        Z = Zero flag bit
+        C = Carry flag bit
+        V = oVerflow flag bit
+        
+        
 HWI Bit Pattern
     FEDC BA98 7654 3210
     iiii iiii OOOO OOOO
@@ -1442,8 +1454,8 @@ bit pattern:
         c = condition
         
 When a branch opcode is executed and its condition is true, the signed offset is
-added to the PC. Note that because instructions must be 16-bit aligned, the offset
-is shifted left by 1 (multiplied by 2) to allow for an effective range of -128 to
+added to the PC. Because instructions must be 16-bit aligned, the offset is
+shifted left by 1 (multiplied by 2) to allow for an effective range of -128 to
 +127 opcodes relative to the current PC.
 
 1001 0ccc   BXX                                                             NZCV
