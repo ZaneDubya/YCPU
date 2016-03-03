@@ -10,9 +10,9 @@ namespace Ypsilon.Assembler
 {
     public class Param
     {
-        public AddressingMode AddressingMode { get; set; }
-
-        public ushort RegisterIndex { get; set; }
+        public AddressingMode AddressingMode = AddressingMode.None;
+        public bool UsesExtraDataSegment = false;
+        public ushort RegisterIndex = 0;
 
         public bool HasImmediateWord { get; private set; }
         public bool HasImmediateWordLong { get; private set; }
@@ -52,10 +52,5 @@ namespace Ypsilon.Assembler
         private ushort m_ImmediateWord = 0x0000;
         private uint m_ImmediateWordLong = 0x00000000;
         private string m_Label = null;
-
-        public Param()
-        {
-            AddressingMode = AddressingMode.None;
-        }
     }
 }

@@ -12,11 +12,13 @@ namespace Ypsilon.Assembler
     {
         None,
         Immediate,
+        ImmediateBig,
         Absolute,
-        ControlRegister,
         Register,
         Indirect,
         IndirectOffset,
-        IndirectIndexed
+        IndirectIndexed,
+        ControlRegister,
+        SegmentRegister
     }
 }

@@ -501,7 +501,7 @@ the write-protect bit is set, which will result in a segment fault.
 === 2.E. Addressing Modes ======================================================
 Many instructions are register-only: they can take only data loaded in registers
 as their source. ALU (including LOD and STO) and JMP/JSR instructions can access
-memory using these seven addressing modes:
+memory using these six addressing modes:
 
 Addressing Mode     Syntax      Value is...
 Immediate           $1234       Value of Next Word
@@ -509,7 +509,6 @@ Absolute            [$1234]     Mem[Next Word]
 Register            Rx          Value of Register
 Indirect            [Rx]        Mem[R]
 Indirect Offset     [Rx,$1234]  Mem[R + Next Word]
-Absolute Offset     [$1234,Rx]  Mem[R + Next Word]  // Same as Indirect Offset
 Indirect Indexed    [Rx,Rx]     Mem[R+R] At least one of these registers must be
                                 R4, R5, R6, or R7.
 
@@ -530,6 +529,20 @@ of the instruction is memory, only a single byte is stored in memory. If the
 target is another register, the lower 8 bits of memory are stored, and the high
 8 bits of the destination register are cleared.
 
+--- 2.E.2. REFERENCING THE DATA AND EXTENDED DATA SEGMENT ----------------------
+
+Normally, any address references to memory (with Absolute, Indirect, Indirect
+Offset, or Indirect Indexed) will come from the address of memory within the
+data segment (DS). This is implicit to the indirect addressing modes, but can
+also be specified. Appropriate syntax for accessing the DS would be:
+                
+    LOD R0, [r1]     OR     LOD R0, DS[r1]
+
+These addressing modes also allow references to the extra data segment (ES).
+This must be made explicit. The appropriate syntax for accessing ES would be:
+
+    LOD R0, ES[r1]
+    
 
 === 2.F. Memory Management =====================================================
 Because the processor has a 16-bit logical address space, it can only address
@@ -651,7 +664,7 @@ next word following the current instruction as the new value of the new PC. With
 a far jump, the processor will us two words immediately following the first
 operand as the second operand, least significant byte first, as follows:
 
-    JMP.F $83600008:FF06
+    JMP.F $83600008, $FF06
     
     The processor sees this instruction as 4 words (8 bytes) containing four
     sets of data:
@@ -936,16 +949,8 @@ ALU Bit Pattern
 
         Note 2: When the ’s’ bit is clear, all accesses to memory are within the
                 Data Segment (DS). When ’s’ is set all access are within the 
-                Extra Data Segment (ES).
+                Extra Data Segment (ES). Reference 2.E.2., infra.
                 
-                Appropriate syntax for accessing the DS would be:
-                
-                    LOD R0, [r1]     OR     LOD R0, DS[r1]
-
-                Appropriate syntax for accessing the ES would be:
-                
-                    LOD R0, ES[r1]
-
         Note 3: There are two index register bits, which select register R4-R7.
                 Thus, at least one register in indirect indexed addressing must
                 be R4-R7; the other can be any of R0-R7. The index register bits
@@ -1083,8 +1088,8 @@ MMU Bit Pattern
     u... rrro OOOO OOOO
         O = Opcode
         o = MMU operation:
-            $0 = Pull one segment register from stack (4 bytes, 2 words).
-            $1 = Push one segment register to stack (4 bytes, 2 words). 
+            $0 = LSG: Pull one segment register from stack (4 bytes, 2 words).
+            $1 = SSG: Push one segment register to stack (4 bytes, 2 words). 
                  Single segment register can be cs,ds,es,ss,csu,dsu,esu,ssu,is.
         r = segment register:
             $0 = cs (u = 0: css, u = 1: csu)

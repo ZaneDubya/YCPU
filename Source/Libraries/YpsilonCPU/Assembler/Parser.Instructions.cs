@@ -353,32 +353,16 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region MMU
-        List<ushort> AssembleMMR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Guard.RequireParamCountExact(param, 2);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return state.Parser.AssembleMMU((ushort)0x00B5, param[0], param[1], state);
-        }
-
-        List<ushort> AssembleMMW(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Guard.RequireParamCountExact(param, 2);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return state.Parser.AssembleMMU((ushort)0x01B5, param[0], param[1], state);
-        }
-
-        List<ushort> AssembleMML(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        List<ushort> AssembleLSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return state.Parser.AssembleMMU((ushort)0x02B5, param[0], null, state, true);
+            return state.Parser.AssembleMMU((ushort)0x00B5, param[0], state);
         }
 
-        List<ushort> AssembleMMS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        List<ushort> AssembleSSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return state.Parser.AssembleMMU((ushort)0x03B5, param[0], null, state, true);
+            return state.Parser.AssembleMMU((ushort)0x01B5, param[0], state);
         }
         #endregion
 
@@ -704,18 +688,20 @@ namespace Ypsilon.Assembler
 
         List<ushort> AssembleJMI(ushort opcode, string param1, string param2, ParserState state)
         {
-            Param p1 = ParseParam(param1);
-            Param p2 = ParseParam(param2);
-            // sanity check - immediate jump must have two words, all others must have one.
-            if (p1.AddressingMode == AddressingMode.Immediate && ((opcode & 0x0100) == 0x0100))
+            Param p1, p2;
+            p1 = ParseParam(param1);
+            p2 = ParseParam(param2);
+
+            // sanity check - immediate jump must have two params (first param being a 32-bit immediate), all others must have one.
+            if (p1.AddressingMode == AddressingMode.ImmediateBig && ((opcode & 0x0100) == 0x0100))
             {
                 if (p2 == null)
-                    throw new Exception("Immediate far jumps require two immedate words as parameters.");
+                    throw new Exception("Immediate far jumps require two immedate parameters. The first should be 32-bit, the second, 16-bit.");
             }
             else
             {
                 if (p2 != null)
-                    throw new Exception("Bad number of parameters. Expected 1.");
+                    throw new Exception("Non-far jumps can only have one parameter.");
             }
 
 
@@ -726,6 +712,16 @@ namespace Ypsilon.Assembler
                     return null;
                 case AddressingMode.Immediate:
                     addressingmode = 0x0000;
+                    break;
+                case AddressingMode.ImmediateBig:
+                    if ((opcode & 0x0100) != 0x0100)
+                    {
+                        throw new Exception("Immediate far jumps must have a leading 32-bit parameter.");
+                    }
+                    else
+                    {
+                        addressingmode = 0x0100;
+                    }
                     break;
                 case AddressingMode.Absolute:
                     addressingmode = 0x0200;
@@ -754,6 +750,11 @@ namespace Ypsilon.Assembler
                 state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p1.Label);
                 m_Code.Add(0xDEAD);
             }
+            else if (p1.HasImmediateWordLong)
+            {
+                m_Code.Add((ushort)(p1.ImmediateWordLong & 0x0000ffff));
+                m_Code.Add((ushort)((p1.ImmediateWordLong & 0xffff0000) >> 16));
+            }
             else if (p1.HasImmediateWord)
             {
                 m_Code.Add(p1.ImmediateWordShort);
@@ -771,31 +772,21 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleMMU(ushort opcode, string param1, string param2, ParserState state, bool singleParam = false)
+        List<ushort> AssembleMMU(ushort opcode, string param1, ParserState state)
         {
-            // param1 = source register, MUST be register
-            // param2 = dest register, MUST be register OR null
+            // param1 = segment register, MUST be segment register
             Param p1 = ParseParam(param1);
-            Param p2 = ParseParam(param2);
 
-            if (p1 == null || p1.AddressingMode != AddressingMode.Register)
-                return null;
-            if (!(singleParam &&  p2 == null) && p2.AddressingMode != AddressingMode.Register)
-                return null;
+            if (p1 == null || p1.AddressingMode != AddressingMode.SegmentRegister)
+                throw new Exception("Parameter of MMU instructions must be a single segment register.");
 
             // Bit pattern is:
             // FEDC BA98 7654 3210
-            // RRRr rroo OOOO OOOO
+            // u...rrro OOOO OOOO
+            // ''''''' <- param bits - 7-bit number indicating a segment.
 
             m_Code.Clear();
-            if (singleParam)
-            {
-                m_Code.Add((ushort)(opcode | ((p1.RegisterIndex & 0x0007) << 13)));
-            }
-            else
-            {
-                m_Code.Add((ushort)(opcode | ((p1.RegisterIndex & 0x0007) << 10) | ((p2.RegisterIndex & 0x0007) << 13)));
-            }
+            m_Code.Add((ushort)(opcode | ((p1.RegisterIndex & 0x7f) << 9)));
             return m_Code;
         }
 
