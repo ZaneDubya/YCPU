@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
-    static class Sanity
+    static class Guard
     {
         public static void RequireParamCountExact(List<string> param, int count)
         {

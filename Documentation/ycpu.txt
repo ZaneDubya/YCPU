@@ -31,11 +31,10 @@ Version 0.8
 
 ### 1. Introduction ############################################################
 
-The YCPU Specification describes a processor that is first and foremost easy to
-write software for, but without compromising on features or instruction set. It
-takes the best of the features of the processors from the late 70’s/early 80’s:
+The YCPU Specification describes a processor that is easy to write software for
+without compromising on features. It features:
 
-  * eight orthogonal 16-bit data/address registers;
+  * eight general purpose 16-bit data/address registers;
   * user/supervisor modes with different privileges and stack pointers;
   * memory segmentation with resizable segments for code, stack, interrupts,
     and two segments for data;
@@ -147,7 +146,7 @@ query operation, please refer to 2.C.1.
 
     The processor has access to the following 16 16-bit registers:
 
-    R0-R7: General Purpose Registers (commonly named A,B,C,I,J,X,Y, and Z)
+    R0-R7: General Purpose Registers
     FL: Flags register
     IA: Interrupt Table Address
     II: Interrupt Device Address
@@ -157,9 +156,10 @@ query operation, please refer to 2.C.1.
     SP: Stack Pointer. The YCPU has separate stack pointers for user mode (USP)
         and supervisor mode (SSP). See 2.A.2.
 
-    The processor has access to 9 32-bit segment registers. Four each of CS, DS,
-    ES, and SS for the Supervisor and User modes, respectively, and one
-    interrupt segment (IS):
+    The processor also has access to 9 32-bit segment registers. Four of these 
+    are used for the code, data, extra data, and segments accessed in Supervisor
+    mode, and four for the segments accessed in User mode. In addition, there is
+    one Interrupt segment register, the segment used during Interrupts.
 
     CS: Code Segment. One for Supervisor (CSS), one for user mode (CSU).
     DS: Data segment. One for Supervisor (CSS), one for user mode (CSU).
@@ -550,7 +550,7 @@ Memory Management Unit is enabled (‘M’ bit set in PS).
 
 Each segment register is 32 bits in size:
 
-    $01                     $00
+    $03       $02           $01       $00
     FEDC BA98 7654 3210     FEDC BA98 7654 3210
     DWPA ssss ssss bbbb     bbbb bbbb bbbb bbbb
 
@@ -586,8 +586,7 @@ segments were set to these values:
     DS: $0000 0000   ; DS in RAM, base = $00000000, size = $10000
     ES: $0000 0000   ; ES in RAM, base = $00000000, size = $10000
     SS: $0000 0000   ; SS in RAM, base = $00000000, size = $10000
-    IS: $8000 0000   ; IS in ROM, base = $00000000, size = $10000,
-                       interrupt table in ROM @ $00000000
+    IS: $8000 0000   ; IS in ROM, base = $00000000, size = $10000
 
 --- 2.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
@@ -657,14 +656,15 @@ operand as the second operand, least significant byte first, as follows:
     The processor sees this instruction as 4 words (8 bytes) containing four
     sets of data:
     
-    $00_____________ $01_____________ $02_____________ $03_____________
-    OOOOOOOOOOOOOOOO aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbb DWPAssssssssbbbb
+    $00_____ $01_____ $02_____ $03_____ $04_____ $05_____ $06_____ $07_____
+    OOOOOOOO OOOOOOOO aaaaaaaa aaaaaaaa bbbbbbbb bbbbbbbb ssssbbbb DWPAssss
+    op lsb   op msb   a lsb    a msb    b lsb    b msb
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
-    b = the bank that will contain the new PC value.
-    a = the address of the PC within that bank.
-    D = the index of the Device that will provide the bank.
-    B = the index of the Bank within the Device.
+    a = the address of the PC within the new segment.
+    b = the base address of the new segment
+    s = the size of the new segment.
+    DWPA = protection bits of the new segment.
     
 Following the operation, the PC will be set to $FF06, and CS will be set to 
 $80000008, indicating that the code segment points to ROM (‘D’evice bit set,
@@ -937,6 +937,14 @@ ALU Bit Pattern
         Note 2: When the ’s’ bit is clear, all accesses to memory are within the
                 Data Segment (DS). When ’s’ is set all access are within the 
                 Extra Data Segment (ES).
+                
+                Appropriate syntax for accessing the DS would be:
+                
+                    LOD R0, [r1]     OR     LOD R0, DS[r1]
+
+                Appropriate syntax for accessing the ES would be:
+                
+                    LOD R0, ES[r1]
 
         Note 3: There are two index register bits, which select register R4-R7.
                 Thus, at least one register in indirect indexed addressing must

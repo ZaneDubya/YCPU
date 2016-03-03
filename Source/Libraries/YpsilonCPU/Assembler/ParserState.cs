@@ -39,7 +39,7 @@ namespace Ypsilon.Assembler
             SetDataFieldLabelAddressReferences();
         }
 
-        void SetLabelAddressReferences()
+        private void SetLabelAddressReferences()
         {
             foreach (ushort index in this.Labels.Keys)
             {
@@ -56,7 +56,7 @@ namespace Ypsilon.Assembler
             }
         }
 
-        void SetDataFieldLabelAddressReferences()
+        private void SetDataFieldLabelAddressReferences()
         {
             foreach (ushort key in this.DataFields.Keys)
             {
@@ -73,7 +73,7 @@ namespace Ypsilon.Assembler
             }
         }
 
-        void SetBranchLabelAddressReferences()
+        private void SetBranchLabelAddressReferences()
         {
             foreach (ushort index in this.Branches.Keys)
             {

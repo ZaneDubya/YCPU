@@ -1,13 +1,16 @@
 ; TEST CONSOLE
-; Expects Graphics Device in bus index 1 and Keyboard in bus index 2
+; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 64kb RAM.
 
-; === Interrupt table =========================================================
-.dat16 Start,  Clock, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
-.dat16 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+; === Interrupt vector table ===================================================
+; Described in 2.D.6.
+.dat16  ResetInt,   ClockInt,   0x0000,     0x0000
+.dat16  0x0000,     0x0000,     0x0000,     0x0000
+.dat16  0x0000,     0x0000,     0x0000,     0x0000
+.dat16  0x0000,     0x0000,     0x0000,     0x0000
 
-; === Clock ===================================================================
-Clock:
-.scope
+; === ClockInt =================================================================
+ClockInt:
+{
     psh r0, r1, r2, r3, fl      ; save register contents    
     hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
     lod     r0, $0000           ; Ensure the result is clear
@@ -22,182 +25,186 @@ Clock:
     getOnes:
         add     r0, r2
     writeToScreen:
-        lod     r2, $8104
+        lod     r2, $0104 ; index 260
         lod     r1, r0
         asr     r0, 4
         and     r1, $000f
-        add     r1, $2830
+        add     r1, $2830   ; yellow on blue, char $30 + r1
         sbi     r2, 2
-        sto     r1, [r2]
+        sto     r1, ES[r2]
         lod     r1, r0
-        add     r1, $2830
+        add     r1, $2830   ; yellow on blue, char $30 + r1
         sbi     r2, 2
-        sto     r1, [r2]
+        sto     r1, ES[r2]
     pop r0, r1, r2, r3, fl
     rti
-.scend
+}
 
-; === Start ===================================================================
-Start:
-.scope
+; === ResetInt =================================================================
+ResetInt:
+{
     ; set stack pointer to $0000.
-    lod     a, $0000
-    sto     a, sp
+    lod     r0, $0000
+    sto     r0, sp
     ;set up clock interrupt, devices, mmu, etc.
     jsr     Setup
     ; show the 'NYA ELEKTRISKA' screen
     jsr     ShowStartScreen
     
-    lod     x, $8000
+    lod     r5, $0000
     checkForKB:
         jsr     GetKeyboardEvents
-        cmp     a, 0
+        cmp     r0, 0
         beq     checkForKB
     
-        lod     b, $2800            ; yellow on blue
-        lod     y, $7002            ; get first char
+        lod     r1, $2800            ; yellow on blue
+        lod     r6, $7002            ; get first char, written in $7002 (see GetKeyboardEvents)
         writeSingleChar:
-            lod     c, [y]
-            adi     y, 2
-            and     c, 0x00ff
-            cmp     c, 0x0D
+            lod     r2, [r6]
+            adi     r6, 2
+            and     r2, 0x00ff
+            cmp     r2, 0x0D
             bne     writeChar
             baw     writeSingleChar
         writeChar:
-            orr     c, b
-            sto     c, [x]
-            adi     x, 2
-            dec     a
+            orr     r2, r1
+            sto     r2, ES[r5]
+            adi     r5, 2
+            dec     r0
             bne     writeSingleChar
         baw     checkForKB
-.scend
+}
 
-; === GetKeyboardEvents =======================================================
+; === GetKeyboardEvents ========================================================
 ; gets all keyboard events, copies to $7000.
-; returns: a is number of keyboard events.
+; returns: r0 is number of keyboard events.
 GetKeyboardEvents:
-.scope
-    psh     b, c
-    lod     a, $0002
-    lod     b, $0001
-    lod     c, $7000
+{
+    psh     r1, r2
+    lod     r0, $0002
+    lod     r1, $0001
+    lod     r2, $7000
     hwq     $02
     
-    lod     a, [$7000]
-    pop     b, c
+    lod     r0, [$7000]
+    pop     r1, r2
     rts
-.scend
+}
 
-; === Setup ===================================================================
+; === Setup ====================================================================
 Setup:
-.scope
+{
     ; enable clock interrupt - tick at 100hz
     lod     r0, 100
-    hwq     $81
+    hwq     $83
     ; set up devices
-    lod     a, $0001    ; set graphics adapter to LEM mode.
-    lod     b, $0000
-    lod     c, $0001
+    lod     r0, $0001    ; set graphics adapter to LEM mode.
+    lod     r1, $0000
+    lod     r2, $0001
     hwq     $02
-    lod     a, $0002    ; reset keyboard, press events only.
-    lod     b, $0000
-    lod     c, $0000
+    lod     r0, $0002    ; reset keyboard, press events only.
+    lod     r1, $0000
+    lod     r2, $0000
     hwq     $02
     
-    ; prepare supervisor bank registers in mmu. This is more complicated than it has to be -
-    ; a series of 'lod a, lod b, mmu' instructions would work as well. I'm just testing instructions.
-
-    ; set mmu supervisor bank 0 (index 4) to cpu rom.
-    lod     a, $04
-    lod     b, $0080
-    mmw     a, b
-    ; set mmu bank 1 to cpu ram bank 1
-    inc     a
-    lod     b, $0001
-    mmw     a, b
-    ; set mmu to load graphics adaptor memory in supervisor bank $02
-    lod     a, $06      ; mmu cache index 2 for supervisor
-    lod     b, $0100    ; device 01, bank 0
-    mmw     a, b
-    ; set mmu bank 3 to cpu ram bank 3
-    adi     a, 1
-    lod     b, $0003
-    mmw     a, b
+    ; set up segment registers. I'm actually just setting up a copy of the
+    ; memory space that would exist if the MMU was not set up. (See 2.F.2.),
+    ; except that ES is set to the video device in slot 1. (See 2.F.1.),
+    lod     r0, $0000
+    lod     r1, $8000
+    psh     r0          ;ds = $0000 0000
+    psh     r0
+    psh     r0          ;ss = $0000 0000
+    psh     r0
+    psh     r1          ;is = $8000 0000
+    psh     r0
+    psh     r1          ;cs = $8000 0000
+    psh     r0
+    adi     r1, $1      ;es = $8001 0000  
+    psh     r1           
+    psh     r0
+    lsg     es
+    lsg     cs
+    lsg     is
+    lsg     ss
+    lsg     ds
     
-    ; enable mmu by setting 'm' bit in PS.
-    lod     a, ps
-    orr     a, 0x4000   ; mmu enable bit is 0x4000
-    sto     a, ps
+    ; enable mmu by setting 'm' bit in PS. See 2.A.2.
+    lod     r0, ps
+    orr     r0, 0x4000
+    sto     r0, ps
 
     rts
-.scend
+}
 
-; === ShowStartScreen =========================================================
-; Draws the NE logo on a blue screen
+; === ShowStartScreen ==========================================================
+; Draws the NE logo on r0 blue screen
 ShowStartScreen:
+{
     ; clear screen
-    lod     b, $0220    ; space char with blue background
-    lod     c, 384      ; words to write
-    lod     x, $8000    ; start of video memory
-    jsr     FillMemoryWords
+    lod     r1, $0220    ; space char with blue background
+    lod     r2, 384      ; words to write
+    lod     r5, $0000    ; start of video memory
+    jsr.f   $80000000:FillMemoryWords
     
     ; write logo in center of screen.
-    lod     b, $8200            ; yellow on blue
-    lod     x, $80D6            ; location in video memory
-    lod     y, txtBootText
-    lod     i, 3                ; count of lines to draw
+    lod     r1, $8200            ; yellow on blue
+    lod     r5, $80D6            ; location in video memory
+    lod     r6, txtBootText
+    lod     r3, 3                ; count of lines to draw
     writeLine:
         jsr WriteChars
-        add     x, 64           ; increment one line in video memory (32 words)
-        dec     i
+        add     r5, 64           ; increment one line in video memory (32 words)
+        dec     r3
         beq     LastLine
         bne     writeLine
     lastLine:
-        add     x, $3C          ; skip line, left 4 chars
-        add     c, 4
+        add     r5, $3C          ; skip line, left 4 chars
+        add     r2, 4
         jsr     WriteChars
     rts
+}
 
-; === WriteChars ==============================================================
-; Writes a null-terminated string of 8-bit chars to video memory.
-; in:   b: color
-; in:   x: location to write to video memory.
-; in:   y: location to read 8-bit characters from. on exit, points to next byte after string.
+; === WriteChars ===============================================================
+; Writes r0 null-terminated string of 8-bit chars to video memory.
+; in:   r1: color
+; in:   r5: location to write to video memory.
+; in:   r6: location to read 8-bit characters from. on exit, points to next byte after string.
 WriteChars:
-.scope
-    psh a, x                    ; push a x  to the stack
-    writeChar:                  ; copy c chars from y to x
-        lod.8   a, [y]
+{
+    psh r0, r5                    ; push r0 r5  to the stack
+    writeChar:                  ; copy r2 chars from r6 to r5
+        lod.8   r0, [r6]
         beq     return
-        inc     y
-        orr     a, b
-        sto     a, [x]
-        adi     x, 2
+        inc     r6
+        orr     r0, r1
+        sto     r0, ES[r5]
+        adi     r5, 2
         baw     writeChar
     return:
-        inc     y
-        pop     a, x            ; pop a x from the stack
+        inc     r6
+        pop     r0, r5            ; pop r0 r5 from the stack
         rts
-.scend
+}
 
-; === FillMemoryWords =========================================================
+; === FillMemoryWords ==========================================================
 ; Fills range of memory with words of specified value.
-; in:   b - word to fill memory with
-; in:   c - count of words of memory to fill    
-; in:   x - first address to write to
+; in:   r1 - word to fill memory with
+; in:   r2 - count of words of memory to fill    
+; in:   r5 - first address to write to in ES
 FillMemoryWords:
-.scope
-    psh c, x                    ; save c and x
-    asl c, 1                    ; c = count of bytes
-    add c, x                    ; c = first address after all bytes are written
+{
+    psh r2, r5                  ; save r2 and r5
+    asl r2, 1                   ; r2 = count of bytes
+    add r2, r5                  ; r2 = first address after all bytes are written
     copyWord:
-        sto     b, [x]          ; save word in b to [x], x = x + 2
-        adi     x, 2
-        cmp     x, c            ; if x
+        sto     r1, ES[r5]      ; save word in r1 to [r5], r5 = r5 + 2
+        adi     r5, 2
+        cmp     r5, r2          ; if r5
         bne     copyWord
-    pop c, x                    ; restore c and x
-    rts
-.scend
+    pop r2, r5                  ; restore r2 and r5
+    rts.f
+}
 
 ; boot up txt
 txtBootText:

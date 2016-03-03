@@ -38,7 +38,7 @@
     <Compile Include="Assembler\LineSearch.cs" />
     <Compile Include="Assembler\OpcodeFlag.cs" />
     <Compile Include="Assembler\Optimizations.cs" />
-    <Compile Include="Assembler\ParsedOpcode.cs" />
+    <Compile Include="Assembler\Param.cs" />
     <Compile Include="Assembler\Parser.cs" />
     <Compile Include="Assembler\Parser.Data.cs" />
     <Compile Include="Assembler\Parser.Includes.cs" />
@@ -49,7 +49,7 @@
     <Compile Include="Assembler\Parser.Params.cs" />
     <Compile Include="Assembler\Parser.Pragmas.cs" />
     <Compile Include="Assembler\ParserState.cs" />
-    <Compile Include="Assembler\Sanity.cs" />
+    <Compile Include="Assembler\Guard.cs" />
     <Compile Include="Assembler\Scopes.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
