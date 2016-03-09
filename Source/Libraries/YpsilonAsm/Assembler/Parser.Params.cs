@@ -44,10 +44,10 @@ namespace Ypsilon.Assembler
                 parsed.RegisterIndex = (ushort)m_Registers[param];
                 parsed.AddressingMode = AddressingMode.Register;
             }
-            else if (m_StatusRegisters.ContainsKey(param))
+            else if (m_ControlRegisters.ContainsKey(param))
             {
                 // Processor Register: Pc
-                parsed.RegisterIndex = (ushort)m_StatusRegisters[param];
+                parsed.RegisterIndex = (ushort)m_ControlRegisters[param];
                 parsed.AddressingMode = AddressingMode.ControlRegister;
             }
             else if (m_SegmentRegisters.ContainsKey(param))

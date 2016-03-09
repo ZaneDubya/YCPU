@@ -15,7 +15,7 @@ namespace Ypsilon.Assembler
     {
         Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>> m_Opcodes;
         Dictionary<string, ushort> m_Registers;
-        Dictionary<string, ushort> m_StatusRegisters;
+        Dictionary<string, ushort> m_ControlRegisters;
         Dictionary<string, ushort> m_SegmentRegisters;
 
         void Initialize()
@@ -127,15 +127,15 @@ namespace Ypsilon.Assembler
             m_Registers.Add("y", (ushort)YCPUReg.R6);
             m_Registers.Add("z", (ushort)YCPUReg.R7);
 
-            m_StatusRegisters = new Dictionary<string, ushort>();
-            m_StatusRegisters.Add("fl", (ushort)YCPUReg.FL);
-            m_StatusRegisters.Add("pc", (ushort)YCPUReg.PC);
-            m_StatusRegisters.Add("ps", (ushort)YCPUReg.PS);
-            m_StatusRegisters.Add("p2", (ushort)YCPUReg.P2);
-            m_StatusRegisters.Add("ia", (ushort)YCPUReg.IA);
-            m_StatusRegisters.Add("ii", (ushort)YCPUReg.II);
-            m_StatusRegisters.Add("usp", (ushort)YCPUReg.USP);
-            m_StatusRegisters.Add("sp", (ushort)YCPUReg.SP);
+            m_ControlRegisters = new Dictionary<string, ushort>();
+            m_ControlRegisters.Add("fl", (ushort)YCPUReg.FL);
+            m_ControlRegisters.Add("pc", (ushort)YCPUReg.PC);
+            m_ControlRegisters.Add("ps", (ushort)YCPUReg.PS);
+            m_ControlRegisters.Add("p2", (ushort)YCPUReg.P2);
+            m_ControlRegisters.Add("ii", (ushort)YCPUReg.II);
+            m_ControlRegisters.Add("ia", (ushort)YCPUReg.IA);
+            m_ControlRegisters.Add("usp", (ushort)YCPUReg.USP);
+            m_ControlRegisters.Add("sp", (ushort)YCPUReg.SP);
 
             m_SegmentRegisters = new Dictionary<string, ushort>();
             m_SegmentRegisters.Add("cs", (ushort)0x0000);

@@ -524,7 +524,8 @@ namespace Ypsilon.Assembler
                         throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
                     if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
                         throw new Exception("Control register addressing mode cannot use extra data segment.");
-                    addressingmode = 0x0800;
+                    addressingmode = (ushort)(0x0800 | ((p2.RegisterIndex & 0x0007) << 8));
+                    p2.RegisterIndex = 0; // must wipe out control register index, as it is used later in this subroutine.
                     break;
                 case AddressingMode.Register:
                     // .001 rrre               Register            LOD R0, r1            
