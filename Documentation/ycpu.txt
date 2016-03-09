@@ -664,7 +664,7 @@ next word following the current instruction as the new value of the new PC. With
 a far jump, the processor will us two words immediately following the first
 operand as the second operand, least significant byte first, as follows:
 
-    JMP.F $83600008, $FF06
+    JMP.F   $FF06, $83600008
     
     The processor sees this instruction as 4 words (8 bytes) containing four
     sets of data:
@@ -1048,10 +1048,10 @@ JMI Bit Pattern
     sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
     .000 000F               Immediate           LOD R0, $1234       +1m
     s000 001F               Absolute            LOD R0, [$1234]     +2m     
-    .001 rrre               Register            LOD R0, r1             
-    s010 rrre               Indirect            LOD R0, [r1]        +1m
-    s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
-    s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
+    .001 rrr.               Register            LOD R0, r1             
+    s010 rrr.               Indirect            LOD R0, [r1]        +1m
+    s011 rrr.               Indirect Offset     LOD R0, [r1,$1234]  +2m
+    s1ii rrr.               Indirect Indexed    LOD R0, [r1,i2]     +1m
 
 
         Note 1: When the 'F' bit is clear, the jump is 'near', and the PC will
@@ -1072,15 +1072,15 @@ JMI Bit Pattern
                 Indirect Indexed    [R,i + 2]            [R,i]
 
         Note 2: Far jumps triple the cycles taken to execute the instruction:
-                Instruction             Cycles
-                JMP     A               2
-                JMP.F   A               6
-                JSR     A               4
-                JSR.F   A               12    
-                JMP     $1234           2+1m
-                JSR     $1234           4+1m
-                JMP.F   $1234:12345678  6+3m
-                JSR.F   $1234:12345678  12+3m
+                Instruction                 Cycles
+                JMP     A                   2
+                JMP.F   A                   6
+                JSR     A                   4
+                JSR.F   A                   12    
+                JMP     $1234               2+1m
+                JSR     $1234               4+1m
+                JMP.F   $1234, $12345678    6+3m
+                JSR.F   $1234, $12345678    12+3m
                 
                 
 MMU Bit Pattern

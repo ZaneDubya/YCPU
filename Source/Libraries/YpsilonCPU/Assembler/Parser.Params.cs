@@ -75,7 +75,18 @@ namespace Ypsilon.Assembler
                     if (m_Registers.ContainsKey(param0) && m_Registers.ContainsKey(param1))
                     {
                         // Register is both base and index: [R0,R1].
-                        parsed.RegisterIndex = (ushort)(m_Registers[param0] | ((m_Registers[param1]) << 8));
+                        ushort reg_a = m_Registers[param0];
+                        ushort reg_b = m_Registers[param1];
+                        if (reg_a < 4 && reg_b < 4)
+                            throw new Exception("With indirect offset addressing, at least one register must be r4-r7.");
+                        if (reg_b < reg_a)
+                        {
+                            ushort tmp = reg_a;
+                            reg_a = reg_b;
+                            reg_b = tmp;
+                        }
+                        reg_b -= 4; // 0 = r4, 1 = r5, 2 = r6, 3 = r7
+                        parsed.RegisterIndex = (ushort)(reg_a | (reg_b << 8));
                         parsed.AddressingMode = AddressingMode.IndirectIndexed;
                     }
                     else if (m_Registers.ContainsKey(param0) && CanDecodeLiteral(param1))

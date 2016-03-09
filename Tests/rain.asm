@@ -145,7 +145,7 @@ ShowStartScreen:
     lod     r1, $0220    ; space char with blue background
     lod     r2, 384      ; words to write
     lod     r5, $0000    ; start of video memory
-    jsr.f   $80000000, FillMemoryWords
+    jsr.f   FillMemoryWords, $80000000
     
     ; write logo in center of screen.
     lod     r1, $8200            ; yellow on blue
