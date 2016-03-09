@@ -77,6 +77,8 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("btx", AssembleBTX);
             m_Opcodes.Add("btc", AssembleBTC);
             m_Opcodes.Add("bts", AssembleBTS);
+            // set register to value
+            m_Opcodes.Add("set", AssembleSET);
             // flag operations
             m_Opcodes.Add("sef", AssembleSEF);
             m_Opcodes.Add("clf", AssembleCLF);
@@ -86,8 +88,6 @@ namespace Ypsilon.Assembler
             // MMU operations
             m_Opcodes.Add("lsg", AssembleLSG);
             m_Opcodes.Add("ssg", AssembleSSG);
-            // set register to value
-            m_Opcodes.Add("set", AssembleSET);
             // increment / decrement / add small immediate
             m_Opcodes.Add("inc", AssembleINC);
             m_Opcodes.Add("adi", AssembleADI);

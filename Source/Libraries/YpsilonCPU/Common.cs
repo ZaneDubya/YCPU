@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Ypsilon
 {
-    internal static class Common
+    public static class Common
     {
         public static byte[] GetBytesFromFile(string path)
         {

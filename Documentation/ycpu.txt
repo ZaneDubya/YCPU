@@ -970,7 +970,11 @@ ALU Bit Pattern
                 It is always possible to read control registers to general
                 purpose registers, regardless of supervisor/user mode. However,
                 user mode is limited in which processors it can write to.
-
+                
+        Note 5: The instruction LOD R0, R0 will cause the processor to do
+                nothing for one cycle - it is equivalent to NOP. All other
+                LOD instructions that have the same register for source and
+                destination have the same result.
 
 BTI Bit Pattern
     FEDC BA98 7654 3210
