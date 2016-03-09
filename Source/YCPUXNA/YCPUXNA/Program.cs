@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Ypsilon;
 
 namespace YCPUXNA
 {
@@ -8,7 +9,7 @@ namespace YCPUXNA
         static string[] s_DefaultArgs = new string[] { "-emu", "../../Tests/rain.asm" };
         const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" + 
             "    1. Assemble default 'rain.asm' file.\n    2. Disassemble default 'rain.asm.bin' file.\n" + 
-            "    3. Run emulator!\n    4. Exit.";
+            "    3. Run emulator!\n    4. Run assembly tests.\n    5. Exit.";
 
         // default entry point
         static void Main(string[] args)
@@ -37,6 +38,10 @@ namespace YCPUXNA
                             waitForKey = false;
                             break;
                         case '4':
+                            args = new string[] { "-test" };
+                            waitForKey = false;
+                            break;
+                        case '5':
                             waitForKey = false;
                             break;
                     }
@@ -60,6 +65,10 @@ namespace YCPUXNA
                         Emu e = new Emu();
                         StdConsole.HideConsoleWindow();
                         e.Run();
+                        break;
+                    case "-test": // run assembly tests
+                        StdConsole.StdOutWriteLine(Tests.Run());
+                        StdConsole.StdInReadKey();
                         break;
                     default:
                         // do nothing;
