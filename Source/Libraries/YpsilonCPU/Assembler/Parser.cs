@@ -204,7 +204,7 @@ namespace Ypsilon.Assembler
             {
                 string token = tokens[i];
                 string nextToken = tokens[i + 1];
-                if (((token.Length > 0) && (nextToken.Length > 0)) && (token.IndexOf('[') == 0) && (nextToken.IndexOf(']') == nextToken.Length - 1))
+                if (((token.Length > 0) && (nextToken.Length > 0)) && (token.IndexOf('[') != -1) && (nextToken.IndexOf(']') == nextToken.Length - 1))
                 {
                     tokens[i] = tokens[i] + "," + tokens[i + 1];
                     tokens[i + 1] = string.Empty;

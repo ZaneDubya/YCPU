@@ -495,34 +495,55 @@ namespace Ypsilon.Assembler
                 case AddressingMode.None:
                     return null;
                 case AddressingMode.Immediate:
+                    // .000 000e               Immediate           LOD R0, $1234       +1m
                     // special case: alu.8 immediate with value greater than $FF should raise a warning...
                     if (opcodeFlag == OpcodeFlag.BitWidth8 && p2.ImmediateWordShort >= 256)
                     {
                         throw new Exception("8-bit load operation with an immediate value of greater than 8 bits.");
                     }
                     addressingmode = 0x0000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        throw new Exception("Immediate addressing mode cannot use extra data segment.");
                     break;
                 case AddressingMode.Absolute:
+                    // s000 001e               Absolute            LOD R0, [$1234]     +2m
                     addressingmode = 0x0200;
-                    break;
-                case AddressingMode.Register:
-                    addressingmode = 0x1000;
-                    break;
-                case AddressingMode.Indirect:
-                    addressingmode = 0x2000;
-                    break;
-                case AddressingMode.IndirectOffset:
-                    addressingmode = 0x3000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        addressingmode |= 0x8000;
                     break;
                 case AddressingMode.ControlRegister:
+                    // .000 1ppp               Control register    LOD R0, PS             
                     // can't use eightbit mode with proc regs...
                     if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
                         throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
-                    addressingmode = 0x4000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        throw new Exception("Control register addressing mode cannot use extra data segment.");
+                    addressingmode = 0x0800;
+                    break;
+                case AddressingMode.Register:
+                    // .001 rrre               Register            LOD R0, r1            
+                    addressingmode = 0x1000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        throw new Exception("Register addressing mode cannot use extra data segment.");
+                    break;
+                case AddressingMode.Indirect:
+                    // s010 rrre               Indirect            LOD R0, [r1]        +1m
+                    addressingmode = 0x2000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        addressingmode |= 0x8000;
+                    break;
+                case AddressingMode.IndirectOffset:
+                    // s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
+                    addressingmode = 0x3000;
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        addressingmode |= 0x8000;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int index_register = (p2.RegisterIndex & 0x0700) << 4;
-                    addressingmode = (ushort)(0x8000 | index_register);
+                    // s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
+                    int index_register = (p1.RegisterIndex & 0x0300) << 4;
+                    addressingmode = (ushort)(0x4000 | index_register);
+                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                        addressingmode |= 0x8000;
                     break;
                 default:
                     throw new Exception("Unknown addressing mode.");
@@ -693,15 +714,17 @@ namespace Ypsilon.Assembler
             p2 = ParseParam(param2);
 
             // sanity check - immediate jump must have two params (first param being a 32-bit immediate), all others must have one.
-            if (p1.AddressingMode == AddressingMode.ImmediateBig && ((opcode & 0x0100) == 0x0100))
+            if (p1.AddressingMode == AddressingMode.Immediate && 
+                p2 != null && p2.AddressingMode == AddressingMode.ImmediateBig && 
+                ((opcode & 0x0100) == 0x0100))
             {
                 if (p2 == null)
-                    throw new Exception("Immediate far jumps require two immedate parameters. The first should be 32-bit, the second, 16-bit.");
+                    throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit.");
             }
             else
             {
                 if (p2 != null)
-                    throw new Exception("Non-far jumps can only have one parameter.");
+                    throw new Exception("Only far jumps in immediate mode can have more than one parameter.");
             }
 
 
@@ -711,17 +734,9 @@ namespace Ypsilon.Assembler
                 case AddressingMode.None:
                     return null;
                 case AddressingMode.Immediate:
+                    if (p2 != null && p2.AddressingMode != AddressingMode.ImmediateBig)
+                        throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit.");
                     addressingmode = 0x0000;
-                    break;
-                case AddressingMode.ImmediateBig:
-                    if ((opcode & 0x0100) != 0x0100)
-                    {
-                        throw new Exception("Immediate far jumps must have a leading 32-bit parameter.");
-                    }
-                    else
-                    {
-                        addressingmode = 0x0100;
-                    }
                     break;
                 case AddressingMode.Absolute:
                     addressingmode = 0x0200;
@@ -736,8 +751,8 @@ namespace Ypsilon.Assembler
                     addressingmode = 0x3000;
                     break;
                 case AddressingMode.IndirectIndexed:
-                    int index_register = (p1.RegisterIndex & 0x0700) << 4;
-                    addressingmode = (ushort)(0x8000 | index_register);
+                    int index_register = (p1.RegisterIndex & 0x0300) << 4;
+                    addressingmode = (ushort)(0x4000 | index_register);
                     break;
                 default:
                     throw new Exception("Addressing mode not usable with this instruction.");
@@ -750,24 +765,19 @@ namespace Ypsilon.Assembler
                 state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p1.Label);
                 m_Code.Add(0xDEAD);
             }
-            else if (p1.HasImmediateWordLong)
-            {
-                m_Code.Add((ushort)(p1.ImmediateWordLong & 0x0000ffff));
-                m_Code.Add((ushort)((p1.ImmediateWordLong & 0xffff0000) >> 16));
-            }
             else if (p1.HasImmediateWord)
             {
                 m_Code.Add(p1.ImmediateWordShort);
             }
 
-            if (p2 != null && p2.HasLabel)
+            if (p2 != null)
             {
-                state.Labels.Add((ushort)(state.Code.Count + m_Code.Count * c_InstructionSize), p2.Label);
-                m_Code.Add(0xDEAD);
-            }
-            else if (p2 != null && p2.HasImmediateWord)
-            {
-                m_Code.Add(p2.ImmediateWordShort);
+                if (p1.AddressingMode != AddressingMode.Immediate)
+                    throw new Exception("Only immediate far jumps can have a second operand.");
+                if (p2.AddressingMode != AddressingMode.ImmediateBig)
+                    throw new Exception("The second operand in an immediate far jump must be 32-bit.");
+                m_Code.Add((ushort)(p1.ImmediateWordLong & 0x0000ffff));
+                m_Code.Add((ushort)((p1.ImmediateWordLong & 0xffff0000) >> 16));
             }
             return m_Code;
         }
