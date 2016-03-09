@@ -1,5 +1,6 @@
 ; TEST CONSOLE
-; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 64kb RAM.
+; Tests segments and mmu, interrupts, etc.
+; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 128kb RAM.
 
 ; === Interrupt vector table ===================================================
 ; Described in 2.D.6.
@@ -43,15 +44,20 @@ ClockInt:
 ; === ResetInt =================================================================
 ResetInt:
 {
+    ; After the reset interrupt, the processor state is as described in 2.G.
     ; set stack pointer to $0000.
     lod     r0, $0000
     sto     r0, sp
+    
     ;set up clock interrupt, devices, mmu, etc.
     jsr     Setup
+    
     ; show the 'NYA ELEKTRISKA' screen
     jsr     ShowStartScreen
     
+    ; use r5 as index to onscreen char, starting at y = 0, x = 0
     lod     r5, $0000
+    
     checkForKB:
         jsr     GetKeyboardEvents
         cmp     r0, 0
@@ -92,11 +98,12 @@ GetKeyboardEvents:
 }
 
 ; === Setup ====================================================================
+; uses r0, r1, r2, r3.
 Setup:
 {
-    ; enable clock interrupt - tick at 100hz
-    lod     r0, 100
-    hwq     $83
+    ; r3 = calling address
+    pop     r3
+    
     ; set up devices
     lod     r0, $0001    ; set graphics adapter to LEM mode.
     lod     r1, $0000
@@ -107,20 +114,21 @@ Setup:
     lod     r2, $0000
     hwq     $02
     
-    ; set up segment registers. I'm actually just setting up a copy of the
-    ; memory space that would exist if the MMU was not set up. (See 2.F.2.),
-    ; except that ES is set to the video device in slot 1. (See 2.F.1.),
+    ; set up segment registers. (See 2.F.1.)
+    lod     r0, $0000
+    lod     r1, $0800
+    psh     r1          ; ds = $0800 0000 (RAM @ $00000000, size = $8000)
+    psh     r0
+    add     r0, $0080
+    psh     r1          ; ss = $0800 0180 (RAM @ $00018000, size = $8000)
+    psh     r0
     lod     r0, $0000
     lod     r1, $8000
-    psh     r0          ;ds = $0000 0000
+    psh     r1          ; is = $8000 0000 (ROM @ $00000000, size = $10000)
     psh     r0
-    psh     r0          ;ss = $0000 0000
+    psh     r1          ; cs = $8000 0000 (ROM @ $00000000, size = $10000)
     psh     r0
-    psh     r1          ;is = $8000 0000
-    psh     r0
-    psh     r1          ;cs = $8000 0000
-    psh     r0
-    adi     r1, $1      ;es = $8001 0000  
+    add     r1, $0101   ; es = $8101 0000 (device 1 @ $00000000, size = $1000)
     psh     r1           
     psh     r0
     lsg     es
@@ -133,7 +141,18 @@ Setup:
     lod     r0, ps
     orr     r0, 0x4000
     sto     r0, ps
-
+    
+    ; sp = $8000
+    lod     r0, $8000
+    sto     r0, sp
+    
+    ; push r3 (calling PC) to stack
+    psh     r3
+    
+    ; enable clock interrupt - tick at 100hz
+    lod     r0, 100
+    hwq     $83
+    
     rts
 }
 

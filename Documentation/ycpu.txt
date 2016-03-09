@@ -457,12 +457,8 @@ $1  Clock           Raised when the processor's Real Time Clock ticks. The tick
 $2  DivideByZero    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
 $3  RESERVED        Not currently used, never raised.
-$4  StackFault      Raised when the processor executes a Pull opcode with SP 
-                    equal to the high-value limit of the Stack, or the processor 
-                    executes a Push opcode with SP equal to the low-value limit 
-                    of the Stack.
-                    Note that limits to the Stack are not yet included in this
-                    Specification.
+$4  StackFault      Raised when the processor executes a POP or PSH instruction
+                    that would access an address outside of the stack segment.
 $5  SegFault        Raised when the processor attempts to read from or write to 
                     an address within a Segment that has been protected from 
                     these operations. The UW bits in the PS register will 
@@ -669,9 +665,8 @@ operand as the second operand, least significant byte first, as follows:
     The processor sees this instruction as 4 words (8 bytes) containing four
     sets of data:
     
-    $00_____ $01_____ $02_____ $03_____ $04_____ $05_____ $06_____ $07_____
-    OOOOOOOO OOOOOOOO aaaaaaaa aaaaaaaa bbbbbbbb bbbbbbbb ssssbbbb DWPAssss
-    op lsb   op msb   a lsb    a msb    b lsb    b msb
+    $07_____ $06_____ $05_____ $04_____ $03_____ $02_____ $01_____ $00_____
+    DWPAssss ssssbbbb bbbbbbbb bbbbbbbb aaaaaaaa aaaaaaaa OOOOOOOO OOOOOOOO
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
     a = the address of the PC within the new segment.
@@ -706,7 +701,7 @@ result in a return of all bits set: ‘$ffff’).
 
 
         
-=== 2.G. Boot Sequence =========================================================
+=== 2.G. Boot/Reset Sequence ===================================================
 At initial power on, the state of all memory, registers, and cache is unknown.
 The processor raises the RESET interrupt at power on, placing the processor
 in the following known state:
