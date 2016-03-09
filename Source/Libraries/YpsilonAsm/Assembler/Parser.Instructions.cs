@@ -547,7 +547,7 @@ namespace Ypsilon.Assembler
                     break;
                 case AddressingMode.IndirectIndexed:
                     // s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
-                    int index_register = (p1.RegisterIndex & 0x0300) << 4;
+                    int index_register = (p2.RegisterIndex & 0x0300) << 4;
                     addressingmode = (ushort)(0x4000 | index_register);
                     if (p2.UsesExtraDataSegment)
                         addressingmode |= 0x8000;

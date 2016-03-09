@@ -79,7 +79,7 @@ namespace Ypsilon.Assembler
                         ushort reg_b = m_Registers[param1];
                         if (reg_a < 4 && reg_b < 4)
                             throw new Exception("With indirect offset addressing, at least one register must be r4-r7.");
-                        if (reg_b < reg_a)
+                        if ((reg_b < reg_a) && (reg_b < 4))
                         {
                             ushort tmp = reg_a;
                             reg_a = reg_b;

@@ -43,7 +43,30 @@ namespace Ypsilon
                         Test(string.Format("{0}.8   r{1}, [$1234]", alu_instructions[ins], r0), (ushort)(0x0300 | alu_codes[ins] | r0), 0x1234);
                         Test(string.Format("{0}.8   r{1}, ES[$1234]", alu_instructions[ins], r0), (ushort)(0x8300 | alu_codes[ins] | r0), 0x1234);
                         for (int cr = 0; cr < 8; cr++)
+                        {
                             Test(string.Format("{0}     r{1}, {2}", alu_instructions[ins], r0, reg_control[cr]), (ushort)(0x0800 | alu_codes[ins] | r0 | (cr << 8)));
+                        }
+                        for (int r1 = 0; r1 < 8; r1++)
+                        {
+                            Test(string.Format("{0}     r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1000 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}.8   r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1100 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}     r{1}, [r{2}]", alu_instructions[ins], r0, r1), (ushort)(0x2000 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}.8   r{1}, [r{2}]", alu_instructions[ins], r0, r1), (ushort)(0x2100 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}     r{1}, ES[r{2}]", alu_instructions[ins], r0, r1), (ushort)(0xA000 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}.8   r{1}, ES[r{2}]", alu_instructions[ins], r0, r1), (ushort)(0xA100 | alu_codes[ins] | r0 | (r1 << 9)));
+                            Test(string.Format("{0}     r{1}, [r{2},$1234]", alu_instructions[ins], r0, r1), (ushort)(0x3000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                            Test(string.Format("{0}.8   r{1}, [r{2},$1234]", alu_instructions[ins], r0, r1), (ushort)(0x3100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                            Test(string.Format("{0}     r{1}, ES[r{2},$1234]", alu_instructions[ins], r0, r1), (ushort)(0xB000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                            Test(string.Format("{0}.8   r{1}, ES[r{2},$1234]", alu_instructions[ins], r0, r1), (ushort)(0xB100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                            for (int r2 = 4; r2 < 8; r2++)
+                            {
+                                Test(string.Format("{0}     r{1}, [r{2},r{3}]", alu_instructions[ins], r0, r1, r2), (ushort)(0x4000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                                Test(string.Format("{0}.8   r{1}, [r{2},r{3}]", alu_instructions[ins], r0, r1, r2), (ushort)(0x4100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                                Test(string.Format("{0}     r{1}, ES[r{2},r{3}]", alu_instructions[ins], r0, r1, r2), (ushort)(0xC000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                                Test(string.Format("{0}.8   r{1}, ES[r{2},r{3}]", alu_instructions[ins], r0, r1, r2), (ushort)(0xC100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                            }
+                        }
+
                     }
                 }
             }
@@ -67,6 +90,7 @@ namespace Ypsilon
                 {
                     if (((expected[i] & 0x00ff) != assembled[i * 2]) || ((expected[i] >> 8) != assembled[i * 2 + 1]))
                     {
+                        // format the expected and actual code values:
                         StringBuilder sbCode = new StringBuilder(), sbAssembled = new StringBuilder();
                         for (int j = 0; j < expected.Length; j++)
                             sbCode.Append(string.Format("{0:X4} ", expected[j]));
@@ -77,10 +101,9 @@ namespace Ypsilon
                             if (j % 2 == 1)
                                 sbAssembled.Append(" ");
                         }
-                        throw new Exception(string.Format("Failure to match.\n{0} did not match expected bit pattern.\n" + 
-                            "Expected: {1}\n" +
-                            "Actual:   {2}", asm,
-                            sbCode.ToString(), sbAssembled.ToString()));
+                        throw new Exception(string.Format("Failure to match expected bit pattern.\n" + 
+                            "Expected: {1}\n" + "Actual:   {2}", 
+                            asm, sbCode.ToString(), sbAssembled.ToString()));
                     }
                 }
             }
