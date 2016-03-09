@@ -508,13 +508,13 @@ namespace Ypsilon.Assembler
                         throw new Exception("8-bit load operation with an immediate value of greater than 8 bits.");
                     }
                     addressingmode = 0x0000;
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         throw new Exception("Immediate addressing mode cannot use extra data segment.");
                     break;
                 case AddressingMode.Absolute:
                     // s000 001e               Absolute            LOD R0, [$1234]     +2m
                     addressingmode = 0x0200;
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         addressingmode |= 0x8000;
                     break;
                 case AddressingMode.ControlRegister:
@@ -522,7 +522,7 @@ namespace Ypsilon.Assembler
                     // can't use eightbit mode with proc regs...
                     if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
                         throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         throw new Exception("Control register addressing mode cannot use extra data segment.");
                     addressingmode = (ushort)(0x0800 | ((p2.RegisterIndex & 0x0007) << 8));
                     p2.RegisterIndex = 0; // must wipe out control register index, as it is used later in this subroutine.
@@ -530,26 +530,26 @@ namespace Ypsilon.Assembler
                 case AddressingMode.Register:
                     // .001 rrre               Register            LOD R0, r1            
                     addressingmode = 0x1000;
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         throw new Exception("Register addressing mode cannot use extra data segment.");
                     break;
                 case AddressingMode.Indirect:
                     // s010 rrre               Indirect            LOD R0, [r1]        +1m
                     addressingmode = 0x2000;
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         addressingmode |= 0x8000;
                     break;
                 case AddressingMode.IndirectOffset:
                     // s011 rrre               Indirect Offset     LOD R0, [r1,$1234]  +2m
                     addressingmode = 0x3000;
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         addressingmode |= 0x8000;
                     break;
                 case AddressingMode.IndirectIndexed:
                     // s1ii rrre               Indirect Indexed    LOD R0, [r1,i2]     +1m
                     int index_register = (p1.RegisterIndex & 0x0300) << 4;
                     addressingmode = (ushort)(0x4000 | index_register);
-                    if (opcodeFlag.HasFlag(OpcodeFlag.ExtraDataSegment))
+                    if (p2.UsesExtraDataSegment)
                         addressingmode |= 0x8000;
                     break;
                 default:
