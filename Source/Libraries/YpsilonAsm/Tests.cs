@@ -226,8 +226,39 @@ namespace Ypsilon
                 Test("rts.f", 0x01B4);
 
                 // test lsg / ssg
+                string[] mmu_instructions = new string[] { "lsg", "ssg" };
+                ushort[] mmu_codes = new ushort[] { 0x00B5, 0x01B5 };
+                string[] seg_regs = new string[] { "cs", "ds", "es", "ss" };
+
+                for (int ins = 0; ins < mmu_instructions.Length; ins++)
+                {
+                    for (int sr = 0; sr < seg_regs.Length; sr++)
+                    {
+                        Test(string.Format("{0}     {1}s", mmu_instructions[ins], seg_regs[sr]),
+                            (ushort)(0x0000 | mmu_codes[ins] | (sr << 9)));
+                        Test(string.Format("{0}     {1}u", mmu_instructions[ins], seg_regs[sr]),
+                            (ushort)(0x8000 | mmu_codes[ins] | (sr << 9)));
+                    }
+                    Test(string.Format("{0}     is", mmu_instructions[ins]),
+                            (ushort)(0x0800 | mmu_codes[ins]));
+                }
 
                 // test inc / adi / dec / sbi
+                for (int r = 0; r < 8; r++)
+                {
+                    Test(string.Format("inc r{0}", r),
+                        (ushort)(0x00B6 | (r << 13)));
+                    Test(string.Format("dec r{0}", r),
+                        (ushort)(0x00B7 | (r << 13)));
+
+                    for (int imm = 1; imm <= 0x20; imm++)
+                    {
+                        Test(string.Format("adi r{0}, {1}", r, imm),
+                        (ushort)(0x00B6 | (r << 13) | ((imm - 1) << 8)));
+                        Test(string.Format("sbi r{0}, {1}", r, imm),
+                            (ushort)(0x00B7 | (r << 13) | ((imm - 1) << 8)));
+                    }
+                }
 
                 // test jmp / jsr
                 string[] jmi_instructions = new string[] { "jmp", "jsr" };
@@ -240,7 +271,7 @@ namespace Ypsilon
                     Test(string.Format("{0}.f   $1234, $56789abc", jmi_instructions[ins]), 
                         (ushort)(0x0100 | jmi_codes[ins]), 0x1234, 0x9abc, 0x5678);
                     Test(string.Format("{0}     [$1234]", jmi_instructions[ins]),
-                            (ushort)(0x0200 | jmi_codes[ins]), 0x1234);
+                        (ushort)(0x0200 | jmi_codes[ins]), 0x1234);
                     Test(string.Format("{0}     ES[$1234]", jmi_instructions[ins]),
                         (ushort)(0x8200 | jmi_codes[ins]), 0x1234);
                     Test(string.Format("{0}.f   [$1234]", jmi_instructions[ins]),
@@ -250,23 +281,38 @@ namespace Ypsilon
 
                     for (int r1 = 0; r1 < 8; r1++)
                     {
+                        // register
                         Test(string.Format("{0}     r{1}", jmi_instructions[ins], r1), 
-                            (ushort)(0x0100 | jmi_codes[ins] | (r1 << 9)));
-
-                        Test(string.Format("{0}     [r{2}]", alu_instructions[ins], r1), (ushort)(0x2000 | alu_codes[ins] | r0 | (r1 << 9)));
-                        Test(string.Format("{0}.8   [r{2}]", alu_instructions[ins], r1), (ushort)(0x2100 | alu_codes[ins] | r0 | (r1 << 9)));
-                        Test(string.Format("{0}     r{1}, ES[r{2}]", alu_instructions[ins], r1), (ushort)(0xA000 | alu_codes[ins] | r0 | (r1 << 9)));
-                        Test(string.Format("{0}.8   r{1}, ES[r{2}]", alu_instructions[ins], r1), (ushort)(0xA100 | alu_codes[ins] | r0 | (r1 << 9)));
-                        Test(string.Format("{0}     r{1}, [r{2},$1234]", alu_instructions[ins], r1), (ushort)(0x3000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
-                        Test(string.Format("{0}.8   r{1}, [r{2},$1234]", alu_instructions[ins], r1), (ushort)(0x3100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
-                        Test(string.Format("{0}     r{1}, ES[r{2},$1234]", alu_instructions[ins], r1), (ushort)(0xB000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
-                        Test(string.Format("{0}.8   r{1}, ES[r{2},$1234]", alu_instructions[ins], r1), (ushort)(0xB100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                            (ushort)(0x1000 | jmi_codes[ins] | (r1 << 9)));
+                        // indirect
+                        Test(string.Format("{0}     [r{1}]", jmi_instructions[ins], r1),
+                            (ushort)(0x2000 | jmi_codes[ins] | (r1 << 9)));
+                        Test(string.Format("{0}.f   [r{1}]", jmi_instructions[ins], r1),
+                            (ushort)(0x2100 | jmi_codes[ins] | (r1 << 9)));
+                        Test(string.Format("{0}     ES[r{1}]", jmi_instructions[ins], r1),
+                            (ushort)(0xA000 | jmi_codes[ins] | (r1 << 9)));
+                        Test(string.Format("{0}.f   ES[r{1}]", jmi_instructions[ins], r1),
+                            (ushort)(0xA100 | jmi_codes[ins] | (r1 << 9)));
+                        // indirect offset
+                        Test(string.Format("{0}     [r{1},$1234]", jmi_instructions[ins], r1),
+                            (ushort)(0x3000 | jmi_codes[ins] | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}.f   [r{1},$1234]", jmi_instructions[ins], r1),
+                            (ushort)(0x3100 | jmi_codes[ins] | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}     ES[r{1},$1234]", jmi_instructions[ins], r1),
+                            (ushort)(0xB000 | jmi_codes[ins] | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}.f   ES[r{1},$1234]", jmi_instructions[ins], r1),
+                            (ushort)(0xB100 | jmi_codes[ins] | (r1 << 9)), 0x1234);
+                        // indirect indexed
                         for (int r2 = 4; r2 < 8; r2++)
                         {
-                            Test(string.Format("{0}     r{1}, [r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0x4000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
-                            Test(string.Format("{0}.8   r{1}, [r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0x4100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
-                            Test(string.Format("{0}     r{1}, ES[r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0xC000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
-                            Test(string.Format("{0}.8   r{1}, ES[r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0xC100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}     [r{1},r{2}]", jmi_instructions[ins], r1, r2), 
+                                (ushort)(0x4000 | jmi_codes[ins] | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}.f   [r{1},r{2}]", jmi_instructions[ins], r1, r2), 
+                                (ushort)(0x4100 | jmi_codes[ins] | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}     ES[r{1},r{2}]", jmi_instructions[ins], r1, r2), 
+                                (ushort)(0xC000 | jmi_codes[ins] | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}.f   ES[r{1},r{2}]", jmi_instructions[ins], r1, r2), 
+                                (ushort)(0xC100 | jmi_codes[ins] | (r1 << 9) | ((r2 - 4) << 12)));
                         }
                     }
                 }
