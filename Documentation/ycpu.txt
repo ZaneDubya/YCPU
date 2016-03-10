@@ -840,10 +840,9 @@ All instructions are comprised of single 16-bit program words. Some instructions
 may be suffixed by a single 16-bit immediate value. One instruction - the far
 jump immediate instruction - is suffixed by three 16-bit immediate values.
 
-All instructions, with the exception of the four MMU instructions, are defined
-by the 8-bit low octet of the 16-bit program word. Attempted execution of a 
-program word that does not have a defined 8-bit low octet will raise the
-'undefined' interrupt.
+All instructions are defined by the 8-bit low octet of the 16-bit program word.
+Attempted execution of a  program word that does not have a defined 8-bit low
+octet will raise the 'undefined' interrupt.
 
 LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
