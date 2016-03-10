@@ -626,8 +626,8 @@ namespace Ypsilon.Assembler
         {
             Param p1 = ParseParam(param1);
             // must be branching to a label or an immediate value between $7f and -$80
-            if (!p1.HasLabel && p1.ImmediateWordShort > 511)
-                return null;
+            if (!p1.HasLabel && ((short)p1.ImmediateWordShort > 0x7f) || ((short)p1.ImmediateWordShort < -0x80))
+                throw new Exception("Branch operation must have offset between -128 and +127");
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | (p1.ImmediateWordShort << 8)));

@@ -21,7 +21,7 @@ namespace Ypsilon
                 Test(string.Format("cmp r7, $1234"), (ushort)(0x0007), 0x1234); // test non-hex numbers
                 Test(string.Format("cmp r7, 0x1234"), (ushort)(0x0007), 0x1234); // test non-hex numbers
 
-                // test alu (except for sto)
+                // test alu
                 string[] alu_instructions = new string[] {
                     "cmp", "neg", "add", "sub", "adc", "sbc", "mul", "div",
                     "mli", "dvi", "mod", "mdi", "and", "orr", "eor", "not",
@@ -75,6 +75,23 @@ namespace Ypsilon
 
                     }
                 }
+
+                // test branch
+                string[] bra_instructions = new string[] {
+                    "bcc", "bcs", "bne", "beq", "bpl", "bmi", "bvc", "bvs",
+                    "bug", "bsg", "baw" };
+                ushort[] bra_codes = new ushort[] {
+                    0x0090, 0x0091, 0x0092, 0x0093, 0x0094, 0x0095, 0x0096, 0x0097,
+                    0x0098, 0x0099, 0x009F };
+
+                for (int ins = 0; ins < bra_instructions.Length; ins++)
+                {
+                    for (int offset = sbyte.MinValue; offset <= sbyte.MaxValue; offset++)
+                    {
+                        Test(string.Format("{0}     {1}", bra_instructions[ins], offset), (ushort)(bra_codes[ins] | ((byte)offset << 8)));
+                    }
+                }
+
             }
             catch (Exception e)
             {
