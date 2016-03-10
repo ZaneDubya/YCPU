@@ -747,19 +747,27 @@ namespace Ypsilon.Assembler
                     break;
                 case AddressingMode.Absolute:
                     addressingmode = 0x0200;
+                    if (p1.UsesExtraDataSegment)
+                        addressingmode |= 0x8000;
                     break;
                 case AddressingMode.Register:
                     addressingmode = 0x1000;
                     break;
                 case AddressingMode.Indirect:
                     addressingmode = 0x2000;
+                    if (p1.UsesExtraDataSegment)
+                        addressingmode |= 0x8000;
                     break;
                 case AddressingMode.IndirectOffset:
                     addressingmode = 0x3000;
+                    if (p1.UsesExtraDataSegment)
+                        addressingmode |= 0x8000;
                     break;
                 case AddressingMode.IndirectIndexed:
                     int index_register = (p1.RegisterIndex & 0x0300) << 4;
                     addressingmode = (ushort)(0x4000 | index_register);
+                    if (p1.UsesExtraDataSegment)
+                        addressingmode |= 0x8000;
                     break;
                 default:
                     throw new Exception("Addressing mode not usable with this instruction.");
