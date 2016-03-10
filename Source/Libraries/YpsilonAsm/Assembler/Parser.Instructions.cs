@@ -783,8 +783,8 @@ namespace Ypsilon.Assembler
                     throw new Exception("Only immediate far jumps can have a second operand.");
                 if (p2.AddressingMode != AddressingMode.ImmediateBig)
                     throw new Exception("The second operand in an immediate far jump must be 32-bit.");
-                m_Code.Add((ushort)(p1.ImmediateWordLong & 0x0000ffff));
-                m_Code.Add((ushort)((p1.ImmediateWordLong & 0xffff0000) >> 16));
+                m_Code.Add((ushort)(p2.ImmediateWordLong & 0x0000ffff));
+                m_Code.Add((ushort)((p2.ImmediateWordLong & 0xffff0000) >> 16));
             }
             return m_Code;
         }
