@@ -92,6 +92,59 @@ namespace Ypsilon
                     }
                 }
 
+                // test shift
+                string[] shf_instructions = new string[] {
+                    "asl", "lsl", "rol", "rnl",
+                    "asr", "lsr", "ror", "rnr"
+                };
+                ushort[] shf_codes = new ushort[] {
+                    0x00A0, 0x00A1, 0x00A2, 0x00A3,
+                    0x00A4, 0x00A5, 0x00A6, 0x00A7
+                };
+
+                for (int ins = 0; ins < shf_instructions.Length; ins++)
+                {
+                    for (int r0 = 0; r0 < 8; r0++)
+                    {
+                        for (int offset = 1; offset <= 16; offset++)
+                        {
+                            Test(string.Format("{0}     r{1}, {2}", shf_instructions[ins], r0, offset), 
+                                (ushort)(shf_codes[ins] | ((byte)(offset - 1) << 8) | 0x0000 | (r0 << 13)));
+                        }
+
+                        for (int r1 = 0; r1 < 8; r1++)
+                        {
+                            Test(string.Format("{0}     r{1}, r{2}", shf_instructions[ins], r0, r1),
+                                (ushort)(shf_codes[ins] | (r1 << 8) | 0x1000 | (r0 << 13)));
+                        }
+                    }
+                }
+
+                // test bit-testing, setting, clearing
+                string[] bti_instructions = new string[] {
+                    "btt", "btx", "btc", "bts"
+                };
+                ushort[] bti_codes = new ushort[] {
+                    0x00A8, 0x00A9, 0x00AA, 0x00AB
+                };
+
+                for (int ins = 0; ins < bti_instructions.Length; ins++)
+                {
+                    for (int r0 = 0; r0 < 8; r0++)
+                    {
+                        for (int offset = 0; offset < 16; offset++)
+                        {
+                            Test(string.Format("{0}     r{1}, {2}", bti_instructions[ins], r0, offset),
+                                (ushort)(bti_codes[ins] | ((byte)(offset) << 8) | 0x0000 | (r0 << 13)));
+                        }
+
+                        for (int r1 = 0; r1 < 8; r1++)
+                        {
+                            Test(string.Format("{0}     r{1}, r{2}", bti_instructions[ins], r0, r1),
+                                (ushort)(bti_codes[ins] | (r1 << 8) | 0x1000 | (r0 << 13)));
+                        }
+                    }
+                }
             }
             catch (Exception e)
             {

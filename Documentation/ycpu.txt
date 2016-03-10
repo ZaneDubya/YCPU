@@ -1322,8 +1322,15 @@ NOTE:   For small immediate values, ($01-$20), SUB should be replaced with SBI.
 === 3.C. Bit Shifting Instructions =============================================
 
 All bit-shifting operations must specify the number of bits to be shifted. This
-number is a 4-bit number from ($00 - $0F). If the number of bits to shift is
-specified as $00, then no shift takes place, but flags are still effected.
+number can be specified as an immediate constant from 1-16, or taken from a 
+register. When specified as a constant, the number is the number of bit
+positions to shift. When specified as a register:
+    1. If the register value is equal to zero, no shift occurs. Flags are still
+       effected.
+    2. If the register value is between 1 and 15, a shift occurs with that
+       number of bits.
+    3. If the register value is greater than 15, a shift of
+       (register value & 0x000F) bits occurs.
 
 
 ASL         Arithmetic Shift Left
