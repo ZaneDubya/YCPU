@@ -1035,7 +1035,7 @@ IMM Bit Pattern
     
 JMI Bit Pattern
     FEDC BA98 7654 3210                             
-    sAAA rrrE OOOO ORRR
+    sAAA rrrE OOOO OOOO
         R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
@@ -1048,9 +1048,9 @@ JMI Bit Pattern
     .000 000F               Immediate           LOD R0, $1234       +1m
     s000 001F               Absolute            LOD R0, [$1234]     +2m     
     .001 rrr.               Register            LOD R0, r1             
-    s010 rrr.               Indirect            LOD R0, [r1]        +1m
-    s011 rrr.               Indirect Offset     LOD R0, [r1,$1234]  +2m
-    s1ii rrr.               Indirect Indexed    LOD R0, [r1,i2]     +1m
+    s010 rrrF               Indirect            LOD R0, [r1]        +1m
+    s011 rrrF               Indirect Offset     LOD R0, [r1,$1234]  +2m
+    s1ii rrrF               Indirect Indexed    LOD R0, [r1,i2]     +1m
 
 
         Note 1: When the 'F' bit is clear, the jump is 'near', and the PC will
