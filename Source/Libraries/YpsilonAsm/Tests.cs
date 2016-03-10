@@ -25,19 +25,22 @@ namespace Ypsilon
                 string[] alu_instructions = new string[] {
                     "cmp", "neg", "add", "sub", "adc", "sbc", "mul", "div",
                     "mli", "dvi", "mod", "mdi", "and", "orr", "eor", "not",
-                    "lod" };
+                    "lod", "sto" };
                 ushort[] alu_codes = new ushort[] {
                     0x0000, 0x0008, 0x0010, 0x0018, 0x0020, 0x0028, 0x0030, 0x0038,
                     0x0040, 0x0048, 0x0050, 0x0058, 0x0060, 0x0068, 0x0070, 0x0078,
-                    0x0080 };
+                    0x0080, 0x0088 };
                 string[] reg_control = new string[] { "fl", "pc", "ps", "p2", "ii", "ia", "usp", "sp" };
 
                 for (int ins = 0; ins < alu_instructions.Length; ins++)
                 {
                     for (int r0 = 0; r0 < 8; r0++)
                     {
-                        Test(string.Format("{0}     r{1}, $1234", alu_instructions[ins], r0), (ushort)(0x0000 | alu_codes[ins] | r0), 0x1234);
-                        Test(string.Format("{0}.8   r{1}, $0034", alu_instructions[ins], r0), (ushort)(0x0100 | alu_codes[ins] | r0), 0x0034);
+                        if (alu_instructions[ins] != "sto")
+                        {
+                            Test(string.Format("{0}     r{1}, $1234", alu_instructions[ins], r0), (ushort)(0x0000 | alu_codes[ins] | r0), 0x1234);
+                            Test(string.Format("{0}.8   r{1}, $0034", alu_instructions[ins], r0), (ushort)(0x0100 | alu_codes[ins] | r0), 0x0034);
+                        }
                         Test(string.Format("{0}     r{1}, [$1234]", alu_instructions[ins], r0), (ushort)(0x0200 | alu_codes[ins] | r0), 0x1234);
                         Test(string.Format("{0}     r{1}, ES[$1234]", alu_instructions[ins], r0), (ushort)(0x8200 | alu_codes[ins] | r0), 0x1234);
                         Test(string.Format("{0}.8   r{1}, [$1234]", alu_instructions[ins], r0), (ushort)(0x0300 | alu_codes[ins] | r0), 0x1234);
@@ -48,8 +51,11 @@ namespace Ypsilon
                         }
                         for (int r1 = 0; r1 < 8; r1++)
                         {
-                            Test(string.Format("{0}     r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1000 | alu_codes[ins] | r0 | (r1 << 9)));
-                            Test(string.Format("{0}.8   r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1100 | alu_codes[ins] | r0 | (r1 << 9)));
+                            if (alu_instructions[ins] != "sto")
+                            {
+                                Test(string.Format("{0}     r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1000 | alu_codes[ins] | r0 | (r1 << 9)));
+                                Test(string.Format("{0}.8   r{1}, r{2}", alu_instructions[ins], r0, r1), (ushort)(0x1100 | alu_codes[ins] | r0 | (r1 << 9)));
+                            }
                             Test(string.Format("{0}     r{1}, [r{2}]", alu_instructions[ins], r0, r1), (ushort)(0x2000 | alu_codes[ins] | r0 | (r1 << 9)));
                             Test(string.Format("{0}.8   r{1}, [r{2}]", alu_instructions[ins], r0, r1), (ushort)(0x2100 | alu_codes[ins] | r0 | (r1 << 9)));
                             Test(string.Format("{0}     r{1}, ES[r{2}]", alu_instructions[ins], r0, r1), (ushort)(0xA000 | alu_codes[ins] | r0 | (r1 << 9)));
@@ -84,6 +90,8 @@ namespace Ypsilon
             try
             {
                 List<byte> assembled = p.Parse(asm, string.Empty);
+                if (assembled == null)
+                    throw new Exception(p.ErrorMsg);
                 if (assembled.Count != expected.Length * 2)
                     throw new Exception("Failure to match: instruction {0} did not match expected bit length.");
                 for (int i = 0; i < expected.Length; i++)
