@@ -222,16 +222,64 @@ namespace Ypsilon
                 }
 
                 // test rts
+                Test("rts", 0x00B4);
+                Test("rts.f", 0x01B4);
 
                 // test lsg / ssg
 
                 // test inc / adi / dec / sbi
 
                 // test jmp / jsr
+                string[] jmi_instructions = new string[] { "jmp", "jsr" };
+                ushort[] jmi_codes = new ushort[] { 0x00B8, 0x00B9 };
+
+                for (int ins = 0; ins < jmi_instructions.Length; ins++)
+                {
+                    Test(string.Format("{0}     $1234", jmi_instructions[ins]),
+                        (ushort)(0x0000 | jmi_codes[ins]), 0x1234);
+                    Test(string.Format("{0}.f   $1234, $56789abc", jmi_instructions[ins]), 
+                        (ushort)(0x0100 | jmi_codes[ins]), 0x1234, 0x9abc, 0x5678);
+                    Test(string.Format("{0}     [$1234]", jmi_instructions[ins]),
+                            (ushort)(0x0200 | jmi_codes[ins]), 0x1234);
+                    Test(string.Format("{0}     ES[$1234]", jmi_instructions[ins]),
+                        (ushort)(0x8200 | jmi_codes[ins]), 0x1234);
+                    Test(string.Format("{0}.f   [$1234]", jmi_instructions[ins]),
+                        (ushort)(0x0300 | jmi_codes[ins]), 0x1234);
+                    Test(string.Format("{0}.f   ES[$1234]", jmi_instructions[ins]),
+                        (ushort)(0x8300 | jmi_codes[ins]), 0x1234);
+
+                    for (int r1 = 0; r1 < 8; r1++)
+                    {
+                        Test(string.Format("{0}     r{1}", jmi_instructions[ins], r1), 
+                            (ushort)(0x0100 | jmi_codes[ins] | (r1 << 9)));
+
+                        Test(string.Format("{0}     [r{2}]", alu_instructions[ins], r1), (ushort)(0x2000 | alu_codes[ins] | r0 | (r1 << 9)));
+                        Test(string.Format("{0}.8   [r{2}]", alu_instructions[ins], r1), (ushort)(0x2100 | alu_codes[ins] | r0 | (r1 << 9)));
+                        Test(string.Format("{0}     r{1}, ES[r{2}]", alu_instructions[ins], r1), (ushort)(0xA000 | alu_codes[ins] | r0 | (r1 << 9)));
+                        Test(string.Format("{0}.8   r{1}, ES[r{2}]", alu_instructions[ins], r1), (ushort)(0xA100 | alu_codes[ins] | r0 | (r1 << 9)));
+                        Test(string.Format("{0}     r{1}, [r{2},$1234]", alu_instructions[ins], r1), (ushort)(0x3000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}.8   r{1}, [r{2},$1234]", alu_instructions[ins], r1), (ushort)(0x3100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}     r{1}, ES[r{2},$1234]", alu_instructions[ins], r1), (ushort)(0xB000 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                        Test(string.Format("{0}.8   r{1}, ES[r{2},$1234]", alu_instructions[ins], r1), (ushort)(0xB100 | alu_codes[ins] | r0 | (r1 << 9)), 0x1234);
+                        for (int r2 = 4; r2 < 8; r2++)
+                        {
+                            Test(string.Format("{0}     r{1}, [r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0x4000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}.8   r{1}, [r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0x4100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}     r{1}, ES[r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0xC000 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                            Test(string.Format("{0}.8   r{1}, ES[r{2},r{3}]", alu_instructions[ins], r1, r2), (ushort)(0xC100 | alu_codes[ins] | r0 | (r1 << 9) | ((r2 - 4) << 12)));
+                        }
+                    }
+                }
 
                 // test hwq
+                for (int i = 0; i < 256; i++)
+                    Test(string.Format("hwq {0}", i),
+                        (ushort)(0x00BA | (i << 8)));
 
                 // test slp / swi / rti
+                Test("slp", 0x00BB);
+                Test("swi", 0x00BC);
+                Test("rti", 0x00BD);
             }
             catch (Exception e)
             {
