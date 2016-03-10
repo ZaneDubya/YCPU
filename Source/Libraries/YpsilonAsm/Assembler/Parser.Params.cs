@@ -25,14 +25,14 @@ namespace Ypsilon.Assembler
 
 
             // explicit reference to data segment?
-            if (param.Length > 2 && param.Substring(0, 2) == "ds")
+            if (param.Length > 3 && param.Substring(0, 3) == "ds[")
             {
                 useExtraDataSegment = false;
                 param = param.Substring(2);
             }
 
             // explicit reference to extra segment?
-            if (param.Length > 2 && param.Substring(0, 2) == "es")
+            if (param.Length > 3 && param.Substring(0, 3) == "es[")
             {
                 useExtraDataSegment = true;
                 param = param.Substring(2);
