@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Ypsilon.Assembler;
+using System.Linq;
 
 namespace Ypsilon
 {
@@ -13,6 +13,7 @@ namespace Ypsilon
         public static string Run()
         {
             m_TestCount = 0;
+            List<string> list = new List<string>();
 
             try
             {
@@ -145,6 +146,92 @@ namespace Ypsilon
                         }
                     }
                 }
+
+                // test set
+                for (int v = 0; v < 0x20; v++)
+                    for (int r = 0; r < 8; r++)
+                        Test(string.Format("set     r{0}, {1}", r, v),
+                            (ushort)(0x00AC | (v << 8) | (r << 13)));
+                for (int v = 0; v < 0x20; v++)
+                {
+                    ushort v0 = (v <= 0x0A) ?
+                            (ushort)Math.Pow(2, 5 + v) :
+                            (ushort)(0xFFE0 + v);
+                    for (int r = 0; r < 8; r++)
+                    {
+                        Test(string.Format("set     r{0}, {1}", r, v0),
+                            (ushort)(0x00AD | (v << 8) | (r << 13)));
+                    }
+                }
+
+                // test sef / clf
+                for (int flg = 1; flg < 16; flg++)
+                {
+                    list.Clear();
+                    if ((flg & 0x01) != 0)
+                        list.Add("v");
+                    if ((flg & 0x02) != 0)
+                        list.Add("c");
+                    if ((flg & 0x04) != 0)
+                        list.Add("z");
+                    if ((flg & 0x08) != 0)
+                        list.Add("n");
+                    string flg_str = list.Select(i => i).
+                        Aggregate((i, j) => i + "," + j);
+                    Test(string.Format("sef     {0}", flg_str),
+                            (ushort)(0x00AE | (flg << 12)));
+                    Test(string.Format("clf     {0}", flg_str),
+                            (ushort)(0x00AF | (flg << 12)));
+                }
+
+                // test push / pop
+                for (int stk = 1; stk < 256; stk++)
+                {
+                    list.Clear();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int p = (int)Math.Pow(2, i);
+                        if ((stk & p) == p)
+                            list.Add(string.Format("r{0}", i));
+                    }
+                    string regs = list.Select(i => i).
+                        Aggregate((i, j) => i + "," + j);
+                    Test(string.Format("psh     {0}", regs),
+                            (ushort)(0x00B0 | (stk << 8)));
+                    Test(string.Format("pop     {0}", regs),
+                            (ushort)(0x00B2 | (stk << 8)));
+                }
+
+                string[] stk_crs = new string[] {
+                    "fl", "pc", "ps", "p2", "ii", "ia", "usp", "sp" };
+                for (int stk = 1; stk < 256; stk++)
+                {
+                    list.Clear();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int p = (int)Math.Pow(2, i);
+                        if ((stk & p) == p)
+                            list.Add(stk_crs[i]);
+                    }
+                    string regs = list.Select(i => i).
+                        Aggregate((i, j) => i + "," + j);
+                    Test(string.Format("psh     {0}", regs),
+                            (ushort)(0x00B1 | (stk << 8)));
+                    Test(string.Format("pop     {0}", regs),
+                            (ushort)(0x00B3 | (stk << 8)));
+                }
+
+                // test rts
+
+                // test lsg / ssg
+
+                // test inc / adi / dec / sbi
+
+                // test jmp / jsr
+
+                // test hwq
+
+                // test slp / swi / rti
             }
             catch (Exception e)
             {

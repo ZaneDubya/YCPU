@@ -1143,7 +1143,7 @@ STK Bit Pattern < 1 / 2 >
         
 STK Bit Pattern < 2 / 2 >
     FEDC BA98 7654 3210                        
-    fcp2 iaus OOOO OOO1                                     Supervisor only?
+    suai 2pcf OOOO OOO1                                     Supervisor only?
         O = Opcode
         f = push/pop FL register                                N
         c = push/pop PC register                                N
