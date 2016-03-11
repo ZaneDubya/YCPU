@@ -1550,16 +1550,14 @@ See 2.D.4. for a description of this opcode's function.
 
 JMP         Unconditional Jump to new address.
     If jump is 'near' (far bit clear):
-        1. PC is set to the value of M.
+        1. PC is set to CS[PC+2].
         2. Execution continues.
     If jump is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
-        2. Bank index (0-3) is taken from bits 14-15 of M0.
-        3. Bits 12-15 of M1 are copied from bits 12-15 of the MMU word
-           describing the bank containing the current executing PC address.
-        4. MMU word at Bank index is set to M1.
-        5. PC is set to the value of M0.
-        6. Execution continues.
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        2. PC is set to CS[PC+2].
+        3. CS segment lo word is set to CS[PC+4].
+        4. CS segment hi word is set to CS[PC+6].
+        5. Execution continues.
 
 JSR         Unconditional Jump, saving return address.
     If jump is 'near' (far bit clear):
@@ -1567,28 +1565,25 @@ JSR         Unconditional Jump, saving return address.
         2. PC is set to the value of M.
         3. Execution continues.
     If jump is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
-        2. Bank index (0-3) is taken from bits 14-15 of M0.
-        3. MMU word at Bank index is pushed to stack.
-        4. PC is pushed to the stack. [PC is the address of the NEXT operation]
-        5. Bits 14-15 of M1 are copied from bits 14-15 of the MMU word
-           describing the bank containing the current executing PC address.
-        6. MMU word at Bank index is set to M1.
-        7. PC is set to the value of M0.
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        2. CS segment hi word is pushed to stack.
+        3. CS segment lo word is pushed to stack.
+        4. PC is pushed to stack. [NB: PC is the address of the NEXT operation]
+        5. PC is set to CS[PC+2].
+        6. CS segment lo word is set to CS[PC+4].
+        7. CS segment hi word is set to CS[PC+6].
         8. Execution continues.
 
 RTS         Return from Subroutine
     If return is 'near' (far bit clear):
-        1. M is popped from the stack. PC is set to M.
+        1. PC is popped from the stack.
         2. Execution continues.
     If return is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt. Else:
-        2. M0 is popped from the stack.
-        3. Bank index (0-3) is taken from bits 14-15 of M0.
-        4. PC is set to M0.
-        5. M1 is popped from the stack.
-        6. M1 is set to MMU word at Bank index.
-        7. Execution continues.
+        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        2. PC is popped from stack.
+        3. CS segment lo word is popped from stack.
+        4. CS segment hi word is popped from stack.
+        5. Execution continues.
     
     
 === 3.I. Stack Instructions ====================================================
