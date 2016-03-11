@@ -148,14 +148,14 @@ namespace Ypsilon.Emulation.Hardware
         public ushort R7 { get { return R[7]; } }
         #endregion
 
-        #region Status Registers
+        #region Control Registers
         enum RegSPIndex
         {
             FL, PC, PS, P2, II, IA, USP, SSP,
             Count
         }
 
-        ushort ReadStatusRegister(RegSPIndex index)
+        ushort ReadControlRegister(RegSPIndex index)
         {
             switch (index)
             {
@@ -207,7 +207,7 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void WriteStatusRegister(RegSPIndex index, ushort value)
+        void WriteControlRegister(RegSPIndex index, ushort value)
         {
             switch (index)
             {

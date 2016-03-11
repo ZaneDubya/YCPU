@@ -39,6 +39,7 @@
     <Compile Include="Emulation\Devices\Input\KeyboardDevice.cs" />
     <Compile Include="Emulation\Emulator.cs" />
     <Compile Include="Emulation\Hardware\MemoryBank.cs" />
+    <Compile Include="Emulation\Hardware\YCPU.Segments.cs" />
     <Compile Include="Emulation\Hardware\YBUS.cs" />
     <Compile Include="Emulation\Hardware\YCPU.cs" />
     <Compile Include="Emulation\Hardware\YCPU.Disassemblers.cs" />

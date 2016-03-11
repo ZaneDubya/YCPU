@@ -97,59 +97,59 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0x2E] = new YCPUInstruction("SBC", SBC, DisassembleALU, 0);
             Opcodes[0x2F] = new YCPUInstruction("SBC", SBC, DisassembleALU, 0);
 
-            Opcodes[0x30] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x31] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x32] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x33] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x34] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x35] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x36] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x37] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
+            Opcodes[0x30] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x31] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x32] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x33] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x34] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x35] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x36] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x37] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
 
-            Opcodes[0x38] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x39] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3A] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3B] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3C] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3D] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3E] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3F] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
+            Opcodes[0x38] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x39] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3A] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3B] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3C] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3D] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3E] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3F] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
 
-            Opcodes[0x40] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x41] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x42] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x43] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x44] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x45] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x46] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x47] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
+            Opcodes[0x40] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x41] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x42] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x43] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x44] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x45] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x46] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x47] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
 
-            Opcodes[0x48] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x49] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4A] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4B] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4C] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4D] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4E] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4F] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
+            Opcodes[0x48] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x49] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4A] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4B] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4C] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4D] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4E] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4F] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
 
-            Opcodes[0x50] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x51] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x52] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x53] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x54] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x55] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x56] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x57] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
+            Opcodes[0x50] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x51] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x52] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x53] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x54] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x55] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x56] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x57] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
 
-            Opcodes[0x58] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x59] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5A] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5B] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5C] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5D] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5E] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5F] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
+            Opcodes[0x58] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x59] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5A] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5B] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5C] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5D] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5E] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5F] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
 
             Opcodes[0x60] = new YCPUInstruction("AND", AND, DisassembleALU, 0);
             Opcodes[0x61] = new YCPUInstruction("AND", AND, DisassembleALU, 0);
@@ -219,20 +219,21 @@ namespace Ypsilon.Emulation.Hardware
             // 0x9A - 0x9E are Undefined operations in the branch opcode space.
             Opcodes[0x9F] = new YCPUInstruction("BAW", BAW, DisassembleBRA, 0);
 
-            Opcodes[0xA0] = new YCPUInstruction("ASL", ASL, DisassembleSHF, 0);
-            Opcodes[0xA1] = new YCPUInstruction("LSL", ASL, DisassembleSHF, 0); // ASL == LSL, per specification.
-            Opcodes[0xA2] = new YCPUInstruction("ROL", ROL, DisassembleSHF, 0);
-            Opcodes[0xA3] = new YCPUInstruction("RNL", RNL, DisassembleSHF, 0);
+            Opcodes[0xA0] = new YCPUInstruction("ASL", ASL, DisassembleSHF, 3);
+            Opcodes[0xA1] = new YCPUInstruction("LSL", ASL, DisassembleSHF, 3); // ASL == LSL, per specification.
+            Opcodes[0xA2] = new YCPUInstruction("ROL", ROL, DisassembleSHF, 1);
+            Opcodes[0xA3] = new YCPUInstruction("RNL", RNL, DisassembleSHF, 1);
             Opcodes[0xA4] = new YCPUInstruction("ASR", ASR, DisassembleSHF, 3);
             Opcodes[0xA5] = new YCPUInstruction("LSR", LSR, DisassembleSHF, 3);
-            Opcodes[0xA6] = new YCPUInstruction("ROR", ROR, DisassembleSHF, 0);
-            Opcodes[0xA7] = new YCPUInstruction("RNR", RNR, DisassembleSHF, 0);
+            Opcodes[0xA6] = new YCPUInstruction("ROR", ROR, DisassembleSHF, 1);
+            Opcodes[0xA7] = new YCPUInstruction("RNR", RNR, DisassembleSHF, 1);
 
             Opcodes[0xA8] = new YCPUInstruction("BTT", BIT, DisassembleBTT, 1);
             Opcodes[0xA9] = new YCPUInstruction("BTX", BTX, DisassembleBTT, 1);
             Opcodes[0xAA] = new YCPUInstruction("BTC", BTC, DisassembleBTT, 1);
             Opcodes[0xAB] = new YCPUInstruction("BTS", BTS, DisassembleBTT, 1);
-            // 0xAC and 0xAD are undefined.
+            Opcodes[0xAC] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
+            Opcodes[0xAD] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
             Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, DisassembleFLG, 0);
             Opcodes[0xAF] = new YCPUInstruction("CLF", CLF, DisassembleFLG, 0);
 
@@ -240,21 +241,19 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, DisassembleSTK, 0);
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
-            // 0xB4 is undefined. Used to be SFL.
-            Opcodes[0xB5] = new YCPUInstruction("MMU", MMU, DisassembleMMU, 0);
-            Opcodes[0xB6] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
-            Opcodes[0xB7] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
+            Opcodes[0xB4] = new YCPUInstruction("RTS", RTS, DisassembleRTS, 1);
+            Opcodes[0xB5] = new YCPUInstruction("XSG", MMU, DisassembleMMU, 1);
 
-            Opcodes[0xB8] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
-            Opcodes[0xB9] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
-            Opcodes[0xBA] = new YCPUInstruction("JMP", JMP, DisassembleJMP, 0);
-            Opcodes[0xBB] = new YCPUInstruction("JSR", JSR, DisassembleJMP, 1);
-            Opcodes[0xBC] = new YCPUInstruction("HWQ", HWQ, DisassembleHWQ, 0);
-            Opcodes[0xBD] = new YCPUInstruction("SLP", SLP, DisassembleNoBits, 0);
-            Opcodes[0xBE] = new YCPUInstruction("SWI", SWI, DisassembleNoBits, 0);
-            Opcodes[0xBF] = new YCPUInstruction("RTI", RTI, DisassembleNoBits, 11);
+            Opcodes[0xB6] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
+            Opcodes[0xB7] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
+            Opcodes[0xB8] = new YCPUInstruction("JMP", JMP, DisassembleJMP, 0);
+            Opcodes[0xB9] = new YCPUInstruction("JSR", JSR, DisassembleJMP, 1);
+            Opcodes[0xBA] = new YCPUInstruction("HWQ", HWQ, DisassembleHWQ, 0);
+            Opcodes[0xBB] = new YCPUInstruction("SLP", SLP, DisassembleNoBits, 0);
+            Opcodes[0xBC] = new YCPUInstruction("SWI", SWI, DisassembleNoBits, 0);
+            Opcodes[0xBD] = new YCPUInstruction("RTI", RTI, DisassembleNoBits, 11);
 
-            // 0xC0 = 0xFF are undefined (64 opcodes total).
+            // 0xBE = 0xFF are undefined (66 opcodes).
 
             for (int i = 0; i < 0x100; i += 1)
                 if (Opcodes[i].Opcode == null)
@@ -1100,7 +1099,7 @@ namespace Ypsilon.Emulation.Hardware
         }
         #endregion
 
-        #region SWI / RTI
+        #region SWI / RTI / RTS
         private void SWI(ushort operand)
         {
             Interrupt_SWI();
@@ -1115,6 +1114,24 @@ namespace Ypsilon.Emulation.Hardware
             }
 
             ReturnFromInterrupt();
+        }
+
+        private void RTS(ushort operand)
+        {
+            bool far = (operand & 0x0100) != 0;
+            if (far)
+            {
+                PC = StackPop();
+            }
+            else
+            {
+                if (!PS_S)
+                    Interrupt_UnPrivOpcode();
+                PC = StackPop();
+                ushort cs_lo = StackPop();
+                ushort cs_hi = StackPop();
+                // !!! CS = cs_lo + (cs_hi << 16);
+            }
         }
         #endregion
 

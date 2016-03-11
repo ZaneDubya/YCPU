@@ -54,7 +54,7 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 4: // Processor Register
-                    value = ReadStatusRegister((RegSPIndex)source);
+                    value = ReadControlRegister((RegSPIndex)source);
                     break;
 
                 case 5:
@@ -125,7 +125,7 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 4: // Processor Register
-                    WriteStatusRegister((RegSPIndex)addrRegister, R[(int)source]);
+                    WriteControlRegister((RegSPIndex)addrRegister, R[(int)source]);
                     // set source = none so calling function doesn't attempt to interpret this as well.
                     source = RegGPIndex.None;
                     destAddress = 0;

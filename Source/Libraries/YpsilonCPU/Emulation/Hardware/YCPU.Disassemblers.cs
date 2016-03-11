@@ -94,7 +94,7 @@ namespace Ypsilon.Emulation.Hardware
                             NameOfRegGP(regDest),
                             NameOfRegSP((RegSPIndex)((int)regSrc)));
                         if (showMemoryContents)
-                            disasm = AppendMemoryContents(disasm, ReadStatusRegister((RegSPIndex)regSrc));
+                            disasm = AppendMemoryContents(disasm, ReadControlRegister((RegSPIndex)regSrc));
                         return disasm;
                     }
                 case 5:
@@ -227,6 +227,14 @@ namespace Ypsilon.Emulation.Hardware
         {
             usesNextWord = false;
             return string.Format(name);
+        }
+
+        private string DisassembleRTS(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+            bool far = ((operand & 0x0100) != 0);
+                
+            return string.Format("{0}{1}", name, far ? ".F" : string.Empty);
         }
 
         private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
