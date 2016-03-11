@@ -420,15 +420,6 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        public void MMU_SwitchInHardwareBank(ushort mmuBankIndex, ushort deviceBusIndex, ushort deviceBankIndex)
-        {
-            ushort w00 = (ushort)((deviceBankIndex & 0x00FF) + ((deviceBusIndex & 0x00FF) << 8));
-            ushort w01 = (ushort)0; // no protection.
-
-            MMU_Write((ushort)(mmuBankIndex * 2), w00);
-            MMU_Write((ushort)(mmuBankIndex * 2 + 1), w01);
-        }
-
         public ushort DebugReadMemory(ushort address)
         {
             long cycles = m_Cycles;
