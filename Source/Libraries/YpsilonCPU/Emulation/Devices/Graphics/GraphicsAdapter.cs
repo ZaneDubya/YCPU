@@ -41,7 +41,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             m_Bank = null;
         }
 
-        public override IMemoryBank GetMemoryBank(ushort bank_index)
+        public override ISegmentProvider GetMemoryBank(ushort bank_index)
         {
             return m_Bank;
         }
@@ -81,7 +81,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
         // Internal Variables
         GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
-        IMemoryBank m_Bank;
+        ISegmentProvider m_Bank;
 
         // Internal Routines
         private void SetMode(ushort i)

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ypsilon.Emulation.Devices.Graphics
 {
-    public class MemoryBankLEM : IMemoryBank
+    public class MemoryBankLEM : ISegmentProvider
     {
         public MemoryBankLEM()
         {

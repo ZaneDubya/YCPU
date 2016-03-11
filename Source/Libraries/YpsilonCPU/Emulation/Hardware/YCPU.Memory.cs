@@ -4,19 +4,18 @@ namespace Ypsilon.Emulation.Hardware
     partial class YCPU
     {
         // Four loaded memory banks that are addressed by operations. Each memory bank is 0x4000 = 16kb bytes.
-        private IMemoryBank[] m_Mem;
+        private ISegmentProvider[] m_Mem;
 
         // Internal Processor Memory and ROM banks.
-        private MemoryBank[] m_Mem_CPU;
-        private MemoryBank[] m_Rom_CPU;
+        private Segment[] m_Mem_CPU;
+        private Segment[] m_Rom_CPU;
         private const ushort m_Mem_CPU_Count = 0x0004; // YCPU is guaranteed to have at least 4x16kb banks of internal memory.
         private const ushort m_Rom_CPU_Count = 0x0001;
 
-        // MMU Cache: 4 x 16-bit words for both Supervisor and User modes.
-        private ushort[] m_MMU;
-        private const ushort c_MMUCache_A = 0x1000, c_MMUCache_P = 0x2000, c_MMUCache_W = 0x4000, c_MMUCache_S = 0x8000;
-        private const ushort c_MMUCache_Device = 0x0F00, c_MMUCache_Bank = 0x00FF;
-        private const ushort c_MMUCache_ProcessorRom = 0x0080;
+        // Segment Registers.
+        private uint m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
+
+        
 
         /// <summary>
         /// Initializes arrays for memory banks, internal ram, and internal rom.
@@ -24,16 +23,16 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void InitializeMemory()
         {
-            m_Mem = new IMemoryBank[0x04];
+            m_Mem = new ISegmentProvider[0x04];
             m_MMU = new ushort[8];
 
-            m_Mem_CPU = new MemoryBank[m_Mem_CPU_Count];
+            m_Mem_CPU = new Segment[m_Mem_CPU_Count];
             for (int i = 0; i < m_Mem_CPU_Count; i += 1)
-                m_Mem_CPU[i] = new MemoryBank();
+                m_Mem_CPU[i] = new Segment();
 
-            m_Rom_CPU = new MemoryBank[m_Rom_CPU_Count];
+            m_Rom_CPU = new Segment[m_Rom_CPU_Count];
             for (int i = 0; i < m_Rom_CPU_Count; i += 1)
-                m_Rom_CPU[i] = new MemoryBank();
+                m_Rom_CPU[i] = new Segment();
         }
 
         public delegate ushort ReadMemInt16Method(ushort address, bool execute = false);
@@ -415,7 +414,7 @@ namespace Ypsilon.Emulation.Hardware
                 }
                 else
                 {
-                    m_Mem[i - mmuCacheBase] = (IMemoryBank)m_Bus.GetMemoryBank(device, bank);
+                    m_Mem[i - mmuCacheBase] = (ISegmentProvider)m_Bus.GetMemoryBank(device, bank);
                 }
             }
         }

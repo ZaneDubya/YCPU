@@ -14,7 +14,7 @@ namespace Ypsilon.Emulation.Hardware
             ES = 2,
             SS = 3,
             IS = 4,
-            USER = 8
+            USER_OFFSET = 8
         }
     }
 }

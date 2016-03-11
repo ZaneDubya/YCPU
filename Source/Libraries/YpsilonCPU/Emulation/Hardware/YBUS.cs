@@ -129,12 +129,25 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        public IMemoryBank GetMemoryBank(ushort deviceIndex, ushort bank_index)
+        /// <summary>
+        /// Returns the byte array of random access memory attached to the BUS.
+        /// </summary>
+        public byte[] GetMemoryReference()
         {
             deviceIndex -= 1;
             if (deviceIndex >= m_Devices.Count)
                 return null;
             return m_Devices[deviceIndex].GetMemoryBank((ushort)(bank_index & 0x00FF));
+        }
+
+        /// <summary>
+        /// Returns  the byte array of memory attached to the device.
+        /// </summary>
+        public byte[] GetDeviceMemoryReference(ushort deviceIndex)
+        {
+            if (deviceIndex >= m_Devices.Count)
+                return null;
+            return m_Devices[deviceIndex].GetMemory();
         }
     }
 }

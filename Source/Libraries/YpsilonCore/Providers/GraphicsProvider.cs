@@ -13,7 +13,7 @@ namespace YCPUXNA.Providers
 
         SpriteBatchExtended m_SpriteBatch;
 
-        public ITexture RenderLEM(IMemoryBank bank, uint[] chr, uint[] pal)
+        public ITexture RenderLEM(ISegmentProvider bank, uint[] chr, uint[] pal)
         {
             if (m_LEM == null)
             {
