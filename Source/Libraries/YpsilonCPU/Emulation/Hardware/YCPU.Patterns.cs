@@ -29,12 +29,12 @@ namespace Ypsilon.Emulation.Hardware
                 case 0: // Immediate (r == 0) or Absolute (r == 1)
                     if (source == 0)
                     {
-                        value = eightBitMode ? ReadMemInt8(PC, true) : ReadMemInt16(PC, true);
+                        value = eightBitMode ? ReadMem8(PC, true) : ReadMem16(PC, true);
                     }
                     else
                     {
-                        address = ReadMemInt16(PC, true);
-                        value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                        address = ReadMem16(PC, true);
+                        value = eightBitMode ? ReadMem8(address) : ReadMem16(address);
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -44,12 +44,12 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 2: // Indirect
-                    value = eightBitMode ? ReadMemInt8(R[(int)source]) : ReadMemInt16(R[(int)source]);
+                    value = eightBitMode ? ReadMem8(R[(int)source]) : ReadMem16(R[(int)source]);
                     break;
 
                 case 3: // Absolute Offset AKA Indirect Offset
-                    address = (ushort)(R[(int)source] + ReadMemInt16(PC, true));
-                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                    address = (ushort)(R[(int)source] + ReadMem16(PC, true));
+                    value = eightBitMode ? ReadMem8(address) : ReadMem16(address);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
@@ -68,7 +68,7 @@ namespace Ypsilon.Emulation.Hardware
                 default: // addressing of 0x8 ~ 0xF is an Indirect Indexed operation.
                     int indexRegister = ((operand & 0x7000) >> 12);
                     address = (ushort)(R[(int)source] + R[indexRegister]);
-                    value = eightBitMode ? ReadMemInt8(address) : ReadMemInt16(address);
+                    value = eightBitMode ? ReadMem8(address) : ReadMem16(address);
                     break;
             }
         }
@@ -104,7 +104,7 @@ namespace Ypsilon.Emulation.Hardware
                     }
                     else
                     {
-                        destAddress = ReadMemInt16(PC, true);
+                        destAddress = ReadMem16(PC, true);
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -120,7 +120,7 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 3: // Absolute Offset AKA Indirect Offset
-                    destAddress = (ushort)(R[(int)addrRegister] + ReadMemInt16(PC, true));
+                    destAddress = (ushort)(R[(int)addrRegister] + ReadMem16(PC, true));
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
@@ -204,19 +204,19 @@ namespace Ypsilon.Emulation.Hardware
                 case 0: // Immediate (r == 0) or Absolute (r == 1)
                     if ((int)source == 0)
                     {
-                        address = ReadMemInt16(PC, true);
+                        address = ReadMem16(PC, true);
                         if (isFarJump)
                         {
                             PC += 2;
-                            addressFar = ReadMemInt16(PC, true);
+                            addressFar = ReadMem16(PC, true);
                         }
                     }
                     else
                     {
-                        nextword = ReadMemInt16(PC, true);
-                        address = ReadMemInt16(nextword);
+                        nextword = ReadMem16(PC, true);
+                        address = ReadMem16(nextword);
                         if (isFarJump)
-                            addressFar = ReadMemInt16((ushort)(nextword + 2));
+                            addressFar = ReadMem16((ushort)(nextword + 2));
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -228,17 +228,17 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 2: // Indirect
-                    address = ReadMemInt16(R[(int)source]);
+                    address = ReadMem16(R[(int)source]);
                     if (isFarJump)
-                        addressFar = ReadMemInt16((ushort)(R[(int)source] + 2));
+                        addressFar = ReadMem16((ushort)(R[(int)source] + 2));
                     break;
 
                 case 3: // Indirect Offset AKA Absolute Offset
-                    nextword = ReadMemInt16(PC, true);
+                    nextword = ReadMem16(PC, true);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
-                    address = ReadMemInt16((ushort)(R[(int)source] + nextword));
+                    address = ReadMem16((ushort)(R[(int)source] + nextword));
                     if (isFarJump)
-                        addressFar = ReadMemInt16((ushort)(R[(int)source] + nextword + 2));
+                        addressFar = ReadMem16((ushort)(R[(int)source] + nextword + 2));
                     break;
 
                 case 4: // DOES NOT EXIST
@@ -251,9 +251,9 @@ namespace Ypsilon.Emulation.Hardware
 
                 default: // Indirect Indexed
                     int indexRegister = (operand & 0x7000) >> 12;
-                    address = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister]));
+                    address = ReadMem16((ushort)(R[(int)source] + R[indexRegister]));
                     if (isFarJump)
-                        addressFar = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister] + 2));
+                        addressFar = ReadMem16((ushort)(R[(int)source] + R[indexRegister] + 2));
                     break;
             }
         }

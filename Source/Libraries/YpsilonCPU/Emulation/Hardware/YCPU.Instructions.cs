@@ -556,9 +556,9 @@ namespace Ypsilon.Emulation.Hardware
             else
             {
                 if ((operand & 0x0100) != 0) // eight bit mode
-                    WriteMemInt8(dest_address, (byte)R[(int)source]);
+                    WriteMem8(dest_address, (byte)R[(int)source]);
                 else
-                    WriteMemInt16(dest_address, R[(int)source]);
+                    WriteMem16(dest_address, R[(int)source]);
             }
             // N [Negative] Not effected.
             // Z [Zero] Not effected.

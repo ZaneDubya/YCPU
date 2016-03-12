@@ -58,7 +58,7 @@ namespace Ypsilon.Emulation.Hardware
             m_Running = true;
             while (m_Running)
             {
-                ushort word = ReadMemInt16(PC, true);
+                ushort word = ReadMem16(PC, SegmentIndex.CS);
                 if (!m_ExecuteFail)
                 {
                     PC += 2;
@@ -93,7 +93,7 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void RunOneInstruction()
         {
-            ushort word = ReadMemInt16(PC, true);
+            ushort word = ReadMem16(PC, SegmentIndex.CS);
             if (!m_ExecuteFail)
             {
                 PC += 2;
@@ -582,7 +582,7 @@ namespace Ypsilon.Emulation.Hardware
 
         private ushort SizeOfLastInstruction(ushort current_address)
         {
-            ushort word = ReadMemInt16((ushort)(current_address - 2));
+            ushort word = ReadMem16((ushort)(current_address - 2), SegmentIndex.CS);
             YCPUInstruction opcode = Opcodes[word & 0x00FF];
             if (opcode.UsesNextWord(word))
                 return 4;
@@ -594,12 +594,12 @@ namespace Ypsilon.Emulation.Hardware
         private void StackPush(ushort value)
         {
             SP -= 2;
-            WriteMemInt16(SP, value);
+            WriteMem16(SP, value, SegmentIndex.SS);
         }
 
         private ushort StackPop()
         {
-            ushort value = ReadMemInt16(SP);
+            ushort value = ReadMem16(SP, SegmentIndex.SS);
             SP += 2;
             return value;
         }

@@ -52,6 +52,7 @@
     <Compile Include="Emulation\Hardware\YRTC.cs" />
     <Compile Include="Emulation\IDisplayProvider.cs" />
     <Compile Include="Emulation\IInputProvider.cs" />
+    <Compile Include="Emulation\SegmentIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Emulation\ITexture.cs" />
   </ItemGroup>

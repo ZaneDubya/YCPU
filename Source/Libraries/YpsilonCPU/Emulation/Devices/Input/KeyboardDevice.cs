@@ -66,11 +66,11 @@ namespace Ypsilon.Emulation.Devices.Input
                     break;
                 case 0x0001: // GET PENDING EVENTS, R1 is ptr.
                     ushort address = param_1;
-                    BUS.CPU.WriteMemInt16(address, m_CommandBuffer[0]);
+                    BUS.CPU.WriteMem16(address, m_CommandBuffer[0], SegmentIndex.DS);
                     for (int i = 0; i < m_CommandBuffer[0]; i++)
                     {
                         address += 2;
-                        BUS.CPU.WriteMemInt16(address, m_CommandBuffer[i + 1]);
+                        BUS.CPU.WriteMem16(address, m_CommandBuffer[i + 1], SegmentIndex.DS);
                     }
                     for (int i = 0; i < m_CommandBuffer.Length; i++)
                         m_CommandBuffer[i] = 0;

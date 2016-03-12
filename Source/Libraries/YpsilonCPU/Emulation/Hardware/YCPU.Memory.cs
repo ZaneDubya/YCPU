@@ -3,19 +3,11 @@ namespace Ypsilon.Emulation.Hardware
 {
     partial class YCPU
     {
-        // Four loaded memory banks that are addressed by operations. Each memory bank is 0x4000 = 16kb bytes.
-        private ISegmentProvider[] m_Mem;
+        // Segment Registers used when MMU is inactive.
+        private Segment m_Segment_ROM, m_Segment_RAM;
 
-        // Internal Processor Memory and ROM banks.
-        private Segment[] m_Mem_CPU;
-        private Segment[] m_Rom_CPU;
-        private const ushort m_Mem_CPU_Count = 0x0004; // YCPU is guaranteed to have at least 4x16kb banks of internal memory.
-        private const ushort m_Rom_CPU_Count = 0x0001;
-
-        // Segment Registers.
+        // Segment Registers used when MMU is active.
         private Segment m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
-
-        
 
         /// <summary>
         /// Initializes arrays for memory banks, internal ram, and internal rom.
@@ -23,27 +15,29 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void InitializeMemory()
         {
-            m_Mem = new ISegmentProvider[0x04];
-            m_MMU = new ushort[8];
+            m_Segment_ROM = new Segment(m_Bus, 0x80000000);
+            m_Segment_RAM = new Segment(m_Bus, 0x00000000);
 
-            m_Mem_CPU = new Segment[m_Mem_CPU_Count];
-            for (int i = 0; i < m_Mem_CPU_Count; i += 1)
-                m_Mem_CPU[i] = new Segment();
-
-            m_Rom_CPU = new Segment[m_Rom_CPU_Count];
-            for (int i = 0; i < m_Rom_CPU_Count; i += 1)
-                m_Rom_CPU[i] = new Segment();
+            m_CSS = new Segment(m_Bus, 0x80000000);
+            m_CSU = new Segment(m_Bus, 0x80000000);
+            m_DSS = new Segment(m_Bus, 0x00000000);
+            m_DSU = new Segment(m_Bus, 0x00000000);
+            m_ESS = new Segment(m_Bus, 0x00000000);
+            m_ESU = new Segment(m_Bus, 0x00000000);
+            m_SSS = new Segment(m_Bus, 0x00000000);
+            m_SSU = new Segment(m_Bus, 0x00000000);
+            m_IS = new Segment(m_Bus, 0x80000000);
         }
 
-        public delegate ushort ReadMemInt16Method(ushort address, bool execute = false);
-        public delegate void WriteMemInt16Method(ushort address, ushort value);
-        public delegate byte ReadMemInt8Method(ushort address, bool execute = false);
-        public delegate void WriteMemInt8Method(ushort address, byte value);
+        public delegate ushort ReadMem16Method(ushort address, SegmentIndex segment);
+        public delegate void WriteMem16Method(ushort address, ushort value, SegmentIndex segment);
+        public delegate byte ReadMem8Method(ushort address, SegmentIndex segment);
+        public delegate void WriteMem8Method(ushort address, byte value, SegmentIndex segment);
 
-        public ReadMemInt16Method ReadMemInt16 = null;
-        public WriteMemInt16Method WriteMemInt16 = null;
-        public ReadMemInt8Method ReadMemInt8 = null;
-        public WriteMemInt8Method WriteMemInt8 = null;
+        public ReadMem16Method ReadMem16 = null;
+        public WriteMem16Method WriteMem16 = null;
+        public ReadMem8Method ReadMem8 = null;
+        public WriteMem8Method WriteMem8 = null;
 
         /// <summary>
         /// Checks if a memory address is accessible. Fails if (1) address is not loaded, (2) attempt access of 
@@ -52,7 +46,7 @@ namespace Ypsilon.Emulation.Hardware
         /// <param name="address">The address to check.</param>
         /// <param name="execute">Set to true if address read is for execution purposes, false if only read as data.</param>
         /// <returns>True if address is accessible for reading in the current processor state.</returns>
-        private bool MMU_CheckRead(ushort address, bool execute)
+        private bool MMU_CheckRead(ushort address, SegmentIndex segment)
         {
             int bank = (address & 0xC000) >> 14;
             uint mmu = m_MMU[bank];
@@ -375,10 +369,10 @@ namespace Ypsilon.Emulation.Hardware
 
         private void MMU_Disable()
         {
-            ReadMemInt8 = ReadMemInt8_MMUDisabled;
-            ReadMemInt16 = ReadMemInt16_MMUDisabled;
-            WriteMemInt8 = WriteMemInt8_MMUDisabled;
-            WriteMemInt16 = WriteMemInt16_MMUDisabled;
+            ReadMem8 = ReadMemInt8_MMUDisabled;
+            ReadMem16 = ReadMemInt16_MMUDisabled;
+            WriteMem8 = WriteMemInt8_MMUDisabled;
+            WriteMem16 = WriteMemInt16_MMUDisabled;
 
             m_Mem[0] = m_Rom_CPU[0];
 
@@ -391,10 +385,10 @@ namespace Ypsilon.Emulation.Hardware
 
         private void MMU_Enable()
         {
-            ReadMemInt8 = ReadMemInt8_MMUEnabled;
-            ReadMemInt16 = ReadMemInt16_MMUEnabled;
-            WriteMemInt8 = WriteMemInt8_MMUEnabled;
-            WriteMemInt16 = WriteMemInt16_MMUEnabled;
+            ReadMem8 = ReadMemInt8_MMUEnabled;
+            ReadMem16 = ReadMemInt16_MMUEnabled;
+            WriteMem8 = WriteMemInt8_MMUEnabled;
+            WriteMem16 = WriteMemInt16_MMUEnabled;
 
             int mmuCacheBase = (PS_S) ? 4 : 0;
             for (int i = mmuCacheBase; i < mmuCacheBase + 4; i++)
@@ -422,7 +416,7 @@ namespace Ypsilon.Emulation.Hardware
         public ushort DebugReadMemory(ushort address)
         {
             long cycles = m_Cycles;
-            ushort memory = ReadMemInt16(address);
+            ushort memory = ReadMem16(address);
             m_Cycles = cycles;
             return memory;
         }

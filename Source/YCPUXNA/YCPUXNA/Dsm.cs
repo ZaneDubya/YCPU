@@ -33,22 +33,13 @@ namespace YCPUXNA
         private string[] Disassemble(BinaryReader reader)
         {
             YCPU ycpu = new YCPU();
-            LoadBinaryToCPU(reader, ycpu);
+            byte[] data = new byte[reader.BaseStream.Length];
+            ycpu.BUS.SetROM((uint)data.Length, data);
 
             string[] disassembled;
             disassembled = ycpu.Disassemble(0x0000, 32000, false);
 
             return disassembled;
-        }
-
-        private void LoadBinaryToCPU(BinaryReader reader, YCPU ycpu)
-        {
-            ushort address = 0;
-            while (reader.BaseStream.Position < reader.BaseStream.Length)
-            {
-                ycpu.WriteMemInt8((ushort)(address),reader.ReadByte());
-                address += 1;
-            }
         }
     }
 }

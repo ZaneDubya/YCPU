@@ -22,7 +22,7 @@ namespace Ypsilon.Emulation.Hardware
                 else
                     StackPush(PC);
             }
-            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2));
+            PC = ReadMem16((ushort)(IA + interrupt_number * 2));
             m_Cycles += 31;
         }
 
@@ -61,12 +61,23 @@ namespace Ypsilon.Emulation.Hardware
             Interrupt(0x04);
         }
 
-        internal void Interrupt_SegFault(Segment segment)
+        internal void Interrupt_SegFault(SegmentIndex segmentType)
         {
-            if (segment == m_CSS || segment == m_CSU)
+            if (segmentType == SegmentIndex.CS || segmentType == SegmentIndex.IS)
+            {
                 m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
-            // then, it will load the next instruction, with PC = InterruptTable[0x05];
-            Interrupt(0x05);
+                Interrupt(0x05);        // then, it will load the next instruction, with PC = InterruptTable[0x05];
+            }
+            else if (segmentType == SegmentIndex.DS || segmentType == SegmentIndex.ES)
+            {
+                m_ExecuteFail = false;
+                Interrupt(0x05);
+            }
+            else if (segmentType == SegmentIndex.SS)
+            {
+                m_ExecuteFail = false;
+                Interrupt(0x04);
+            }
         }
 
         private void Interrupt_UnPrivOpcode()

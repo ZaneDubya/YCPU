@@ -12,6 +12,8 @@ namespace Ypsilon.Emulation
         // Public properties.
         // ======================================================================
 
+        public readonly SegmentIndex SegmentType;
+
         public uint SegmentRegister
         {
             get { return m_SegmentRegister; }
@@ -100,7 +102,7 @@ namespace Ypsilon.Emulation
                 i &= 0x0000ffff;
                 if (i >= m_Size)
                 {
-                    m_Bus.CPU.Interrupt_SegFault(this);
+                    m_Bus.CPU.Interrupt_SegFault(SegmentType);
                     return 0;
                 }
                 else
@@ -119,7 +121,7 @@ namespace Ypsilon.Emulation
         // ======================================================================
 
         private uint m_SegmentRegister;
-        private YBUS m_Bus;
+        private readonly YBUS m_Bus;
         private IMemoryInterface m_MemoryReference;
         private uint m_Size, m_Base;
 
@@ -137,8 +139,9 @@ namespace Ypsilon.Emulation
         // Ctor and private methods.
         // ======================================================================
 
-        public Segment(YBUS bus, uint register)
+        public Segment(SegmentIndex segmentType, YBUS bus, uint register)
         {
+            SegmentType = segmentType;
             m_Bus = bus;
             SegmentRegister = register;
             RefreshMemoryReference();
