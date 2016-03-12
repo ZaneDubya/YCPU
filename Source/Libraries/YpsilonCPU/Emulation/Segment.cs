@@ -4,7 +4,7 @@ using Ypsilon.Emulation.Hardware;
 namespace Ypsilon.Emulation
 {
     /// <summary>
-    /// A segment of memory.
+    /// A segment is a window into memory.
     /// </summary>
     class Segment
     {
@@ -90,8 +90,14 @@ namespace Ypsilon.Emulation
 
         public byte this[int i]
         {
-            get { return m_MemoryReference[i & 0x3FFF]; }
-            set { m_MemoryReference[i & 0x3FFF] = value; }
+            get
+            {
+                return m_MemoryReference[i & 0x3FFF];
+            }
+            set
+            {
+                m_MemoryReference[i & 0x3FFF] = value;
+            }
         }
 
         // ======================================================================
@@ -124,6 +130,11 @@ namespace Ypsilon.Emulation
             RefreshMemoryReference();
         }
 
+        public void SetMemoryReference(byte[] reference)
+        {
+            m_MemoryReference = reference;
+        }
+
         private void RefreshMemoryReference()
         {
             // set byte[] reference.
@@ -139,7 +150,7 @@ namespace Ypsilon.Emulation
                 }
                 else
                 {
-                    m_MemoryReference = m_Bus.GetMemoryBank
+                    m_MemoryReference = m_Bus.GetMemoryReference();
                 }
             }
 

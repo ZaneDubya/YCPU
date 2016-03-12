@@ -4,103 +4,183 @@ using System.Linq;
 
 namespace Ypsilon.Emulation.Hardware
 {
+    /// <summary>
+    /// A representation of a address/data bus that has 16 generic slots. Device in slot zero is YCPU. Other slots can hold devices that inherit from ADevice.
+    /// </summary>
     public class YBUS
     {
+        public readonly YCPU CPU;
+
+        private byte[] m_RAM, m_ROM;
+        private Dictionary<Segment, MemoryReference> m_References = new Dictionary<Segment, MemoryReference>();
+
         private IDisplayProvider m_DisplayProvider;
         private IInputProvider m_InputProvider;
 
-        private List<ADevice> m_Devices;
+        private ADevice[] m_Devices = new ADevice[15];
+        private List<ushort> m_DevicesRaisingIRQ = new List<ushort>();
 
-        public YCPU CPU
-        {
-            get;
-            private set;
-        }
+        // ===================================================================================================
+        // Emulator Functions
+        // ===================================================================================================
 
         public YBUS(YCPU cpu)
         {
             CPU = cpu;
-            m_Devices = new List<ADevice>();
-            
         }
 
-        public void Reset()
+        public void SetRAM(int ramSize)
         {
-            while(m_Devices.Count > 0)
+            m_RAM = new byte[ramSize];
+
+            foreach (Segment segment in m_References.Keys)
             {
-                m_Devices[0].Dispose();
-                m_Devices.RemoveAt(0);
+                MemoryReference reference = m_References[segment];
+                if ((reference & MemoryReference.ReferenceType) == MemoryReference.RAM)
+                {
+                    GetRAMReference(segment);
+                }
             }
         }
 
-        public void Update()
+        public void SetROM(int romSize, byte[] rom)
         {
-            for (int i = 0; i < m_Devices.Count; i += 1)
-                m_Devices[i].Update(m_InputProvider);
+            m_ROM = new byte[romSize];
+            Array.Copy(rom, m_ROM, romSize);
+
+            foreach (Segment segment in m_References.Keys)
+            {
+                MemoryReference reference = m_References[segment];
+                if ((reference & MemoryReference.ReferenceType) == MemoryReference.ROM)
+                {
+                    GetROMReference(segment);
+                }
+            }
         }
 
-        public void Display(List<ITexture> textures)
-        {
-            for (int i = 0; i < m_Devices.Count; i++)
-                m_Devices[i].Display(i, textures, m_DisplayProvider);
-        }
-
-        internal void SetProviders(IDisplayProvider display, IInputProvider input)
+        public void SetProviders(IDisplayProvider display, IInputProvider input)
         {
             m_DisplayProvider = display;
             m_InputProvider = input;
         }
 
-        public ushort DevicesConnected
+        /// <summary>
+        /// Removes all RAM, ROM, Devices, and any segment references to the same.
+        /// </summary>
+        public void Reset()
         {
-            get { return (ushort)m_Devices.Count; }
-        }
-
-        public ushort[] QueryDevice(ushort deviceIndex)
-        {
-            if (deviceIndex <= 0 || deviceIndex > m_Devices.Count)
+            foreach (Segment segment in m_References.Keys)
             {
-                ushort[] info = new ushort[0x04];
-                info[0] = 0x0000;
-                info[1] = 0x0000;
-                info[2] = 0x0000;
-                info[3] = 0x0000;
-                return info;
+                segment.SetMemoryReference(null);
             }
-            else
+
+            for (int i = 0; i < m_Devices.Length; i++)
             {
-                return m_Devices[deviceIndex - 1].Bus_DeviceQuery();
+                if (m_Devices[i] != null)
+                {
+                    m_Devices[i].Dispose();
+                    m_Devices[i] = null;
+                }
+            }
+
+            m_RAM = null;
+            m_ROM = null;
+        }
+
+        public void Update()
+        {
+            for (int i = 0; i < m_Devices.Length; i++)
+            {
+                if (m_Devices[i] != null)
+                {
+                    m_Devices[i].Update(m_InputProvider);
+                }
             }
         }
 
-        public void AddDevice(ADevice device)
+        public void Display(List<ITexture> textures)
         {
-            m_Devices.Add(device);
-        }
-
-        public ushort SendDeviceMessage(ushort deviceIndex, ushort param_0, ushort param_1)
-        {
-            if (deviceIndex <= 0 || deviceIndex > m_Devices.Count)
-                return ADevice.MSG_NO_DEVICE;
-
-            return m_Devices[deviceIndex - 1].Bus_SendMessage(param_0, param_1);
-        }
-
-        private List<ushort> m_DevicesRaisingIRQ = new List<ushort>();
-
-        internal void Device_RaiseIRQ(ADevice device)
-        {
-            int device_index = (int)m_Devices.IndexOf(device);
-
-            if (device_index == -1)
+            for (int i = 0; i < m_Devices.Length; i++)
             {
-                // should never occur
-                return; 
+                if (m_Devices[i] != null)
+                {
+                    m_Devices[i].Display(i, textures, m_DisplayProvider);
+                }
             }
-            else
+        }
+
+        /// <summary>
+        /// Adds a device to specified slot index. INDEX MUST BE 1 - 16.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="index"></param>
+        public void AddDevice(ADevice device, ushort index)
+        {
+            if (index == 0 || index > 16)
+                return;
+
+            if (m_Devices[index - 1] != null)
             {
-                if (!m_DevicesRaisingIRQ.Contains((ushort)device_index))
-                    m_DevicesRaisingIRQ.Add((ushort)device_index);
+                m_Devices[index - 1].Dispose();
+                m_Devices[index - 1] = null;
+            }
+
+            m_Devices[index - 1] = device;
+
+            foreach (Segment segment in m_References.Keys)
+            {
+                MemoryReference reference = m_References[segment];
+                if (((reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
+                    ((reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                {
+                    GetDeviceMemoryReference(segment, index);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a device in the specified slot index. INDEX MUST BE 1 - 16.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="index"></param>
+        public void RemoveDevice(ushort index)
+        {
+            if (index == 0 || index > 16)
+                return;
+
+            if (m_Devices[index - 1] != null)
+            {
+                m_Devices[index - 1].Dispose();
+                m_Devices[index - 1] = null;
+            }
+
+            foreach (Segment segment in m_References.Keys)
+            {
+                MemoryReference reference = m_References[segment];
+                if (((reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
+                    ((reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                {
+                    GetDeviceMemoryReference(segment, index);
+                }
+            }
+        }
+
+        // ===================================================================================================
+        // YCPU.IRQ Functions
+        // ===================================================================================================
+
+        public bool IsIRQ
+        {
+            get { return m_DevicesRaisingIRQ.Count > 0; }
+        }
+
+        public ushort FirstIRQ
+        {
+            get
+            {
+                if (m_DevicesRaisingIRQ.Count == 0)
+                    return 0xFFFF;
+                return (ushort)(m_DevicesRaisingIRQ.Min() + 1);
             }
         }
 
@@ -114,40 +194,149 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        public bool IRQ
-        {
-            get { return m_DevicesRaisingIRQ.Count > 0; }
-        }
+        // ===================================================================================================
+        // YCPU.HWQ Functions
+        // ===================================================================================================
 
-        public ushort II
+        public ushort DevicesConnected
         {
             get
             {
-                if (m_DevicesRaisingIRQ.Count == 0)
-                    return 0xFFFF;
-                return (ushort)(m_DevicesRaisingIRQ.Min() + 1);
+                ushort count = 0;
+                for (int i = 0; i < m_Devices.Length; i++)
+                    if (m_Devices[i] != null)
+                        count++;
+                return count;
             }
         }
 
-        /// <summary>
-        /// Returns the byte array of random access memory attached to the BUS.
-        /// </summary>
-        public byte[] GetMemoryReference()
+        public ushort[] QueryDevice(ushort deviceIndex)
         {
-            deviceIndex -= 1;
-            if (deviceIndex >= m_Devices.Count)
-                return null;
-            return m_Devices[deviceIndex].GetMemoryBank((ushort)(bank_index & 0x00FF));
+            if (deviceIndex == 0)
+            {
+                // query YCPU
+                ushort[] info = new ushort[0x04];
+                info[0] = 0x0000;
+                info[1] = 0x0000;
+                info[2] = 0x0000;
+                info[3] = 0x0000;
+                return info;
+            }
+            else if ((deviceIndex > 16) || m_Devices[deviceIndex] == null)
+            {
+                // query device index beyond number of slots, or empty device
+                ushort[] info = new ushort[0x04];
+                info[0] = 0x0000;
+                info[1] = 0x0000;
+                info[2] = 0x0000;
+                info[3] = 0x0000;
+                return info;
+            }
+            else
+            {
+                // query present device
+                return m_Devices[deviceIndex - 1].Bus_DeviceQuery();
+            }
+        }
+
+        public ushort SendDeviceMessage(ushort deviceIndex, ushort param_0, ushort param_1)
+        {
+            if (deviceIndex == 0)
+            {
+                // send message to YCPU
+                return ADevice.MSG_NO_DEVICE;
+            }
+            else if ((deviceIndex > 16) || m_Devices[deviceIndex] == null)
+            {
+                // send message to device index beyond number of slots, or empty device
+                return ADevice.MSG_NO_DEVICE;
+            }
+            else
+            {
+                // send message to present device
+                return m_Devices[deviceIndex - 1].Bus_SendMessage(param_0, param_1);
+            }
+        }
+
+        // ===================================================================================================
+        // Device Functions
+        // ===================================================================================================
+
+        internal void Device_RaiseIRQ(ADevice device)
+        {
+            int device_index = -1;
+            for (int i = 0; i < m_Devices.Length; i++)
+                if (m_Devices[i] == device)
+                    device_index = i + 1;
+
+            if (device_index == -1)
+            {
+                // device raising irq does not exist on bus - should never occur
+                return; 
+            }
+            else
+            {
+                if (!m_DevicesRaisingIRQ.Contains((ushort)device_index))
+                    m_DevicesRaisingIRQ.Add((ushort)device_index);
+            }
+        }
+
+        // ===================================================================================================
+        // Memory Reference Functions
+        // ===================================================================================================
+
+        internal void GetRAMReference(Segment segment)
+        {
+            segment.SetMemoryReference(m_RAM);
+            m_References[segment] = MemoryReference.RAM;
+        }
+
+        internal void GetROMReference(Segment segment)
+        {
+            segment.SetMemoryReference(m_ROM);
+            m_References[segment] = MemoryReference.ROM;
         }
 
         /// <summary>
-        /// Returns  the byte array of memory attached to the device.
+        /// Returns  the byte array of memory attached to the device. Accepts values from 0 - 16. Device 0 is ROM.
         /// </summary>
-        public byte[] GetDeviceMemoryReference(ushort deviceIndex)
+        internal void GetDeviceMemoryReference(Segment segment, ushort deviceIndex)
         {
-            if (deviceIndex >= m_Devices.Count)
-                return null;
-            return m_Devices[deviceIndex].GetMemory();
+            if (deviceIndex == 0)
+            {
+                // request memory from ycpu
+                GetROMReference(segment);
+            }
+            else if (deviceIndex > 16)
+            {
+                // this should never happen - requested memory from device index that cannot exist.
+                segment.SetMemoryReference(null);
+                m_References[segment] = MemoryReference.None;
+            }
+            else
+            {
+                // request memory from device in slot index.
+                if (m_Devices[deviceIndex - 1] == null)
+                {
+                    segment.SetMemoryReference(null);
+                    m_References[segment] = MemoryReference.None;
+                }
+                else
+                {
+                    segment.SetMemoryReference(m_Devices[deviceIndex - 1].GetMemoryReference());
+                    m_References[segment] = MemoryReference.Device | (MemoryReference)deviceIndex;
+                }
+            }
+        }
+
+        enum MemoryReference
+        {
+            DeviceIndex = 0x00FF,
+            ReferenceType = 0xFF00,
+            None = 0x0000,
+            RAM = 0x0100,
+            ROM = 0x0200,
+            Device = 0x0400,
         }
     }
 }

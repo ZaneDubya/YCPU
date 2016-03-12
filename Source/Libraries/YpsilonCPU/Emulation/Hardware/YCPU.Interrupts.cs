@@ -82,7 +82,7 @@ namespace Ypsilon.Emulation.Hardware
         public void Interrupt_HWI()
         {
             PS_Q = true;
-            II = m_Bus.II;
+            II = m_Bus.FirstIRQ;
             m_Bus.AcknowledgeIRQ(II);
             Interrupt(0x0C);
         }

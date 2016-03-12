@@ -78,8 +78,10 @@ namespace Ypsilon.Emulation
         {
             CPU.BUS.Reset();
 
-            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Graphics.GraphicsAdapter(CPU.BUS));
-            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Input.KeyboardDevice(CPU.BUS));
+            CPU.BUS.SetRAM(0x20000);
+            CPU.BUS.AddDevice(new Devices.Graphics.GraphicsAdapter(CPU.BUS), 1);
+            CPU.BUS.AddDevice(new Devices.Input.KeyboardDevice(CPU.BUS), 2);
+            
         }
 
         public void LoadBinaryToCPU(string path, ushort address)
@@ -89,11 +91,7 @@ namespace Ypsilon.Emulation
             byte[] data = Common.GetBytesFromFile(path);
             if (data != null)
             {
-                for (int i = 0; i < data.Length; i += 1)
-                {
-                    CPU.WriteMemInt8((ushort)(address), data[i]);
-                    address += 1;
-                }
+                CPU.BUS.SetROM(0x10000, data);
             }
 
             CPU.Interrupt_Reset();

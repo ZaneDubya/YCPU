@@ -21,7 +21,7 @@ namespace Ypsilon.Emulation
         protected abstract void Initialize();
         protected abstract ushort ReceiveMessage(ushort param_0, ushort param_1);
 
-        public virtual ISegmentProvider GetMemoryBank(ushort bank_index)
+        public virtual byte[] GetMemoryReference()
         {
             return null;
         }

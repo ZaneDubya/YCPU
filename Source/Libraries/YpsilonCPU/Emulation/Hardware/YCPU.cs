@@ -69,7 +69,7 @@ namespace Ypsilon.Emulation.Hardware
                     m_Cycles += opcode.Cycles;
 
                     // Check for hardware interrupt:
-                    if (PS_I && !PS_Q && m_Bus.IRQ)
+                    if (PS_I && !PS_Q && m_Bus.IsIRQ)
                         Interrupt_HWI();
 
                     // Check for RTC interrupt:
@@ -99,7 +99,7 @@ namespace Ypsilon.Emulation.Hardware
                 PC += 2;
 
                 // Check for hardware interrupt:
-                if (PS_I && !PS_Q && m_Bus.IRQ)
+                if (PS_I && !PS_Q && m_Bus.IsIRQ)
                     Interrupt_HWI();
 
                 // Check for RTC interrupt:

@@ -13,7 +13,7 @@ namespace Ypsilon.Emulation.Hardware
         private const ushort m_Rom_CPU_Count = 0x0001;
 
         // Segment Registers.
-        private uint m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
+        private Segment m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
 
         
 
