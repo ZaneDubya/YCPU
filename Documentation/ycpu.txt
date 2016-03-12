@@ -1271,6 +1271,8 @@ Operation:  NEG(M) -> Rx
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
     V [Overflow] Set if input value is 0x8000, Rx = 0x8000;
+    
+    NOTE: Negate 0x8000 == 0x7fff
 
 
 NOT         Bitwise NOT of value, stores result in Source Reg.

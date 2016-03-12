@@ -10,8 +10,8 @@ namespace Ypsilon.Emulation.Hardware
 
             for (int i = 0; i < count; i += 1)
             {
-                word = DebugReadMemory(address);
-                ushort nextword = DebugReadMemory((ushort)(address + 2));
+                word = DebugReadMemory(address, SegmentIndex.CS);
+                ushort nextword = DebugReadMemory((ushort)(address + 2), SegmentIndex.CS);
                 bool usesNextWord = false;
 
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];
@@ -59,7 +59,7 @@ namespace Ypsilon.Emulation.Hardware
                             nextword,
                             absolute ? "[" : string.Empty, absolute ? "]" : string.Empty);
                         if (showMemoryContents)
-                            disasm = AppendMemoryContents(disasm, absolute ? DebugReadMemory(nextword) : nextword);
+                            disasm = AppendMemoryContents(disasm, absolute ? DebugReadMemory(nextword, SegmentIndex.DS) : nextword);
                         return disasm;
                     }
                 case 1: // Register
@@ -76,7 +76,7 @@ namespace Ypsilon.Emulation.Hardware
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        DebugReadMemory(R[(int)regSrc]));
+                        DebugReadMemory(R[(int)regSrc], SegmentIndex.DS));
 
                 case 3: // Indirect Offset (also Absolute Offset)
                     usesNextWord = true;
@@ -85,7 +85,7 @@ namespace Ypsilon.Emulation.Hardware
                         NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)), 
                         nextword,
-                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword)));
+                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword), SegmentIndex.DS));
                 case 4: // Status Register
                     usesNextWord = false;
                     {
@@ -110,7 +110,7 @@ namespace Ypsilon.Emulation.Hardware
                         NameOfRegGP(regDest),
                         NameOfRegGP((RegGPIndex)((int)regSrc)),
                         NameOfRegGP((RegGPIndex)regIndex),
-                        DebugReadMemory((ushort)(R[(int)regSrc] + R[regIndex])));
+                        DebugReadMemory((ushort)(R[(int)regSrc] + R[regIndex]), SegmentIndex.DS));
 
             }
         }
@@ -181,7 +181,7 @@ namespace Ypsilon.Emulation.Hardware
                     bool absolute = (operand & 0x0100) != 0;
                     return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword,
                         absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
-                        absolute ? string.Format("         (${0:X4})", DebugReadMemory(nextword)) : string.Empty);
+                        absolute ? string.Format("         (${0:X4})", DebugReadMemory(nextword, SegmentIndex.CS)) : string.Empty);
                 case 1: // Register
                     usesNextWord = false;
                     return string.Format("{0,-8}{1}              (${2:X4})", name,
@@ -191,12 +191,12 @@ namespace Ypsilon.Emulation.Hardware
                     usesNextWord = false;
                     return string.Format("{0,-8}[{1}]            (${2:X4})", name,
                         NameOfRegGP((RegGPIndex)((int)r_src)),
-                        DebugReadMemory(R[(int)r_src]));
+                        DebugReadMemory(R[(int)r_src], SegmentIndex.DS));
                 case 3: // Indirect Offset (also Absolute Offset)
                     usesNextWord = true;
                     return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name,
                         NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
-                        DebugReadMemory((ushort)(R[(int)r_src] + nextword)));
+                        DebugReadMemory((ushort)(R[(int)r_src] + nextword), SegmentIndex.DS));
                 case 4:
                 case 5:
                 case 6:
@@ -210,7 +210,7 @@ namespace Ypsilon.Emulation.Hardware
                         NameOfRegGP((RegGPIndex)((int)r_src)),
                         NameOfRegGP((RegGPIndex)index_bits),
                         DebugReadMemory((ushort)
-                            (R[(int)r_src] + R[index_bits])));
+                            (R[(int)r_src] + R[index_bits]), SegmentIndex.DS));
             }
         }
 

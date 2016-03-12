@@ -4,7 +4,7 @@ namespace Ypsilon.Emulation.Hardware
     partial class YCPU
     {
         // Segment Registers used when MMU is inactive.
-        private Segment m_Segment_ROM, m_Segment_RAM;
+        private Segment m_CS_NoMMU, m_DS_NoMMU, m_ES_NoMMU, m_SS_NoMMU, m_IS_NoMMU;
 
         // Segment Registers used when MMU is active.
         private Segment m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
@@ -15,18 +15,21 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void InitializeMemory()
         {
-            m_Segment_ROM = new Segment(m_Bus, 0x80000000);
-            m_Segment_RAM = new Segment(m_Bus, 0x00000000);
+            m_CS_NoMMU = new Segment(SegmentIndex.CS, m_Bus, 0x80000000);
+            m_DS_NoMMU = new Segment(SegmentIndex.DS, m_Bus, 0x00000000);
+            m_ES_NoMMU = new Segment(SegmentIndex.ES, m_Bus, 0x00000000);
+            m_SS_NoMMU = new Segment(SegmentIndex.SS, m_Bus, 0x00000000);
+            m_IS_NoMMU = new Segment(SegmentIndex.IS, m_Bus, 0x80000000);
 
-            m_CSS = new Segment(m_Bus, 0x80000000);
-            m_CSU = new Segment(m_Bus, 0x80000000);
-            m_DSS = new Segment(m_Bus, 0x00000000);
-            m_DSU = new Segment(m_Bus, 0x00000000);
-            m_ESS = new Segment(m_Bus, 0x00000000);
-            m_ESU = new Segment(m_Bus, 0x00000000);
-            m_SSS = new Segment(m_Bus, 0x00000000);
-            m_SSU = new Segment(m_Bus, 0x00000000);
-            m_IS = new Segment(m_Bus, 0x80000000);
+            m_CSS = new Segment(SegmentIndex.CS, m_Bus, 0x80000000);
+            m_CSU = new Segment(SegmentIndex.CS, m_Bus, 0x80000000);
+            m_DSS = new Segment(SegmentIndex.DS, m_Bus, 0x00000000);
+            m_DSU = new Segment(SegmentIndex.DS, m_Bus, 0x00000000);
+            m_ESS = new Segment(SegmentIndex.ES, m_Bus, 0x00000000);
+            m_ESU = new Segment(SegmentIndex.ES, m_Bus, 0x00000000);
+            m_SSS = new Segment(SegmentIndex.SS, m_Bus, 0x00000000);
+            m_SSU = new Segment(SegmentIndex.SS, m_Bus, 0x00000000);
+            m_IS = new Segment(SegmentIndex.IS, m_Bus, 0x80000000);
         }
 
         public delegate ushort ReadMem16Method(ushort address, SegmentIndex segment);
@@ -413,10 +416,10 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        public ushort DebugReadMemory(ushort address)
+        public ushort DebugReadMemory(ushort address, SegmentIndex segmentType)
         {
             long cycles = m_Cycles;
-            ushort memory = ReadMem16(address);
+            ushort memory = ReadMem16(address, segmentType);
             m_Cycles = cycles;
             return memory;
         }
