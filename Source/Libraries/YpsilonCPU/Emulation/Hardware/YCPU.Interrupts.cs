@@ -61,9 +61,9 @@ namespace Ypsilon.Emulation.Hardware
             Interrupt(0x04);
         }
 
-        private void Interrupt_BankFault(bool execute)
+        internal void Interrupt_SegFault(Segment segment)
         {
-            if (execute)
+            if (segment == m_CSS || segment == m_CSU)
                 m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
             // then, it will load the next instruction, with PC = InterruptTable[0x05];
             Interrupt(0x05);

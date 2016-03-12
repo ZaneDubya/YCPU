@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Ypsilon.Emulation.Hardware;
 
 namespace Ypsilon.Emulation.Devices.Graphics
@@ -25,10 +23,10 @@ namespace Ypsilon.Emulation.Devices.Graphics
             get { return 0x0000; }
         }
 
-        public GraphicsAdapter(Hardware.YBUS bus)
+        public GraphicsAdapter(YBUS bus)
             : base(bus)
         {
-            m_Bank = new MemoryBankLEM();
+            m_Bank = new MemoryLEM();
         }
 
         protected override void Initialize()
@@ -41,7 +39,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             m_Bank = null;
         }
 
-        public override ISegmentProvider GetMemoryBank(ushort bank_index)
+        public override IMemoryInterface GetMemoryInterface()
         {
             return m_Bank;
         }
@@ -81,7 +79,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
         // Internal Variables
         GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
-        ISegmentProvider m_Bank;
+        IMemoryInterface m_Bank;
 
         // Internal Routines
         private void SetMode(ushort i)
@@ -107,12 +105,12 @@ namespace Ypsilon.Emulation.Devices.Graphics
             {
                 byte[] chrram_default = new byte[512];
                 System.Buffer.BlockCopy(c_DefaultCharset, 0, chrram_default, 0, 512);
-                for (int i = 0; i < 512; i += 1)
+                for (uint i = 0; i < 512; i += 1)
                     m_Bank[0x0800 + i] = chrram_default[i];
 
                 byte[] palram_default = new byte[32];
                 System.Buffer.BlockCopy(c_DefaultPalette, 0, palram_default, 0, 32);
-                for (int i = 0; i < 32; i += 1)
+                for (uint i = 0; i < 32; i += 1)
                     m_Bank[0x0C00 + i] = palram_default[i];
 
                 m_GraphicsMode = GraphicsMode.LEM1802;
@@ -121,7 +119,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
 
         private void Update_LEM()
         {
-            MemoryBankLEM lem = (MemoryBankLEM)m_Bank;
+            MemoryLEM lem = (MemoryLEM)m_Bank;
             if (lem.SCRRAM_Delta)
             {
 
@@ -146,7 +144,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
         private void Update_LEM_CHRRAM()
         {
             // Assume CHRRAM format is Color (ARGB8888)
-            // Each character is 4x8 pixels at 1bit depth, 4 bytes total.
+            // Each character is 4x8 pixels at 1 bit depth, 4 bytes total.
             // byte 0, bit 0-3: 3210
             // byte 0, bit 4-7: 7654
             // byte 1, bit 0-3: 3210
@@ -158,7 +156,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
         private void Update_LEM_PALRAM()
         {
             // Assume PALRAM format is Color (ARGB8888)
-            for (int i = 0; i < 0x10; i += 1)
+            for (uint i = 0; i < 0x10; i += 1)
             {
                 ushort color = (ushort)(m_Bank[0x0C00 + i * 2] + (m_Bank[0x0C00 + i * 2 + 1] << 8));
                 m_LEM_PALRAM[i] = (uint)(0xFF000000) | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);

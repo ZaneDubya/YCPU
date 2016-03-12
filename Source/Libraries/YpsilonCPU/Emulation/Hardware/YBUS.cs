@@ -11,7 +11,7 @@ namespace Ypsilon.Emulation.Hardware
     {
         public readonly YCPU CPU;
 
-        private byte[] m_RAM, m_ROM;
+        private YMemory m_RAM, m_ROM;
         private Dictionary<Segment, MemoryReference> m_References = new Dictionary<Segment, MemoryReference>();
 
         private IDisplayProvider m_DisplayProvider;
@@ -29,9 +29,9 @@ namespace Ypsilon.Emulation.Hardware
             CPU = cpu;
         }
 
-        public void SetRAM(int ramSize)
+        public void SetRAM(uint ramSize)
         {
-            m_RAM = new byte[ramSize];
+            m_RAM = new YMemory(ramSize);
 
             foreach (Segment segment in m_References.Keys)
             {
@@ -43,10 +43,11 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        public void SetROM(int romSize, byte[] rom)
+        public void SetROM(uint romSize, byte[] rom)
         {
-            m_ROM = new byte[romSize];
-            Array.Copy(rom, m_ROM, romSize);
+            m_ROM = new YMemory(romSize);
+            for (uint i = 0; i < rom.Length; i++)
+                m_ROM[i] = rom[i];
 
             foreach (Segment segment in m_References.Keys)
             {
@@ -323,7 +324,7 @@ namespace Ypsilon.Emulation.Hardware
                 }
                 else
                 {
-                    segment.SetMemoryReference(m_Devices[deviceIndex - 1].GetMemoryReference());
+                    segment.SetMemoryReference(m_Devices[deviceIndex - 1].GetMemoryInterface());
                     m_References[segment] = MemoryReference.Device | (MemoryReference)deviceIndex;
                 }
             }

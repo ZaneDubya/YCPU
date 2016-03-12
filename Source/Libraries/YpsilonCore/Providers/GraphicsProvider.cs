@@ -13,7 +13,7 @@ namespace YCPUXNA.Providers
 
         SpriteBatchExtended m_SpriteBatch;
 
-        public ITexture RenderLEM(ISegmentProvider bank, uint[] chr, uint[] pal)
+        public ITexture RenderLEM(IMemoryInterface devicemem, uint[] chr, uint[] pal)
         {
             if (m_LEM == null)
             {
@@ -21,13 +21,13 @@ namespace YCPUXNA.Providers
                 m_LEM_Data = new uint[128 * 96];
             }
 
-            int current_word = 0;
+            uint byte_index = 0;
             for (int y = 0; y < 12; y += 1)
             {
                 for (int x = 0; x < 32; x += 1)
                 {
-                    byte data0 = bank[current_word++];
-                    byte data1 = bank[current_word++];
+                    byte data0 = devicemem[byte_index++];
+                    byte data1 = devicemem[byte_index++];
                     uint color0 = pal[(data1 & 0x0f)];
                     uint color1 = pal[(data1 & 0xf0) >> 4];
                     uint character = chr[data0 & 0x7F];

@@ -41,6 +41,11 @@ namespace Ypsilon.Emulation
             }
         }
 
+        public ushort DeviceIndex
+        {
+            get { return (ushort)((m_SegmentRegister & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift); }
+        }
+
         public bool IsWriteProtected
         {
             get { return (m_SegmentRegister & c_SEGREG_W) != 0; }
@@ -88,15 +93,24 @@ namespace Ypsilon.Emulation
         // Public methods.
         // ======================================================================
 
-        public byte this[int i]
+        public byte this[uint i]
         {
             get
             {
-                return m_MemoryReference[i & 0x3FFF];
+                i &= 0x0000ffff;
+                if (i >= m_Size)
+                {
+                    m_Bus.CPU.Interrupt_SegFault(this);
+                    return 0;
+                }
+                else
+                {
+                    return m_MemoryReference[i + m_Base];
+                }
             }
             set
             {
-                m_MemoryReference[i & 0x3FFF] = value;
+                m_MemoryReference[i] = value;
             }
         }
 
@@ -106,8 +120,8 @@ namespace Ypsilon.Emulation
 
         private uint m_SegmentRegister;
         private YBUS m_Bus;
-        private byte[] m_MemoryReference;
-        private int m_Size, m_Base;
+        private IMemoryInterface m_MemoryReference;
+        private uint m_Size, m_Base;
 
         // ======================================================================
         // Constants.
@@ -130,7 +144,7 @@ namespace Ypsilon.Emulation
             RefreshMemoryReference();
         }
 
-        public void SetMemoryReference(byte[] reference)
+        public void SetMemoryReference(IMemoryInterface reference)
         {
             m_MemoryReference = reference;
         }
@@ -146,28 +160,29 @@ namespace Ypsilon.Emulation
             {
                 if (IsDevice)
                 {
-                    
+                    // will select rom if index == 0, device memory if index is between 1-15.
+                    m_Bus.GetDeviceMemoryReference(this, DeviceIndex);
                 }
                 else
                 {
-                    m_MemoryReference = m_Bus.GetMemoryReference();
+                    m_Bus.GetRAMReference(this);
                 }
             }
 
             // get size
             uint s = (m_SegmentRegister & c_SEGREG_Size) >> c_SEGREG_SizeShift;
-            m_Size = (s == 0) ? ushort.MaxValue : (int)s;
+            m_Size = (s == 0) ? ushort.MaxValue : s;
 
             // get base
             if (IsDevice)
             {
                 uint b = (m_SegmentRegister & c_SEGREG_MemBase);
-                m_Base = (int)b;
+                m_Base = b;
             }
             else
             {
                 uint b = (m_SegmentRegister & c_SEGREG_DeviceBase);
-                m_Base = (int)b;
+                m_Base = b;
             }
         }
     }
