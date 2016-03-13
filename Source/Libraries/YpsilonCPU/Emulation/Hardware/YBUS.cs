@@ -34,7 +34,7 @@ namespace Ypsilon.Emulation.Hardware
 
             foreach (Segment segment in m_References)
             {
-                if ((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.RAM)
+                if ((segment.Reference & MemoryReferenceInfo.ReferenceType) == MemoryReferenceInfo.RAM)
                 {
                     GetRAMReference(segment);
                 }
@@ -47,7 +47,7 @@ namespace Ypsilon.Emulation.Hardware
 
             foreach (Segment segment in m_References)
             {
-                if ((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.ROM)
+                if ((segment.Reference & MemoryReferenceInfo.ReferenceType) == MemoryReferenceInfo.ROM)
                 {
                     GetROMReference(segment);
                 }
@@ -133,8 +133,8 @@ namespace Ypsilon.Emulation.Hardware
 
             foreach (Segment segment in m_References)
             {
-                if (((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
-                    ((segment.Reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                if (((segment.Reference & MemoryReferenceInfo.ReferenceType) == MemoryReferenceInfo.Device) &&
+                    ((segment.Reference & MemoryReferenceInfo.DeviceIndex) == (MemoryReferenceInfo)index))
                 {
                     GetDeviceMemoryReference(segment, index);
                 }
@@ -159,8 +159,8 @@ namespace Ypsilon.Emulation.Hardware
 
             foreach (Segment segment in m_References)
             {
-                if (((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
-                    ((segment.Reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                if (((segment.Reference & MemoryReferenceInfo.ReferenceType) == MemoryReferenceInfo.Device) &&
+                    ((segment.Reference & MemoryReferenceInfo.DeviceIndex) == (MemoryReferenceInfo)index))
                 {
                     GetDeviceMemoryReference(segment, index);
                 }
@@ -299,14 +299,14 @@ namespace Ypsilon.Emulation.Hardware
         internal void GetRAMReference(Segment segment)
         {
             segment.SetMemoryReference(m_RAM);
-            segment.Reference = MemoryReference.RAM;
+            segment.Reference = MemoryReferenceInfo.RAM;
             AddSegmentToReferences(segment);
         }
 
         internal void GetROMReference(Segment segment)
         {
             segment.SetMemoryReference(m_ROM);
-            segment.Reference = MemoryReference.ROM;
+            segment.Reference = MemoryReferenceInfo.ROM;
             AddSegmentToReferences(segment);
         }
 
@@ -324,7 +324,7 @@ namespace Ypsilon.Emulation.Hardware
             {
                 // this should never happen - requested memory from device index that cannot exist.
                 segment.SetMemoryReference(null);
-                segment.Reference = MemoryReference.None;
+                segment.Reference = MemoryReferenceInfo.None;
                 AddSegmentToReferences(segment);
             }
             else
@@ -333,12 +333,12 @@ namespace Ypsilon.Emulation.Hardware
                 if (m_Devices[deviceIndex - 1] == null)
                 {
                     segment.SetMemoryReference(null);
-                    segment.Reference = MemoryReference.None;
+                    segment.Reference = MemoryReferenceInfo.None;
                 }
                 else
                 {
                     segment.SetMemoryReference(m_Devices[deviceIndex - 1].GetMemoryInterface());
-                    segment.Reference = MemoryReference.Device | (MemoryReference)deviceIndex;
+                    segment.Reference = MemoryReferenceInfo.Device | (MemoryReferenceInfo)deviceIndex;
                 }
                 AddSegmentToReferences(segment);
             }

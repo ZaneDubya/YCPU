@@ -1,7 +1,7 @@
 ﻿using System;
 using Ypsilon.Emulation.Hardware;
 
-namespace Ypsilon.Emulation
+namespace Ypsilon.Emulation.Hardware
 {
     /// <summary>
     /// A segment is a window into memory.
@@ -13,7 +13,7 @@ namespace Ypsilon.Emulation
         // ======================================================================
 
         public readonly SegmentIndex SegmentType;
-        public MemoryReference Reference = MemoryReference.None;
+        public MemoryReferenceInfo Reference = MemoryReferenceInfo.None;
 
         public uint SegmentRegister
         {
@@ -194,5 +194,24 @@ namespace Ypsilon.Emulation
         {
             return string.Format("{0} [{1:X8}:{2}]", Enum.GetName(typeof(SegmentIndex), SegmentType), m_SegmentRegister, m_MemoryReference);
         }
+    }
+
+    public enum SegmentIndex
+    {
+        CS = 0,
+        DS = 1,
+        ES = 2,
+        SS = 3,
+        IS = 4
+    }
+
+    public enum MemoryReferenceInfo
+    {
+        DeviceIndex = 0x00FF,
+        ReferenceType = 0xFF00,
+        None = 0x0000,
+        RAM = 0x0100,
+        ROM = 0x0200,
+        Device = 0x0400,
     }
 }

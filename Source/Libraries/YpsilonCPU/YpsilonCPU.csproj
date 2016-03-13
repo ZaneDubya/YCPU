@@ -40,8 +40,7 @@
     <Compile Include="Emulation\Emulator.cs" />
     <Compile Include="Emulation\Hardware\YMemory.cs" />
     <Compile Include="Emulation\IMemoryInterface.cs" />
-    <Compile Include="Emulation\MemoryReference.cs" />
-    <Compile Include="Emulation\Segment.cs" />
+    <Compile Include="Emulation\Hardware\Segment.cs" />
     <Compile Include="Emulation\Hardware\YCPU.Segments.cs" />
     <Compile Include="Emulation\Hardware\YBUS.cs" />
     <Compile Include="Emulation\Hardware\YCPU.cs" />
@@ -53,7 +52,6 @@
     <Compile Include="Emulation\Hardware\YRTC.cs" />
     <Compile Include="Emulation\IDisplayProvider.cs" />
     <Compile Include="Emulation\IInputProvider.cs" />
-    <Compile Include="Emulation\SegmentIndex.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Emulation\ITexture.cs" />
   </ItemGroup>
