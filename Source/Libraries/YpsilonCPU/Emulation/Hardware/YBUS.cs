@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Ypsilon.Emulation.Hardware
@@ -12,7 +11,7 @@ namespace Ypsilon.Emulation.Hardware
         public readonly YCPU CPU;
 
         private YMemory m_RAM, m_ROM;
-        private Dictionary<Segment, MemoryReference> m_References = new Dictionary<Segment, MemoryReference>();
+        private List<Segment> m_References = new List<Segment>();
 
         private IDisplayProvider m_DisplayProvider;
         private IInputProvider m_InputProvider;
@@ -33,30 +32,34 @@ namespace Ypsilon.Emulation.Hardware
         {
             m_RAM = new YMemory(ramSize);
 
-            foreach (Segment segment in m_References.Keys)
+            foreach (Segment segment in m_References)
             {
-                MemoryReference reference = m_References[segment];
-                if ((reference & MemoryReference.ReferenceType) == MemoryReference.RAM)
+                if ((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.RAM)
                 {
                     GetRAMReference(segment);
                 }
             }
         }
 
-        public void SetROM(uint romSize, byte[] rom)
+        public void SetROM(uint romSize)
         {
             m_ROM = new YMemory(romSize);
-            for (uint i = 0; i < rom.Length; i++)
-                m_ROM[i] = rom[i];
 
-            foreach (Segment segment in m_References.Keys)
+            foreach (Segment segment in m_References)
             {
-                MemoryReference reference = m_References[segment];
-                if ((reference & MemoryReference.ReferenceType) == MemoryReference.ROM)
+                if ((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.ROM)
                 {
                     GetROMReference(segment);
                 }
             }
+        }
+
+        public void FillROM(byte[] rom)
+        {
+            for (uint i = 0; i < rom.Length; i++)
+                m_ROM[i] = rom[i];
+            for (uint i = (uint)rom.Length; i < m_ROM.Size; i++)
+                m_ROM[i] = 0x00;
         }
 
         public void SetProviders(IDisplayProvider display, IInputProvider input)
@@ -70,7 +73,7 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void Reset()
         {
-            foreach (Segment segment in m_References.Keys)
+            foreach (Segment segment in m_References)
             {
                 segment.SetMemoryReference(null);
             }
@@ -128,11 +131,10 @@ namespace Ypsilon.Emulation.Hardware
 
             m_Devices[index - 1] = device;
 
-            foreach (Segment segment in m_References.Keys)
+            foreach (Segment segment in m_References)
             {
-                MemoryReference reference = m_References[segment];
-                if (((reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
-                    ((reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                if (((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
+                    ((segment.Reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
                 {
                     GetDeviceMemoryReference(segment, index);
                 }
@@ -155,11 +157,10 @@ namespace Ypsilon.Emulation.Hardware
                 m_Devices[index - 1] = null;
             }
 
-            foreach (Segment segment in m_References.Keys)
+            foreach (Segment segment in m_References)
             {
-                MemoryReference reference = m_References[segment];
-                if (((reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
-                    ((reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
+                if (((segment.Reference & MemoryReference.ReferenceType) == MemoryReference.Device) &&
+                    ((segment.Reference & MemoryReference.DeviceIndex) == (MemoryReference)index))
                 {
                     GetDeviceMemoryReference(segment, index);
                 }
@@ -286,16 +287,27 @@ namespace Ypsilon.Emulation.Hardware
         // Memory Reference Functions
         // ===================================================================================================
 
+        internal void AddSegmentToReferences(Segment segment)
+        {
+            int index = m_References.IndexOf(segment);
+            if (index == -1)
+            {
+                m_References.Add(segment);
+            }
+        }
+
         internal void GetRAMReference(Segment segment)
         {
             segment.SetMemoryReference(m_RAM);
-            m_References[segment] = MemoryReference.RAM;
+            segment.Reference = MemoryReference.RAM;
+            AddSegmentToReferences(segment);
         }
 
         internal void GetROMReference(Segment segment)
         {
             segment.SetMemoryReference(m_ROM);
-            m_References[segment] = MemoryReference.ROM;
+            segment.Reference = MemoryReference.ROM;
+            AddSegmentToReferences(segment);
         }
 
         /// <summary>
@@ -312,7 +324,8 @@ namespace Ypsilon.Emulation.Hardware
             {
                 // this should never happen - requested memory from device index that cannot exist.
                 segment.SetMemoryReference(null);
-                m_References[segment] = MemoryReference.None;
+                segment.Reference = MemoryReference.None;
+                AddSegmentToReferences(segment);
             }
             else
             {
@@ -320,24 +333,15 @@ namespace Ypsilon.Emulation.Hardware
                 if (m_Devices[deviceIndex - 1] == null)
                 {
                     segment.SetMemoryReference(null);
-                    m_References[segment] = MemoryReference.None;
+                    segment.Reference = MemoryReference.None;
                 }
                 else
                 {
                     segment.SetMemoryReference(m_Devices[deviceIndex - 1].GetMemoryInterface());
-                    m_References[segment] = MemoryReference.Device | (MemoryReference)deviceIndex;
+                    segment.Reference = MemoryReference.Device | (MemoryReference)deviceIndex;
                 }
+                AddSegmentToReferences(segment);
             }
-        }
-
-        enum MemoryReference
-        {
-            DeviceIndex = 0x00FF,
-            ReferenceType = 0xFF00,
-            None = 0x0000,
-            RAM = 0x0100,
-            ROM = 0x0200,
-            Device = 0x0400,
         }
     }
 }

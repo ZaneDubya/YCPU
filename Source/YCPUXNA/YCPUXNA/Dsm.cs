@@ -34,7 +34,7 @@ namespace YCPUXNA
         {
             YCPU ycpu = new YCPU();
             byte[] data = new byte[reader.BaseStream.Length];
-            ycpu.BUS.SetROM((uint)data.Length, data);
+            ycpu.BUS.FillROM(data);
 
             string[] disassembled;
             disassembled = ycpu.Disassemble(0x0000, 32000, false);

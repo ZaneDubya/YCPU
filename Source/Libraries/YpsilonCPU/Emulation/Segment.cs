@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using Ypsilon.Emulation.Hardware;
 
 namespace Ypsilon.Emulation
@@ -13,6 +13,7 @@ namespace Ypsilon.Emulation
         // ======================================================================
 
         public readonly SegmentIndex SegmentType;
+        public MemoryReference Reference = MemoryReference.None;
 
         public uint SegmentRegister
         {
@@ -95,7 +96,7 @@ namespace Ypsilon.Emulation
         // Public methods.
         // ======================================================================
 
-        public byte this[uint i]
+        public byte this[ushort i]
         {
             get
             {
@@ -174,7 +175,7 @@ namespace Ypsilon.Emulation
 
             // get size
             uint s = (m_SegmentRegister & c_SEGREG_Size) >> c_SEGREG_SizeShift;
-            m_Size = (s == 0) ? ushort.MaxValue : s;
+            m_Size = (s == 0) ? ushort.MaxValue + 1 : s;
 
             // get base
             if (IsDevice)
@@ -187,6 +188,11 @@ namespace Ypsilon.Emulation
                 uint b = (m_SegmentRegister & c_SEGREG_DeviceBase);
                 m_Base = b;
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} [{1:X8}:{2}]", Enum.GetName(typeof(SegmentIndex), SegmentType), m_SegmentRegister, m_MemoryReference);
         }
     }
 }

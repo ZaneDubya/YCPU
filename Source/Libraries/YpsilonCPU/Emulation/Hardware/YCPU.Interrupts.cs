@@ -22,7 +22,7 @@ namespace Ypsilon.Emulation.Hardware
                 else
                     StackPush(PC);
             }
-            PC = ReadMem16((ushort)(IA + interrupt_number * 2), SegmentIndex.IS);
+            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2), SegmentIndex.IS);
             m_Cycles += 31;
         }
 

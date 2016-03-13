@@ -40,7 +40,6 @@ namespace Ypsilon.Emulation.Hardware
 
             InitializeOpcodes();
             InitializeMemory();
-            MMU_Disable();
             PS = 0x0000;
         }
 
@@ -58,7 +57,7 @@ namespace Ypsilon.Emulation.Hardware
             m_Running = true;
             while (m_Running)
             {
-                ushort word = ReadMem16(PC, SegmentIndex.CS);
+                ushort word = ReadMemInt16(PC, SegmentIndex.CS);
                 if (!m_ExecuteFail)
                 {
                     PC += 2;
@@ -93,7 +92,7 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void RunOneInstruction()
         {
-            ushort word = ReadMem16(PC, SegmentIndex.CS);
+            ushort word = ReadMemInt16(PC, SegmentIndex.CS);
             if (!m_ExecuteFail)
             {
                 PC += 2;
@@ -398,12 +397,10 @@ namespace Ypsilon.Emulation.Hardware
                 if (value == false)
                 {
                     m_PS &= unchecked((ushort)~c_PS_S);
-                    Mode_UserMode();
                 }
                 else if (value == true)
                 {
                     m_PS |= c_PS_S;
-                    Mode_SupervisorMode();
                 }
                 m_PS_S = value;
             }
@@ -425,12 +422,10 @@ namespace Ypsilon.Emulation.Hardware
                     if (value == false)
                     {
                         m_PS &= unchecked((ushort)~c_PS_M);
-                        MMU_Disable();
                     }
                     else if (value == true)
                     {
                         m_PS |= c_PS_M;
-                        MMU_Enable();
                     }
                 }
             }
@@ -562,27 +557,9 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
         #endregion
 
-        #region Supervisor Mode
-        private void Mode_SupervisorMode()
-        {
-            if (PS_M)
-                MMU_Enable();
-            else
-                MMU_Disable();
-        }
-
-        private void Mode_UserMode()
-        {
-            if (PS_M)
-                MMU_Enable();
-            else
-                MMU_Disable();
-        }
-        #endregion
-
         private ushort SizeOfLastInstruction(ushort current_address)
         {
-            ushort word = ReadMem16((ushort)(current_address - 2), SegmentIndex.CS);
+            ushort word = ReadMemInt16((ushort)(current_address - 2), SegmentIndex.CS);
             YCPUInstruction opcode = Opcodes[word & 0x00FF];
             if (opcode.UsesNextWord(word))
                 return 4;
@@ -594,12 +571,12 @@ namespace Ypsilon.Emulation.Hardware
         private void StackPush(ushort value)
         {
             SP -= 2;
-            WriteMem16(SP, value, SegmentIndex.SS);
+            WriteMemInt16(SP, value, SegmentIndex.SS);
         }
 
         private ushort StackPop()
         {
-            ushort value = ReadMem16(SP, SegmentIndex.SS);
+            ushort value = ReadMemInt16(SP, SegmentIndex.SS);
             SP += 2;
             return value;
         }

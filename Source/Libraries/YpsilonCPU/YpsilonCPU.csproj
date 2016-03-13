@@ -40,6 +40,7 @@
     <Compile Include="Emulation\Emulator.cs" />
     <Compile Include="Emulation\Hardware\YMemory.cs" />
     <Compile Include="Emulation\IMemoryInterface.cs" />
+    <Compile Include="Emulation\MemoryReference.cs" />
     <Compile Include="Emulation\Segment.cs" />
     <Compile Include="Emulation\Hardware\YCPU.Segments.cs" />
     <Compile Include="Emulation\Hardware\YBUS.cs" />

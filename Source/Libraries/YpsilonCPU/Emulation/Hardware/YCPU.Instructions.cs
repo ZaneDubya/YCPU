@@ -242,7 +242,7 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB4] = new YCPUInstruction("RTS", RTS, DisassembleRTS, 1);
-            Opcodes[0xB5] = new YCPUInstruction("XSG", MMU, DisassembleMMU, 1);
+            // Opcodes[0xB5] = new YCPUInstruction("XSG", MMU, DisassembleMMU, 1);
 
             Opcodes[0xB6] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
             Opcodes[0xB7] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
@@ -556,9 +556,9 @@ namespace Ypsilon.Emulation.Hardware
             else
             {
                 if ((operand & 0x0100) != 0) // eight bit mode
-                    WriteMem8(dest_address, (byte)R[(int)source], SegmentIndex.DS);
+                    WriteMemInt8(dest_address, (byte)R[(int)source], SegmentIndex.DS);
                 else
-                    WriteMem16(dest_address, R[(int)source], SegmentIndex.DS);
+                    WriteMemInt16(dest_address, R[(int)source], SegmentIndex.DS);
             }
             // N [Negative] Not effected.
             // Z [Zero] Not effected.
@@ -920,36 +920,7 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
 
         #region MMU Instructions
-        private void MMU(ushort operand)
-        {
-            if (!PS_S)
-            {
-                Interrupt_UnPrivOpcode();
-                return;
-            }
 
-            ushort  mmuOpIndex;
-            RegGPIndex regIndex, regValue;
-
-            BitPatternMMU(operand, out regIndex, out regValue);
-            mmuOpIndex = (ushort)((operand & 0x0300) >> 8);
-
-            switch (mmuOpIndex)
-            {
-                case 0: //mmr
-                    R[(int)regValue] = MMU_Read((ushort)(R[(int)regIndex] & 0x000F));
-                    break;
-                case 1: //mmw
-                    MMU_Write((ushort)(R[(int)regIndex] & 0x000F), R[(int)regValue]);
-                    break;
-                case 2: //mml
-                    MMU_PushCacheOntoStack(R[(int)regValue]);
-                    break;
-                case 3: //mms
-                    MMU_PullCacheFromStack(R[(int)regValue]);
-                    break;
-            }
-        }
         #endregion
 
         #region SET Instructions

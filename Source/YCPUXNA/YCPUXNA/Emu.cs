@@ -203,30 +203,11 @@ namespace YCPUXNA
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
             ConsoleWrite(70, r_y + 25, "Memory management:");
-            if (cpu.PS_M)
-            {
-                if (!cpu.PS_S)
-                {
-                    ConsoleWrite(70, r_y + 26, ConsoleCreateMMUStatusString(cpu, 0));
-                    ConsoleWrite(70, r_y + 27, ConsoleCreateMMUStatusString(cpu, 1));
-                    ConsoleWrite(70, r_y + 28, ConsoleCreateMMUStatusString(cpu, 2));
-                    ConsoleWrite(70, r_y + 29, ConsoleCreateMMUStatusString(cpu, 3));
-                }
-                else
-                {
-                    ConsoleWrite(70, r_y + 26, ConsoleCreateMMUStatusString(cpu, 4));
-                    ConsoleWrite(70, r_y + 27, ConsoleCreateMMUStatusString(cpu, 5));
-                    ConsoleWrite(70, r_y + 28, ConsoleCreateMMUStatusString(cpu, 6));
-                    ConsoleWrite(70, r_y + 29, ConsoleCreateMMUStatusString(cpu, 7));
-                }
-            }
-            else
-            {
-                ConsoleWrite(70, r_y + 26, "$0 $80 ....");
-                ConsoleWrite(70, r_y + 27, "$0 $01 ....");
-                ConsoleWrite(70, r_y + 28, "$0 $02 ....");
-                ConsoleWrite(70, r_y + 29, "$0 $03 ....");
-            }
+            ConsoleWrite(70, r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
+            ConsoleWrite(70, r_y + 27, "DS " + ConsoleSegmentRegisterString(cpu.DS));
+            ConsoleWrite(70, r_y + 28, "ES " + ConsoleSegmentRegisterString(cpu.ES));
+            ConsoleWrite(70, r_y + 29, "SS " + ConsoleSegmentRegisterString(cpu.SS));
+            ConsoleWrite(70, r_y + 30, "IS " + ConsoleSegmentRegisterString(cpu.IS));
 
             // disassembly
             ConsoleWrite(2, r_y - 1, "Disassembly");
@@ -251,10 +232,10 @@ namespace YCPUXNA
             // Console.Write(s);
         }
 
-        private string ConsoleCreateMMUStatusString(YCPU cpu, int index)
+        private string ConsoleSegmentRegisterString(uint register)
         {
-            ushort cache0 = cpu.MMU_Read((ushort)(index));
-            ushort bank = (ushort)(cache0 & 0x00ff);
+            return string.Format("${0:X8}", register);
+            /*ushort bank = (ushort)(cache0 & 0x00ff);
             ushort device = (ushort)((cache0 >> 8) & 0x0f);
             return string.Format("${0:X1} ${1:X2} {2}{3}{4}{5}",
                     device, bank,
@@ -262,7 +243,7 @@ namespace YCPUXNA
                     (cache0 & 0x4000) != 0 ? "W" : ".",
                     (cache0 & 0x2000) != 0 ? "P" : ".",
                     (cache0 & 0x1000) != 0 ? "A" : "."
-                    );
+                    );*/
         }
         #endregion
     }

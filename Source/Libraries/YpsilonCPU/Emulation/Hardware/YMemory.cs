@@ -4,6 +4,11 @@ namespace Ypsilon.Emulation.Hardware
 {
     class YMemory : IMemoryInterface
     {
+        public int Size
+        {
+            get { return m_Memory.Length; }
+        }
+
         public YMemory(uint size)
         {
             m_Memory = new byte[size];

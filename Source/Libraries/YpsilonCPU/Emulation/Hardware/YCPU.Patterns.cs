@@ -29,12 +29,12 @@ namespace Ypsilon.Emulation.Hardware
                 case 0: // Immediate (r == 0) or Absolute (r == 1)
                     if (source == 0)
                     {
-                        value = eightBitMode ? ReadMem8(PC, SegmentIndex.CS) : ReadMem16(PC, SegmentIndex.CS);
+                        value = eightBitMode ? ReadMemInt8(PC, SegmentIndex.CS) : ReadMemInt16(PC, SegmentIndex.CS);
                     }
                     else
                     {
-                        address = ReadMem16(PC, SegmentIndex.CS);
-                        value = eightBitMode ? ReadMem8(address, SegmentIndex.DS) : ReadMem16(address, SegmentIndex.DS);
+                        address = ReadMemInt16(PC, SegmentIndex.CS);
+                        value = eightBitMode ? ReadMemInt8(address, SegmentIndex.DS) : ReadMemInt16(address, SegmentIndex.DS);
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -44,12 +44,12 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 2: // Indirect
-                    value = eightBitMode ? ReadMem8(R[(int)source], SegmentIndex.DS) : ReadMem16(R[(int)source], SegmentIndex.DS);
+                    value = eightBitMode ? ReadMemInt8(R[(int)source], SegmentIndex.DS) : ReadMemInt16(R[(int)source], SegmentIndex.DS);
                     break;
 
                 case 3: // Absolute Offset AKA Indirect Offset
-                    address = (ushort)(R[(int)source] + ReadMem16(PC, SegmentIndex.CS));
-                    value = eightBitMode ? ReadMem8(address, SegmentIndex.DS) : ReadMem16(address, SegmentIndex.DS);
+                    address = (ushort)(R[(int)source] + ReadMemInt16(PC, SegmentIndex.CS));
+                    value = eightBitMode ? ReadMemInt8(address, SegmentIndex.DS) : ReadMemInt16(address, SegmentIndex.DS);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
@@ -68,7 +68,7 @@ namespace Ypsilon.Emulation.Hardware
                 default: // addressing of 0x8 ~ 0xF is an Indirect Indexed operation.
                     int indexRegister = ((operand & 0x7000) >> 12);
                     address = (ushort)(R[(int)source] + R[indexRegister]);
-                    value = eightBitMode ? ReadMem8(address, SegmentIndex.DS) : ReadMem16(address, SegmentIndex.DS);
+                    value = eightBitMode ? ReadMemInt8(address, SegmentIndex.DS) : ReadMemInt16(address, SegmentIndex.DS);
                     break;
             }
         }
@@ -104,7 +104,7 @@ namespace Ypsilon.Emulation.Hardware
                     }
                     else
                     {
-                        destAddress = ReadMem16(PC, SegmentIndex.CS);
+                        destAddress = ReadMemInt16(PC, SegmentIndex.CS);
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -120,7 +120,7 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 3: // Absolute Offset AKA Indirect Offset
-                    destAddress = (ushort)(R[(int)addrRegister] + ReadMem16(PC, SegmentIndex.CS));
+                    destAddress = (ushort)(R[(int)addrRegister] + ReadMemInt16(PC, SegmentIndex.CS));
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
 
@@ -204,19 +204,19 @@ namespace Ypsilon.Emulation.Hardware
                 case 0: // Immediate (r == 0) or Absolute (r == 1)
                     if ((int)source == 0)
                     {
-                        address = ReadMem16(PC, SegmentIndex.CS);
+                        address = ReadMemInt16(PC, SegmentIndex.CS);
                         if (isFarJump)
                         {
                             PC += 2;
-                            addressFar = ReadMem16(PC, SegmentIndex.CS);
+                            addressFar = ReadMemInt16(PC, SegmentIndex.CS);
                         }
                     }
                     else
                     {
-                        nextword = ReadMem16(PC, SegmentIndex.CS);
-                        address = ReadMem16(nextword, SegmentIndex.DS);
+                        nextword = ReadMemInt16(PC, SegmentIndex.CS);
+                        address = ReadMemInt16(nextword, SegmentIndex.DS);
                         if (isFarJump)
-                            addressFar = ReadMem16((ushort)(nextword + 2), SegmentIndex.DS);
+                            addressFar = ReadMemInt16((ushort)(nextword + 2), SegmentIndex.DS);
                     }
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
                     break;
@@ -228,17 +228,17 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 2: // Indirect
-                    address = ReadMem16(R[(int)source], SegmentIndex.DS);
+                    address = ReadMemInt16(R[(int)source], SegmentIndex.DS);
                     if (isFarJump)
-                        addressFar = ReadMem16((ushort)(R[(int)source] + 2), SegmentIndex.DS);
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + 2), SegmentIndex.DS);
                     break;
 
                 case 3: // Indirect Offset AKA Absolute Offset
-                    nextword = ReadMem16(PC, SegmentIndex.CS);
+                    nextword = ReadMemInt16(PC, SegmentIndex.CS);
                     PC += 2; // advance PC two bytes because we're reading an immediate value.
-                    address = ReadMem16((ushort)(R[(int)source] + nextword), SegmentIndex.DS);
+                    address = ReadMemInt16((ushort)(R[(int)source] + nextword), SegmentIndex.DS);
                     if (isFarJump)
-                        addressFar = ReadMem16((ushort)(R[(int)source] + nextword + 2), SegmentIndex.DS);
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + nextword + 2), SegmentIndex.DS);
                     break;
 
                 case 4: // DOES NOT EXIST
@@ -251,9 +251,9 @@ namespace Ypsilon.Emulation.Hardware
 
                 default: // Indirect Indexed
                     int indexRegister = (operand & 0x7000) >> 12;
-                    address = ReadMem16((ushort)(R[(int)source] + R[indexRegister]), SegmentIndex.DS);
+                    address = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister]), SegmentIndex.DS);
                     if (isFarJump)
-                        addressFar = ReadMem16((ushort)(R[(int)source] + R[indexRegister] + 2), SegmentIndex.DS);
+                        addressFar = ReadMemInt16((ushort)(R[(int)source] + R[indexRegister] + 2), SegmentIndex.DS);
                     break;
             }
         }
