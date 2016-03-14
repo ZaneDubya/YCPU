@@ -130,13 +130,13 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         #region General Purpose Registers
-        public enum RegGPIndex
+        public enum RegGeneral
         {
             R0, R1, R2, R3, R4, R5, R6, R7,
             Count,
             None
         }
-        private ushort[] R = new ushort[(int)RegGPIndex.Count];
+        private ushort[] R = new ushort[(int)RegGeneral.Count];
         public ushort R0 { get { return R[0]; } }
         public ushort R1 { get { return R[1]; } }
         public ushort R2 { get { return R[2]; } }
@@ -148,21 +148,21 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
 
         #region Control Registers
-        enum RegSPIndex
+        enum RegControl
         {
             FL, PC, PS, P2, II, IA, USP, SSP,
             Count
         }
 
-        ushort ReadControlRegister(RegSPIndex index)
+        ushort ReadControlRegister(RegControl index)
         {
             switch (index)
             {
-                case RegSPIndex.FL:
+                case RegControl.FL:
                     return m_FL;
-                case RegSPIndex.PC:
+                case RegControl.PC:
                     return m_PC;
-                case RegSPIndex.PS:
+                case RegControl.PS:
                     if (PS_S)
                         return m_PS;
                     else
@@ -170,7 +170,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.P2:
+                case RegControl.P2:
                     if (PS_S)
                         return m_P2;
                     else
@@ -178,7 +178,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.II:
+                case RegControl.II:
                     if (PS_S)
                         return m_II;
                     else
@@ -186,7 +186,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.IA:
+                case RegControl.IA:
                     if (PS_S)
                         return m_IA;
                     else
@@ -194,9 +194,9 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.USP:
+                case RegControl.USP:
                     return m_USP;
-                case RegSPIndex.SSP:
+                case RegControl.SSP:
                     if (PS_S)
                         return m_SSP;
                     else
@@ -206,51 +206,51 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        private void WriteControlRegister(RegSPIndex index, ushort value)
+        private void WriteControlRegister(RegControl index, ushort value)
         {
             switch (index)
             {
-                case RegSPIndex.FL:
+                case RegControl.FL:
                     FL = value;
                     break;
 
-                case RegSPIndex.PC:
+                case RegControl.PC:
                     PC = value;
                     break;
 
-                case RegSPIndex.PS:
+                case RegControl.PS:
                     if (PS_S)
                         PS = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.P2:
+                case RegControl.P2:
                     if (PS_S)
                         P2 = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.II:
+                case RegControl.II:
                     if (PS_S)
                         II = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.IA:
+                case RegControl.IA:
                     if (PS_S)
                         IA = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.USP:
+                case RegControl.USP:
                     USP = value;
                     break;
 
-                case RegSPIndex.SSP:
+                case RegControl.SSP:
                     if (PS_S)
                         SSP = value;
                     else

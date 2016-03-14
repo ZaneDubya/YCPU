@@ -36,8 +36,8 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleALU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             int addressingmode = (operand & 0xF000) >> 12;
-            RegGPIndex regDest = (RegGPIndex)((operand & 0x0007));
-            RegGPIndex regSrc = (RegGPIndex)((operand & 0x0E00) >> 9);
+            RegGeneral regDest = (RegGeneral)((operand & 0x0007));
+            RegGeneral regSrc = (RegGeneral)((operand & 0x0E00) >> 9);
             bool isEightBit = (operand & 0x0100) != 0;
             int regIndex = ((operand & 0x7000) >> 12);
 
@@ -67,7 +67,7 @@ namespace Ypsilon.Emulation.Hardware
                     return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        NameOfRegGP((RegGeneral)((int)regSrc)),
                         R[(int)regSrc]);
 
                 case 2: // Indirect
@@ -75,7 +75,7 @@ namespace Ypsilon.Emulation.Hardware
                     return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
+                        NameOfRegGP((RegGeneral)((int)regSrc)),
                         DebugReadMemory(R[(int)regSrc], SegmentIndex.DS));
 
                 case 3: // Indirect Offset (also Absolute Offset)
@@ -83,7 +83,7 @@ namespace Ypsilon.Emulation.Hardware
                     return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)), 
+                        NameOfRegGP((RegGeneral)((int)regSrc)), 
                         nextword,
                         DebugReadMemory((ushort)(R[(int)regSrc] + nextword), SegmentIndex.DS));
                 case 4: // Status Register
@@ -92,9 +92,9 @@ namespace Ypsilon.Emulation.Hardware
                         string disasm = string.Format("{0,-8}{1}, {2,-12}",
                             name,
                             NameOfRegGP(regDest),
-                            NameOfRegSP((RegSPIndex)((int)regSrc)));
+                            NameOfRegSP((RegControl)((int)regSrc)));
                         if (showMemoryContents)
-                            disasm = AppendMemoryContents(disasm, ReadControlRegister((RegSPIndex)regSrc));
+                            disasm = AppendMemoryContents(disasm, ReadControlRegister((RegControl)regSrc));
                         return disasm;
                     }
                 case 5:
@@ -108,8 +108,8 @@ namespace Ypsilon.Emulation.Hardware
                     return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
-                        NameOfRegGP((RegGPIndex)((int)regSrc)),
-                        NameOfRegGP((RegGPIndex)regIndex),
+                        NameOfRegGP((RegGeneral)((int)regSrc)),
+                        NameOfRegGP((RegGeneral)regIndex),
                         DebugReadMemory((ushort)(R[(int)regSrc] + R[regIndex]), SegmentIndex.DS));
 
             }
@@ -118,13 +118,13 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleBTT(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             bool as_register = ((operand & 0x1000) != 0);
             ushort value = (as_register) ?
                 (ushort)((operand & 0x0700) >> 8) :
                 (ushort)((operand & 0x0F00) >> 8);
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), as_register ?
-                string.Format("{0,-8}(${1:X1})", NameOfRegGP((RegGPIndex)value), R[value]) :
+                string.Format("{0,-8}(${1:X1})", NameOfRegGP((RegGeneral)value), R[value]) :
                 string.Format("${0:X1}", value));
         }
 
@@ -151,7 +151,7 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex unused;
+            RegGeneral unused;
             ushort value;
             BitPatternHWQ(operand, out value, out unused);
 
@@ -161,7 +161,7 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleINC(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex destination;
+            RegGeneral destination;
             ushort value;
             BitPatternIMM(operand, out value, out destination);
 
@@ -171,7 +171,7 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             int addressingmode = ((operand & 0xF000) >> 12);
-            RegGPIndex r_src = (RegGPIndex)((operand & 0x1C00) >> 10);
+            RegGeneral r_src = (RegGeneral)((operand & 0x1C00) >> 10);
             int index_bits = ((operand & 0x0300) >> 8);
 
             switch (addressingmode)
@@ -185,17 +185,17 @@ namespace Ypsilon.Emulation.Hardware
                 case 1: // Register
                     usesNextWord = false;
                     return string.Format("{0,-8}{1}              (${2:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
+                        NameOfRegGP((RegGeneral)((int)r_src)),
                         R[(int)r_src]);
                 case 2: // Indirect
                     usesNextWord = false;
                     return string.Format("{0,-8}[{1}]            (${2:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
+                        NameOfRegGP((RegGeneral)((int)r_src)),
                         DebugReadMemory(R[(int)r_src], SegmentIndex.DS));
                 case 3: // Indirect Offset (also Absolute Offset)
                     usesNextWord = true;
                     return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)), nextword,
+                        NameOfRegGP((RegGeneral)((int)r_src)), nextword,
                         DebugReadMemory((ushort)(R[(int)r_src] + nextword), SegmentIndex.DS));
                 case 4:
                 case 5:
@@ -207,8 +207,8 @@ namespace Ypsilon.Emulation.Hardware
                     usesNextWord = false;
                     index_bits += (operand & 0x4000) >> 12;
                     return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name,
-                        NameOfRegGP((RegGPIndex)((int)r_src)),
-                        NameOfRegGP((RegGPIndex)index_bits),
+                        NameOfRegGP((RegGeneral)((int)r_src)),
+                        NameOfRegGP((RegGeneral)index_bits),
                         DebugReadMemory((ushort)
                             (R[(int)r_src] + R[index_bits]), SegmentIndex.DS));
             }
@@ -303,7 +303,7 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             int value = ((operand & 0x1F00) >> 8);
             if ((operand & 0x0001) == 1)
             {
@@ -318,7 +318,7 @@ namespace Ypsilon.Emulation.Hardware
         private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex destination = (RegGPIndex)((operand & 0xE000) >> 13);
+            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             string value = string.Empty;
             if ((operand & 0x1000) == 0)
             {
@@ -326,7 +326,7 @@ namespace Ypsilon.Emulation.Hardware
                 value = string.Format("${0:X2}", (ushort)shiftby);
             }
             else
-                value = NameOfRegGP((RegGPIndex)((operand & 0x0700) >> 8));
+                value = NameOfRegGP((RegGeneral)((operand & 0x0700) >> 8));
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
         }
 
@@ -337,50 +337,50 @@ namespace Ypsilon.Emulation.Hardware
             return disasm;
         }
 
-        private string NameOfRegGP(RegGPIndex register)
+        private string NameOfRegGP(RegGeneral register)
         {
             switch (register)
             {
-                case RegGPIndex.R0:
+                case RegGeneral.R0:
                     return "R0";
-                case RegGPIndex.R1:
+                case RegGeneral.R1:
                     return "R1";
-                case RegGPIndex.R2:
+                case RegGeneral.R2:
                     return "R2";
-                case RegGPIndex.R3:
+                case RegGeneral.R3:
                     return "R3";
-                case RegGPIndex.R4:
+                case RegGeneral.R4:
                     return "R4";
-                case RegGPIndex.R5:
+                case RegGeneral.R5:
                     return "R5";
-                case RegGPIndex.R6:
+                case RegGeneral.R6:
                     return "R6";
-                case RegGPIndex.R7:
+                case RegGeneral.R7:
                     return "R7";
                 default:
                     return "??";
             }
         }
 
-        private string NameOfRegSP(RegSPIndex register)
+        private string NameOfRegSP(RegControl register)
         {
             switch (register)
             {
-                case RegSPIndex.FL:
+                case RegControl.FL:
                     return "FL";
-                case RegSPIndex.PC:
+                case RegControl.PC:
                     return "PC";
-                case RegSPIndex.PS:
+                case RegControl.PS:
                     return "PS";
-                case RegSPIndex.P2:
+                case RegControl.P2:
                     return "P2";
-                case RegSPIndex.II:
+                case RegControl.II:
                     return "II";
-                case RegSPIndex.IA:
+                case RegControl.IA:
                     return "IA";
-                case RegSPIndex.USP:
+                case RegControl.USP:
                     return "USP";
-                case RegSPIndex.SSP:
+                case RegControl.SSP:
                     return "SP";
                 default:
                     return "??";
