@@ -15,14 +15,14 @@ namespace Ypsilon.Emulation.Hardware
         public readonly SegmentIndex SegmentType;
         public MemoryReferenceInfo Reference = MemoryReferenceInfo.None;
 
-        public uint SegmentRegister
+        public uint Register
         {
-            get { return m_SegmentRegister; }
+            get { return m_Register; }
             set
             {
-                if (m_SegmentRegister != value)
+                if (m_Register != value)
                 {
-                    m_SegmentRegister = value;
+                    m_Register = value;
                     RefreshMemoryReference();
                 }
             }
@@ -30,15 +30,15 @@ namespace Ypsilon.Emulation.Hardware
 
         public bool IsDevice
         {
-            get { return (m_SegmentRegister & c_SEGREG_D) != 0; }
+            get { return (m_Register & c_SEGREG_D) != 0; }
             set
             {
                 if (IsDevice != value)
                 {
                     if (value)
-                        m_SegmentRegister |= c_SEGREG_D;
+                        m_Register |= c_SEGREG_D;
                     else
-                        m_SegmentRegister &= ~c_SEGREG_D;
+                        m_Register &= ~c_SEGREG_D;
                     RefreshMemoryReference();
                 }
             }
@@ -46,35 +46,35 @@ namespace Ypsilon.Emulation.Hardware
 
         public ushort DeviceIndex
         {
-            get { return (ushort)((m_SegmentRegister & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift); }
+            get { return (ushort)((m_Register & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift); }
         }
 
         public bool IsWriteProtected
         {
-            get { return (m_SegmentRegister & c_SEGREG_W) != 0; }
+            get { return (m_Register & c_SEGREG_W) != 0; }
             set
             {
                 if (IsWriteProtected != value)
                 {
                     if (value)
-                        m_SegmentRegister |= c_SEGREG_W;
+                        m_Register |= c_SEGREG_W;
                     else
-                        m_SegmentRegister &= ~c_SEGREG_W;
+                        m_Register &= ~c_SEGREG_W;
                 }
             }
         }
 
         public bool IsNotPresent
         {
-            get { return (m_SegmentRegister & c_SEGREG_P) != 0; }
+            get { return (m_Register & c_SEGREG_P) != 0; }
             set
             {
                 if (IsNotPresent != value)
                 {
                     if (value)
-                        m_SegmentRegister |= c_SEGREG_P;
+                        m_Register |= c_SEGREG_P;
                     else
-                        m_SegmentRegister &= ~c_SEGREG_P;
+                        m_Register &= ~c_SEGREG_P;
                     RefreshMemoryReference();
                 }
             }
@@ -82,13 +82,13 @@ namespace Ypsilon.Emulation.Hardware
 
         public bool IsAccessed
         {
-            get { return (m_SegmentRegister & c_SEGREG_A) != 0; }
+            get { return (m_Register & c_SEGREG_A) != 0; }
             set
             {
                 if (value)
-                    m_SegmentRegister |= c_SEGREG_A;
+                    m_Register |= c_SEGREG_A;
                 else
-                    m_SegmentRegister &= ~c_SEGREG_A;
+                    m_Register &= ~c_SEGREG_A;
             }
         }
 
@@ -121,7 +121,7 @@ namespace Ypsilon.Emulation.Hardware
         // Private vars.
         // ======================================================================
 
-        private uint m_SegmentRegister;
+        private uint m_Register;
         private readonly YBUS m_Bus;
         private IMemoryInterface m_MemoryReference;
         private uint m_Size, m_Base;
@@ -144,7 +144,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             SegmentType = segmentType;
             m_Bus = bus;
-            SegmentRegister = register;
+            Register = register;
             RefreshMemoryReference();
         }
 
@@ -174,25 +174,25 @@ namespace Ypsilon.Emulation.Hardware
             }
 
             // get size
-            uint s = (m_SegmentRegister & c_SEGREG_Size) >> c_SEGREG_SizeShift;
+            uint s = (m_Register & c_SEGREG_Size) >> c_SEGREG_SizeShift;
             m_Size = (s == 0) ? ushort.MaxValue + 1 : s;
 
             // get base
             if (IsDevice)
             {
-                uint b = (m_SegmentRegister & c_SEGREG_MemBase);
+                uint b = (m_Register & c_SEGREG_MemBase);
                 m_Base = b;
             }
             else
             {
-                uint b = (m_SegmentRegister & c_SEGREG_DeviceBase);
+                uint b = (m_Register & c_SEGREG_DeviceBase);
                 m_Base = b;
             }
         }
 
         public override string ToString()
         {
-            return string.Format("{0} [{1:X8}:{2}]", Enum.GetName(typeof(SegmentIndex), SegmentType), m_SegmentRegister, m_MemoryReference);
+            return string.Format("{0} [{1:X8}:{2}]", Enum.GetName(typeof(SegmentIndex), SegmentType), m_Register, m_MemoryReference);
         }
     }
 

@@ -214,13 +214,41 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        private string DisassembleMMU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleXSG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
-            RegGPIndex RegMmuIndex;
-            RegGPIndex RegMmuValue;
-            BitPatternMMU(operand, out RegMmuIndex, out RegMmuValue);
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP((RegGPIndex)RegMmuIndex), NameOfRegGP((RegGPIndex)RegMmuValue));
+
+            bool push = (operand & 0x0100) != 0;
+            int register = (operand & 0x0E00) >> 9;
+            bool user = (operand & 0x8000) != 0;
+
+            name = (push) ? "SSG" : "LSG";
+            string reg;
+
+            switch ((SegmentIndex)register)
+            {
+                case SegmentIndex.CS:
+                    reg = (user) ? "CSU" : "CSS";
+                    break;
+                case SegmentIndex.DS:
+                    reg = (user) ? "DSU" : "ESS";
+                    break;
+                case SegmentIndex.ES:
+                    reg = (user) ? "ESU" : "DSS";
+                    break;
+                case SegmentIndex.SS:
+                    reg = (user) ? "SSU" : "SSS";
+                    break;
+                case SegmentIndex.IS:
+                    reg = (user) ? "???" : "IS";
+                    break;
+                default:
+                    // operand does not include a valid segment index.
+                    reg = "???";
+                    break;
+            }
+
+            return string.Format("{0,-8}{1}", name, reg);
         }
 
         private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)

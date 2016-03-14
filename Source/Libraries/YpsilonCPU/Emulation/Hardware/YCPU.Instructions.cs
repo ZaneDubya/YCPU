@@ -43,6 +43,14 @@ namespace Ypsilon.Emulation.Hardware
         #region OpCode Initialization
         private void InitializeOpcodes()
         {
+            // Specification at 3:
+            // All instructions are comprised of single 16 - bit program words. Some instructions
+            // may be suffixed by a single 16 - bit immediate value. One instruction -the far
+            // jump immediate instruction - is suffixed by three 16 - bit immediate values.
+            // All instructions are defined by the 8-bit low octet of the 16-bit program word.
+            // Attempted execution of a program word that does not have a defined 8 - bit low
+            // octet will raise the 'undefined' interrupt.
+
             Opcodes[0x00] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
             Opcodes[0x01] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
             Opcodes[0x02] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
@@ -242,7 +250,7 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB4] = new YCPUInstruction("RTS", RTS, DisassembleRTS, 1);
-            // Opcodes[0xB5] = new YCPUInstruction("XSG", MMU, DisassembleMMU, 1);
+            Opcodes[0xB5] = new YCPUInstruction("XSG", XSG, DisassembleXSG, 3);
 
             Opcodes[0xB6] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
             Opcodes[0xB7] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
@@ -919,11 +927,68 @@ namespace Ypsilon.Emulation.Hardware
         }
         #endregion
 
-        #region MMU Instructions
+        #region Segment Register Instructions
+        private void XSG(ushort operand)
+        {
+            if (!PS_S)
+            {
+                Interrupt_UnPrivOpcode();
+                return;
+            }
 
+            bool push = (operand & 0x0100) != 0;
+            int register = (operand & 0x0E00) >> 9;
+            bool user = (operand & 0x8000) != 0;
+            Segment segment;
+
+            switch ((SegmentIndex)register)
+            {
+                case SegmentIndex.CS:
+                    segment = (user) ? m_CSU : m_CSS;
+                    break;
+                case SegmentIndex.DS:
+                    segment = (user) ? m_DSU : m_ESS;
+                    break;
+                case SegmentIndex.ES:
+                    segment = (user) ? m_ESU : m_DSS;
+                    break;
+                case SegmentIndex.SS:
+                    segment = (user) ? m_SSU : m_SSS;
+                    break;
+                case SegmentIndex.IS:
+                    if (user)
+                    {
+                        Interupt_UndefOpcode();
+                        return;
+                    }
+                    else
+                    {
+                        segment = m_IS;
+                    }
+                    break;
+                default:
+                    // operand does not include a valid segment index.
+                    Interupt_UndefOpcode();
+                    return;
+            }
+
+            if (push)
+            {
+                ushort register_lo = (ushort)segment.Register;
+                ushort register_hi = (ushort)(segment.Register >> 16);
+                StackPush(register_hi);
+                StackPush(register_lo);
+            }
+            else
+            {
+                ushort register_lo = StackPop();
+                ushort register_hi = StackPop();
+                segment.Register = (uint)(register_hi << 16) | register_lo;
+            }
+        }
         #endregion
 
-        #region SET Instructions
+            #region SET Instructions
         private void SET(ushort operand)
         {
             RegGPIndex regDestination;

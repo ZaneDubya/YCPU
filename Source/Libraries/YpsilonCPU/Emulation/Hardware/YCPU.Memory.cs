@@ -13,7 +13,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             get
             {
-                return (PS_M) ? ((PS_S) ? m_CSS.SegmentRegister : m_CSU.SegmentRegister) : m_CS_NoMMU.SegmentRegister;
+                return (PS_M) ? ((PS_S) ? m_CSS.Register : m_CSU.Register) : m_CS_NoMMU.Register;
             }
         }
 
@@ -21,7 +21,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             get
             {
-                return (PS_M) ? ((PS_S) ? m_DSS.SegmentRegister : m_DSU.SegmentRegister) : m_DS_NoMMU.SegmentRegister;
+                return (PS_M) ? ((PS_S) ? m_DSS.Register : m_DSU.Register) : m_DS_NoMMU.Register;
             }
         }
 
@@ -29,7 +29,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             get
             {
-                return (PS_M) ? ((PS_S) ? m_ESS.SegmentRegister : m_ESU.SegmentRegister) : m_ES_NoMMU.SegmentRegister;
+                return (PS_M) ? ((PS_S) ? m_ESS.Register : m_ESU.Register) : m_ES_NoMMU.Register;
             }
         }
 
@@ -37,7 +37,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             get
             {
-                return (PS_M) ? ((PS_S) ? m_SSS.SegmentRegister : m_SSU.SegmentRegister) : m_SS_NoMMU.SegmentRegister;
+                return (PS_M) ? ((PS_S) ? m_SSS.Register : m_SSU.Register) : m_SS_NoMMU.Register;
             }
         }
 
@@ -45,7 +45,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             get
             {
-                return (PS_M) ? m_IS.SegmentRegister : m_IS_NoMMU.SegmentRegister;
+                return (PS_M) ? m_IS.Register : m_IS_NoMMU.Register;
             }
         }
 

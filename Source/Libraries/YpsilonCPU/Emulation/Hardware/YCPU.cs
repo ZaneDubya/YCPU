@@ -206,7 +206,7 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void WriteControlRegister(RegSPIndex index, ushort value)
+        private void WriteControlRegister(RegSPIndex index, ushort value)
         {
             switch (index)
             {

@@ -10,7 +10,7 @@ namespace Ypsilon.Emulation.Hardware
     {
         public readonly YCPU CPU;
 
-        private YMemory m_RAM, m_ROM;
+        private MemoryChunk m_RAM, m_ROM;
         private List<Segment> m_References = new List<Segment>();
 
         private IDisplayProvider m_DisplayProvider;
@@ -30,7 +30,7 @@ namespace Ypsilon.Emulation.Hardware
 
         public void SetRAM(uint ramSize)
         {
-            m_RAM = new YMemory(ramSize);
+            m_RAM = new MemoryChunk(ramSize);
 
             foreach (Segment segment in m_References)
             {
@@ -43,7 +43,8 @@ namespace Ypsilon.Emulation.Hardware
 
         public void SetROM(uint romSize)
         {
-            m_ROM = new YMemory(romSize);
+            m_ROM = new MemoryChunk(romSize);
+            m_ROM.ReadOnly = true;
 
             foreach (Segment segment in m_References)
             {
@@ -56,10 +57,16 @@ namespace Ypsilon.Emulation.Hardware
 
         public void FillROM(byte[] rom)
         {
+            if (m_ROM == null)
+            {
+                SetROM((uint)rom.Length);
+            }
+            m_ROM.ReadOnly = false;
             for (uint i = 0; i < rom.Length; i++)
                 m_ROM[i] = rom[i];
             for (uint i = (uint)rom.Length; i < m_ROM.Size; i++)
                 m_ROM[i] = 0x00;
+            m_ROM.ReadOnly = true;
         }
 
         public void SetProviders(IDisplayProvider display, IInputProvider input)

@@ -10,7 +10,7 @@ namespace Ypsilon.Emulation.Hardware
         /// <param name="operand">Input: machine code word</param>
         /// <param name="value">Output: result value of operation</param>
         /// <param name="destination">Output: index of general register result should be written to.</param>
-        void BitPatternALU(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternALU(ushort operand, out ushort value, out RegGPIndex destination)
         {
             int addressingMode;
             RegGPIndex source;
@@ -79,7 +79,7 @@ namespace Ypsilon.Emulation.Hardware
         /// <param name="operand">Input: machine code word</param>
         /// <param name="destAddress">Output: memory address that is the destination of the operation</param>
         /// <param name="source">Output: general register that is the source of the operation</param>
-        void BitPatternSTO(ushort operand, out ushort destAddress, out RegGPIndex source)
+        private void BitPatternSTO(ushort operand, out ushort destAddress, out RegGPIndex source)
         {
             int addressingMode;
             bool eightBitMode;
@@ -146,13 +146,13 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void BitPatternBRA(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternBRA(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.None; // not used
             value = (ushort)((operand & 0xFF00) >> 7); // (shift 8 - 1) to multiply result by two, per spec.
         }
 
-        void BitPatternBTT(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternBTT(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             RegGPIndex source = (RegGPIndex)((operand & 0x1C00) >> 10);
@@ -162,19 +162,19 @@ namespace Ypsilon.Emulation.Hardware
                 (ushort)((operand & 0x1E00) >> 9);
         }
 
-        void BitPatternFLG(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternFLG(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.None; // unused
             value = (ushort)((operand & 0xF000)); // flags to set
         }
 
-        void BitPatternHWQ(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternHWQ(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.None; // Unused.
             value = (ushort)((operand & 0xFF00) >> 8);
         }
 
-        void BitPatternIMM(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternIMM(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             value = (ushort)(((operand & 0x1F00) >> 8) + 1);
@@ -186,7 +186,7 @@ namespace Ypsilon.Emulation.Hardware
         /// <param name="operand">Input: 16-bit machine code word</param>
         /// <param name="value">Output: Value that PC should be set to</param>
         /// <param name="unused">Output: Unused</param>
-        void BitPatternJMI(ushort operand, out ushort address, out ushort addressFar, out bool isFarJump)
+        private void BitPatternJMI(ushort operand, out ushort address, out ushort addressFar, out bool isFarJump)
         {
             int addressingMode;
             RegGPIndex source;
@@ -258,17 +258,7 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        /// <summary>
-        /// Retrieves Ra and Rv from an MMU operand. These are BOTH register indexes.
-        /// </summary>
-        /// <param name="operand"></param>
-        void BitPatternMMU(ushort operand, out RegGPIndex regMMUIndex, out RegGPIndex regValue)
-        {
-            regValue = (RegGPIndex)((operand & 0xE000) >> 13);
-            regMMUIndex = (RegGPIndex)((operand & 0x1C00) >> 10);
-        }
-
-        void BitPatternSET(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternSET(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             value = (ushort)((operand & 0x1F00) >> 8);
@@ -281,7 +271,7 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternSHF(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = (RegGPIndex)((operand & 0xE000) >> 13);
             if ((operand & 0x1000) == 0)
@@ -294,7 +284,7 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void BitPatternSTK(ushort operand, out ushort value, out RegGPIndex destination)
+        private void BitPatternSTK(ushort operand, out ushort value, out RegGPIndex destination)
         {
             destination = RegGPIndex.None; // unused
             value = (ushort)(operand & 0xFF01);

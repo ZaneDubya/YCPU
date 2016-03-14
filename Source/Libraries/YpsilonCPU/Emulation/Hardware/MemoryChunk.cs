@@ -2,14 +2,22 @@
 
 namespace Ypsilon.Emulation.Hardware
 {
-    class YMemory : IMemoryInterface
+    class MemoryChunk : IMemoryInterface
     {
         public int Size
         {
             get { return m_Memory.Length; }
         }
 
-        public YMemory(uint size)
+        /// <summary>
+        /// Set to true for ROM, false for RAM.
+        /// </summary>
+        public bool ReadOnly
+        {
+            get; set;
+        }
+
+        public MemoryChunk(uint size)
         {
             m_Memory = new byte[size];
         }

@@ -841,7 +841,7 @@ may be suffixed by a single 16-bit immediate value. One instruction - the far
 jump immediate instruction - is suffixed by three 16-bit immediate values.
 
 All instructions are defined by the 8-bit low octet of the 16-bit program word.
-Attempted execution of a  program word that does not have a defined 8-bit low
+Attempted execution of a program word that does not have a defined 8-bit low
 octet will raise the 'undefined' interrupt.
 
 LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
@@ -884,9 +884,9 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
 1011 0100   RTS                 RTS             Return from subroutine       2/8
-1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    2
-1011 0110   INC/ADI             IMM             Inc / Add immediate           1
-1011 0111   DEC/SBI             IMM             Dec / Subtract immediate      1
+1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    4
+1011 0110   ADI                 IMM             Add immediate                 1
+1011 0111   SBI                 IMM             Subtract immediate            1
 1011 1000   JMP         /       JMI             Jump                          2
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
