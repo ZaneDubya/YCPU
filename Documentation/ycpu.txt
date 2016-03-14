@@ -975,14 +975,6 @@ ALU Bit Pattern
                 LOD instructions that have the same register for source and
                 destination have the same result.
 
-BTI Bit Pattern
-    FEDC BA98 7654 3210
-    rrrR ssss OOOO OOOO
-        O = Opcode
-        r = register to test
-        R = 0: test bit with value = s ($0 - $f)
-            1: test bit with value = (Rx & $0F), (ssss used as .rrr)
-
 
 BRA Bit Pattern
     FEDC BA98 7654 3210                        
@@ -990,6 +982,15 @@ BRA Bit Pattern
         O = opcode
         b = signed 8-bit offset (multiplied by 2)
         c = condition (See 3.E. 'Branch Operations')
+        
+        
+BTI Bit Pattern
+    FEDC BA98 7654 3210
+    rrrR ssss OOOO OOOO
+        O = Opcode
+        r = register to test
+        R = 0: test bit with value = s ($0 - $f)
+            1: test bit with value = (Rx & $0F), (ssss used as .rrr)
         
 
 FLG Bit Pattern
