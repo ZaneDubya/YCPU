@@ -92,6 +92,16 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        public uint Base
+        {
+            get { return m_Base; }
+        }
+
+        public IMemoryInterface MemoryReference
+        {
+            get { return m_MemoryReference; }
+        }
+
         // ======================================================================
         // Public methods.
         // ======================================================================

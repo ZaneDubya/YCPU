@@ -925,7 +925,13 @@ namespace Ypsilon.Emulation.Hardware
             uint farValue;
             bool isFar;
             BitPatternJMI(operand, out value, out farValue, out isFar);
+            if (isFar)
+            {
+                StackPush((ushort)(farValue >> 16));
+                StackPush((ushort)farValue);
+            }
             StackPush(PC);
+            
             PC = value;
         }
         #endregion

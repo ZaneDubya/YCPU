@@ -191,9 +191,15 @@ ShowStartScreen:
 ; in:   r6: location to read 8-bit characters from. on exit, points to next byte after string.
 WriteChars:
 {
-    psh r0, r5                    ; push r0 r5  to the stack
+    psh     r0, r5              ; push r0 r5 to stack
+    ssg     ds                  ; push ds register to stack
+    lod     r0, $8000
+    psh     r0
+    lod     r0, $0000
+    psh     r0
+    lsg     ds                  ; DS points to ROM (we are going to be reading from txtBootText).
     writeChar:                  ; copy r2 chars from r6 to r5
-        lod.8   r0, [r6]
+        lod.8   r0, DS[r6]
         beq     return
         inc     r6
         orr     r0, r1
@@ -202,7 +208,8 @@ WriteChars:
         baw     writeChar
     return:
         inc     r6
-        pop     r0, r5            ; pop r0 r5 from the stack
+        lsg     ds              ; pop ds register from stack
+        pop     r0, r5          ; pop r0 r5 from stack
         rts
 }
 

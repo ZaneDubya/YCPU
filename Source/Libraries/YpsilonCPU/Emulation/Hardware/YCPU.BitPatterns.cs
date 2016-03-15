@@ -212,7 +212,7 @@ namespace Ypsilon.Emulation.Hardware
                     {
                         nextword = ReadMemInt16(PC, SegmentIndex.CS);
                         PC += 2; // advance PC two bytes because we're reading an immediate value.
-                        address = ReadMemInt16(nextword, SegmentIndex.DS);
+                        address = ReadMemInt16(nextword, dataSeg);
                         if (isFarJump)
                         {
                             addressFar = ReadMemInt16((ushort)(nextword + 2), dataSeg);
@@ -227,7 +227,7 @@ namespace Ypsilon.Emulation.Hardware
                     break;
 
                 case 2: // Indirect
-                    address = ReadMemInt16(R[(int)source], SegmentIndex.DS);
+                    address = ReadMemInt16(R[(int)source], dataSeg);
                     if (isFarJump)
                     {
                         addressFar = ReadMemInt16((ushort)(R[(int)source] + 2), dataSeg);

@@ -189,9 +189,14 @@ namespace Ypsilon.Emulation.Hardware
         public ushort DebugReadMemory(ushort address, SegmentIndex segmentType)
         {
             long cycles = m_Cycles;
-            ushort memory = ReadMemInt16(address, segmentType);
-            m_Cycles = cycles;
-            return memory;
+            Segment seg = GetSegment(segmentType);
+            if (seg == null || seg.MemoryReference == null)
+                return 0x0000;
+
+            byte lo = seg.MemoryReference[seg.Base + address];
+            byte hi = seg.MemoryReference[seg.Base + address + 1];
+
+            return (ushort)((hi << 8) + lo);
         }
     }
 }
