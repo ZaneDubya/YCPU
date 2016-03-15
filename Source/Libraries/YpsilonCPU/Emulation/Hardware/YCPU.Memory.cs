@@ -75,6 +75,8 @@ namespace Ypsilon.Emulation.Hardware
         private Segment GetSegment(SegmentIndex segment)
         {
             Segment s = null;
+            if (PS_I && segment == SegmentIndex.CS)
+                segment = SegmentIndex.IS;
 
             switch (segment)
             {

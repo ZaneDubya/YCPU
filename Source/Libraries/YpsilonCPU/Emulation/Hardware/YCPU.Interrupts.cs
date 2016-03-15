@@ -14,6 +14,7 @@ namespace Ypsilon.Emulation.Hardware
             {
                 ushort ps = PS;
                 PS_S = true;
+                PS_I = true;
                 PS_Q = (interrupt_number == 0x0C);
                 StackPush(ps);
                 // rewind the instruction if this is an error interrupt ($02 - $07)

@@ -195,7 +195,7 @@ namespace YCPUXNA
 
             ConsoleWrite(70, r_y + 19, "ps bits:");
             ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
-                cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_I ? "I" : ".", ".",
+                cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_H ? "I" : ".", ".",
                 cpu.PS_Q ? "Q" : ".", cpu.PS_U ? "U" : ".", cpu.PS_W ? "W" : ".", "."));
 
             ConsoleWrite(70, r_y + 22, "fl bits:");

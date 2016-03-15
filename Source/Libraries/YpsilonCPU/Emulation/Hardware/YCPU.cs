@@ -68,7 +68,7 @@ namespace Ypsilon.Emulation.Hardware
                     m_Cycles += opcode.Cycles;
 
                     // Check for hardware interrupt:
-                    if (PS_I && !PS_Q && m_Bus.IsIRQ)
+                    if (PS_H && !PS_Q && m_Bus.IsIRQ)
                         Interrupt_HWI();
 
                     // Check for RTC interrupt:
@@ -98,7 +98,7 @@ namespace Ypsilon.Emulation.Hardware
                 PC += 2;
 
                 // Check for hardware interrupt:
-                if (PS_I && !PS_Q && m_Bus.IsIRQ)
+                if (PS_H && !PS_Q && m_Bus.IsIRQ)
                     Interrupt_HWI();
 
                 // Check for RTC interrupt:
@@ -365,14 +365,14 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
         #region PS
         private ushort m_PS = 0x0000;
-        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000;
-        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200;
+        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_H = 0x2000, c_PS_I = 0x1000;
+        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_F = 0x0100;
         private bool m_PS_S = false;
         public ushort PS
         {
             private set
             {
-                PS_I = (value & 0x2000) != 0;
+                PS_H = (value & 0x2000) != 0;
                 PS_M = (value & 0x4000) != 0;
                 PS_S = (value & 0x8000) != 0;
                 m_PS = value;
@@ -384,7 +384,7 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         /// <summary>
-        /// If PS_S is true, then the processor is in Supervisor mode.
+        /// [S]upervisor Mode enabled.
         /// </summary>
         public bool PS_S
         {
@@ -407,7 +407,7 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         /// <summary>
-        /// If PS_M is true, then the MMU is active.
+        /// [M]emory segmenting hardware enabled.
         /// </summary>
         public bool PS_M
         {
@@ -431,6 +431,31 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// [H]ardware Interrupts enabled.
+        /// </summary>
+        public bool PS_H
+        {
+            get
+            {
+                return ((m_PS & c_PS_H) != 0);
+            }
+            private set
+            {
+                if (value == false)
+                {
+                    m_PS &= unchecked((ushort)~c_PS_H);
+                }
+                else if (value == true)
+                {
+                    m_PS |= c_PS_H;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processor handling [I]nterrupt.
+        /// </summary>
         public bool PS_I
         {
             get
@@ -450,6 +475,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// Interrupt Re[Q]uest in process, blocks hardware interrupts.
+        /// </summary>
         public bool PS_Q
         {
             get
@@ -469,6 +497,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// User-mode Fault.
+        /// </summary>
         public bool PS_U
         {
             get
@@ -488,6 +519,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// Segment Fault.
+        /// </summary>
         public bool PS_W
         {
             get
@@ -503,6 +537,28 @@ namespace Ypsilon.Emulation.Hardware
                 else if (value == true)
                 {
                     m_PS |= c_PS_W;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processor handling [F]ault.
+        /// </summary>
+        public bool PS_F
+        {
+            get
+            {
+                return ((m_PS & c_PS_F) != 0);
+            }
+            private set
+            {
+                if (value == false)
+                {
+                    m_PS &= unchecked((ushort)~c_PS_F);
+                }
+                else if (value == true)
+                {
+                    m_PS |= c_PS_F;
                 }
             }
         }

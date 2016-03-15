@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.8
+Version 0.8 RELEASE CANDIDATE
 
 ### Table of Contents ##########################################################
 
@@ -40,7 +40,7 @@ without compromising on features. It features:
     and two segments for data;
   * memory protection for read/write/execute/supervisor-only attributes;
   * 28 bits of address space for memory access;
-  * real time clock with a interrupt timer;
+  * real time clock with a programmable timer that raises interrupts;
   * hardware bus that supports up to 15 devices with 24 bits of address space
     each.
 
@@ -87,7 +87,8 @@ can only address 64 kilobytes of memory at any time. However, using a memory
 management unit (MMU), the processor can access multiple 64 kilobyte areas of
 the processor at once. These areas are called ‘segments’. For example, the
 processor might read code from one segment while copying data from a second 
-segment to a third segment, while the stack operated on a fourth segment.
+segment to a third segment, while the stack pushed and pulled data from a fourth
+segment, and interrupts were handled by code in a fifth segment.
 
 Where segments are located in memory memory, and how large they are, is
 described by the processor’s segment registers. There are nine of these: four
@@ -220,13 +221,15 @@ processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMI. QUW. .... ....
-            [S] -   [S]upervisor Mode enabled
-            [M] -   [M]emory segmenting hardware enabled
-            [I] -   Hardware [I]nterrupts enabled.
+        SMHI QUWF .... ....
+            [S] -   [S]upervisor Mode enabled.
+            [M] -   [M]emory segmenting hardware enabled.
+            [H] -   [H]ardware Interrupts enabled.
+            [I] -   Processor handling [I]nterrupt.
             [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
-            [U] -   User-mode Fault
-            [W] -   Segment Fault.
+            [U] -   User-mode Fault.
+            [W] -   Segment Fault Write-protection bit.
+            [F] -   Processor handling [F]ault.
             
     P2: Processor Memory Fault Address. Set during segment fault interrupt.
         See 2.D.4. and 2.D.6.
@@ -369,7 +372,7 @@ the SWI opcode, or when the processor encounters an error state.
 --- 2.D.1. HARDWARE INTERRUPTS -------------------------------------------------
 
 A device on the CPU's hardware bus may request the CPU's attention by asserting
-an interrupt request (IRQ). While the Q status bit is clear and the I status bit
+an interrupt request (IRQ). While the Q status bit is clear and the H status bit
 is set, the processor checks for IRQs before executing each opcode. If a
 hardware device is asserting an IRQ when the processor checks, the processor
 will load the bus index of the first device on the bus which is asserting an
@@ -389,14 +392,20 @@ contents of the registers.
 Unlike hardware interrupts, software interrupts will be acknowledged
 regardless of the status of the Q status bit
 
-The I status bit only applies to hardware interrupts, and thus software
-interrupts will be acknowledged by the CPU if the I status bit is clear. 
+The H status bit only applies to hardware interrupts, and thus software
+interrupts will be acknowledged by the CPU if the H status bit is clear. 
     
 
---- 2.D.3. OTHER INTERRUPTS ----------------------------------------------------
+--- 2.D.3. FAULT INTERRUPTS ----------------------------------------------------
 
-The processor can also raise interrupts on its own in response to error
-states. These interrupts are named and described 2.D.6., supra.
+For interrupts caused by an error condition, the PC is rewound to the 
+address of the instruction that caused the interrupt, and the F status bit will
+be set. For all other interrupts, the PC is unchanged, pointing to the address
+following the instruction the processor was executing immediately prior to the
+interrupt.
+
+Interrupts designated as 'Faults' are: DivZeroFault ($02), DoubleFault ($03),
+StackFault ($04), SegFault ($05), UnPrivFault ($06), and UnDefFault ($07). 
 
     
 --- 2.D.4. THE INTERRUPT SEQUENCE ----------------------------------------------
@@ -419,14 +428,6 @@ It then executes the following sequence:
     9.  Set PC to Mem[IA + (InterruptIndex * 2)].
    10.  Execution continues.  
 
-2.D.4.i. Interrupts raised by error conditions:
-    For interrupts caused by an error condition, the PC is rewound to the 
-    address of the instruction that caused the interrupt. These interrupts are:
-    DivideByZero ($02), FPUError ($03), StackFault ($04), SegFault ($05),
-    UnprivOpcode ($06), and UndefOpcode ($07). For all other interrupts, the
-    PC is unchanged, pointing to the address following the instruction the
-    processor was executing immediately prior to the interrupt.
-
 
 --- 2.D.5. RETURNING FROM AN INTERRUPT -----------------------------------------
 
@@ -441,7 +442,8 @@ interrupt.
 
 The RTI instruction follows this sequence:
     1.  Pop PC, PS from the Stack.
-        PS bits Q, U, W, and E are cleared.
+        If the processor was not interrupted before the current interrupt, this 
+        will clear status bits I, Q, U, W, and F.
     2.  Execution Continues.
     
 
@@ -457,9 +459,9 @@ $0  Reset           Raised when the processor's RESET line is pulled high.
                     The processor will follow the boot sequence (See 2.G.).
 $1  Clock           Raised when the processor's Real Time Clock ticks. The tick
                     rate can be set by writing to the RTC register.
-$2  DivideByZero    Raised when the processor executes a division or modulus
+$2  DivZeroFault    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
-$3  RESERVED        Not currently used, never raised.
+$3  DoubleFault     Raised when the processor faults while in fault state.
 $4  StackFault      Raised when the processor executes a POP or PSH instruction
                     that would access an address outside of the stack segment.
 $5  SegFault        Raised when the processor attempts to read from or write to 
@@ -467,9 +469,9 @@ $5  SegFault        Raised when the processor attempts to read from or write to
                     these operations. The UW bits in the PS register will 
                     describe the error, and the P2 register will contain the 
                     memory address that the processor attempted to access.
-$6  UnprivOpcode    Raised when the processor attempts to execute a privileged
+$6  UnprivFault     Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
-$7  UndefOpcode     Raised when the processor attempts to execute an UNDEFINED
+$7  UndefFault      Raised when the processor attempts to execute an UNDEFINED
                     opcode.
 $8  RESERVED        Not currently used, never raised.
 $9  RESERVED        Not currently used, never raised.
@@ -485,8 +487,9 @@ $F  SWI             Raised by the SWI opcode.
 
 --- 2.D.6. SEGMENT FAULTS ------------------------------------------------------
 
-When a segment fault is raised, the processor status bits U, W, and E will
-describe the operation that caused the segment fault:
+When a segment fault is raised, the processor status bits U and W describe the
+operation that caused the segment fault:
+
         U W     Segment Fault Type
         0 0     Attempted access to segment that is not loaded. (P bit set)
         0 1     Attempted supervisor write of write-protected memory.
@@ -684,7 +687,7 @@ size of the segment equal to $03600.
 
 Note 1: Far jumps are only accessible from Supervisor mode. If the processor
         attempts to execute a far jump while in user mode, the processor will
-        raise an 'UnprivOpcode' exception. Thus, these instructions could still
+        raise the 'UnPrivFault' interrupt. Thus, these instructions could still
         be used while in User mode; the processor interrupt would be used to
         'trap' these instructions. Alternatively, software running in User mode
         could use a SWI instruction for the same purpose, if the Supervisor mode
@@ -1096,8 +1099,8 @@ MMU Bit Pattern
             $1 = ds (u = 0: dss, u = 1: dsu)
             $2 = es (u = 0: ess, u = 1: esu)
             $3 = ss (u = 0: sss, u = 1: ssu)
-            $4 = is (u must be 0, raises UndefOpcode interrupt otherwise).
-            $5-$7 = undefined, raises UndefOpcode interrupt.
+            $4 = is (u must be 0, raises UnDefFault interrupt otherwise).
+            $5-$7 = undefined, raises UnDefFault interrupt.
 
 
 RTS Bit Pattern
@@ -1195,7 +1198,7 @@ Operation:  Z,C,N,V = Rx - M
     
 DIV         Unsigned Divide register by value
 Operation:  Rx / M -> Rx
-If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Always cleared.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -1204,7 +1207,7 @@ If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
 
 DVI         Signed divide of register by value
 Operation:  Rx / M -> Rx
-If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 of Rx is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -1229,7 +1232,7 @@ Operation:  M -> Rx
 MDI         Signed modulus of register by value.
 Operation:  Rx % M -> Rx
 Sign of the result is the same as the sign of the dividend.
-If a divide by zero is attempted, interrupt 0x03 is raised and Rx is unchanged.
+If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -1249,7 +1252,7 @@ R0 is set to the high 16-bits of the result before Rx is set with the low
 
 MOD         Modulus of register by value.
 Operation:  Rx % M -> Rx
-If a divide by zero is attempted, interrupt 0x03 is raised.
+If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 of Rx is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
@@ -1557,7 +1560,7 @@ JMP         Unconditional Jump to new address.
         1. PC is set to CS[PC+2].
         2. Execution continues.
     If jump is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        1. If YCPU is in user mode, raise UnPrivFault interrupt.
         2. PC is set to CS[PC+2].
         3. CS segment lo word is set to CS[PC+4].
         4. CS segment hi word is set to CS[PC+6].
@@ -1569,7 +1572,7 @@ JSR         Unconditional Jump, saving return address.
         2. PC is set to the value of M.
         3. Execution continues.
     If jump is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        1. If YCPU is in user mode, raise UnPrivFault interrupt.
         2. CS segment hi word is pushed to stack.
         3. CS segment lo word is pushed to stack.
         4. PC is pushed to stack. [NB: PC is the address of the NEXT operation]
@@ -1583,7 +1586,7 @@ RTS         Return from Subroutine
         1. PC is popped from the stack.
         2. Execution continues.
     If return is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivOpCode interrupt.
+        1. If YCPU is in user mode, raise UnPrivFault interrupt.
         2. PC is popped from stack.
         3. CS segment lo word is popped from stack.
         4. CS segment hi word is popped from stack.
