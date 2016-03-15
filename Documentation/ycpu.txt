@@ -300,16 +300,17 @@ indexes are as follows:
     $02        Send message to hardware device
     $03        Get RAM/ROM amounts in R0-R3.
     $80        Get RTC time
-    $81        Set RTC time
     $82        Get RTC interrupt interval
     $83        Set RTC interval
 
-2.C.1.i. HWQ $00
+    
+HWQ $00 --- Query number of devices connected
 
 Calling HWQ operation $00 will query the Bus for the number of devices
 connected, and the YCPU will save this value in R0.
 
-2.C.1.ii. HWQ $01
+
+HWQ $01 --- Query device attached to bus in slot R0
 
 Software can determine what device is present in each of the 16 Bus Slots by
 calling HWQ operation $01 with the index of the Bus Slot to check in R0. If no
@@ -321,7 +322,8 @@ present, the registers of the YCPU will be set as follows:
         R2: Device ID
         R3: Device Flags
 
-2.C.1.iii. HWQ $02
+        
+HWQ $02 --- Send message to hardware device
         
 Software can send messages to a Bus Device by calling HWQ operation $02. This
 will send a two-word message, consisting of the words in R1 and R2, to the
@@ -347,7 +349,8 @@ one of several results will occur:
     acknowledge the message by setting R0 to "MSG_ERROR" ($FFFF). R1 and R2
     will remain unchanged.
 
-2.C.1.iv. HWQ $03
+    
+HWQ $03 --- Get RAM/ROM amounts in R0-R3.
 
 Software can query the YBUS for the total amount of attached RAM and ROM by
 calling HWQ operation $03. After this operation, the total amount of RAM will
@@ -731,7 +734,7 @@ The clock provides time data with the following precision:
     Second:  6 bits (0-59)
     M.Sec.: 12 bits (0-1000)
     
-This data is saved to R0-R3 upon calling HWQ $80, in this format:
+This data is loaded to R0-R3 upon calling HWQ $80, in this format:
 
                                                     FEDC BA98 7654 3210
                     R0: 8 bits Year, 4 bits Month   .YYY YYYY .... MMMM
@@ -745,8 +748,6 @@ exceptionally reasonable rates to companies who wish their software to
 gracefully handle this roll-over. YpsilonTech accepts no responsibility for
 software written without this assistance, and thus experience a "Y2156" bug.
 
-A programmer may set the clock data by placing the appropriate data in R0-R3,
-and calling HWQ $81.
 
 --- 2.H.2. The CLOCK interrupt -------------------------------------------------
 
