@@ -950,10 +950,10 @@ namespace Ypsilon.Emulation.Hardware
                     segment = (user) ? m_CSU : m_CSS;
                     break;
                 case SegmentIndex.DS:
-                    segment = (user) ? m_DSU : m_ESS;
+                    segment = (user) ? m_DSU : m_DSS;
                     break;
                 case SegmentIndex.ES:
-                    segment = (user) ? m_ESU : m_DSS;
+                    segment = (user) ? m_ESU : m_ESS;
                     break;
                 case SegmentIndex.SS:
                     segment = (user) ? m_SSU : m_SSS;
@@ -1160,16 +1160,16 @@ namespace Ypsilon.Emulation.Hardware
             bool far = (operand & 0x0100) != 0;
             if (far)
             {
-                PC = StackPop();
-            }
-            else
-            {
                 if (!PS_S)
                     Interrupt_UnPrivOpcode();
                 PC = StackPop();
                 ushort cs_lo = StackPop();
                 ushort cs_hi = StackPop();
-                // !!! CS = cs_lo + (cs_hi << 16);
+                m_CSS.Register = (uint)(cs_lo + (cs_hi << 16));
+            }
+            else
+            {
+                PC = StackPop();
             }
         }
         #endregion

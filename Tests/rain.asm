@@ -119,7 +119,7 @@ Setup:
     lod     r1, $0800
     psh     r1          ; ds = $0800 0000 (RAM @ $00000000, size = $8000)
     psh     r0
-    add     r0, $0080
+    add     r0, $0180
     psh     r1          ; ss = $0800 0180 (RAM @ $00018000, size = $8000)
     psh     r0
     lod     r0, $0000

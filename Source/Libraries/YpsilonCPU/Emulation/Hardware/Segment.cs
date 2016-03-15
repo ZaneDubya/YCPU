@@ -113,7 +113,7 @@ namespace Ypsilon.Emulation.Hardware
             }
             set
             {
-                m_MemoryReference[i] = value;
+                m_MemoryReference[i + m_Base] = value;
             }
         }
 
@@ -131,7 +131,7 @@ namespace Ypsilon.Emulation.Hardware
         // ======================================================================
 
         private const uint c_SEGREG_A = 0x10000000, c_SEGREG_P = 0x20000000, c_SEGREG_W = 0x40000000, c_SEGREG_D = 0x80000000;
-        private const int c_SEGREG_Size = 0x0FF00000, c_SEGREG_SizeShift = 20;
+        private const int c_SEGREG_Size = 0x0FF00000, c_SEGREG_SizeShift = 12;
         private const int c_SEGREG_MemBase = 0x000FFFFF;
         private const int c_SEGREG_DeviceIndex = 0x000F0000, c_SEGREG_DeviceIndexShift = 16;
         private const int c_SEGREG_DeviceBase = 0x0000FFFF;
@@ -181,12 +181,12 @@ namespace Ypsilon.Emulation.Hardware
             if (IsDevice)
             {
                 uint b = (m_Register & c_SEGREG_MemBase);
-                m_Base = b;
+                m_Base = b << 8;
             }
             else
             {
                 uint b = (m_Register & c_SEGREG_DeviceBase);
-                m_Base = b;
+                m_Base = b << 8;
             }
         }
 
