@@ -19,7 +19,7 @@ namespace Ypsilon.Emulation.Hardware
             else
             {
                 IsEnabled = true;
-                double tickHz = (double)value;
+                double tickHz = value;
                 double maxHz = YCPU.ClockRateHz / 1024d;
                 if (tickHz > maxHz)
                     tickHz = maxHz;
@@ -27,6 +27,12 @@ namespace Ypsilon.Emulation.Hardware
                 m_NextTickAtCycle = cycle + m_CyclesPerTick;
                 return (ushort)tickHz;
             }
+        }
+
+        public ushort GetTickRate()
+        {
+            double tickHz = (YCPU.ClockRateHz / m_CyclesPerTick);
+            return (ushort)tickHz;
         }
 
         public void DisableInterrupt()

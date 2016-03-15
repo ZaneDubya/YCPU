@@ -866,29 +866,38 @@ namespace Ypsilon.Emulation.Hardware
 
             switch (query_type)
             {
-                case 0x00:
+                case 0x00: // Query number of devices connected
                     R[(int)RegGeneral.R0] = m_Bus.DevicesConnected;
                     break;
-                case 0x01:
+                case 0x01: // Query device attached to bus in slot R0
                     ushort[] device_info = m_Bus.QueryDevice(R[(int)RegGeneral.R0]);
                     R[(int)RegGeneral.R0] = device_info[0];
                     R[(int)RegGeneral.R1] = device_info[1];
                     R[(int)RegGeneral.R2] = device_info[2];
                     R[(int)RegGeneral.R3] = device_info[3];
                     break;
-                case 0x02:
+                case 0x02: // Send message to hardware device
                     R[0] = m_Bus.SendDeviceMessage(R[(int)RegGeneral.R0],
                         R[(int)RegGeneral.R1],
                         R[(int)RegGeneral.R2]);
                     break;
-                case 0x80:
+                case 0x03: // Get RAM/ROM amounts in R0-R3.
+                    R[0] = (ushort)BUS.RAMSize;
+                    R[1] = (ushort)(BUS.RAMSize >> 16);
+                    R[2] = (ushort)BUS.ROMSize;
+                    R[3] = (ushort)(BUS.ROMSize >> 16);
+                    break;
+                case 0x80: // Get RTC time
                     ushort[] rtc_data = m_RTC.GetData();
                     R[(int)RegGeneral.R0] = rtc_data[0];
                     R[(int)RegGeneral.R1] = rtc_data[1];
                     R[(int)RegGeneral.R2] = rtc_data[2];
                     R[(int)RegGeneral.R3] = rtc_data[3];
                     break;
-                case 0x81:
+                case 0x82:
+                    R[(int)RegGeneral.R0] = m_RTC.GetTickRate();
+                    break;
+                case 0x83:
                     R[(int)RegGeneral.R0] = m_RTC.SetTickRate(R[(int)RegGeneral.R0], m_Cycles);
                     break;
                 default:

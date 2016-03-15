@@ -294,6 +294,22 @@ namespace Ypsilon.Emulation.Hardware
         // Memory Reference Functions
         // ===================================================================================================
 
+        public int RAMSize
+        {
+            get
+            {
+                return m_RAM.Size;
+            }
+        }
+
+        public int ROMSize
+        {
+            get
+            {
+                return m_ROM.Size;
+            }
+        }
+
         internal void AddSegmentToReferences(Segment segment)
         {
             int index = m_References.IndexOf(segment);
