@@ -255,7 +255,7 @@ namespace Ypsilon.Emulation.Hardware
                 // send message to YCPU
                 return ADevice.MSG_NO_DEVICE;
             }
-            else if ((deviceIndex > 16) || m_Devices[deviceIndex] == null)
+            else if ((deviceIndex > 16) || m_Devices[deviceIndex - 1] == null)
             {
                 // send message to device index beyond number of slots, or empty device
                 return ADevice.MSG_NO_DEVICE;
