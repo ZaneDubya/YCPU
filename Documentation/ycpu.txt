@@ -1,5 +1,5 @@
 YCPU Specification
-Version 0.8 RELEASE CANDIDATE
+Version 0.9 RELEASE CANDIDATE
 
 ### Table of Contents ##########################################################
 
@@ -22,10 +22,9 @@ Version 0.8 RELEASE CANDIDATE
         3.D.        Bit Testing Instructions
         3.E.        Branch Instructions
         3.F.        Immediate Instructions
-        3.G.        Interrupt Instructions
-        3.H.        Jump & Call Instructions
-        3.I.        Stack Instructions
-        3.J.        Processor Function Instructions
+        3.G.        Jump & Call Instructions
+        3.H.        Stack Instructions
+        3.I.        Processor Function Instructions
         4.      History
 
 
@@ -145,9 +144,9 @@ query operation, see 2.C.1.
     The processor has access to the following 13 16-bit registers:
 
     R0-R7: General Purpose Registers
-    FL: Flags register
-    PC: Program Counter
-    PS: Processor Status
+    FL: Flags register.
+    PC: Program Counter.
+    PS: Processor Status.
     SP: Stack Pointer. The YCPU has separate stack pointers for user mode (USP)
         and supervisor mode (SSP). See 2.A.2.
 
@@ -186,11 +185,10 @@ There are a few exceptions to general purpose register interchangeability.
         Allowed:     LOD R1, [R4, R5] ; both registers are R4-R7. Valid.
         Disallowed:  LOD R1, [R0, R2] ; neither register is R4-R7. Not valid.
 
-
 --- 2.A.2. PROCESSOR CONTROL REGISTERS -----------------------------------------
 
-The processor has eight 16-bit processor control registers. Unlike the general
-purpose registers, these are not accessible by most instructions. The eight
+The processor has five 16-bit processor control registers. Unlike the general
+purpose registers, these are not accessible by most instructions. The five
 processor control registers are FL, PC, PS, SSP, and USP.
 
     FL: The FLag register. This register contains flags that are set by ALU
@@ -202,21 +200,24 @@ processor control registers are FL, PC, PS, SSP, and USP.
     
     PC: The Program Counter. Contains the address of the next instruction to
         execute. It is incremented by 2 after executing an opcode that does
-        not reference a next word, or 4 after executing an opcode that does
-        reference a next word value.
+        not reference an immediate word value, by 4 after executing an opcode
+        that does reference an immediate word value, or by 8 after executing an
+        opcode that references three immediate word values. See 2.E.1. for more
+        information about immediate values.
     
     PS: The Processor Status. Setting or clearing bits in this register enables
-        and disables processor features. The bits are as follows:
+        and disables processor features and modes. The bits are as follows:
         FEDC BA98 7654 3210
         SMHI QUVW .... ....
             [S] -   [S]upervisor Mode enabled.
             [M] -   [M]emory segmenting hardware enabled.
             [H] -   [H]ardware Interrupts enabled.
-            [I] -   Processor handling [I]nterrupt.
+            [I] -   Processor handling [I]nterrupt, read code/immediate values
+                    from IS instead of CS.
             [Q] -   HWI Re[Q]uest in process, blocks hardware interrupts.
             [U] -   Fault in [U]ser mode.
-            [V] -   Segment Fault error code bit 0.
-            [W] -   Segment Fault error code bit 1.
+            [V] -   Segment Fault error bit 0. See 2.D.5.
+            [W] -   Segment Fault error bit 1. See 2.D.5.
     
     SP: The Stack Pointer is the address of the first full stack space. It is
         decremented before a stack value is pushed onto the stack, and is
@@ -258,16 +259,19 @@ In User mode, the processor:
 === 2.C. Hardware Devices ======================================================
 
 The processor interfaces with hardware devices through a modular Hardware Bus.
-This Hardware Bus can host up to 15 Devices. The processor communicates directly
-with devices executing a Hardware Query instruction (See 2.C.1.), and can also
-address memory segments exposed by a device (See 2.F.1.). Devices can request
-the processor's attention by raising a hardware interrupt (See 2.D.2.).
+This Hardware Bus can host up to 15 Devices in addition to the processor.
 
-Connected Hardware Devices may include input (keyboard, mouse, touch), storage
-(disk, hard drive), networking, additional memory, and interfaces for hardware
-not directly connected to the Hardware Bus. A programmer can use the HWQ $02
-instruction to identify what Hardware Device is present in a given Hardware
-Slot (See 2.C.1).
+The processor communicates directly with devices executing a Hardware Query
+instruction (See 2.C.1.), and can also address memory segments exposed by a
+device (See 2.F.1.). Devices can request the processor's attention by raising a
+hardware interrupt (See 2.D.2.).
+
+Connected Hardware Devices may include input (keyboard, mouse, touch), output
+(segment, character, and bitmap based displays, printers, dials, readouts),
+storage (disk, hard drive), networking, additional memory, and interfaces for
+hardware not directly connected to the Hardware Bus. A programmer can use the
+HWQ $02 instruction to identify what Hardware Device is present in a given
+Hardware Slot (See 2.C.1).
 
 Device Slot 0 on the Hardware Bus refers to the YCPU itself. Software can
 retrieve information about the YCPU by using the Hardware Query instruction to
@@ -296,8 +300,8 @@ indexes are (undefined operation indexes raise a 'UndefFault' interrupt):
     
 HWQ $00 --- Query number of devices connected
 
-Calling HWQ operation $00 will query the Bus for the number of devices
-connected. The YCPU will store this value in R0.
+Calling HWQ operation $00 will query the Bus for the number of connected
+devices. The YCPU will store this value in R0.
 
 
 HWQ $01 --- Query device attached to bus in slot R0
@@ -321,21 +325,21 @@ Hardware Device in Bus Slot R0. If there is no hardware device in this Bus Slot,
 there will be no effect. If there is an active Hardware Device in this Bus Slot,
 one of several results will occur:
 
-    If the device can instantly respond to the message, it will acknowledge the
+  * If the device can instantly respond to the message, it will acknowledge the
     message by setting R0 to "MSG_ACK" ($0001). R1 and R2 may also be used as
     return parameters, if required by the device.
     
-    If the device requires time to respond to the message, it will acknowledge
+  * If the device requires time to respond to the message, it will acknowledge
     the message by setting R0 to "MSG_WAIT" ($0002). When the device is ready
     to respond to the message, it will raise a Hardware Interrupt.
     
-    If the device requires access to main memory, the processor will be halted
+  * If the device requires access to main memory, the processor will be halted
     while the device reads/writes to memory. Generally, the memory read will
     be based on the contents of R1 and R2. Software can send more than two
     parameters to a device by using R1 or R2 as a pointer to memory. When the
     device has completed its operation, it will set R0 to "MSG_ACK" ($0001).
     
-    If the device encounters an error while responding to the message, it will
+  * If the device encounters an error while responding to the message, it will
     acknowledge the message by setting R0 to "MSG_ERROR" ($FFFF). R1 and R2
     will remain unchanged.
 
@@ -958,17 +962,15 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1111   CLF                 FLG             Clear flag bit                1
 1011 000x   PSH                 STK             Push to stack                 1 
 1011 001x   POP                 STK             Pop from stack                1 
-1011 0100   RTS                 RTS             Return from subroutine       2/8
+1011 0100   xxx         /       PRX             Processor functions           *
 1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    4
 1011 0110   ADI                 IMM             Add immediate                 1
 1011 0111   SBI                 IMM             Subtract immediate            1
 1011 1000   JMP         /       JMI             Jump                          2
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
-1011 1011   SLP         X       ---             Sleep until Interrupt         1
-1011 1100   SWI                 ---             Raise SOFTWARE Interrupt      2     
-1011 1101   RTI         X       ---             Return from Interrupt         4 
-1011 111x   ---                 ---             UNDEFINED (2  opcodes)        -
+1011 1011   STI         X       STI             Stack Immediate               -
+1011 11xx   ---                 ---             UNDEFINED (4 opcodes)         - 
 11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
 
 
@@ -1082,22 +1084,8 @@ HWI Bit Pattern
     FEDC BA98 7654 3210
     iiii iiii OOOO OOOO
         O = Opcode
-        i = Type of Hardware Busy Query operation
-            Index   Operation
-            $00     Bus Device Count. R0 = number of devices attached to bus.
-            $01     Bus Device Query. R0-R3 are set with information about the
-                    device at Bus index = R0
-                    R0: Device Type
-                    R1: Manufacturer ID
-                    R2: Device ID
-                    R3: Device Flags
-            $02     Bus Device Message. Send a message to device at bus index =
-                    R0, with parameters in R1-R2, and possibly in memory if a
-                    register is a pointer. See 2.C.
-            $80     Gets time data from RTC.
-                    See 2.H.1. for the format of the time data. 
-            $81     Set RTC interrupt based on the value of R0.
-                    See 2.H.2. for the input format of R0.
+        i = Type of Hardware Busy Query operation. See 2.C.1. for a list of 
+            valid operation indexes.
             
     
 IMM Bit Pattern
@@ -1174,11 +1162,16 @@ MMU Bit Pattern
             $5-$7 = undefined, raises UnDefFault interrupt.
 
 
-RTS Bit Pattern
+PRX Bit Pattern
     FEDC BA98 7654 3210
-    .... ...F OOOO OOOO
+    iiii iiii OOOO OOOO
         O = Opcode
-        F = Far return
+        i = processor function index:
+            $00 = RTS       Return from subroutine.
+            $01 = RTS.F     Return from subroutine, far.
+            $02 = RTI       Return from interrupt.
+            $03 = SWI       Raise SoftWare Interrupt.
+            $04 = SLP       Sleep until Interrupt.
 
 
 SEI Bit Pattern
@@ -1207,7 +1200,13 @@ SHF Bit Pattern
         R = shift value select, see s
         s = if R = 0, bits to shift (1-16)
             if R = 1, register to use as shift value (register index = .sss)
-
+            
+STI Bit Pattern
+    FEDC BA98 7654 3210                        
+    iiii iiio OOOO OOOO
+        O = Opcode
+        o = decrement if 0, increment if 1.
+        i = signed 8-bit offset (multiplied by 2)
             
 STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
@@ -1609,19 +1608,7 @@ M is a 5-bit value + 1, for a range of ($01-$20).
     V [Overflow] Set if sign bit (bit 15) is incorrect.
     
     
-=== 3.G. Interrupt Instructions ================================================
-
-RTI         Return from Interrupt
-Returns from an interrupt.
-See 2.D.8. for a description of this opcode's function.
-  
-  
-SWI         Call Software Interrupt
-Raises SOFTWARE INTERRUPT.
-See 2.D.3. for a description of this opcode's function.
-    
-    
-=== 3.H. Jump & Call Instructions ==============================================
+=== 3.G. Jump & Call Instructions ==============================================
 
 JMP         Unconditional Jump to new address.
     If jump is 'near' (far bit clear):
@@ -1648,20 +1635,9 @@ JSR         Unconditional Jump, saving return address.
         6. CS segment lo word is set to CS[PC+4].
         7. CS segment hi word is set to CS[PC+6].
         8. Execution continues.
-
-RTS         Return from Subroutine
-    If return is 'near' (far bit clear):
-        1. PC is popped from the stack.
-        2. Execution continues.
-    If return is 'far' (far bit set):
-        1. If YCPU is in user mode, raise UnPrivFault interrupt.
-        2. PC is popped from stack.
-        3. CS segment lo word is popped from stack.
-        4. CS segment hi word is popped from stack.
-        5. Execution continues.
     
     
-=== 3.I. Stack Instructions ====================================================
+=== 3.H. Stack Instructions ====================================================
 
 The following registers can be specified for Stack Instructions:
 R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP. Specifying a register
@@ -1717,8 +1693,14 @@ values registers are always pushed in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
     Bit pattern 1: SP, USP, PS, PC, FL
     
+STI         Manipulate the stack with an immediate value.
+Syntax: STI -$80 to STI $7F
+The signed offset is added to SP. Because stack values must be 16-bit aligned,
+the offset is shifted left by 1 bit (multiplied by 2) to allow for an effective
+range of -256 to +254 bytes (-128 to +127 stack positions) relative to the
+current value of SP.
 
-=== 3.J. Processor Function Instructions =======================================
+=== 3.I. Processor Function Instructions =======================================
 
 CLF         Clears bit(s) in the FL register.
 Syntax: CLF [N][,C][,Z][,V]
@@ -1747,6 +1729,24 @@ the nine segment registers should be loaded as follows:
         LSG ESU           ; loads User Extra Data Segment from Stack
         LSG SSU           ; loads User Stack Segment from Stack
         LSG IS            ; loads Interrupt Segment from Stack
+        
+
+RTI         Return from Interrupt
+Returns from an interrupt. This instruction is supervisor only.
+See 2.D.8. for a description of this opcode's function.
+
+
+RTS         Return from Subroutine
+Returns from a code subroutine. Far returns are supervisor only.
+    If return is 'near' (far bit clear):
+        1. PC is popped from the stack.
+        2. Execution continues.
+    If return is 'far' (far bit set):
+        1. If YCPU is in user mode, raise UnPrivFault interrupt.
+        2. PC is popped from stack.
+        3. CS segment lo word is popped from stack.
+        4. CS segment hi word is popped from stack.
+        5. Execution continues.
 
 
 SEF         Sets bit(s) in the FL register.
@@ -1756,6 +1756,7 @@ possible bits may be specified in a single instruction.
 
 
 SLP         Halts the processor until it receives an interrupt.
+This instruction is supervisor only.
 Syntax: SLP
 Places the processor into a halted state. No further instructions will be
 executed until the processor is interrupted (by the RTC or a hardware interrupt)
@@ -1768,6 +1769,11 @@ Syntax: SSG [CS/DS/ES/SS/IS][_/S/U]
 Pushes the value of the indicated segment register to the stack as two 16-bit
 word values. A programmer may indicate which of the nine segment registers 
 should be stored using the mnemonic seen in the LSG instruction description.
+
+
+SWI         Call Software Interrupt
+Raises SOFTWARE INTERRUPT.
+See 2.D.3. for a description of this opcode's function.
 
 
 ### 4. History #################################################################
