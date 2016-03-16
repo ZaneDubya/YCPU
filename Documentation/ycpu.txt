@@ -969,7 +969,7 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1000   JMP         /       JMI             Jump                          2
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
-1011 1011   STI         X       STI             Stack Immediate               -
+1011 1011   STI         X       STI             Stack Immediate               1
 1011 11xx   ---                 ---             UNDEFINED (4 opcodes)         - 
 11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
 
