@@ -409,27 +409,6 @@ namespace Ypsilon.Assembler
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleHWI((ushort)0x00BA, param[0]);
         }
-
-        List<ushort> AssembleSLP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Guard.RequireParamCountExact(param, 0);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new List<ushort>() { (ushort)0x00BB };
-        }
-
-        List<ushort> AssembleSWI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Guard.RequireParamCountExact(param, 0);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new List<ushort>() { (ushort)0x00BC };
-        }
-
-        List<ushort> AssembleRTI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
-        {
-            Guard.RequireParamCountExact(param, 0);
-            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
-            return new List<ushort>() { (ushort)0x00BD };
-        }
         #endregion
 
         #region Jump operations
@@ -473,6 +452,42 @@ namespace Ypsilon.Assembler
             {
                 return new List<ushort>() { (ushort)0x00B4 }; // RTS
             }
+        }
+
+        List<ushort> AssembleRTI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Guard.RequireParamCountExact(param, 0);
+            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return new List<ushort>() { (ushort)0x02B4 };
+        }
+
+        List<ushort> AssembleSTX(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Guard.RequireParamCountExact(param, 1);
+
+            Param p1 = ParseParam(param[0]);
+            if (p1.AddressingMode != AddressingMode.Immediate)
+                throw new Exception("stx instructions expect a single immediate parameter");
+
+            int p1i = (short)p1.ImmediateWordShort;
+            if (p1i < sbyte.MinValue || p1i > sbyte.MaxValue)
+                throw new Exception("stx instructions accept a single immediate parameter with values between -128 and +127");
+
+            return new List<ushort>() { (ushort)(0x00BB | (((sbyte)p1i) << 8)) };
+        }
+
+        List<ushort> AssembleSWI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Guard.RequireParamCountExact(param, 0);
+            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return new List<ushort>() { (ushort)0x03B4 };
+        }
+
+        List<ushort> AssembleSLP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        {
+            Guard.RequireParamCountExact(param, 0);
+            Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
+            return new List<ushort>() { (ushort)0x04B4 };
         }
 
         #region Macro NOP

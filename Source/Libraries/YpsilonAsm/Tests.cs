@@ -228,9 +228,12 @@ namespace Ypsilon
                 notThisReg:;
                 }
 
-                // test rts
+                // test rts / rts.f / slp / swi / rti
                 Test("rts", 0x00B4);
                 Test("rts.f", 0x01B4);
+                Test("rti", 0x02B4);
+                Test("swi", 0x03B4);
+                Test("slp", 0x04B4);
 
                 // test lsg / ssg
                 string[] mmu_instructions = new string[] { "lsg", "ssg" };
@@ -329,10 +332,11 @@ namespace Ypsilon
                     Test(string.Format("hwq {0}", i),
                         (ushort)(0x00BA | (i << 8)));
 
-                // test slp / swi / rti
-                Test("slp", 0x00BB);
-                Test("swi", 0x00BC);
-                Test("rti", 0x00BD);
+                // test stx
+                for (int i = sbyte.MinValue; i <= sbyte.MaxValue; i++)
+                    Test(string.Format("stx {0}", i),
+                        (ushort)(0x00BB | (((sbyte)i) << 8)));
+
             }
             catch (Exception e)
             {

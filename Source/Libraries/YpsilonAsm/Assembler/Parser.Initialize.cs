@@ -101,9 +101,9 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("slp", AssembleSLP);
             m_Opcodes.Add("swi", AssembleSWI);
             m_Opcodes.Add("rti", AssembleRTI);
-            // macros
             m_Opcodes.Add("rts", AssembleRTS);
             m_Opcodes.Add("nop", AssembleNOP);
+            m_Opcodes.Add("stx", AssembleSTX);
         }
 
         void InitRegisterDictionary()

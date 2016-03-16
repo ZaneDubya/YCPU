@@ -1203,10 +1203,9 @@ SHF Bit Pattern
             
 STX Bit Pattern
     FEDC BA98 7654 3210                        
-    iiii iiio OOOO OOOO
+    iiii iiii OOOO OOOO
         O = Opcode
-        o = decrement if 0, increment if 1.
-        i = signed 8-bit offset (multiplied by 2)
+        i = signed 8-bit offset, -128~+127 (multiplied by 2)
             
 STK Bit Pattern < 1 / 2 >
     FEDC BA98 7654 3210                        
