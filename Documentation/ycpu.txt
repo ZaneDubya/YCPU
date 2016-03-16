@@ -221,15 +221,14 @@ processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMHI QUWF .... ....
+        SMHI QUW. .... ....
             [S] -   [S]upervisor Mode enabled.
             [M] -   [M]emory segmenting hardware enabled.
             [H] -   [H]ardware Interrupts enabled.
             [I] -   Processor handling [I]nterrupt.
-            [Q] -   Interrupt Re[Q]uest in process, blocks hardware interrupts.
+            [Q] -   HWI Re[Q]uest in process, blocks hardware interrupts.
             [U] -   User-mode Fault.
             [W] -   Segment Fault Write-protection bit.
-            [F] -   Processor handling [F]ault.
             
     P2: Processor Memory Fault Address. Set during segment fault interrupt.
         See 2.D.4. and 2.D.6.
@@ -399,13 +398,12 @@ interrupts will be acknowledged by the CPU if the H status bit is clear.
 --- 2.D.3. FAULT INTERRUPTS ----------------------------------------------------
 
 For interrupts caused by an error condition, the PC is rewound to the 
-address of the instruction that caused the interrupt, and the F status bit will
-be set. For all other interrupts, the PC is unchanged, pointing to the address
-following the instruction the processor was executing immediately prior to the
-interrupt.
+address of the instruction that caused the interrupt. For all other interrupts,
+the PC is unchanged, pointing to the address following the instruction the
+rocessor was executing immediately prior to the interrupt.
 
-Interrupts designated as 'Faults' are: DivZeroFault ($02), DoubleFault ($03),
-StackFault ($04), SegFault ($05), UnPrivFault ($06), and UnDefFault ($07). 
+Interrupts designated as 'Faults' are: DivZeroFault ($02), StackFault ($04),
+SegFault ($05), UnPrivFault ($06), and UnDefFault ($07). 
 
     
 --- 2.D.4. THE INTERRUPT SEQUENCE ----------------------------------------------
@@ -457,31 +455,43 @@ by the processor itself on specified error states. The 16 interrupts are:
 Idx Name            Description
 $0  Reset           Raised when the processor's RESET line is pulled high.
                     The processor will follow the boot sequence (See 2.G.).
+                    
 $1  Clock           Raised when the processor's Real Time Clock ticks. The tick
                     rate can be set by writing to the RTC register.
+                    
 $2  DivZeroFault    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
-$3  DoubleFault     Raised when the processor faults while in fault state.
+                    
+$3  RESERVED        Not currently used, never raised.
+
 $4  StackFault      Raised when the processor executes a POP or PSH instruction
                     that would access an address outside of the stack segment.
+                    
 $5  SegFault        Raised when the processor attempts to read from or write to 
                     an address within a Segment that has been protected from 
                     these operations. The UW bits in the PS register will 
                     describe the error, and the P2 register will contain the 
                     memory address that the processor attempted to access.
+                    
 $6  UnprivFault     Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
+                    
 $7  UndefFault      Raised when the processor attempts to execute an UNDEFINED
                     opcode.
+                    
 $8  RESERVED        Not currently used, never raised.
 $9  RESERVED        Not currently used, never raised.
 $A  RESERVED        Not currently used, never raised.
 $B  RESERVED        Not currently used, never raised.
+
 $C  HWI             A device on the Hardware Bus has requested an interrupt.
                     II = bus index of the requesting device.
+                    
 $D  BusRefresh      Raised when the hardware on the bus has changed. Note that
                     all hardware ids at this point may be invalidated.
+                    
 $E  DebugQuery      Raised when the processor's DEBUG line is pulled high.
+
 $F  SWI             Raised by the SWI opcode.
 
 

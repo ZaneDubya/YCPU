@@ -31,7 +31,7 @@ namespace Ypsilon.Emulation.Hardware
         {
             PC = StackPop();
             PS = StackPop();
-            m_PS &= 0xF0FF; // clear Q, U, W, and E.
+            m_PS &= 0xF0FF; // clear Q, U, W.
         }
 
         public void Interrupt_Reset()
