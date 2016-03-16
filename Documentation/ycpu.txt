@@ -969,7 +969,7 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1000   JMP         /       JMI             Jump                          2
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
-1011 1011   STI         X       STI             Stack Immediate               1
+1011 1011   STX         X       STX             Stack Immediate               1
 1011 11xx   ---                 ---             UNDEFINED (4 opcodes)         - 
 11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
 
@@ -1201,7 +1201,7 @@ SHF Bit Pattern
         s = if R = 0, bits to shift (1-16)
             if R = 1, register to use as shift value (register index = .sss)
             
-STI Bit Pattern
+STX Bit Pattern
     FEDC BA98 7654 3210                        
     iiii iiio OOOO OOOO
         O = Opcode
@@ -1693,8 +1693,8 @@ values registers are always pushed in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
     Bit pattern 1: SP, USP, PS, PC, FL
     
-STI         Manipulate the stack with an immediate value.
-Syntax: STI -$80 to STI $7F
+STX         Manipulate the stack with an immediate value.
+Syntax: STX [-$80 to $7F]
 The signed offset is added to SP. Because stack values must be 16-bit aligned,
 the offset is shifted left by 1 bit (multiplied by 2) to allow for an effective
 range of -256 to +254 bytes (-128 to +127 stack positions) relative to the
