@@ -7,24 +7,44 @@ namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
     {
-        private void Interrupt(ushort interrupt_number, params ushort[] stack_values)
+        private enum Interrupts
+        {
+            Reset,
+            Clock,
+            DivZeroFault,
+            DoubleFault,
+            StackFault,
+            SegFault,
+            UnPrivFault,
+            UndefFault,
+            Reserved8,
+            Reserved9,
+            ReservedA,
+            ReservedB,
+            HWI,
+            BusRefresh,
+            DebugQuery,
+            SWI
+        }
+
+        private void Interrupt(Interrupts interrupt, params ushort[] stack_values)
         {
             // !!! Must handle stack_values
             // If this is not a reset interrupt, we should save PS and PC.
-            if (interrupt_number != 0x00)
+            if (interrupt != Interrupts.Reset)
             {
                 ushort ps = PS;
                 PS_S = true;
                 PS_I = true;
-                PS_Q = (interrupt_number == 0x0C);
+                PS_Q = (interrupt == Interrupts.HWI);
                 StackPush(ps);
                 // rewind the instruction if this is an error interrupt ($02 - $07)
-                if (interrupt_number >= 0x02 && interrupt_number <= 0x07)
+                if (Interrupt_IsFault(interrupt))
                     StackPush((ushort)(PC - SizeOfLastInstruction(PC)));
                 else
                     StackPush(PC);
             }
-            PC = ReadMemInt16((ushort)(interrupt_number * 2), SegmentIndex.IS);
+            PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
             m_Cycles += 31;
         }
 
@@ -35,60 +55,81 @@ namespace Ypsilon.Emulation.Processor
             m_PS &= 0xF0FF; // clear Q, U, W.
         }
 
+        private bool Interrupt_IsFault(Interrupts interrupt)
+        {
+            switch (interrupt)
+            {
+                case Interrupts.DivZeroFault:
+                case Interrupts.DoubleFault:
+                case Interrupts.StackFault:
+                case Interrupts.SegFault:
+                case Interrupts.UnPrivFault:
+                case Interrupts.UndefFault:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public void Interrupt_Reset()
         {
             m_RTC.DisableInterrupt();
             PS = 0x8000;
-            Interrupt(0x00);
+            Interrupt(Interrupts.Reset);
         }
 
         public void Interrupt_Clock()
         {
-            Interrupt(0x01);
+            Interrupt(Interrupts.Clock);
         }
 
         private void Interrupt_DivZeroFault()
         {
-            Interrupt(0x02);
+            Interrupt(Interrupts.DivZeroFault);
         }
 
         private void Interrupt_DoubleFault()
         {
-            Interrupt(0x03);
+            Interrupt(Interrupts.DoubleFault);
         }
 
         private void Interrupt_StackFault()
         {
-            Interrupt(0x04);
+            Interrupt(Interrupts.StackFault);
         }
 
         internal void Interrupt_SegFault(SegmentIndex segmentType)
         {
-            if (segmentType == SegmentIndex.CS || segmentType == SegmentIndex.IS)
+            if (segmentType == SegmentIndex.CS)
             {
                 m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
-                Interrupt(0x05);        // then, it will load the next instruction, with PC = InterruptTable[0x05];
+                Interrupt(Interrupts.SegFault);        // then, it will load the next instruction, with PC = InterruptTable[0x05];
+            }
+            else if (segmentType == SegmentIndex.IS)
+            {
+                m_ExecuteFail = true;
+                Interrupt_DoubleFault();
             }
             else if (segmentType == SegmentIndex.DS || segmentType == SegmentIndex.ES)
             {
                 m_ExecuteFail = false;
-                Interrupt(0x05);
+                Interrupt(Interrupts.SegFault);
             }
             else if (segmentType == SegmentIndex.SS)
             {
                 m_ExecuteFail = false;
-                Interrupt(0x04);
+                Interrupt(Interrupts.StackFault);
             }
         }
 
         private void Interrupt_UnPrivFault()
         {
-            Interrupt(0x06);
+            Interrupt(Interrupts.UnPrivFault);
         }
 
         private void Interrupt_UndefFault()
         {
-            Interrupt(0x07);
+            Interrupt(Interrupts.UndefFault);
         }
 
         public void Interrupt_HWI()
@@ -96,22 +137,27 @@ namespace Ypsilon.Emulation.Processor
             PS_Q = true;
             ushort irq_index = m_Bus.FirstIRQ;
             m_Bus.AcknowledgeIRQ(irq_index);
-            Interrupt(0x0C, irq_index);
+            Interrupt(Interrupts.HWI, irq_index);
         }
 
         public void Interrupt_BusRefresh()
         {
-            Interrupt(0x0D);
+            Interrupt(Interrupts.BusRefresh);
         }
 
         public void Interrupt_DebugQuery()
         {
-            Interrupt(0x0E);
+            Interrupt(Interrupts.DebugQuery);
         }
 
         public void Interrupt_SWI()
         {
-            Interrupt(0x0F);
+            Interrupt(Interrupts.SWI);
+        }
+
+        private void TripleFault()
+        {
+            Interrupt_Reset();
         }
     }
 }
