@@ -954,7 +954,7 @@ namespace Ypsilon.Assembler
             // there MUST be 1 - 10 params.
             // params MUST be one of:   R0, R1, R2, R3, R4, R5, R6, R7
             //                          A, B, C, I, J, X, Y, Z
-            //                          FL, PC, PS, SP, USP, II, IA, P2
+            //                          FL, PC, PS, SP, USP
             for (int i = 0; i < param.Count; i++)
             {
                 string p = param[i];

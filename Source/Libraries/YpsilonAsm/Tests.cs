@@ -31,7 +31,7 @@ namespace Ypsilon
                     0x0000, 0x0008, 0x0010, 0x0018, 0x0020, 0x0028, 0x0030, 0x0038,
                     0x0040, 0x0048, 0x0050, 0x0058, 0x0060, 0x0068, 0x0070, 0x0078,
                     0x0080, 0x0088 };
-                string[] reg_control = new string[] { "fl", "pc", "ps", "p2", "ii", "ia", "usp", "sp" };
+                string[] reg_control = new string[] { "fl", "pc", "ps", string.Empty, string.Empty, string.Empty, "usp", "sp" };
 
                 for (int ins = 0; ins < alu_instructions.Length; ins++)
                 {
@@ -48,6 +48,8 @@ namespace Ypsilon
                         Test(string.Format("{0}.8   r{1}, ES[$1234]", alu_instructions[ins], r0), (ushort)(0x8300 | alu_codes[ins] | r0), 0x1234);
                         for (int cr = 0; cr < 8; cr++)
                         {
+                            if (reg_control[cr] == string.Empty)
+                                continue;
                             Test(string.Format("{0}     r{1}, {2}", alu_instructions[ins], r0, reg_control[cr]), (ushort)(0x0800 | alu_codes[ins] | r0 | (cr << 8)));
                         }
                         for (int r1 = 0; r1 < 8; r1++)
@@ -203,7 +205,7 @@ namespace Ypsilon
                 }
 
                 string[] stk_crs = new string[] {
-                    "fl", "pc", "ps", "p2", "ii", "ia", "usp", "sp" };
+                    "fl", "pc", "ps", string.Empty, string.Empty, string.Empty, "usp", "sp" };
                 for (int stk = 1; stk < 256; stk++)
                 {
                     list.Clear();
@@ -211,7 +213,11 @@ namespace Ypsilon
                     {
                         int p = (int)Math.Pow(2, i);
                         if ((stk & p) == p)
+                        {
+                            if (stk_crs[i] == string.Empty)
+                                goto notThisReg;
                             list.Add(stk_crs[i]);
+                        }
                     }
                     string regs = list.Select(i => i).
                         Aggregate((i, j) => i + "," + j);
@@ -219,6 +225,7 @@ namespace Ypsilon
                             (ushort)(0x00B1 | (stk << 8)));
                     Test(string.Format("pop     {0}", regs),
                             (ushort)(0x00B3 | (stk << 8)));
+                notThisReg:;
                 }
 
                 // test rts

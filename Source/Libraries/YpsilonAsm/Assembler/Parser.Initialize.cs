@@ -131,9 +131,6 @@ namespace Ypsilon.Assembler
             m_ControlRegisters.Add("fl", (ushort)YCPUReg.FL);
             m_ControlRegisters.Add("pc", (ushort)YCPUReg.PC);
             m_ControlRegisters.Add("ps", (ushort)YCPUReg.PS);
-            m_ControlRegisters.Add("p2", (ushort)YCPUReg.P2);
-            m_ControlRegisters.Add("ii", (ushort)YCPUReg.II);
-            m_ControlRegisters.Add("ia", (ushort)YCPUReg.IA);
             m_ControlRegisters.Add("usp", (ushort)YCPUReg.USP);
             m_ControlRegisters.Add("sp", (ushort)YCPUReg.SP);
 
@@ -167,9 +164,6 @@ namespace Ypsilon.Assembler
             FL = 0x0000,
             PC = 0x0001,
             PS = 0x0002,
-            P2 = 0x0003,
-            II = 0x0004,
-            IA = 0x0005,
             USP = 0x0006,
             SP = 0x0007,
         }
