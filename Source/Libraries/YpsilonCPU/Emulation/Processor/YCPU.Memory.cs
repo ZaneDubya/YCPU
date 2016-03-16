@@ -1,5 +1,5 @@
 ﻿
-namespace Ypsilon.Emulation.Hardware
+namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
     {

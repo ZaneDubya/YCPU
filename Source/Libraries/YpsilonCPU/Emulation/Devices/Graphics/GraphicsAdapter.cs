@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ypsilon.Emulation.Hardware;
+using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation.Devices.Graphics
 {

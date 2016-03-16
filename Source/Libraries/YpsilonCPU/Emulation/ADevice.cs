@@ -1,4 +1,4 @@
-﻿using Ypsilon.Emulation.Hardware;
+﻿using Ypsilon.Emulation.Processor;
 using System.Collections.Generic;
 
 namespace Ypsilon.Emulation

@@ -1,4 +1,4 @@
-﻿using Ypsilon.Emulation.Hardware;
+﻿using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation.Devices.Input
 {

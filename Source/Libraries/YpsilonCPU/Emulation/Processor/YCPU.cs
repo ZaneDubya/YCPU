@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ypsilon.Emulation.Hardware
+namespace Ypsilon.Emulation.Processor
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
@@ -366,7 +366,7 @@ namespace Ypsilon.Emulation.Hardware
         #region PS
         private ushort m_PS = 0x0000;
         private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_H = 0x2000, c_PS_I = 0x1000;
-        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_F = 0x0100;
+        private const ushort c_PS_Q = 0x0800, c_PS_V = 0x0400, c_PS_W = 0x0200;
         private bool m_PS_S = false;
         public ushort PS
         {
@@ -498,29 +498,29 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         /// <summary>
-        /// User-mode Fault.
+        /// Segment Fault bit 0.
         /// </summary>
-        public bool PS_U
+        public bool PS_V
         {
             get
             {
-                return ((m_PS & c_PS_U) != 0);
+                return ((m_PS & c_PS_V) != 0);
             }
             private set
             {
                 if (value == false)
                 {
-                    m_PS &= unchecked((ushort)~c_PS_U);
+                    m_PS &= unchecked((ushort)~c_PS_V);
                 }
                 else if (value == true)
                 {
-                    m_PS |= c_PS_U;
+                    m_PS |= c_PS_V;
                 }
             }
         }
 
         /// <summary>
-        /// Segment Fault.
+        /// Segment Fault bit 1.
         /// </summary>
         public bool PS_W
         {
@@ -537,28 +537,6 @@ namespace Ypsilon.Emulation.Hardware
                 else if (value == true)
                 {
                     m_PS |= c_PS_W;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Processor handling [F]ault.
-        /// </summary>
-        public bool PS_F
-        {
-            get
-            {
-                return ((m_PS & c_PS_F) != 0);
-            }
-            private set
-            {
-                if (value == false)
-                {
-                    m_PS &= unchecked((ushort)~c_PS_F);
-                }
-                else if (value == true)
-                {
-                    m_PS |= c_PS_F;
                 }
             }
         }

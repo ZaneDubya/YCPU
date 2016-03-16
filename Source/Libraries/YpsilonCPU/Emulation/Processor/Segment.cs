@@ -1,7 +1,7 @@
 ﻿using System;
-using Ypsilon.Emulation.Hardware;
+using Ypsilon.Emulation.Processor;
 
-namespace Ypsilon.Emulation.Hardware
+namespace Ypsilon.Emulation.Processor
 {
     /// <summary>
     /// A segment is a window into memory.

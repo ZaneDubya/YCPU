@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using Ypsilon.Emulation.Hardware;
+using Ypsilon.Emulation.Processor;
 
 namespace YCPUXNA
 {

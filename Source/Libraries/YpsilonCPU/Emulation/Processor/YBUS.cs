@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Ypsilon.Emulation.Hardware
+namespace Ypsilon.Emulation.Processor
 {
     /// <summary>
     /// A representation of a address/data bus that has 16 generic slots. Device in slot zero is YCPU. Other slots can hold devices that inherit from ADevice.
