@@ -38,7 +38,7 @@ without compromising on features. It features:
   * user/supervisor modes with different privileges and stack pointers;
   * memory segmentation with resizable segments for code, stack, interrupts,
     and two segments for data;
-  * memory protection for read/write/execute/supervisor-only attributes;
+  * memory protection with not-present/read-only attributes;
   * 28 bits of address space for memory access;
   * real time clock with a programmable timer that raises interrupts;
   * hardware bus that supports up to 15 devices with 24 bits of address space
@@ -101,7 +101,7 @@ an interrupt.
 --- 2.2. INSTRUCTION WIDTH: 16-BIT ---------------------------------------------
 
 For most instructions, the only addressable unit of memory is a 16-bit word.
-8-bit operations are supported for any instruction which uses the "ALU" bit
+8-bit operations are supported for any instruction that uses the "ALU" bit
 pattern: Load, Store, Add, Subtract, Multiply, Divide, Bitwise And, Bitwise Or,
 Bitwise Not, Bitwise Exclusive Or, Compare, and Negate. When executing 8-bit
 operations in registers, the upper 8-bits of memory are cleared and ignored.
@@ -136,21 +136,18 @@ must be connected to a bus and a ROM chip. Of course, any useful work will
 likely require random access memory (RAM) as well, but RAM is not required power
 on the processor. Note that the amount of RAM and ROM available to the
 processor is not known to the processor. However, a programmer can query the
-amount of RAM/ROM with the instruction HWQ #$03. For more information about this
-query operation, please refer to 2.C.1.
+amount of RAM/ROM with the instruction HWQ $03. For more information about this
+query operation, see 2.C.1.
 
 
 === 2.A. Registers =============================================================
 
-    The processor has access to the following 16 16-bit registers:
+    The processor has access to the following 13 16-bit registers:
 
     R0-R7: General Purpose Registers
     FL: Flags register
-    IA: Interrupt Table Address
-    II: Interrupt Device Address
     PC: Program Counter
     PS: Processor Status
-    P2: Processor Fault Address
     SP: Stack Pointer. The YCPU has separate stack pointers for user mode (USP)
         and supervisor mode (SSP). See 2.A.2.
 
@@ -182,7 +179,7 @@ There are a few exceptions to general purpose register interchangeability.
 
 *   Only registers R4 - R7 can be used as index registers for indirect indexed 
     memory addressing. Thus, when executing an instruction with this addressing
-    mode, at least one of the registers which are combined to create the memory
+    mode, at least one of the registers that are combined to create the memory
     address must be R4, R5, R6, or R7:
     
         Allowed:     LOD R1, [R0, R4] ; one register is R4-R7. Valid.
@@ -194,7 +191,7 @@ There are a few exceptions to general purpose register interchangeability.
 
 The processor has eight 16-bit processor control registers. Unlike the general
 purpose registers, these are not accessible by most instructions. The eight
-processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
+processor control registers are FL, PC, PS, SSP, and USP.
 
     FL: The FLag register. This register contains flags that are set by ALU
         operations.
@@ -202,13 +199,6 @@ processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
         FEDC BA98 7654 3210
         NZCV .... .... ....
             [N]egative, [Z]ero, [C]arry, o[V]erflow
-         
-    IA: Interrupt Table Address. This is the base address of the interrupt
-        address table, comprised of 16 x 16-bit words.
-        IA is initialized to $0000.
-        
-    II: The IRQ Index. This is the bus index of the device that raised the last
-        hardware interrupt.
     
     PC: The Program Counter. Contains the address of the next instruction to
         execute. It is incremented by 2 after executing an opcode that does
@@ -218,17 +208,15 @@ processor control registers are FL, IA, II, PC, PS, P2, SSP, and USP.
     PS: The Processor Status. Setting or clearing bits in this register enables
         and disables processor features. The bits are as follows:
         FEDC BA98 7654 3210
-        SMHI QVW. .... ....
+        SMHI QUVW .... ....
             [S] -   [S]upervisor Mode enabled.
             [M] -   [M]emory segmenting hardware enabled.
             [H] -   [H]ardware Interrupts enabled.
             [I] -   Processor handling [I]nterrupt.
             [Q] -   HWI Re[Q]uest in process, blocks hardware interrupts.
+            [U] -   Fault in [U]ser mode.
             [V] -   Segment Fault error code bit 0.
             [W] -   Segment Fault error code bit 1.
-            
-    P2: Processor Memory Fault Address. Set during segment fault interrupt.
-        See 2.D.4. and 2.D.6.
     
     SP: The Stack Pointer is the address of the first full stack space. It is
         decremented before a stack value is pushed onto the stack, and is
@@ -254,7 +242,7 @@ In Supervisor mode, the processor:
     * Can execute privileged opcodes.
     * Can set and clear all bits in the process status register.
     * Can read and write to all processor control registers.
-    * Can directly access the hardware bus.
+    * Can directly access the hardware bus with the HWQ instruction.
     * Uses the Supervisor Stack Pointer (SSP) for stack operations.
     * Uses the Supervisor segment registers.
 
@@ -273,7 +261,7 @@ The processor interfaces with hardware devices through a modular Hardware Bus.
 This Hardware Bus can host up to 15 Devices. The processor communicates directly
 with devices executing a Hardware Query instruction (See 2.C.1.), and can also
 address memory segments exposed by a device (See 2.F.1.). Devices can request
-the processor's attention by raising an interrupt (See 2.D.1.).
+the processor's attention by raising a hardware interrupt (See 2.D.2.).
 
 Connected Hardware Devices may include input (keyboard, mouse, touch), storage
 (disk, hard drive), networking, additional memory, and interfaces for hardware
@@ -366,98 +354,18 @@ Indexes $80, $82, and $83 are described in 2.H..
 
 === 2.D. Interrupts ============================================================
 
-An interrupt is a signal which indicates that an event requires immediate
+An interrupt is a signal that indicates that an event requires immediate
 attention. Interrupts can be triggered by a hardware device, by software using
-the SWI opcode, or when the processor encounters a fault state.
+the SWI opcode, or when the processor encounters a fault state. Each type of
+interrupt is identified by an index from 0 to 15.
+
+When the processor receives an interrupt, it gets the address of the interrupt
+handler for the type of interrupt received from the 'interrupt vector table',
+a list of 16 16-bit values located at address $0000 in the Interrupt Segment. It
+the sets PC to this value, and begins executing the code at this address.
 
 
---- 2.D.1. HARDWARE INTERRUPTS -------------------------------------------------
-
-A device on the CPU's hardware bus may request the CPU's attention by asserting
-an interrupt request (IRQ). While the Q status bit in PS is clear and the H
-status bit in PS is set, the processor checks for IRQs before executing each
-opcode. If a hardware device is asserting an IRQ when the processor checks, the
-processor will load the bus index of the first device on the bus which is
-asserting an IRQ into the II register, and then raise the 'hardware interrupt'
-interrupt.
-
-Note that devices in lower index slots in the hardware bus always have
-priority over devices in higher index slots.
-
-
---- 2.D.2. SOFTWARE INTERRUPTS -------------------------------------------------
-
-An interrupt may also be triggered by the SWI opcode. In this case, the
-processor will raise the 'software interrupt' interrupt vector, and the code
-at that interrupt must determine what function has been requested, based on the
-contents of the registers.
-
-Unlike hardware interrupts, software interrupts will be acknowledged
-regardless of the status of the Q status bit
-
-The H status bit only applies to hardware interrupts, and thus software
-interrupts will be acknowledged by the CPU if the H status bit is clear. 
-    
-
---- 2.D.3. FAULT INTERRUPTS ----------------------------------------------------
-
-For interrupts caused by an error condition, the PC is rewound to the 
-address of the instruction that caused the interrupt. For all other interrupts,
-the PC is unchanged, pointing to the address following the instruction the
-rocessor was executing immediately prior to the interrupt.
-
-Interrupts designated as 'Faults' are: DivZeroFault ($02), StackFault ($04),
-SegFault ($05), UnPrivFault ($06), and UnDefFault ($07). 
-
-    
---- 2.D.4. THE INTERRUPT SEQUENCE ----------------------------------------------
-
-When an interrupt is raised, the processor halts the current executing process.
-It then executes the following sequence of operations:
-
-    1.  Save the state of PS to a temporary register.
-    
-    2.  Set the S status bit in PS. The processor is now in Supervisor mode.
-    
-    3.  Push the saved PS to the Stack.
-    
-    4.  If this is a hardware interrupt: 
-        a. The Q status bit will be set. This blocks other hardware interrupts
-           from occurring while the current interrupt is being processed.
-        b. II will be set to the index of the device that raised the interrupt.
-        
-    5.  If this is a Segment Fault:
-        a. P2 is set to the address of the memory address that raised the
-           Segment Fault.
-        b. The V and W bits are set as appropriate (See 2.D.7.).
-    
-    6.  If the interrupt was caused by an error condition, PC is rewound to
-        the instruction that caused the interrupt (See 2.D.3. for a list of 
-        interrupts in which this occurs).
-        
-    7.  Push PC to the Stack.
-    
-    8.  Set PC to IS[IA + (InterruptIndex * 2)].
-    
-    9.  Execution continues.  
-
-
---- 2.D.5. RETURNING FROM AN INTERRUPT -----------------------------------------
-
-When an interrupt handler ends, it should call RTI, which restores the values of
-PS and PC from the stack. If an interrupt handler modifies a register or changes
-the segment registers, it should save the state of the registers before doing
-so, and restore the same before returning from the interrupt handler.
-
-The RTI instruction follows this sequence:
-
-    1.  Pop PC and PS from the Stack, restoring the value they had prior to the
-        interrupt.
-    
-    2.  Execution Continues.
-    
-
---- 2.D.6. THE INTERRUPT VECTOR TABLE ------------------------------------------
+--- 2.D.1. THE INTERRUPT VECTOR TABLE ------------------------------------------
 
 There are 16 interrupts in the Interrupt Vector Table. The software interrupt
 is raised by the instruction SWI, and the Hardware Interrupt is raised by a 
@@ -482,9 +390,10 @@ $4  StackFault      Raised when the processor executes a POP or PSH instruction
                     
 $5  SegFault        Raised when the processor attempts to read from or write to 
                     an address within a Segment that has been protected from 
-                    these operations. The UW bits in the PS register will 
-                    describe the error, and the P2 register will contain the 
-                    memory address that the processor attempted to access.
+                    these operations.
+                    The V and W status bits in PS describe the error.
+                    The first 16-bit word on the Stack contains the memory
+                    address that the processor attempted to access.
                     
 $6  UnprivFault     Raised when the processor attempts to execute a privileged
                     opcode while in User mode.
@@ -498,7 +407,8 @@ $A  RESERVED        Not currently used, never raised.
 $B  RESERVED        Not currently used, never raised.
 
 $C  HWI             A device on the Hardware Bus has requested an interrupt.
-                    II = bus index of the requesting device.
+                    The first 16-bit word on the Stack contains the bus index of
+                    the requesting device.
                     
 $D  BusRefresh      Raised when the hardware on the bus has changed. Note that
                     all hardware ids at this point may be invalidated.
@@ -508,21 +418,70 @@ $E  DebugQuery      Raised when the processor's DEBUG line is pulled high.
 $F  SWI             Raised by the SWI opcode.
 
 
---- 2.D.7. SEGMENT FAULTS ------------------------------------------------------
+--- 2.D.2. HARDWARE INTERRUPTS -------------------------------------------------
+
+A device on the CPU's hardware bus may request the CPU's attention by asserting
+an interrupt request (IRQ). While the Q status bit in PS is clear and the H
+status bit in PS is set, the processor checks for IRQs before executing each
+opcode. If a hardware device is asserting an IRQ when the processor checks, the
+processor will push a 16-bit word containing the bus index of the first device
+on the bus that is asserting an IRQ onto the stack as part of the hardware
+interrupt.
+
+Note that devices in lower index slots in the hardware bus always have
+priority over devices in higher index slots.
+
+
+--- 2.D.3. SOFTWARE INTERRUPTS -------------------------------------------------
+
+An interrupt may also be triggered by the SWI opcode. In this case, the
+processor will raise the 'software interrupt' interrupt vector, and the code
+at that interrupt must determine what function has been requested, based on the
+contents of the registers.
+
+Unlike hardware interrupts, software interrupts will be acknowledged
+regardless of the status of the Q status bit
+
+The H status bit only applies to hardware interrupts, and thus software
+interrupts will be acknowledged by the CPU if the H status bit is clear. 
+    
+
+--- 2.D.4. FAULT INTERRUPTS ----------------------------------------------------
+
+For interrupts caused by an error condition, the PC is rewound to the 
+address of the instruction that caused the interrupt. For all other interrupts,
+the PC is unchanged, pointing to the address following the instruction the
+rocessor was executing immediately prior to the interrupt.
+
+In addition, the U status bit in PS will be set if the processor was in user
+mode when the fault occured, or clear if the processor was in supervisor mode
+when the fault occured.
+
+Interrupts designated as 'Faults' are:
+    - DivZeroFault  ($02),
+    - DoubleFault   ($03),
+    - StackFault    ($04),
+    - SegFault      ($05), 
+    - UnPrivFault   ($06), and 
+    - UnDefFault    ($07). 
+    
+    
+--- 2.D.5. SEGMENT FAULTS ------------------------------------------------------
 
 When a segment fault is raised, the processor status bits V and W describe the
 operation that caused the segment fault:
 
         V W     Segment Fault Type
         0 0     Attempted access to segment that is not loaded. (P bit set)
-        0 1     Attempted supervisor write of write-protected memory.
-        1 0     Attempted access to address outside of size of the segment.
-        1 1     Attempted user write to write-protected memory.
+        0 1     Attempted write of write-protected memory.
+        1 0     Attempted access to address greater than the segment size.
+        1 1     UNDEFINED.
         
 Note that writes to ROM memory will fail silently unless the MMU is enabled and
-the write-protect bit is set, which will result in a segment fault.
+the write-protect bit is set, which will result in a segment fault with v = 0
+and W = 1.
 
---- 2.D.8. FAULTS WHILE LOADING AN INTERRUPT HANDLER ---------------------------
+--- 2.D.6. FAULTS WHILE LOADING AN INTERRUPT HANDLER ---------------------------
 
 It is possible that the processor may fault when attempting to load an interrupt
 handler. This could happen if the interrupt segment is not present, or if the
@@ -530,9 +489,65 @@ interrupt vector address for a given interrupt is outside the size of the
 interrupt segment. When this occurs, the processor will raise a DoubleFault
 interrupt.
 
+Note that because the DoubleFault interrupt will only occur when the processor
+is already handling an interrupt, the U status bit in PC will always be clear,
+regardless of whether the processor was in user mode when the original interrupt
+occured.
+
 If the processor fails to load the DoubleFault interrupt handler, it will enter
-a TripleFault state and reset one clock cycle later. There is no way to recover
-from a TripleFault.
+a TripleFault state and reset one clock cycle later. There is no function to
+recover from a TripleFault.
+
+    
+--- 2.D.7. THE INTERRUPT SEQUENCE ----------------------------------------------
+
+When an interrupt is raised, the processor halts the current executing process.
+It then executes the following sequence of operations:
+
+    1.  Save the state of PS to a temporary register.
+    
+    2.  If this is Fault interrupt (See 2.D.4. for a list of fault interrupts):
+        a. PC is rewound to the instruction that caused the interrupt. 
+        b. If processor is in User mode, set the U status bit. If the
+           processor is in Supervisor mode, clear the U status bit.
+    
+    3.  Set the S and I status bits in PS. The processor is now in Supervisor
+        mode, and will read all instructions and immediate values from the
+        Interrupt Segment (IS), instead of the Code Segment (CS).
+    
+    4.  Push the saved PS to the Stack.
+    
+    5.  Push PC to the Stack.
+    
+    6.  If this is a hardware interrupt: 
+        a. The Q status bit will be set. This blocks other hardware interrupts
+           from occurring while the current interrupt is being processed.
+        b. A 16-bit word containing the index of the device that raised the
+           interrupt ish pushed to the Stack.
+        
+    7.  If this is a Segment Fault:
+        a. A 16-bit word containing the memory address that was accessed when
+           the Segment Fault was raised.
+        b. The V and W status bits are set as appropriate (See 2.D.5.).
+    
+    8.  Set PC to IS[$0000 + (InterruptIndex * 2)].
+    
+    9.  Execution continues.  
+
+
+--- 2.D.8. RETURNING FROM AN INTERRUPT -----------------------------------------
+
+When an interrupt handler ends, it should call RTI, which restores the values of
+PS and PC from the stack. If an interrupt handler modifies a register or changes
+the segment registers, it should save the state of the registers before doing
+so, and restore the same before returning from the interrupt handler.
+
+The RTI instruction follows this sequence:
+
+    1.  Pop PC and PS from the Stack, restoring the value they had prior to the
+        interrupt.
+    
+    2.  Execution Continues.
 
 
 === 2.E. Addressing Modes ======================================================
@@ -647,7 +662,7 @@ Each segment register is 32 bits in size:
 
 --- 2.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
 
-When the 'M' status bit is in PC clear, the MMU is disabled, and the segment
+When the M status bit is in PC clear, the MMU is disabled, and the segment
 registers are not used for memory access. Accesses to memory occur as if the
 segments were set to these values:
     
@@ -659,7 +674,7 @@ segments were set to these values:
 
 --- 2.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
-While the 'M' status bit in PC is set, the MMU is enabled, and will translate
+While the M status bit in PC is set, the MMU is enabled, and will translate
 memory references to physical addresses using the contents of the segment
 registers. This is done by adding the segment base address to the address of
 the specified reference. The translation is as follows:
@@ -771,7 +786,6 @@ in the following known state:
                                     ; processor features are disabled.
                                     ; Because the MMU is disabled, memory 
                                     ; accesses will be translated as per 2.F.2.
-    IA <- $0000                     ; Interrupt vector table begins at $0000
     PC <- [InterruptTable[$0]]      ; Execute 'RESET' interrupt code.
     
 
@@ -828,6 +842,7 @@ Software can thus request a high CLOCK rate, and be informed of the actual CLOCK
 rate by examining R0.
 
 === 2.I. Switching Context =====================================================
+
 The RTI instruction can also be used to switch the processor into user mode,
 even switching contexts entirely when doing so. 
 
@@ -841,7 +856,7 @@ program.
 To change context from supervisor to user mode, the MMU's user mode segment
 registers should be set, and the stack should be loaded with user-mode values
 for R0-R7, FL, USP, PS, and PC registers. The PS register value in the stack
-should be set with the 'S' status bit clear (for user mode), and the 'M' status
+should be set with the S status bit clear (for user mode), and the M status
 bit set (for MMU active). Then, to switch to the user context:
 
     1. Load the segment registers with the necessary user data (in this
@@ -1005,10 +1020,10 @@ ALU Bit Pattern
                 Data Segment (DS). When 's' is set all access are within the 
                 Extra Data Segment (ES). Reference 2.E.2.
                 
-        Note 3: There are two index register bits, which select register R4-R7.
-                Thus, at least one register in indirect indexed addressing must
-                be R4-R7; the other can be any of R0-R7. The index register bits
-                select a register as follows:
+        Note 3: There are two index register bits, which together indicate
+                register R4-R7. Therefore, at least one register in indirect
+                indexed addressing must be R4-R7; the other can be any of R0-R7.
+                The index register bits select a register as follows:
                 ii     Register
                 00     R4
                 01     R5
@@ -1020,9 +1035,9 @@ ALU Bit Pattern
                 $00     FL register                                 Y
                 $01     PC register                                 Y
                 $02     PS register                                 N
-                $03     P2 register                                 N
-                $04     II register                                 N
-                $05     IA register                                 N
+                $03     RESERVED, UNDEFINED.                        N
+                $04     RESERVED, UNDEFINED.                        N
+                $05     RESERVED, UNDEFINED.                        N
                 $06     USP                                         Y
                 $07     current Stack Pointer (USP / SSP)           Y
 
@@ -1203,14 +1218,11 @@ STK Bit Pattern < 1 / 2 >
         
 STK Bit Pattern < 2 / 2 >
     FEDC BA98 7654 3210                        
-    suai 2pcf OOOO OOO1                             
+    su.. .pcf OOOO OOO1                             
         O = Opcode
         f = push/pop FL register
         c = push/pop PC register
         p = push/pop PS register
-        2 = push/pop P2 register
-        i = push/pop II register
-        a = push/pop IA register
         u = push/pop USP
         s = push/pop current Stack Pointer (USP / SSP)
 
@@ -1601,12 +1613,12 @@ M is a 5-bit value + 1, for a range of ($01-$20).
 
 RTI         Return from Interrupt
 Returns from an interrupt.
-See 2.D.5. for a description of this opcode's function.
+See 2.D.8. for a description of this opcode's function.
   
   
 SWI         Call Software Interrupt
 Raises SOFTWARE INTERRUPT.
-See 2.D.4. for a description of this opcode's function.
+See 2.D.3. for a description of this opcode's function.
     
     
 === 3.H. Jump & Call Instructions ==============================================
@@ -1650,15 +1662,16 @@ RTS         Return from Subroutine
     
     
 === 3.I. Stack Instructions ====================================================
+
 The following registers can be specified for Stack Instructions:
-R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP, P2, II, and IA. Specifying a register
+R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP. Specifying a register
 twice (ex. R0 and A) will result in only one value popped to or pushed from
 that register.
 
 There are two separate operations for pop and two for pull, each addressing a
 different set of registers. The first operation pops or pulls the eight general
 purpose registers, R0-R7. The second operation pops or pulls processor control
-registers SP, Fl, PC, PS, USP, P2, II, and IA. 
+registers SP, Fl, PC, PS, USP. 
 
 Two notes on pushing and pulling the stack pointers. First, 'SP' and 'USP' is
 the value of these stack pointers BEFORE the operation. Thus if SP is $1000 and
@@ -1692,7 +1705,7 @@ The processor sequentially loads values from the stack to the registers
 specified. Regardless of the order of the registers specified in the
 instruction, the registers are always popped in the following order:
     Bit pattern 0: R7, R6, R5, R4, R3, R2, R1, R0
-    Bit pattern 1: FL, PC, PS, P2, II, IA, USP, SP
+    Bit pattern 1: FL, PC, PS, USP, SP
     
     
 PSH         Push values from registers to the Stack
@@ -1702,7 +1715,7 @@ the number of registers specified.
 Regardless of the order of the registers specified in the instruction, the
 values registers are always pushed in the following order:
     Bit pattern 0: R0, R1, R2, R3, R4, R5, R6, R7
-    Bit pattern 1: SP, USP, IA, II, P2, PS, PC, FL
+    Bit pattern 1: SP, USP, PS, PC, FL
     
 
 === 3.J. Processor Function Instructions =======================================
@@ -1745,9 +1758,9 @@ possible bits may be specified in a single instruction.
 SLP         Halts the processor until it receives an interrupt.
 Syntax: SLP
 Places the processor into a halted state. No further instructions will be
-executed until a hardware interrupt is received, at which point the processor
-will exit the halted state and continue execution after the interrupt is
-handled.
+executed until the processor is interrupted (by the RTC or a hardware interrupt)
+at which point the processor will exit the halted state and continue execution
+after the interrupt is handled.
 
 
 SSG         Store Segment Register to Stack
