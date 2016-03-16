@@ -16,7 +16,8 @@
 
     The LEM180c has internal memory describing the 128 characters, the map of
     which characters to display in each tile, and the palette. The memory is
-    laid out in a single bank, as follows:
+    laid out in a single bank of 1568 bytes, laid out in an address space of
+    4096 bytes, as follows:
     
     0x0000 - 0x07FF - SCRRAM, repeats every 0x0400 bytes.
     0x0800 - 0x0BFF - CHRRAM, repeats every 0x0200 bytes.

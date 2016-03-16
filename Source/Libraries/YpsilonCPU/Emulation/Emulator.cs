@@ -18,10 +18,13 @@ namespace Ypsilon.Emulation
         public Emulator(IDisplayProvider display, IInputProvider input)
         {
             CPU = new YCPU();
+            CPU.BUS.Reset();
+            CPU.BUS.AddDevice(new Devices.Graphics.GraphicsAdapter(CPU.BUS), 1);
+            CPU.BUS.AddDevice(new Devices.Input.KeyboardDevice(CPU.BUS), 2);
+            CPU.BUS.SetRAM(0x20000);
+            CPU.BUS.SetROM(0x04000);
             CPU.BUS.SetProviders(display, input);
-            SetupDebugDevices();
             CPU.Interrupt_Reset();
-
         }
 
         public void Update(double frameMS)
@@ -74,14 +77,6 @@ namespace Ypsilon.Emulation
             m_Running = false;
         }
 
-        private void SetupDebugDevices()
-        {
-            CPU.BUS.Reset();
-
-            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Graphics.GraphicsAdapter(CPU.BUS));
-            CPU.BUS.AddDevice(new Ypsilon.Emulation.Devices.Input.KeyboardDevice(CPU.BUS));
-        }
-
         public void LoadBinaryToCPU(string path, ushort address)
         {
             StopCPU();
@@ -89,11 +84,7 @@ namespace Ypsilon.Emulation
             byte[] data = Common.GetBytesFromFile(path);
             if (data != null)
             {
-                for (int i = 0; i < data.Length; i += 1)
-                {
-                    CPU.WriteMemInt8((ushort)(address), data[i]);
-                    address += 1;
-                }
+                CPU.BUS.FillROM(data);
             }
 
             CPU.Interrupt_Reset();

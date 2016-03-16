@@ -32,6 +32,8 @@ namespace Ypsilon.Assembler
             string trimmed = line.Trim();
             if (trimmed.Length == 0)
                 return false;
+            if (trimmed == "{" || trimmed == "}")
+                return true;
             if (trimmed[0] != '.')
                 return false;
             if (m_Pragmas.Contains(trimmed.Substring(1)))

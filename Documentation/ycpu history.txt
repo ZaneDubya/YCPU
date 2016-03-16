@@ -203,3 +203,16 @@
   * Eliminated stack offset, post-inc, and pre-dec addressing modes!
   * Processor can now LOD all special registers in user mode, but cannot write
     to many...
+0.7A    1/15/16
+  * Assigned RTS instruction to opcode 0xB4.
+  * Created RTS bit pattern (has 'far' return bit).
+  * Described processor function during far jump, jsr, and rts.f
+0.8     2/26/16
+  * Completely removed old MMU banking function.
+  * Added new Segment Register functions.
+  * JMP.F can no longer use register addressing.
+  * New way of referencing device / rom memory (by segment register).
+  * New interrupt segment.
+  * New memory layout when MMU is disabled.
+  * Remove XSR, ALU instructions can once against reference.
+  * Reorg of opcodes from 1011 0101 to 1111 1111.

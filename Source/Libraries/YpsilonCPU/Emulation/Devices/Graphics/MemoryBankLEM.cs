@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Ypsilon.Emulation.Devices.Graphics
+﻿namespace Ypsilon.Emulation.Devices.Graphics
 {
-    public class MemoryBankLEM : IMemoryBank
+    public class MemoryLEM : IMemoryInterface
     {
-        public MemoryBankLEM()
+        // memory map is laid out as follows:
+        // 0x0000 - 0x07FF - SCRRAM, repeats every 0x0400 bytes.
+        // 0x0800 - 0x0BFF - CHRRAM, repeats every 0x0200 bytes.
+        // 0x0C00 - 0x0FFF - PALRAM, repeats every 0x0020 bytes.
+
+        public MemoryLEM()
         {
             m_SCRRAM = new byte[0x0400]; // 512 words (384 in original spec; last 0x80 are ignored).
             m_CHRRAM = new byte[0x0200]; // 256 words
@@ -21,20 +21,9 @@ namespace Ypsilon.Emulation.Devices.Graphics
             SCRRAM_Delta = CHRRAM_Delta = PALRAM_Delta = false;
         }
 
-        // memory map is laid out as such:
-        // 0x0000 - 0x07FF - SCRRAM, repeats every 0x0400 bytes.
-        // 0x0800 - 0x0BFF - CHRRAM, repeats every 0x0200 bytes.
-        // 0x0C00 - 0x0FFF - PALRAM, repeats every 0x0020 bytes.
-
         private byte[] m_SCRRAM, m_CHRRAM, m_PALRAM;
 
-        public bool ReadOnly
-        {
-            get { return false; }
-            set { }
-        }
-
-        public byte this[int i]
+        public byte this[uint i]
         {
             get
             {

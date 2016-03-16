@@ -40,7 +40,6 @@ namespace Ypsilon.Emulation.Hardware
 
             InitializeOpcodes();
             InitializeMemory();
-            MMU_Disable();
             PS = 0x0000;
         }
 
@@ -58,7 +57,7 @@ namespace Ypsilon.Emulation.Hardware
             m_Running = true;
             while (m_Running)
             {
-                ushort word = ReadMemInt16(PC, true);
+                ushort word = ReadMemInt16(PC, SegmentIndex.CS);
                 if (!m_ExecuteFail)
                 {
                     PC += 2;
@@ -69,7 +68,7 @@ namespace Ypsilon.Emulation.Hardware
                     m_Cycles += opcode.Cycles;
 
                     // Check for hardware interrupt:
-                    if (PS_I && !PS_Q && m_Bus.IRQ)
+                    if (PS_H && !PS_Q && m_Bus.IsIRQ)
                         Interrupt_HWI();
 
                     // Check for RTC interrupt:
@@ -93,13 +92,13 @@ namespace Ypsilon.Emulation.Hardware
         /// </summary>
         public void RunOneInstruction()
         {
-            ushort word = ReadMemInt16(PC, true);
+            ushort word = ReadMemInt16(PC, SegmentIndex.CS);
             if (!m_ExecuteFail)
             {
                 PC += 2;
 
                 // Check for hardware interrupt:
-                if (PS_I && !PS_Q && m_Bus.IRQ)
+                if (PS_H && !PS_Q && m_Bus.IsIRQ)
                     Interrupt_HWI();
 
                 // Check for RTC interrupt:
@@ -131,13 +130,13 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         #region General Purpose Registers
-        public enum RegGPIndex
+        public enum RegGeneral
         {
             R0, R1, R2, R3, R4, R5, R6, R7,
             Count,
             None
         }
-        private ushort[] R = new ushort[(int)RegGPIndex.Count];
+        private ushort[] R = new ushort[(int)RegGeneral.Count];
         public ushort R0 { get { return R[0]; } }
         public ushort R1 { get { return R[1]; } }
         public ushort R2 { get { return R[2]; } }
@@ -148,22 +147,22 @@ namespace Ypsilon.Emulation.Hardware
         public ushort R7 { get { return R[7]; } }
         #endregion
 
-        #region Status Registers
-        enum RegSPIndex
+        #region Control Registers
+        enum RegControl
         {
             FL, PC, PS, P2, II, IA, USP, SSP,
             Count
         }
 
-        ushort ReadStatusRegister(RegSPIndex index)
+        ushort ReadControlRegister(RegControl index)
         {
             switch (index)
             {
-                case RegSPIndex.FL:
+                case RegControl.FL:
                     return m_FL;
-                case RegSPIndex.PC:
+                case RegControl.PC:
                     return m_PC;
-                case RegSPIndex.PS:
+                case RegControl.PS:
                     if (PS_S)
                         return m_PS;
                     else
@@ -171,7 +170,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.P2:
+                case RegControl.P2:
                     if (PS_S)
                         return m_P2;
                     else
@@ -179,7 +178,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.II:
+                case RegControl.II:
                     if (PS_S)
                         return m_II;
                     else
@@ -187,7 +186,7 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.IA:
+                case RegControl.IA:
                     if (PS_S)
                         return m_IA;
                     else
@@ -195,9 +194,9 @@ namespace Ypsilon.Emulation.Hardware
                         Interrupt_UnPrivOpcode();
                         return 0;
                     }
-                case RegSPIndex.USP:
+                case RegControl.USP:
                     return m_USP;
-                case RegSPIndex.SSP:
+                case RegControl.SSP:
                     if (PS_S)
                         return m_SSP;
                     else
@@ -207,51 +206,51 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
-        void WriteStatusRegister(RegSPIndex index, ushort value)
+        private void WriteControlRegister(RegControl index, ushort value)
         {
             switch (index)
             {
-                case RegSPIndex.FL:
+                case RegControl.FL:
                     FL = value;
                     break;
 
-                case RegSPIndex.PC:
+                case RegControl.PC:
                     PC = value;
                     break;
 
-                case RegSPIndex.PS:
+                case RegControl.PS:
                     if (PS_S)
                         PS = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.P2:
+                case RegControl.P2:
                     if (PS_S)
                         P2 = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.II:
+                case RegControl.II:
                     if (PS_S)
                         II = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.IA:
+                case RegControl.IA:
                     if (PS_S)
                         IA = value;
                     else
                         Interrupt_UnPrivOpcode();
                     break;
 
-                case RegSPIndex.USP:
+                case RegControl.USP:
                     USP = value;
                     break;
 
-                case RegSPIndex.SSP:
+                case RegControl.SSP:
                     if (PS_S)
                         SSP = value;
                     else
@@ -366,14 +365,14 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
         #region PS
         private ushort m_PS = 0x0000;
-        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_I = 0x2000;
-        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200;
+        private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_H = 0x2000, c_PS_I = 0x1000;
+        private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_W = 0x0200, c_PS_F = 0x0100;
         private bool m_PS_S = false;
         public ushort PS
         {
             private set
             {
-                PS_I = (value & 0x2000) != 0;
+                PS_H = (value & 0x2000) != 0;
                 PS_M = (value & 0x4000) != 0;
                 PS_S = (value & 0x8000) != 0;
                 m_PS = value;
@@ -385,7 +384,7 @@ namespace Ypsilon.Emulation.Hardware
         }
 
         /// <summary>
-        /// If PS_S is true, then the processor is in Supervisor mode.
+        /// [S]upervisor Mode enabled.
         /// </summary>
         public bool PS_S
         {
@@ -398,19 +397,17 @@ namespace Ypsilon.Emulation.Hardware
                 if (value == false)
                 {
                     m_PS &= unchecked((ushort)~c_PS_S);
-                    Mode_UserMode();
                 }
                 else if (value == true)
                 {
                     m_PS |= c_PS_S;
-                    Mode_SupervisorMode();
                 }
                 m_PS_S = value;
             }
         }
 
         /// <summary>
-        /// If PS_M is true, then the MMU is active.
+        /// [M]emory segmenting hardware enabled.
         /// </summary>
         public bool PS_M
         {
@@ -425,17 +422,40 @@ namespace Ypsilon.Emulation.Hardware
                     if (value == false)
                     {
                         m_PS &= unchecked((ushort)~c_PS_M);
-                        MMU_Disable();
                     }
                     else if (value == true)
                     {
                         m_PS |= c_PS_M;
-                        MMU_Enable();
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// [H]ardware Interrupts enabled.
+        /// </summary>
+        public bool PS_H
+        {
+            get
+            {
+                return ((m_PS & c_PS_H) != 0);
+            }
+            private set
+            {
+                if (value == false)
+                {
+                    m_PS &= unchecked((ushort)~c_PS_H);
+                }
+                else if (value == true)
+                {
+                    m_PS |= c_PS_H;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processor handling [I]nterrupt.
+        /// </summary>
         public bool PS_I
         {
             get
@@ -455,6 +475,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// Interrupt Re[Q]uest in process, blocks hardware interrupts.
+        /// </summary>
         public bool PS_Q
         {
             get
@@ -474,6 +497,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// User-mode Fault.
+        /// </summary>
         public bool PS_U
         {
             get
@@ -493,6 +519,9 @@ namespace Ypsilon.Emulation.Hardware
             }
         }
 
+        /// <summary>
+        /// Segment Fault.
+        /// </summary>
         public bool PS_W
         {
             get
@@ -508,6 +537,28 @@ namespace Ypsilon.Emulation.Hardware
                 else if (value == true)
                 {
                     m_PS |= c_PS_W;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processor handling [F]ault.
+        /// </summary>
+        public bool PS_F
+        {
+            get
+            {
+                return ((m_PS & c_PS_F) != 0);
+            }
+            private set
+            {
+                if (value == false)
+                {
+                    m_PS &= unchecked((ushort)~c_PS_F);
+                }
+                else if (value == true)
+                {
+                    m_PS |= c_PS_F;
                 }
             }
         }
@@ -562,27 +613,9 @@ namespace Ypsilon.Emulation.Hardware
         #endregion
         #endregion
 
-        #region Supervisor Mode
-        private void Mode_SupervisorMode()
-        {
-            if (PS_M)
-                MMU_Enable();
-            else
-                MMU_Disable();
-        }
-
-        private void Mode_UserMode()
-        {
-            if (PS_M)
-                MMU_Enable();
-            else
-                MMU_Disable();
-        }
-        #endregion
-
         private ushort SizeOfLastInstruction(ushort current_address)
         {
-            ushort word = ReadMemInt16((ushort)(current_address - 2));
+            ushort word = ReadMemInt16((ushort)(current_address - 2), SegmentIndex.CS);
             YCPUInstruction opcode = Opcodes[word & 0x00FF];
             if (opcode.UsesNextWord(word))
                 return 4;
@@ -594,12 +627,12 @@ namespace Ypsilon.Emulation.Hardware
         private void StackPush(ushort value)
         {
             SP -= 2;
-            WriteMemInt16(SP, value);
+            WriteMemInt16(SP, value, SegmentIndex.SS);
         }
 
         private ushort StackPop()
         {
-            ushort value = ReadMemInt16(SP);
+            ushort value = ReadMemInt16(SP, SegmentIndex.SS);
             SP += 2;
             return value;
         }

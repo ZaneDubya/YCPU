@@ -15,7 +15,8 @@ namespace Ypsilon.Assembler
     {
         Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>> m_Opcodes;
         Dictionary<string, ushort> m_Registers;
-        Dictionary<string, ushort> m_StatusRegisters;
+        Dictionary<string, ushort> m_ControlRegisters;
+        Dictionary<string, ushort> m_SegmentRegisters;
 
         void Initialize()
         {
@@ -76,21 +77,17 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("btx", AssembleBTX);
             m_Opcodes.Add("btc", AssembleBTC);
             m_Opcodes.Add("bts", AssembleBTS);
+            // set register to value
+            m_Opcodes.Add("set", AssembleSET);
             // flag operations
             m_Opcodes.Add("sef", AssembleSEF);
             m_Opcodes.Add("clf", AssembleCLF);
             // stack operations
             m_Opcodes.Add("psh", AssemblePSH);
             m_Opcodes.Add("pop", AssemblePOP);
-            // sfl used to be here :(
-            
             // MMU operations
-            m_Opcodes.Add("mmr", AssembleMMR);
-            m_Opcodes.Add("mmw", AssembleMMW);
-            m_Opcodes.Add("mml", AssembleMML);
-            m_Opcodes.Add("mms", AssembleMMS);
-            // set register to value
-            m_Opcodes.Add("set", AssembleSET);
+            m_Opcodes.Add("lsg", AssembleLSG);
+            m_Opcodes.Add("ssg", AssembleSSG);
             // increment / decrement / add small immediate
             m_Opcodes.Add("inc", AssembleINC);
             m_Opcodes.Add("adi", AssembleADI);
@@ -112,7 +109,6 @@ namespace Ypsilon.Assembler
         void InitRegisterDictionary()
         {
             m_Registers = new Dictionary<string, ushort>();
-
             m_Registers.Add("r0", (ushort)YCPUReg.R0);
             m_Registers.Add("r1", (ushort)YCPUReg.R1);
             m_Registers.Add("r2", (ushort)YCPUReg.R2);
@@ -121,26 +117,40 @@ namespace Ypsilon.Assembler
             m_Registers.Add("r5", (ushort)YCPUReg.R5);
             m_Registers.Add("r6", (ushort)YCPUReg.R6);
             m_Registers.Add("r7", (ushort)YCPUReg.R7);
-
+            // alternate naming scheme
             m_Registers.Add("a", (ushort)YCPUReg.R0);
             m_Registers.Add("b", (ushort)YCPUReg.R1);
             m_Registers.Add("c", (ushort)YCPUReg.R2);
-            m_Registers.Add("i", (ushort)YCPUReg.R3);
-            m_Registers.Add("j", (ushort)YCPUReg.R4);
+            m_Registers.Add("d", (ushort)YCPUReg.R3);
+            m_Registers.Add("w", (ushort)YCPUReg.R4);
             m_Registers.Add("x", (ushort)YCPUReg.R5);
             m_Registers.Add("y", (ushort)YCPUReg.R6);
             m_Registers.Add("z", (ushort)YCPUReg.R7);
 
-            m_StatusRegisters = new Dictionary<string, ushort>();
+            m_ControlRegisters = new Dictionary<string, ushort>();
+            m_ControlRegisters.Add("fl", (ushort)YCPUReg.FL);
+            m_ControlRegisters.Add("pc", (ushort)YCPUReg.PC);
+            m_ControlRegisters.Add("ps", (ushort)YCPUReg.PS);
+            m_ControlRegisters.Add("p2", (ushort)YCPUReg.P2);
+            m_ControlRegisters.Add("ii", (ushort)YCPUReg.II);
+            m_ControlRegisters.Add("ia", (ushort)YCPUReg.IA);
+            m_ControlRegisters.Add("usp", (ushort)YCPUReg.USP);
+            m_ControlRegisters.Add("sp", (ushort)YCPUReg.SP);
 
-            m_StatusRegisters.Add("fl", (ushort)YCPUReg.FL);
-            m_StatusRegisters.Add("pc", (ushort)YCPUReg.PC);
-            m_StatusRegisters.Add("ps", (ushort)YCPUReg.PS);
-            m_StatusRegisters.Add("p2", (ushort)YCPUReg.P2);
-            m_StatusRegisters.Add("ia", (ushort)YCPUReg.IA);
-            m_StatusRegisters.Add("ii", (ushort)YCPUReg.II);
-            m_StatusRegisters.Add("usp", (ushort)YCPUReg.USP);
-            m_StatusRegisters.Add("sp", (ushort)YCPUReg.SP);
+            m_SegmentRegisters = new Dictionary<string, ushort>();
+            m_SegmentRegisters.Add("cs", (ushort)0x0000);
+            m_SegmentRegisters.Add("ds", (ushort)0x0001);
+            m_SegmentRegisters.Add("es", (ushort)0x0002);
+            m_SegmentRegisters.Add("ss", (ushort)0x0003);
+            m_SegmentRegisters.Add("css", (ushort)0x0000);
+            m_SegmentRegisters.Add("dss", (ushort)0x0001);
+            m_SegmentRegisters.Add("ess", (ushort)0x0002);
+            m_SegmentRegisters.Add("sss", (ushort)0x0003);
+            m_SegmentRegisters.Add("csu", (ushort)0x0040);
+            m_SegmentRegisters.Add("dsu", (ushort)0x0041);
+            m_SegmentRegisters.Add("esu", (ushort)0x0042);
+            m_SegmentRegisters.Add("ssu", (ushort)0x0043);
+            m_SegmentRegisters.Add("is", (ushort)0x0004);
         }
 
         enum YCPUReg : ushort

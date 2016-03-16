@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F2711253-F674-44AC-90DC-6EA4C271680B}</ProjectGuid>
+    <ProjectGuid>{564C1F0C-430C-4D3F-85F0-DB6483CB3FC3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ypsilon</RootNamespace>
-    <AssemblyName>YpsilonCPU</AssemblyName>
+    <AssemblyName>Ypsilon</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -29,34 +29,40 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Emulation\ADevice.cs" />
-    <Compile Include="Common.cs" />
-    <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
-    <Compile Include="Emulation\Devices\Graphics\MemoryBankLEM.cs" />
-    <Compile Include="Emulation\Devices\Input\KeyboardDevice.cs" />
-    <Compile Include="Emulation\Emulator.cs" />
-    <Compile Include="Emulation\Hardware\MemoryChunk.cs" />
-    <Compile Include="Emulation\IMemoryInterface.cs" />
-    <Compile Include="Emulation\Hardware\Segment.cs" />
-    <Compile Include="Emulation\Hardware\YBUS.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.Disassemblers.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.Instructions.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.Interrupts.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.Memory.cs" />
-    <Compile Include="Emulation\Hardware\YCPU.BitPatterns.cs" />
-    <Compile Include="Emulation\Hardware\YRTC.cs" />
-    <Compile Include="Emulation\IDisplayProvider.cs" />
-    <Compile Include="Emulation\IInputProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Emulation\ITexture.cs" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assembler\AddressingMode.cs" />
+    <Compile Include="Assembler\DataFieldTypes.cs" />
+    <Compile Include="Assembler\Guard.cs" />
+    <Compile Include="Assembler\LineSearch.cs" />
+    <Compile Include="Assembler\OpcodeFlag.cs" />
+    <Compile Include="Assembler\Optimizations.cs" />
+    <Compile Include="Assembler\Param.cs" />
+    <Compile Include="Assembler\Parser.cs" />
+    <Compile Include="Assembler\Parser.Data.cs" />
+    <Compile Include="Assembler\Parser.Includes.cs" />
+    <Compile Include="Assembler\Parser.Initialize.cs" />
+    <Compile Include="Assembler\Parser.Instructions.cs" />
+    <Compile Include="Assembler\Parser.Labels.cs" />
+    <Compile Include="Assembler\Parser.Output.cs" />
+    <Compile Include="Assembler\Parser.Params.cs" />
+    <Compile Include="Assembler\Parser.Pragmas.cs" />
+    <Compile Include="Assembler\ParserState.cs" />
+    <Compile Include="Assembler\Scopes.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\YpsilonCPU\YpsilonCPU.csproj">
+      <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
+      <Name>YpsilonCPU</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

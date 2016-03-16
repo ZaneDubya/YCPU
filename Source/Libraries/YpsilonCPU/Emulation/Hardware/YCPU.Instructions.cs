@@ -43,6 +43,14 @@ namespace Ypsilon.Emulation.Hardware
         #region OpCode Initialization
         private void InitializeOpcodes()
         {
+            // Specification at 3:
+            // All instructions are comprised of single 16 - bit program words. Some instructions
+            // may be suffixed by a single 16 - bit immediate value. One instruction -the far
+            // jump immediate instruction - is suffixed by three 16 - bit immediate values.
+            // All instructions are defined by the 8-bit low octet of the 16-bit program word.
+            // Attempted execution of a program word that does not have a defined 8 - bit low
+            // octet will raise the 'undefined' interrupt.
+
             Opcodes[0x00] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
             Opcodes[0x01] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
             Opcodes[0x02] = new YCPUInstruction("CMP", CMP, DisassembleALU, 0);
@@ -97,59 +105,59 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0x2E] = new YCPUInstruction("SBC", SBC, DisassembleALU, 0);
             Opcodes[0x2F] = new YCPUInstruction("SBC", SBC, DisassembleALU, 0);
 
-            Opcodes[0x30] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x31] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x32] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x33] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x34] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x35] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x36] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
-            Opcodes[0x37] = new YCPUInstruction("MUL", MUL, DisassembleALU, 0);
+            Opcodes[0x30] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x31] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x32] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x33] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x34] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x35] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x36] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
+            Opcodes[0x37] = new YCPUInstruction("MUL", MUL, DisassembleALU, 7);
 
-            Opcodes[0x38] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x39] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3A] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3B] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3C] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3D] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3E] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
-            Opcodes[0x3F] = new YCPUInstruction("DIV", DIV, DisassembleALU, 31);
+            Opcodes[0x38] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x39] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3A] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3B] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3C] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3D] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3E] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
+            Opcodes[0x3F] = new YCPUInstruction("DIV", DIV, DisassembleALU, 47);
 
-            Opcodes[0x40] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x41] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x42] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x43] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x44] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x45] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x46] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
-            Opcodes[0x47] = new YCPUInstruction("MLI", MLI, DisassembleALU, 0);
+            Opcodes[0x40] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x41] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x42] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x43] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x44] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x45] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x46] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
+            Opcodes[0x47] = new YCPUInstruction("MLI", MLI, DisassembleALU, 7);
 
-            Opcodes[0x48] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x49] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4A] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4B] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4C] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4D] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4E] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
-            Opcodes[0x4F] = new YCPUInstruction("DVI", DVI, DisassembleALU, 31);
+            Opcodes[0x48] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x49] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4A] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4B] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4C] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4D] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4E] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
+            Opcodes[0x4F] = new YCPUInstruction("DVI", DVI, DisassembleALU, 47);
 
-            Opcodes[0x50] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x51] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x52] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x53] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x54] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x55] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x56] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
-            Opcodes[0x57] = new YCPUInstruction("MOD", MOD, DisassembleALU, 31);
+            Opcodes[0x50] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x51] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x52] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x53] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x54] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x55] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x56] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
+            Opcodes[0x57] = new YCPUInstruction("MOD", MOD, DisassembleALU, 47);
 
-            Opcodes[0x58] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x59] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5A] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5B] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5C] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5D] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5E] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
-            Opcodes[0x5F] = new YCPUInstruction("MDI", MDI, DisassembleALU, 31);
+            Opcodes[0x58] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x59] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5A] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5B] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5C] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5D] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5E] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
+            Opcodes[0x5F] = new YCPUInstruction("MDI", MDI, DisassembleALU, 47);
 
             Opcodes[0x60] = new YCPUInstruction("AND", AND, DisassembleALU, 0);
             Opcodes[0x61] = new YCPUInstruction("AND", AND, DisassembleALU, 0);
@@ -219,20 +227,21 @@ namespace Ypsilon.Emulation.Hardware
             // 0x9A - 0x9E are Undefined operations in the branch opcode space.
             Opcodes[0x9F] = new YCPUInstruction("BAW", BAW, DisassembleBRA, 0);
 
-            Opcodes[0xA0] = new YCPUInstruction("ASL", ASL, DisassembleSHF, 0);
-            Opcodes[0xA1] = new YCPUInstruction("LSL", ASL, DisassembleSHF, 0); // ASL == LSL, per specification.
-            Opcodes[0xA2] = new YCPUInstruction("ROL", ROL, DisassembleSHF, 0);
-            Opcodes[0xA3] = new YCPUInstruction("RNL", RNL, DisassembleSHF, 0);
+            Opcodes[0xA0] = new YCPUInstruction("ASL", ASL, DisassembleSHF, 3);
+            Opcodes[0xA1] = new YCPUInstruction("LSL", ASL, DisassembleSHF, 3); // ASL == LSL, per specification.
+            Opcodes[0xA2] = new YCPUInstruction("ROL", ROL, DisassembleSHF, 1);
+            Opcodes[0xA3] = new YCPUInstruction("RNL", RNL, DisassembleSHF, 1);
             Opcodes[0xA4] = new YCPUInstruction("ASR", ASR, DisassembleSHF, 3);
             Opcodes[0xA5] = new YCPUInstruction("LSR", LSR, DisassembleSHF, 3);
-            Opcodes[0xA6] = new YCPUInstruction("ROR", ROR, DisassembleSHF, 0);
-            Opcodes[0xA7] = new YCPUInstruction("RNR", RNR, DisassembleSHF, 0);
+            Opcodes[0xA6] = new YCPUInstruction("ROR", ROR, DisassembleSHF, 1);
+            Opcodes[0xA7] = new YCPUInstruction("RNR", RNR, DisassembleSHF, 1);
 
             Opcodes[0xA8] = new YCPUInstruction("BTT", BIT, DisassembleBTT, 1);
             Opcodes[0xA9] = new YCPUInstruction("BTX", BTX, DisassembleBTT, 1);
             Opcodes[0xAA] = new YCPUInstruction("BTC", BTC, DisassembleBTT, 1);
             Opcodes[0xAB] = new YCPUInstruction("BTS", BTS, DisassembleBTT, 1);
-            // 0xAC and 0xAD are undefined.
+            Opcodes[0xAC] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
+            Opcodes[0xAD] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
             Opcodes[0xAE] = new YCPUInstruction("SEF", SEF, DisassembleFLG, 0);
             Opcodes[0xAF] = new YCPUInstruction("CLF", CLF, DisassembleFLG, 0);
 
@@ -240,21 +249,19 @@ namespace Ypsilon.Emulation.Hardware
             Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, DisassembleSTK, 0);
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
-            // 0xB4 is undefined. Used to be SFL.
-            Opcodes[0xB5] = new YCPUInstruction("MMU", MMU, DisassembleMMU, 0);
-            Opcodes[0xB6] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
-            Opcodes[0xB7] = new YCPUInstruction("SET", SET, DisassembleSET, 0);
+            Opcodes[0xB4] = new YCPUInstruction("RTS", RTS, DisassembleRTS, 1);
+            Opcodes[0xB5] = new YCPUInstruction("XSG", XSG, DisassembleXSG, 3);
 
-            Opcodes[0xB8] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
-            Opcodes[0xB9] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
-            Opcodes[0xBA] = new YCPUInstruction("JMP", JMP, DisassembleJMP, 0);
-            Opcodes[0xBB] = new YCPUInstruction("JSR", JSR, DisassembleJMP, 1);
-            Opcodes[0xBC] = new YCPUInstruction("HWQ", HWQ, DisassembleHWQ, 0);
-            Opcodes[0xBD] = new YCPUInstruction("SLP", SLP, DisassembleNoBits, 0);
-            Opcodes[0xBE] = new YCPUInstruction("SWI", SWI, DisassembleNoBits, 0);
-            Opcodes[0xBF] = new YCPUInstruction("RTI", RTI, DisassembleNoBits, 11);
+            Opcodes[0xB6] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
+            Opcodes[0xB7] = new YCPUInstruction("SBI", SBI, DisassembleINC, 0);
+            Opcodes[0xB8] = new YCPUInstruction("JMP", JMP, DisassembleJMP, 0);
+            Opcodes[0xB9] = new YCPUInstruction("JSR", JSR, DisassembleJMP, 1);
+            Opcodes[0xBA] = new YCPUInstruction("HWQ", HWQ, DisassembleHWQ, 0);
+            Opcodes[0xBB] = new YCPUInstruction("SLP", SLP, DisassembleNoBits, 0);
+            Opcodes[0xBC] = new YCPUInstruction("SWI", SWI, DisassembleNoBits, 0);
+            Opcodes[0xBD] = new YCPUInstruction("RTI", RTI, DisassembleNoBits, 11);
 
-            // 0xC0 = 0xFF are undefined (64 opcodes total).
+            // 0xBE = 0xFF are undefined (66 opcodes).
 
             for (int i = 0; i < 0x100; i += 1)
                 if (Opcodes[i].Opcode == null)
@@ -274,7 +281,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ADC(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value + Carry;
@@ -289,7 +296,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ADD(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value;
@@ -304,7 +311,7 @@ namespace Ypsilon.Emulation.Hardware
         private void AND(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int result = R[(int)destination] & value;
@@ -318,7 +325,7 @@ namespace Ypsilon.Emulation.Hardware
         private void CMP(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int register = R[(int)destination];
@@ -331,7 +338,7 @@ namespace Ypsilon.Emulation.Hardware
         private void DIV(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
@@ -350,7 +357,7 @@ namespace Ypsilon.Emulation.Hardware
         private void DVI(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
@@ -369,7 +376,7 @@ namespace Ypsilon.Emulation.Hardware
             else
             {
                 int result = (short)R[(int)destination] / (short)value;
-                R[(int)RegGPIndex.R0] = (ushort)(result >> 16);
+                R[(int)RegGeneral.R0] = (ushort)(result >> 16);
                 R[(int)destination] = (ushort)(result & 0x0000FFFF);
                 FL_N = ((result & 0x8000) != 0);
                 FL_Z = (result == 0x0000);
@@ -381,7 +388,7 @@ namespace Ypsilon.Emulation.Hardware
         private void EOR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int result = R[(int)destination] ^ value;
@@ -394,7 +401,7 @@ namespace Ypsilon.Emulation.Hardware
         private void LOD(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             R[(int)destination] = value;
@@ -407,7 +414,7 @@ namespace Ypsilon.Emulation.Hardware
         private void MDI(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
@@ -427,15 +434,15 @@ namespace Ypsilon.Emulation.Hardware
         private void MLI(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             R[(int)destination] = 0xFFFE;
             value = 0x8000;
 
             int result = (short)R[(int)destination] * (short)value;
-            R[(int)RegGPIndex.R0] = (ushort)(result >> 16);
-            FL_C = (R[(int)RegGPIndex.R0] != 0);
+            R[(int)RegGeneral.R0] = (ushort)(result >> 16);
+            FL_C = (R[(int)RegGeneral.R0] != 0);
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
             FL_N = ((result & 0x80000000) != 0);
             FL_Z = (result == 0);
@@ -445,7 +452,7 @@ namespace Ypsilon.Emulation.Hardware
         private void MOD(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
@@ -464,12 +471,12 @@ namespace Ypsilon.Emulation.Hardware
         private void MUL(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int result = R[(int)destination] * value;
-            R[(int)RegGPIndex.R0] = (ushort)(result >> 16);
-            FL_C = (R[(int)RegGPIndex.R0] != 0);
+            R[(int)RegGeneral.R0] = (ushort)(result >> 16);
+            FL_C = (R[(int)RegGeneral.R0] != 0);
             R[(int)destination] = (ushort)(result & 0x0000FFFF);
             FL_N = false; // Always cleared.
             FL_Z = (result == 0);
@@ -479,7 +486,7 @@ namespace Ypsilon.Emulation.Hardware
         private void NEG(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             if (value == 0x8000)
@@ -505,7 +512,7 @@ namespace Ypsilon.Emulation.Hardware
         private void NOT(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int result = ~value;
@@ -519,7 +526,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ORR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int result = R[(int)destination] | value;
@@ -533,7 +540,7 @@ namespace Ypsilon.Emulation.Hardware
         private void SBC(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value - (1 - Carry);
@@ -548,18 +555,19 @@ namespace Ypsilon.Emulation.Hardware
         private void STO(ushort operand)
         {
             ushort dest_address;
-            RegGPIndex source;
+            RegGeneral source;
             BitPatternSTO(operand, out dest_address, out source);
-            if (source == RegGPIndex.None)
+            if (source == RegGeneral.None)
             {
                 return;
             }
             else
             {
+                SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
                 if ((operand & 0x0100) != 0) // eight bit mode
-                    WriteMemInt8(dest_address, (byte)R[(int)source]);
+                    WriteMemInt8(dest_address, (byte)R[(int)source], dataSeg);
                 else
-                    WriteMemInt16(dest_address, R[(int)source]);
+                    WriteMemInt16(dest_address, R[(int)source], dataSeg);
             }
             // N [Negative] Not effected.
             // Z [Zero] Not effected.
@@ -570,7 +578,7 @@ namespace Ypsilon.Emulation.Hardware
         private void SUB(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternALU(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value;
@@ -587,7 +595,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ADI(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternIMM(operand, out value, out destination);
 
             int u_result = R[(int)destination] + value;
@@ -602,7 +610,7 @@ namespace Ypsilon.Emulation.Hardware
         private void SBI(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternIMM(operand, out value, out destination);
 
             int u_result = R[(int)destination] - value;
@@ -619,8 +627,8 @@ namespace Ypsilon.Emulation.Hardware
         private void BIT(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
-            BitPatternBTT(operand, out value, out destination);
+            RegGeneral destination;
+            BitPatternBTI(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -635,8 +643,8 @@ namespace Ypsilon.Emulation.Hardware
         private void BTX(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
-            BitPatternBTT(operand, out value, out destination);
+            RegGeneral destination;
+            BitPatternBTI(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -654,8 +662,8 @@ namespace Ypsilon.Emulation.Hardware
         private void BTC(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
-            BitPatternBTT(operand, out value, out destination);
+            RegGeneral destination;
+            BitPatternBTI(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -673,8 +681,8 @@ namespace Ypsilon.Emulation.Hardware
         private void BTS(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
-            BitPatternBTT(operand, out value, out destination);
+            RegGeneral destination;
+            BitPatternBTI(operand, out value, out destination);
             ushort bit = (ushort)Math.Pow(2, value);
             if ((R[(int)destination] & bit) != 0)
             {
@@ -696,7 +704,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_C)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -707,7 +715,7 @@ namespace Ypsilon.Emulation.Hardware
             if (FL_C)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -718,7 +726,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_Z)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -729,7 +737,7 @@ namespace Ypsilon.Emulation.Hardware
             if (FL_Z)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -740,7 +748,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_N)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -751,7 +759,7 @@ namespace Ypsilon.Emulation.Hardware
             if (FL_N)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -762,7 +770,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_V)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -773,7 +781,7 @@ namespace Ypsilon.Emulation.Hardware
             if (FL_V)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -784,7 +792,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_Z && FL_C)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -795,7 +803,7 @@ namespace Ypsilon.Emulation.Hardware
             if (!FL_Z && FL_N)
             {
                 ushort value;
-                RegGPIndex destination;
+                RegGeneral destination;
                 BitPatternBRA(operand, out value, out destination);
                 PC = (ushort)(PC + (sbyte)value - 2);
             }
@@ -804,7 +812,7 @@ namespace Ypsilon.Emulation.Hardware
         private void BAW(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternBRA(operand, out value, out destination);
             PC = (ushort)(PC + (sbyte)value - 2);
         }
@@ -814,7 +822,7 @@ namespace Ypsilon.Emulation.Hardware
         private void SEF(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternFLG(operand, out value, out destination);
 
             if ((operand & 0x8000) != 0)
@@ -829,7 +837,7 @@ namespace Ypsilon.Emulation.Hardware
         private void CLF(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternFLG(operand, out value, out destination);
 
             if ((operand & 0x8000) != 0)
@@ -853,35 +861,44 @@ namespace Ypsilon.Emulation.Hardware
             }
 
             ushort query_type;
-            RegGPIndex unused;
+            RegGeneral unused;
             BitPatternHWQ(operand, out query_type, out unused);
 
             switch (query_type)
             {
-                case 0x00:
-                    R[(int)RegGPIndex.R0] = m_Bus.DevicesConnected;
+                case 0x00: // Query number of devices connected
+                    R[(int)RegGeneral.R0] = m_Bus.DevicesConnected;
                     break;
-                case 0x01:
-                    ushort[] device_info = m_Bus.QueryDevice(R[(int)RegGPIndex.R0]);
-                    R[(int)RegGPIndex.R0] = device_info[0];
-                    R[(int)RegGPIndex.R1] = device_info[1];
-                    R[(int)RegGPIndex.R2] = device_info[2];
-                    R[(int)RegGPIndex.R3] = device_info[3];
+                case 0x01: // Query device attached to bus in slot R0
+                    ushort[] device_info = m_Bus.QueryDevice(R[(int)RegGeneral.R0]);
+                    R[(int)RegGeneral.R0] = device_info[0];
+                    R[(int)RegGeneral.R1] = device_info[1];
+                    R[(int)RegGeneral.R2] = device_info[2];
+                    R[(int)RegGeneral.R3] = device_info[3];
                     break;
-                case 0x02:
-                    R[0] = m_Bus.SendDeviceMessage(R[(int)RegGPIndex.R0],
-                        R[(int)RegGPIndex.R1],
-                        R[(int)RegGPIndex.R2]);
+                case 0x02: // Send message to hardware device
+                    R[0] = m_Bus.SendDeviceMessage(R[(int)RegGeneral.R0],
+                        R[(int)RegGeneral.R1],
+                        R[(int)RegGeneral.R2]);
                     break;
-                case 0x80:
+                case 0x03: // Get RAM/ROM amounts in R0-R3.
+                    R[0] = (ushort)BUS.RAMSize;
+                    R[1] = (ushort)(BUS.RAMSize >> 16);
+                    R[2] = (ushort)BUS.ROMSize;
+                    R[3] = (ushort)(BUS.ROMSize >> 16);
+                    break;
+                case 0x80: // Get RTC time
                     ushort[] rtc_data = m_RTC.GetData();
-                    R[(int)RegGPIndex.R0] = rtc_data[0];
-                    R[(int)RegGPIndex.R1] = rtc_data[1];
-                    R[(int)RegGPIndex.R2] = rtc_data[2];
-                    R[(int)RegGPIndex.R3] = rtc_data[3];
+                    R[(int)RegGeneral.R0] = rtc_data[0];
+                    R[(int)RegGeneral.R1] = rtc_data[1];
+                    R[(int)RegGeneral.R2] = rtc_data[2];
+                    R[(int)RegGeneral.R3] = rtc_data[3];
                     break;
-                case 0x81:
-                    R[(int)RegGPIndex.R0] = m_RTC.SetTickRate(R[(int)RegGPIndex.R0], m_Cycles);
+                case 0x82:
+                    R[(int)RegGeneral.R0] = m_RTC.GetTickRate();
+                    break;
+                case 0x83:
+                    R[(int)RegGeneral.R0] = m_RTC.SetTickRate(R[(int)RegGeneral.R0], m_Cycles);
                     break;
                 default:
                     // fail silently.
@@ -904,7 +921,8 @@ namespace Ypsilon.Emulation.Hardware
         #region JMP Instructions
         private void JMP(ushort operand)
         {
-            ushort value, farValue;
+            ushort value;
+            uint farValue;
             bool isFar;
             BitPatternJMI(operand, out value, out farValue, out isFar);
             PC = value;
@@ -912,16 +930,23 @@ namespace Ypsilon.Emulation.Hardware
 
         private void JSR(ushort operand)
         {
-            ushort value, farValue;
+            ushort value;
+            uint farValue;
             bool isFar;
             BitPatternJMI(operand, out value, out farValue, out isFar);
+            if (isFar)
+            {
+                StackPush((ushort)(farValue >> 16));
+                StackPush((ushort)farValue);
+            }
             StackPush(PC);
+            
             PC = value;
         }
         #endregion
 
-        #region MMU Instructions
-        private void MMU(ushort operand)
+        #region Segment Register Instructions
+        private void XSG(ushort operand)
         {
             if (!PS_S)
             {
@@ -929,34 +954,62 @@ namespace Ypsilon.Emulation.Hardware
                 return;
             }
 
-            ushort  mmuOpIndex;
-            RegGPIndex regIndex, regValue;
+            bool push = (operand & 0x0100) != 0;
+            int register = (operand & 0x0E00) >> 9;
+            bool user = (operand & 0x8000) != 0;
+            Segment segment;
 
-            BitPatternMMU(operand, out regIndex, out regValue);
-            mmuOpIndex = (ushort)((operand & 0x0300) >> 8);
-
-            switch (mmuOpIndex)
+            switch ((SegmentIndex)register)
             {
-                case 0: //mmr
-                    R[(int)regValue] = MMU_Read((ushort)(R[(int)regIndex] & 0x000F));
+                case SegmentIndex.CS:
+                    segment = (user) ? m_CSU : m_CSS;
                     break;
-                case 1: //mmw
-                    MMU_Write((ushort)(R[(int)regIndex] & 0x000F), R[(int)regValue]);
+                case SegmentIndex.DS:
+                    segment = (user) ? m_DSU : m_DSS;
                     break;
-                case 2: //mml
-                    MMU_PushCacheOntoStack(R[(int)regValue]);
+                case SegmentIndex.ES:
+                    segment = (user) ? m_ESU : m_ESS;
                     break;
-                case 3: //mms
-                    MMU_PullCacheFromStack(R[(int)regValue]);
+                case SegmentIndex.SS:
+                    segment = (user) ? m_SSU : m_SSS;
                     break;
+                case SegmentIndex.IS:
+                    if (user)
+                    {
+                        Interupt_UndefOpcode();
+                        return;
+                    }
+                    else
+                    {
+                        segment = m_IS;
+                    }
+                    break;
+                default:
+                    // operand does not include a valid segment index.
+                    Interupt_UndefOpcode();
+                    return;
+            }
+
+            if (push)
+            {
+                ushort register_lo = (ushort)segment.Register;
+                ushort register_hi = (ushort)(segment.Register >> 16);
+                StackPush(register_hi);
+                StackPush(register_lo);
+            }
+            else
+            {
+                ushort register_lo = StackPop();
+                ushort register_hi = StackPop();
+                segment.Register = (uint)(register_hi << 16) | register_lo;
             }
         }
         #endregion
 
-        #region SET Instructions
+            #region SET Instructions
         private void SET(ushort operand)
         {
-            RegGPIndex regDestination;
+            RegGeneral regDestination;
             ushort value;
             BitPatternSET(operand, out value, out regDestination);
             R[(int)regDestination] = value;
@@ -967,7 +1020,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ASL(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             int register = (short)R[(int)destination] << value;
@@ -982,7 +1035,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ASR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             int register = (short)R[(int)destination] >> value;
@@ -998,7 +1051,7 @@ namespace Ypsilon.Emulation.Hardware
         private void LSR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             R[(int)destination] = 0x8000;
@@ -1017,7 +1070,7 @@ namespace Ypsilon.Emulation.Hardware
         private void RNL(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             if (value != 0)
@@ -1035,7 +1088,7 @@ namespace Ypsilon.Emulation.Hardware
         private void RNR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             if (value != 0)
@@ -1054,7 +1107,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ROL(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             if (value != 0)
@@ -1076,7 +1129,7 @@ namespace Ypsilon.Emulation.Hardware
         private void ROR(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
 
             if (value != 0)
@@ -1100,7 +1153,7 @@ namespace Ypsilon.Emulation.Hardware
         }
         #endregion
 
-        #region SWI / RTI
+        #region SWI / RTI / RTS
         private void SWI(ushort operand)
         {
             Interrupt_SWI();
@@ -1116,32 +1169,50 @@ namespace Ypsilon.Emulation.Hardware
 
             ReturnFromInterrupt();
         }
+
+        private void RTS(ushort operand)
+        {
+            bool far = (operand & 0x0100) != 0;
+            if (far)
+            {
+                if (!PS_S)
+                    Interrupt_UnPrivOpcode();
+                PC = StackPop();
+                ushort cs_lo = StackPop();
+                ushort cs_hi = StackPop();
+                m_CSS.Register = (uint)(cs_lo + (cs_hi << 16));
+            }
+            else
+            {
+                PC = StackPop();
+            }
+        }
         #endregion
 
         #region Stack Instructions
         private void PSH(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSTK(operand, out value, out destination);
             if ((value & 0x0001) == 0)
             {
                 if ((value & 0x0100) != 0)
-                    StackPush(R[(int)RegGPIndex.R0]);
+                    StackPush(R[(int)RegGeneral.R0]);
                 if ((value & 0x0200) != 0)
-                    StackPush(R[(int)RegGPIndex.R1]);
+                    StackPush(R[(int)RegGeneral.R1]);
                 if ((value & 0x0400) != 0)
-                    StackPush(R[(int)RegGPIndex.R2]);
+                    StackPush(R[(int)RegGeneral.R2]);
                 if ((value & 0x0800) != 0)
-                    StackPush(R[(int)RegGPIndex.R3]);
+                    StackPush(R[(int)RegGeneral.R3]);
                 if ((value & 0x1000) != 0)
-                    StackPush(R[(int)RegGPIndex.R4]);
+                    StackPush(R[(int)RegGeneral.R4]);
                 if ((value & 0x2000) != 0)
-                    StackPush(R[(int)RegGPIndex.R5]);
+                    StackPush(R[(int)RegGeneral.R5]);
                 if ((value & 0x4000) != 0)
-                    StackPush(R[(int)RegGPIndex.R6]);
+                    StackPush(R[(int)RegGeneral.R6]);
                 if ((value & 0x8000) != 0)
-                    StackPush(R[(int)RegGPIndex.R7]);
+                    StackPush(R[(int)RegGeneral.R7]);
             }
             else
             {
@@ -1167,26 +1238,26 @@ namespace Ypsilon.Emulation.Hardware
         private void POP(ushort operand)
         {
             ushort value;
-            RegGPIndex destination;
+            RegGeneral destination;
             BitPatternSTK(operand, out value, out destination);
             if ((value & 0x0001) == 0)
             {
                 if ((value & 0x8000) != 0)
-                    R[(int)RegGPIndex.R7] = StackPop();
+                    R[(int)RegGeneral.R7] = StackPop();
                 if ((value & 0x4000) != 0)
-                    R[(int)RegGPIndex.R6] = StackPop();
+                    R[(int)RegGeneral.R6] = StackPop();
                 if ((value & 0x2000) != 0)
-                    R[(int)RegGPIndex.R5] = StackPop();
+                    R[(int)RegGeneral.R5] = StackPop();
                 if ((value & 0x1000) != 0)
-                    R[(int)RegGPIndex.R4] = StackPop();
+                    R[(int)RegGeneral.R4] = StackPop();
                 if ((value & 0x0800) != 0)
-                    R[(int)RegGPIndex.R3] = StackPop();
+                    R[(int)RegGeneral.R3] = StackPop();
                 if ((value & 0x0400) != 0)
-                    R[(int)RegGPIndex.R2] = StackPop();
+                    R[(int)RegGeneral.R2] = StackPop();
                 if ((value & 0x0200) != 0)
-                    R[(int)RegGPIndex.R1] = StackPop();
+                    R[(int)RegGeneral.R1] = StackPop();
                 if ((value & 0x0100) != 0)
-                    R[(int)RegGPIndex.R0] = StackPop();
+                    R[(int)RegGeneral.R0] = StackPop();
             }
             else
             {

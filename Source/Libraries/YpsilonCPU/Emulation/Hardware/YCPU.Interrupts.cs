@@ -14,6 +14,7 @@ namespace Ypsilon.Emulation.Hardware
             {
                 ushort ps = PS;
                 PS_S = true;
+                PS_I = true;
                 PS_Q = (interrupt_number == 0x0C);
                 StackPush(ps);
                 // rewind the instruction if this is an error interrupt ($02 - $07)
@@ -22,7 +23,7 @@ namespace Ypsilon.Emulation.Hardware
                 else
                     StackPush(PC);
             }
-            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2));
+            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2), SegmentIndex.IS);
             m_Cycles += 31;
         }
 
@@ -61,12 +62,23 @@ namespace Ypsilon.Emulation.Hardware
             Interrupt(0x04);
         }
 
-        private void Interrupt_BankFault(bool execute)
+        internal void Interrupt_SegFault(SegmentIndex segmentType)
         {
-            if (execute)
+            if (segmentType == SegmentIndex.CS || segmentType == SegmentIndex.IS)
+            {
                 m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
-            // then, it will load the next instruction, with PC = InterruptTable[0x05];
-            Interrupt(0x05);
+                Interrupt(0x05);        // then, it will load the next instruction, with PC = InterruptTable[0x05];
+            }
+            else if (segmentType == SegmentIndex.DS || segmentType == SegmentIndex.ES)
+            {
+                m_ExecuteFail = false;
+                Interrupt(0x05);
+            }
+            else if (segmentType == SegmentIndex.SS)
+            {
+                m_ExecuteFail = false;
+                Interrupt(0x04);
+            }
         }
 
         private void Interrupt_UnPrivOpcode()
@@ -82,7 +94,7 @@ namespace Ypsilon.Emulation.Hardware
         public void Interrupt_HWI()
         {
             PS_Q = true;
-            II = m_Bus.II;
+            II = m_Bus.FirstIRQ;
             m_Bus.AcknowledgeIRQ(II);
             Interrupt(0x0C);
         }
