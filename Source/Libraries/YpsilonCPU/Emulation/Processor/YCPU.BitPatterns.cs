@@ -98,7 +98,7 @@ namespace Ypsilon.Emulation.Processor
                         // Immediate - no such addressing mode for STO.
                         source = RegGeneral.None;
                         destAddress = 0;
-                        Interupt_UndefOpcode();
+                        Interrupt_UndefFault();
                     }
                     else if ((int)addrRegister == 1)
                     {
@@ -119,7 +119,7 @@ namespace Ypsilon.Emulation.Processor
                 case 1: // Register - no such addressing mode for STO.
                     source = RegGeneral.None;
                     destAddress = 0;
-                    Interupt_UndefOpcode();
+                    Interrupt_UndefFault();
                     break;
 
                 case 2: // Indirect

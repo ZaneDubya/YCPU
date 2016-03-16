@@ -289,9 +289,9 @@ namespace Ypsilon.Emulation.Processor
                 flags = string.Format(flags,
                     ((operand & 0x8000) != 0) ? "SP " : string.Empty,
                     ((operand & 0x4000) != 0) ? "USP " : string.Empty,
-                    ((operand & 0x2000) != 0) ? "IA " : string.Empty,
-                    ((operand & 0x1000) != 0) ? "II " : string.Empty,
-                    ((operand & 0x0800) != 0) ? "P2 " : string.Empty,
+                    ((operand & 0x2000) != 0) ? "?? " : string.Empty,
+                    ((operand & 0x1000) != 0) ? "?? " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "?? " : string.Empty,
                     ((operand & 0x0400) != 0) ? "PS " : string.Empty,
                     ((operand & 0x0200) != 0) ? "PC " : string.Empty,
                     ((operand & 0x0100) != 0) ? "FL " : string.Empty);
@@ -375,12 +375,6 @@ namespace Ypsilon.Emulation.Processor
                     return "PC";
                 case RegControl.PS:
                     return "PS";
-                case RegControl.P2:
-                    return "P2";
-                case RegControl.II:
-                    return "II";
-                case RegControl.IA:
-                    return "IA";
                 case RegControl.USP:
                     return "USP";
                 case RegControl.SSP:

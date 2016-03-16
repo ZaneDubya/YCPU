@@ -342,7 +342,7 @@ namespace Ypsilon.Emulation.Processor
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
-                Interrupt_DivideByZero();
+                Interrupt_DivZeroFault();
                 return;
             }
 
@@ -361,7 +361,7 @@ namespace Ypsilon.Emulation.Processor
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
-                Interrupt_DivideByZero();
+                Interrupt_DivZeroFault();
                 return;
             }
 
@@ -418,7 +418,7 @@ namespace Ypsilon.Emulation.Processor
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
-                Interrupt_DivideByZero();
+                Interrupt_DivZeroFault();
                 return;
             }
 
@@ -456,7 +456,7 @@ namespace Ypsilon.Emulation.Processor
             BitPatternALU(operand, out value, out destination);
             if (value == 0)
             {
-                Interrupt_DivideByZero();
+                Interrupt_DivZeroFault();
                 return;
             }
 
@@ -856,7 +856,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivOpcode();
+                Interrupt_UnPrivFault();
                 return;
             }
 
@@ -910,7 +910,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivOpcode();
+                Interrupt_UnPrivFault();
                 return;
             }
 
@@ -950,7 +950,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivOpcode();
+                Interrupt_UnPrivFault();
                 return;
             }
 
@@ -976,7 +976,7 @@ namespace Ypsilon.Emulation.Processor
                 case SegmentIndex.IS:
                     if (user)
                     {
-                        Interupt_UndefOpcode();
+                        Interrupt_UndefFault();
                         return;
                     }
                     else
@@ -986,7 +986,7 @@ namespace Ypsilon.Emulation.Processor
                     break;
                 default:
                     // operand does not include a valid segment index.
-                    Interupt_UndefOpcode();
+                    Interrupt_UndefFault();
                     return;
             }
 
@@ -1163,7 +1163,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivOpcode();
+                Interrupt_UnPrivFault();
                 return;
             }
 
@@ -1176,7 +1176,7 @@ namespace Ypsilon.Emulation.Processor
             if (far)
             {
                 if (!PS_S)
-                    Interrupt_UnPrivOpcode();
+                    Interrupt_UnPrivFault();
                 PC = StackPop();
                 ushort cs_lo = StackPop();
                 ushort cs_hi = StackPop();
@@ -1216,22 +1216,25 @@ namespace Ypsilon.Emulation.Processor
             }
             else
             {
-                if ((value & 0x8000) != 0)
-                    StackPush(SP);
-                if ((value & 0x4000) != 0)
-                    StackPush(USP);
-                if ((value & 0x2000) != 0)
-                    StackPush(IA);
-                if ((value & 0x1000) != 0)
-                    StackPush(II);
-                if ((value & 0x0800) != 0)
-                    StackPush(P2);
-                if ((value & 0x0400) != 0)
-                    StackPush(PS);
-                if ((value & 0x0200) != 0)
-                    StackPush(PC); 
-                if ((value & 0x0100) != 0)
-                    StackPush(FL);
+                if ((value & 0x2000) != 0 ||
+                    (value & 0x1000) != 0 ||
+                    (value & 0x0800) != 0)
+                {
+                    Interrupt_UndefFault();
+                }
+                else
+                {
+                    if ((value & 0x8000) != 0)
+                        StackPush(SP);
+                    if ((value & 0x4000) != 0)
+                        StackPush(USP);
+                    if ((value & 0x0400) != 0)
+                        StackPush(PS);
+                    if ((value & 0x0200) != 0)
+                        StackPush(PC);
+                    if ((value & 0x0100) != 0)
+                        StackPush(FL);
+                }
             }
         }
 
@@ -1261,22 +1264,25 @@ namespace Ypsilon.Emulation.Processor
             }
             else
             {
-                if ((value & 0x0100) != 0)
-                    FL = StackPop();
-                if ((value & 0x0200) != 0)
-                    PC = StackPop();
-                if ((value & 0x0400) != 0)
-                    PS = StackPop();
-                if ((value & 0x0800) != 0)
-                    P2 = StackPop();
-                if ((value & 0x1000) != 0)
-                    II = StackPop();
-                if ((value & 0x2000) != 0)
-                    IA = StackPop();
-                if ((value & 0x4000) != 0)
-                    USP = StackPop();
-                if ((value & 0x8000) != 0)
-                    SP = StackPop();
+                if ((value & 0x2000) != 0 ||
+                    (value & 0x1000) != 0 ||
+                    (value & 0x0800) != 0)
+                {
+                    Interrupt_UndefFault();
+                }
+                else
+                {
+                    if ((value & 0x0100) != 0)
+                        FL = StackPop();
+                    if ((value & 0x0200) != 0)
+                        PC = StackPop();
+                    if ((value & 0x0400) != 0)
+                        PS = StackPop();
+                    if ((value & 0x4000) != 0)
+                        USP = StackPop();
+                    if ((value & 0x8000) != 0)
+                        SP = StackPop();
+                }
             }
         }
         #endregion

@@ -185,13 +185,10 @@ namespace YCPUXNA
             ConsoleWrite(70, r_y + 8, string.Format("r7: ${0:X4}", cpu.R7));
 
             ConsoleWrite(70, r_y + 10, string.Format("fl: ${0:X4}", cpu.FL));
-            ConsoleWrite(70, r_y + 11, string.Format("ia: ${0:X4}", cpu.IA));
-            ConsoleWrite(70, r_y + 12, string.Format("ii: ${0:X4}", cpu.II));
-            ConsoleWrite(70, r_y + 13, string.Format("pc: ${0:X4}", cpu.PC));
-            ConsoleWrite(70, r_y + 14, string.Format("ps: ${0:X4}", cpu.PS));
-            ConsoleWrite(70, r_y + 15, string.Format("p2: ${0:X4}", cpu.P2));
-            ConsoleWrite(69, r_y + 16, string.Format("usp: ${0:X4}", cpu.USP));
-            ConsoleWrite(69, r_y + 17, string.Format("ssp:*${0:X4}", cpu.SSP));
+            ConsoleWrite(70, r_y + 11, string.Format("pc: ${0:X4}", cpu.PC));
+            ConsoleWrite(70, r_y + 12, string.Format("ps: ${0:X4}", cpu.PS));
+            ConsoleWrite(69, r_y + 13, string.Format("usp: ${0:X4}", cpu.USP));
+            ConsoleWrite(69, r_y + 14, string.Format("ssp:*${0:X4}", cpu.SSP));
 
             ConsoleWrite(70, r_y + 19, "ps bits:");
             ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",

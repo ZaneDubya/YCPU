@@ -150,8 +150,11 @@ namespace Ypsilon.Emulation.Processor
         #region Control Registers
         enum RegControl
         {
-            FL, PC, PS, P2, II, IA, USP, SSP,
-            Count
+            FL = 0,
+            PC = 1,
+            PS = 2,
+            USP = 6,
+            SSP = 7
         }
 
         ushort ReadControlRegister(RegControl index)
@@ -167,31 +170,7 @@ namespace Ypsilon.Emulation.Processor
                         return m_PS;
                     else
                     {
-                        Interrupt_UnPrivOpcode();
-                        return 0;
-                    }
-                case RegControl.P2:
-                    if (PS_S)
-                        return m_P2;
-                    else
-                    {
-                        Interrupt_UnPrivOpcode();
-                        return 0;
-                    }
-                case RegControl.II:
-                    if (PS_S)
-                        return m_II;
-                    else
-                    {
-                        Interrupt_UnPrivOpcode();
-                        return 0;
-                    }
-                case RegControl.IA:
-                    if (PS_S)
-                        return m_IA;
-                    else
-                    {
-                        Interrupt_UnPrivOpcode();
+                        Interrupt_UnPrivFault();
                         return 0;
                     }
                 case RegControl.USP:
@@ -202,7 +181,8 @@ namespace Ypsilon.Emulation.Processor
                     else
                         return m_USP;
                 default:
-                    throw new Exception();
+                    Interrupt_UndefFault();
+                    return 0;
             }
         }
 
@@ -222,28 +202,7 @@ namespace Ypsilon.Emulation.Processor
                     if (PS_S)
                         PS = value;
                     else
-                        Interrupt_UnPrivOpcode();
-                    break;
-
-                case RegControl.P2:
-                    if (PS_S)
-                        P2 = value;
-                    else
-                        Interrupt_UnPrivOpcode();
-                    break;
-
-                case RegControl.II:
-                    if (PS_S)
-                        II = value;
-                    else
-                        Interrupt_UnPrivOpcode();
-                    break;
-
-                case RegControl.IA:
-                    if (PS_S)
-                        IA = value;
-                    else
-                        Interrupt_UnPrivOpcode();
+                        Interrupt_UnPrivFault();
                     break;
 
                 case RegControl.USP:
@@ -258,7 +217,8 @@ namespace Ypsilon.Emulation.Processor
                     break;
 
                 default:
-                    throw new Exception();
+                    Interrupt_UndefFault();
+                    break;
             }
         }
 
@@ -345,22 +305,6 @@ namespace Ypsilon.Emulation.Processor
                     m_FL |= c_FL_V;
                 }
             }
-        }
-        #endregion
-        #region IA
-        private ushort m_IA = 0x0000;
-        public ushort IA
-        {
-            get { return m_IA; }
-            set { m_IA = value; }
-        }
-        #endregion
-        #region II
-        private ushort m_II = 0x0000;
-        public ushort II
-        {
-            get { return m_II; }
-            set { m_II = value; }
         }
         #endregion
         #region PS
@@ -539,14 +483,6 @@ namespace Ypsilon.Emulation.Processor
                     m_PS |= c_PS_W;
                 }
             }
-        }
-        #endregion
-        #region P2
-        private ushort m_P2 = 0x0000;
-        public ushort P2
-        {
-            get { return m_P2; }
-            set { m_P2 = value; }
         }
         #endregion
         #region PC

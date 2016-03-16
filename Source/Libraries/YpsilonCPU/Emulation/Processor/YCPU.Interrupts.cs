@@ -7,8 +7,9 @@ namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
     {
-        private void Interrupt(ushort interrupt_number)
+        private void Interrupt(ushort interrupt_number, params ushort[] stack_values)
         {
+            // !!! Must handle stack_values
             // If this is not a reset interrupt, we should save PS and PC.
             if (interrupt_number != 0x00)
             {
@@ -23,7 +24,7 @@ namespace Ypsilon.Emulation.Processor
                 else
                     StackPush(PC);
             }
-            PC = ReadMemInt16((ushort)(IA + interrupt_number * 2), SegmentIndex.IS);
+            PC = ReadMemInt16((ushort)(interrupt_number * 2), SegmentIndex.IS);
             m_Cycles += 31;
         }
 
@@ -38,7 +39,6 @@ namespace Ypsilon.Emulation.Processor
         {
             m_RTC.DisableInterrupt();
             PS = 0x8000;
-            IA = 0x0000;
             Interrupt(0x00);
         }
 
@@ -47,12 +47,12 @@ namespace Ypsilon.Emulation.Processor
             Interrupt(0x01);
         }
 
-        private void Interrupt_DivideByZero()
+        private void Interrupt_DivZeroFault()
         {
             Interrupt(0x02);
         }
 
-        private void Interrupt_FPUError()
+        private void Interrupt_DoubleFault()
         {
             Interrupt(0x03);
         }
@@ -81,12 +81,12 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        private void Interrupt_UnPrivOpcode()
+        private void Interrupt_UnPrivFault()
         {
             Interrupt(0x06);
         }
 
-        private void Interupt_UndefOpcode()
+        private void Interrupt_UndefFault()
         {
             Interrupt(0x07);
         }
@@ -94,9 +94,9 @@ namespace Ypsilon.Emulation.Processor
         public void Interrupt_HWI()
         {
             PS_Q = true;
-            II = m_Bus.FirstIRQ;
-            m_Bus.AcknowledgeIRQ(II);
-            Interrupt(0x0C);
+            ushort irq_index = m_Bus.FirstIRQ;
+            m_Bus.AcknowledgeIRQ(irq_index);
+            Interrupt(0x0C, irq_index);
         }
 
         public void Interrupt_BusRefresh()
