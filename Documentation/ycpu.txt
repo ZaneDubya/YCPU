@@ -521,12 +521,10 @@ It then executes the following sequence of operations:
         a. The Q status bit will be set. This blocks other hardware interrupts
            from occurring while the current interrupt is being processed.
         b. A 16-bit word containing the index of the device that raised the
-           interrupt ish pushed to the Stack.
+           interrupt is pushed to the Stack.
         
     7.  If this is a Segment Fault:
-        a. A 16-bit word containing the memory address that was accessed when
-           the Segment Fault was raised.
-        b. The V and W status bits are set as appropriate (See 2.D.5.).
+        The V and W status bits are set as appropriate (See 2.D.5.).
     
     8.  Set PC to IS[$0000 + (InterruptIndex * 2)].
     

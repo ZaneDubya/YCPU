@@ -27,7 +27,7 @@ namespace Ypsilon.Emulation.Processor
             SWI
         }
 
-        private void Interrupt(Interrupts interrupt, params ushort[] stack_values)
+        private void Interrupt(Interrupts interrupt, ushort? error_code = null)
         {
             // !!! Must handle stack_values
             // If this is not a reset interrupt, we should save PS and PC.
@@ -41,6 +41,8 @@ namespace Ypsilon.Emulation.Processor
                 PS_Q = (interrupt == Interrupts.HWI);
                 StackPush(ps);
                 StackPush(PC);
+                if (error_code != null)
+                    StackPush(error_code.Value);
             }
             PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
             m_Cycles += 31;
@@ -100,22 +102,20 @@ namespace Ypsilon.Emulation.Processor
         {
             if (segmentType == SegmentIndex.CS)
             {
-                m_ExecuteFail = true;   // the processor loop will skip the next instruction (which will be 0x0000).
-                Interrupt(Interrupts.SegFault);        // then, it will load the next instruction, with PC = InterruptTable[0x05];
+                m_ExecuteFail = true;               // do not execute the read address (which will be 0x0000, as the read from CS failed).
+                Interrupt(Interrupts.SegFault);
             }
             else if (segmentType == SegmentIndex.IS)
             {
-                m_ExecuteFail = true;
+                m_ExecuteFail = true;               // do not execute the read address (which will be 0x0000, as the read from IS failed).
                 Interrupt_DoubleFault();
             }
             else if (segmentType == SegmentIndex.DS || segmentType == SegmentIndex.ES)
             {
-                m_ExecuteFail = false;
                 Interrupt(Interrupts.SegFault);
             }
             else if (segmentType == SegmentIndex.SS)
             {
-                m_ExecuteFail = false;
                 Interrupt(Interrupts.StackFault);
             }
         }

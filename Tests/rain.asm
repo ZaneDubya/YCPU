@@ -192,12 +192,9 @@ ShowStartScreen:
 WriteChars:
 {
     psh     r0, r5              ; push r0 r5 to stack
-    ssg     ds                  ; push ds register to stack
-    lod     r0, $8000
-    psh     r0
-    lod     r0, $0000
-    psh     r0
-    lsg     ds                  ; DS points to ROM (we are going to be reading from txtBootText).
+    ssg     ds                  ; push DS register to stack
+    ssg     cs
+    lsg     ds                  ; DS = CS (ROM at $00000000) (we are going to be reading from txtBootText).
     writeChar:                  ; copy r2 chars from r6 to r5
         lod.8   r0, DS[r6]
         beq     return

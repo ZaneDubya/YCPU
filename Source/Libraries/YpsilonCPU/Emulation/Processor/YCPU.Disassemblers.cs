@@ -12,28 +12,28 @@ namespace Ypsilon.Emulation.Processor
             {
                 word = DebugReadMemory(address, SegmentIndex.CS);
                 ushort nextword = DebugReadMemory((ushort)(address + 2), SegmentIndex.CS);
-                bool usesNextWord = false;
+                ushort instructionSize = 2;
 
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 if (extendedFormat)
                 {
                     s[i] = string.Format("{0:X4}:{1:X4} {2}",
                         address, word, (opcode.Disassembler != null) ?
-                        opcode.Disassembler(opcode.Name, word, nextword, address, true, out usesNextWord) :
+                        opcode.Disassembler(opcode.Name, word, nextword, address, true, out instructionSize) :
                         opcode.Name);
                 }
                 else
                 {
                     s[i] = (opcode.Disassembler != null) ?
-                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out usesNextWord).ToLowerInvariant() :
+                        opcode.Disassembler(opcode.Name, word, nextword, address, false, out instructionSize).ToLowerInvariant() :
                         opcode.Name;
                 }
-                address += (ushort)(usesNextWord ? 4 : 2);
+                address += instructionSize;
             }
             return s;
         }
 
-        private string DisassembleALU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleALU(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
             int addressingmode = (operand & 0x7000) >> 12;
             RegGeneral regDest = (RegGeneral)((operand & 0x0007));
@@ -48,12 +48,12 @@ namespace Ypsilon.Emulation.Processor
                     {
                         if (name == "STO")
                         {
-                            usesNextWord = false;
+                            instructionSize = 2;
                             return "???";
                         }
                         else
                         {
-                            usesNextWord = true;
+                            instructionSize = 4;
                             string disasm = string.Format("{0,-8}{1}, ${2:X4}",
                                 name + (isEightBit ? ".8" : string.Empty),
                                 NameOfRegGP(regDest),
@@ -65,7 +65,7 @@ namespace Ypsilon.Emulation.Processor
                     }
                     else if ((int)regSrc == 1) // absolute
                     {
-                        usesNextWord = true;
+                        instructionSize = 4;
                         string disasm = string.Format("{0,-8}{1}, [${2:X4}]",
                             name + (isEightBit ? ".8" : string.Empty),
                             NameOfRegGP(regDest),
@@ -76,7 +76,7 @@ namespace Ypsilon.Emulation.Processor
                     }
                     else // control register
                     {
-                        usesNextWord = false;
+                        instructionSize = 2;
                         RegControl cr = (RegControl)((operand & 0x0700) >> 8);
                         string disasm = string.Format("{0,-8}{1}, {2}",
                             name,
@@ -88,7 +88,7 @@ namespace Ypsilon.Emulation.Processor
                     }
 
                 case 1: // Register
-                    usesNextWord = false;
+                    instructionSize = 2;
                     return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
@@ -96,7 +96,7 @@ namespace Ypsilon.Emulation.Processor
                         R[(int)regSrc]);
 
                 case 2: // Indirect
-                    usesNextWord = false;
+                    instructionSize = 2;
                     return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
@@ -104,7 +104,7 @@ namespace Ypsilon.Emulation.Processor
                         DebugReadMemory(R[(int)regSrc], segData));
 
                 case 3: // Indirect Offset (also Absolute Offset)
-                    usesNextWord = true;
+                    instructionSize = 4;
                     return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
                         NameOfRegGP(regDest),
@@ -112,7 +112,7 @@ namespace Ypsilon.Emulation.Processor
                         nextword,
                         DebugReadMemory((ushort)(R[(int)regSrc] + nextword), segData));
                 default: // $4 - $7 are Indirect Indexed
-                    usesNextWord = false;
+                    instructionSize = 2;
                     RegGeneral regIndex = (RegGeneral)((operand & 0x7000) >> 12);
                     return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})",
                         name + (isEightBit ? ".8" : string.Empty), 
@@ -123,9 +123,9 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        private string DisassembleBTT(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleBTT(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             bool as_register = ((operand & 0x1000) != 0);
             ushort value = (as_register) ?
@@ -136,16 +136,16 @@ namespace Ypsilon.Emulation.Processor
                 string.Format("${0:X1}", value));
         }
 
-        private string DisassembleBRA(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleBRA(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             sbyte value = (sbyte)((operand & 0xFF00) >> 8);
             return string.Format("{0,-8}{3}{1:000}            (${2:X4})", name, value, (ushort)(address + value), (value & 0x80) == 0 ? "+" : string.Empty);
         }
 
-        private string DisassembleFLG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleFLG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             string flags = string.Format("{0}{1}{2}{3}",
                 ((operand & 0x8000) != 0) ? "N " : string.Empty,
                 ((operand & 0x4000) != 0) ? "Z " : string.Empty,
@@ -156,9 +156,9 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}{1}", name, flags);
         }
 
-        private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             RegGeneral unused;
             ushort value;
             BitPatternHWQ(operand, out value, out unused);
@@ -166,9 +166,9 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}${1:X2}", name, value);
         }
 
-        private string DisassembleINC(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleINC(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             RegGeneral destination;
             ushort value;
             BitPatternIMM(operand, out value, out destination);
@@ -176,7 +176,7 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
         }
 
-        private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
             int addressingmode = ((operand & 0x7000) >> 12);
             RegGeneral r_src = (RegGeneral)((operand & 0x1C00) >> 10);
@@ -186,28 +186,28 @@ namespace Ypsilon.Emulation.Processor
             switch (addressingmode)
             {
                 case 0: // Immediate or Absolute
-                    usesNextWord = true;
+                    instructionSize = 8;
                     bool absolute = (operand & 0x0100) != 0;
                     return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword,
                         absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
                         absolute ? string.Format("         (${0:X4})", DebugReadMemory(nextword, SegmentIndex.CS)) : string.Empty);
                 case 1: // Register
-                    usesNextWord = false;
+                    instructionSize = 2;
                     return string.Format("{0,-8}{1}              (${2:X4})", name,
                         NameOfRegGP(r_src),
                         R[(int)r_src]);
                 case 2: // Indirect
-                    usesNextWord = false;
+                    instructionSize = 2;
                     return string.Format("{0,-8}[{1}]            (${2:X4})", name,
                         NameOfRegGP(r_src),
                         DebugReadMemory(R[(int)r_src], segData));
                 case 3: // Indirect Offset (also Absolute Offset)
-                    usesNextWord = true;
+                    instructionSize = 4;
                     return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name,
                         NameOfRegGP(r_src), nextword,
                         DebugReadMemory((ushort)(R[(int)r_src] + nextword), segData));
                 default: // $8 - $f = Indirect Indexed
-                    usesNextWord = false;
+                    instructionSize = 2;
                     index_bits += (operand & 0x4000) >> 12;
                     return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name,
                         NameOfRegGP(r_src),
@@ -217,16 +217,16 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             return string.Format(name);
         }
 
-        private string DisassemblePRX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassemblePRX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
             int operation_index = (operand & 0xff00) >> 8;
-            usesNextWord = false;
+            instructionSize = 2;
             switch (operation_index)
             {
                 case 0: // RTS
@@ -244,9 +244,9 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             int value = ((operand & 0x1F00) >> 8);
             if ((operand & 0x0001) == 1)
@@ -259,9 +259,9 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), string.Format("${0:X2}", value));
         }
 
-        private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
             string value = string.Empty;
             if ((operand & 0x1000) == 0)
@@ -274,9 +274,9 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
         }
 
-        private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
             string flags = "{0}{1}{2}{3}{4}{5}{6}{7}";
             if ((operand & 0x0001) == 0x0000)
             {
@@ -307,18 +307,18 @@ namespace Ypsilon.Emulation.Processor
             return string.Format("{0,-8}{1}", name, flags);
         }
 
-        private string DisassembleSTX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleSTX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
 
             int sp_delta = (sbyte)((operand & 0xff00) >> 8);
 
             return string.Format("{0,-8}{1}{2}", name, sp_delta >=0 ? "+" : string.Empty, sp_delta);
         }
 
-        private string DisassembleXSG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        private string DisassembleXSG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
-            usesNextWord = false;
+            instructionSize = 2;
 
             bool push = (operand & 0x0100) != 0;
             int register = (operand & 0x0E00) >> 9;

@@ -11,7 +11,7 @@ namespace Ypsilon.Emulation.Processor
         }
 
         public delegate void YCPUOpcode(ushort opcode);
-        public delegate string YCPUDisassembler(string name, ushort opcode, ushort nextword, ushort address, bool showMemoryContents, out bool uses_next_word);
+        public delegate string YCPUDisassembler(string name, ushort opcode, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize);
 
         public struct YCPUInstruction
         {

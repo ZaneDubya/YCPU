@@ -57,6 +57,7 @@ namespace Ypsilon.Emulation.Processor
             m_Running = true;
             while (m_Running)
             {
+                m_ExecuteFail = false;
                 ushort word = ReadMemInt16(PC, SegmentIndex.CS);
                 if (!m_ExecuteFail)
                 {
@@ -92,6 +93,7 @@ namespace Ypsilon.Emulation.Processor
         /// </summary>
         public void RunOneInstruction()
         {
+            m_ExecuteFail = false;
             ushort word = ReadMemInt16(PC, SegmentIndex.CS);
             if (!m_ExecuteFail)
             {
@@ -569,6 +571,12 @@ namespace Ypsilon.Emulation.Processor
 
         private long m_Cycles;
 
-        private bool m_Running = false, m_Pausing = false, m_ExecuteFail = false;
+        private bool m_Running = false;
+        private bool m_Pausing = false;
+
+        /// <summary>
+        /// Set to true when an attempt to read from CS/IS failed.
+        /// </summary>
+        private bool m_ExecuteFail = false;
     }
 }
