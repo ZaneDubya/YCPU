@@ -5,8 +5,7 @@ The YCPU Specification describes a virtual 16-bit processor with a comprehensive
 
 This repository also hosts software which assembles and disassembles YCPU programs, and emulates the YCPU platform. This software is written in C# and uses the XNA framework, and may be reused under the terms of the MIT license.
 
-![Screenshot of emulator.](https://cloud.githubusercontent.com/assets/7041719/11225845/0d2630c2-8d42-11e5-9e9e-5a6215777e6f.png)
-
+![Screenshot of emulator.](https://cloud.githubusercontent.com/assets/7041719/13858850/7c14000c-ec4e-11e5-97a0-e6c534614429.png)
 Source Tree
 ----
 - Documentation - Specifications describing the YCPU and auxiliary emulated hardware devices.
@@ -16,11 +15,11 @@ Source Tree
   - ResourceBuilder - C# program that builds the resource files.
 - Source - Source code for the emulator, assembler, and disassembler.
   - Libraries - Class library that describes the YCPU, auxiliary hardware, emulator, assembler, and disassembler.
-    - Assembler - Assembles YASM files into binaries.  
-    - Devices - Implementation of the auxiliary hardware devices. 
-    - Hardware - Implementation of the YCPU.  
+    - YpsilonAsm - Assembles YASM files into binaries.  
+    - YpsilonCPU - YCPU emulator.
+    - YpsilonFramework - Common code for hosting YCPU emulation.
   - YCPUXNA - XNA platform for hosting YCPU emulator/assembler/disassember on the Win/.NET platform.  
-- Tests - Example YASM files that can be assembled by the Assembler.
+- Tests - Example ASM files that can be assembled by the Assembler.
 
 Thanks To:
 ----
