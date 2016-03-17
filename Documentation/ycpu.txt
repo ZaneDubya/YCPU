@@ -452,14 +452,9 @@ interrupts will be acknowledged by the CPU if the H status bit is clear.
 
 --- 2.D.4. FAULT INTERRUPTS ----------------------------------------------------
 
-For interrupts caused by an error condition, the PC is rewound to the 
-address of the instruction that caused the interrupt. For all other interrupts,
-the PC is unchanged, pointing to the address following the instruction the
-rocessor was executing immediately prior to the interrupt.
-
-In addition, the U status bit in PS will be set if the processor was in user
-mode when the fault occured, or clear if the processor was in supervisor mode
-when the fault occured.
+For interrupts caused by an error condition, the U status bit in PS will be set
+if the processor was in user mode when the fault occured, or clear if the
+processor was in supervisor mode when the fault occured.
 
 Interrupts designated as 'Faults' are:
     - DivZeroFault  ($02),
@@ -511,9 +506,8 @@ It then executes the following sequence of operations:
     1.  Save the state of PS to a temporary register.
     
     2.  If this is Fault interrupt (See 2.D.4. for a list of fault interrupts):
-        a. PC is rewound to the instruction that caused the interrupt. 
-        b. If processor is in User mode, set the U status bit. If the
-           processor is in Supervisor mode, clear the U status bit.
+        If processor is in User mode, set the U status bit. If the
+        processor is in Supervisor mode, clear the U status bit.
     
     3.  Set the S and I status bits in PS. The processor is now in Supervisor
         mode, and will read all instructions and immediate values from the
