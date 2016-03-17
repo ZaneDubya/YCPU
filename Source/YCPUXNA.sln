@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUXNA", "YCPUXNA\YCPUXNA\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCPU", "Libraries\YpsilonCPU\YpsilonCPU.csproj", "{F2711253-F674-44AC-90DC-6EA4C271680B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonCore", "Libraries\YpsilonCore\YpsilonCore.csproj", "{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YpsilonFramework", "Libraries\YpsilonFramework\YpsilonFramework.csproj", "{69E9A9CA-5B89-48E8-9992-F63DDA677C6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YCPUXNAContent", "YCPUXNA\YCPUXNAContent\YCPUXNAContent.contentproj", "{057E6EB1-3411-49F4-B1D5-46A2A18D79B4}"
 EndProject

@@ -84,9 +84,9 @@
       <Project>{564c1f0c-430c-4d3f-85f0-db6483cb3fc3}</Project>
       <Name>YpsilonAsm</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Libraries\YpsilonCore\YpsilonCore.csproj">
+    <ProjectReference Include="..\..\Libraries\YpsilonCore\YpsilonFramework.csproj">
       <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
-      <Name>YpsilonCore</Name>
+      <Name>YpsilonFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Libraries\YpsilonCPU\YpsilonCPU.csproj">
       <Project>{f2711253-f674-44ac-90dc-6ea4c271680b}</Project>
