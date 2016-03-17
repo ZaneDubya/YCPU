@@ -549,16 +549,6 @@ namespace Ypsilon.Emulation.Processor
         #endregion
         #endregion
 
-        private ushort SizeOfLastInstruction(ushort current_address)
-        {
-            ushort word = ReadMemInt16((ushort)(current_address - 2), SegmentIndex.CS);
-            YCPUInstruction opcode = Opcodes[word & 0x00FF];
-            if (opcode.UsesNextWord(word))
-                return 4;
-            else
-                return 2;
-        }
-
         #region Stack
         private void StackPush(ushort value)
         {

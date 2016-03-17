@@ -34,16 +34,13 @@ namespace Ypsilon.Emulation.Processor
             if (interrupt != Interrupts.Reset)
             {
                 ushort ps = PS;
-                PS_U = !PS_S;
+                if (Interrupt_IsFault(interrupt))
+                    PS_U = !PS_S;
                 PS_S = true;
                 PS_I = true;
                 PS_Q = (interrupt == Interrupts.HWI);
                 StackPush(ps);
-                // rewind the instruction if this is an error interrupt ($02 - $07)
-                if (Interrupt_IsFault(interrupt))
-                    StackPush((ushort)(PC - SizeOfLastInstruction(PC)));
-                else
-                    StackPush(PC);
+                StackPush(PC);
             }
             PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
             m_Cycles += 31;

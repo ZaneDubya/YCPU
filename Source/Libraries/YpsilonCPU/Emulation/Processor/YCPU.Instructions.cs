@@ -29,13 +29,6 @@ namespace Ypsilon.Emulation.Processor
                 Cycles = cycles;
                 IsNOP = isNOP;
             }
-
-            public bool UsesNextWord(ushort opcode)
-            {
-                bool value;
-                string s = Disassembler(string.Empty, opcode, 0x0000, 0x0000, false, out value);
-                return value;
-            }
         }
 
         public YCPUInstruction[] Opcodes = new YCPUInstruction[0x100];
