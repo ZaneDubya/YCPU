@@ -84,7 +84,7 @@
       <Project>{564c1f0c-430c-4d3f-85f0-db6483cb3fc3}</Project>
       <Name>YpsilonAsm</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Libraries\YpsilonCore\YpsilonFramework.csproj">
+    <ProjectReference Include="..\..\Libraries\YpsilonFramework\YpsilonFramework.csproj">
       <Project>{69e9a9ca-5b89-48e8-9992-f63dda677c6f}</Project>
       <Name>YpsilonFramework</Name>
     </ProjectReference>
