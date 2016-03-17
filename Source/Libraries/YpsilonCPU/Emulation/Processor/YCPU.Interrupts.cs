@@ -34,6 +34,7 @@ namespace Ypsilon.Emulation.Processor
             if (interrupt != Interrupts.Reset)
             {
                 ushort ps = PS;
+                PS_U = !PS_S;
                 PS_S = true;
                 PS_I = true;
                 PS_Q = (interrupt == Interrupts.HWI);
