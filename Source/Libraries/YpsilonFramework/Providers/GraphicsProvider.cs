@@ -17,7 +17,7 @@ namespace YCPUXNA.Providers
         {
             if (m_LEM == null)
             {
-                m_LEM = new Texture2D(m_SpriteBatch.GraphicsDevice, 128, 96);
+                m_LEM = m_SpriteBatch.NewTexture(128, 96);
                 m_LEM_Data = new uint[128 * 96];
             }
 

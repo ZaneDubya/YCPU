@@ -4,12 +4,12 @@ namespace Ypsilon.Core
 {
     public class RectangleF
     {
-        protected float _x = 0.0F;
-        protected float _y = 0.0F;
-        protected float _width = 0.0F;
-        protected float _height = 0.0F;
-        protected float _x2 = 0.0F;
-        protected float _y2 = 0.0F;
+        protected float m_x = 0.0F;
+        protected float m_y = 0.0F;
+        protected float m_width = 0.0F;
+        protected float m_height = 0.0F;
+        protected float m_x2 = 0.0F;
+        protected float m_y2 = 0.0F;
 
         public RectangleF()
         {
@@ -18,23 +18,23 @@ namespace Ypsilon.Core
 
         public Rectangle toRectangle()
         {
-            Rectangle myReturn = new Rectangle((int)_x, (int)_y, (int)_width, (int)_height);
+            Rectangle myReturn = new Rectangle((int)m_x, (int)m_y, (int)m_width, (int)m_height);
             return myReturn;
         }
 
         public RectangleF(float pX, float pY, float pWidth, float pHeight)
         {
-            _x = pX;
-            _y = pY;
-            _width = pWidth;
-            _height = pHeight;
-            _x2 = pX + pWidth;
-            _y2 = pY + pHeight;
+            m_x = pX;
+            m_y = pY;
+            m_width = pWidth;
+            m_height = pHeight;
+            m_x2 = pX + pWidth;
+            m_y2 = pY + pHeight;
         }
 
         public bool Contains(Vector2 pPoint)
         {
-            if ((pPoint.X > this._x) && (pPoint.X < this._x2) && (pPoint.Y > this._y) && (pPoint.Y < this._y2))
+            if ((pPoint.X > this.m_x) && (pPoint.X < this.m_x2) && (pPoint.Y > this.m_y) && (pPoint.Y < this.m_y2))
             {
                 return true;
             }
@@ -48,96 +48,96 @@ namespace Ypsilon.Core
         {
             RectangleF tempRect = new RectangleF();
 
-            if (rect1._x < rect2._x)
+            if (rect1.m_x < rect2.m_x)
             {
-                tempRect._x = rect1._x;
+                tempRect.m_x = rect1.m_x;
             }
             else
             {
-                tempRect._x = rect2._x;
+                tempRect.m_x = rect2.m_x;
             }
 
-            if (rect1._x2 > rect2._x2)
+            if (rect1.m_x2 > rect2.m_x2)
             {
-                tempRect._x2 = rect1._x2;
+                tempRect.m_x2 = rect1.m_x2;
             }
             else
             {
-                tempRect._x2 = rect2._x2;
+                tempRect.m_x2 = rect2.m_x2;
             }
 
-            tempRect._width = tempRect._x2 - tempRect._x;
+            tempRect.m_width = tempRect.m_x2 - tempRect.m_x;
 
 
-            if (rect1._y < rect2._y)
+            if (rect1.m_y < rect2.m_y)
             {
-                tempRect._y = rect1._y;
+                tempRect.m_y = rect1.m_y;
             }
             else
             {
-                tempRect._y = rect2._y;
+                tempRect.m_y = rect2.m_y;
             }
 
-            if (rect1._y2 > rect2._y2)
+            if (rect1.m_y2 > rect2.m_y2)
             {
-                tempRect._y2 = rect1._y2;
+                tempRect.m_y2 = rect1.m_y2;
             }
             else
             {
-                tempRect._y2 = rect2._y2;
+                tempRect.m_y2 = rect2.m_y2;
             }
 
-            tempRect._height = tempRect._y2 - tempRect._y;
+            tempRect.m_height = tempRect.m_y2 - tempRect.m_y;
             return tempRect;
         }
         public float X
         {
-            get { return _x; }
+            get { return m_x; }
             set
             {
-                _x = value;
-                _x2 = _x + _width;
+                m_x = value;
+                m_x2 = m_x + m_width;
             }
         }
 
         public float Y
         {
-            get { return _y; }
+            get { return m_y; }
             set
             {
-                _y = value;
-                _y2 = _y + _height;
+                m_y = value;
+                m_y2 = m_y + m_height;
             }
         }
 
         public float Width
         {
-            get { return _width; }
+            get { return m_width; }
             set
             {
-                _width = value;
-                _x2 = _x + _width;
+                m_width = value;
+                m_x2 = m_x + m_width;
             }
         }
 
         public float Height
         {
-            get { return _height; }
+            get { return m_height; }
             set
             {
-                _height = value;
-                _y2 = _y + _height;
+                m_height = value;
+                m_y2 = m_y + m_height;
             }
         }
 
         public float X2
         {
-            get { return _x2; }
+            get { return m_x2; }
         }
 
         public float Y2
         {
-            get { return _y2; }
+            get { return m_y2; }
         }
 
         public RectangleF Duplicate()

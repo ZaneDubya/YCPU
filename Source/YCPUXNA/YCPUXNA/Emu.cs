@@ -57,10 +57,10 @@ namespace YCPUXNA
             m_DisplayProvider = new DisplayProvider(m_SpriteBatch);
 
             m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
-            m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont, true);
+            m_Curses = new Curses(GraphicsDevice, 80, c_ConsoleHeight, c_CursesFont, true);
 
-            m_Graphics.PreferredBackBufferWidth = m_Curses.DisplayWidth;
-            m_Graphics.PreferredBackBufferHeight = m_Curses.DisplayHeight;
+            m_Graphics.PreferredBackBufferWidth = 600 * 2;
+            m_Graphics.PreferredBackBufferHeight = 450;
             m_Graphics.IsFullScreen = false;
             m_Graphics.ApplyChanges();
             IsMouseVisible = true;
@@ -71,6 +71,7 @@ namespace YCPUXNA
         protected override void UnloadContent()
         {
             m_SpriteBatch.Dispose();
+            m_SpriteBatch = null;
         }
 
         protected override void Update(GameTime gameTime)
@@ -86,16 +87,29 @@ namespace YCPUXNA
             base.Update(gameTime);
         }
 
+        RenderTarget2D debug;
+
         protected override void Draw(GameTime gameTime)
         {
+            // render the debug console contents to a RenderTarget
+            if (debug == null)
+                debug = new RenderTarget2D(GraphicsDevice, m_Curses.DisplayWidth, m_Curses.DisplayHeight);
+            GraphicsDevice.SetRenderTarget(debug);
+            m_SpriteBatch.Begin(new Color(0, 0, 0, 255));
+            m_Curses.Render(m_SpriteBatch, Vector2.Zero);
+            m_SpriteBatch.End(Effects.Basic);
+            GraphicsDevice.SetRenderTarget(null);
+
             if (m_DoScreenshot)
             {
                 GraphicsDevice.PrepareScreenShot();
             }
 
-            GraphicsDevice.Clear(Color.Black);
+            // clear the screen:
+            m_SpriteBatch.Begin(new Color(32, 32, 32, 255));
 
-            m_Curses.Render(m_SpriteBatch, Vector2.Zero);
+            // draw the debug console
+            m_SpriteBatch.DrawSprite(debug, Vector3.Zero, new Vector2(600, 450), Color.Lime);
 
             // render the devices
             m_DeviceTextures.Clear();
@@ -104,11 +118,12 @@ namespace YCPUXNA
             {
                 m_SpriteBatch.DrawSprite(
                     (m_DeviceTextures[i] as YTexture).Texture,
-                    new Vector3(82 * (m_Curses.CharWidth + 1), 2 * m_Curses.CharHeight, 0),
-                    new Vector2(m_DeviceTextures[i].Width * 2, m_DeviceTextures[i].Height * 2), Color.White);
+                    new Vector3(600, 0, 0),
+                    new Vector2(600, 450), Color.White);
             }
 
-            m_SpriteBatch.Draw(gameTime);
+            // End the spritebatch.
+            m_SpriteBatch.End(Effects.CRT);
 
             if (m_DoScreenshot)
             {
@@ -199,7 +214,7 @@ namespace YCPUXNA
             ConsoleWrite(53,  r_y + 23, string.Format("{0}{1}{2}{3}",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
-            ConsoleWrite(53,  r_y + 25, "Memory management:");
+            ConsoleWrite(53,  r_y + 25, "Segments:");
             ConsoleWrite(53,  r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
             ConsoleWrite(53,  r_y + 27, "DS " + ConsoleSegmentRegisterString(cpu.DS));
             ConsoleWrite(53,  r_y + 28, "ES " + ConsoleSegmentRegisterString(cpu.ES));

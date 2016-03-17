@@ -21,11 +21,11 @@ namespace Ypsilon.Core.Windows
     class NativeMethods
     {
         [DllImport("Kernel32")]
-        private unsafe static extern int _lread(SafeFileHandle hFile, void* lpBuffer, int wBytes);
+        private unsafe static extern int m_lread(SafeFileHandle hFile, void* lpBuffer, int wBytes);
 
         internal static unsafe void ReadBuffer(SafeFileHandle ptr, void* buffer, int length)
         {
-            _lread(ptr, buffer, length);
+            m_lread(ptr, buffer, length);
         }
 
         [DllImport("Imm32.dll")]

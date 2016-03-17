@@ -1,15 +1,11 @@
-﻿using System;
-
-namespace Ypsilon.Emulation.Processor
+﻿namespace Ypsilon.Emulation.Processor
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
     /// </summary>
     public partial class YCPU
-
-
     {
-        public const int ClockRateHz = 10000; // 10khz
+        public const int ClockRateHz = 10240; // 10khz
 
         /// <summary>
         /// The hardware bus, which hosts all hardware devices.

@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DpiManager.cs" />
+    <Compile Include="Core\Graphics\Effects.cs" />
     <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
     <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="Core\Graphics\VertexPositionNormalTextureData.cs" />

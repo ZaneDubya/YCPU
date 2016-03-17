@@ -45,7 +45,7 @@ namespace Ypsilon.Emulation.Processor
                     StackPush(0xffff, error_code.Value);
             }
             PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
-            m_Cycles += 31;
+            m_Cycles += 7;
         }
 
         private void ReturnFromInterrupt()

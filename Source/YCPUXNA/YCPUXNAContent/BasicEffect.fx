@@ -8,7 +8,7 @@ sampler Texture;
 struct VertexShaderInput
 {
 	float4 Position : POSITION0;
-	float2 TexUV : TexCoord0;
+	float2 TexUV : TEXCOORD0;
 	float4 Hue : COLOR0;
 };
 
@@ -17,7 +17,6 @@ struct VertexShaderOutput
 	float4 Position : POSITION0;
 	float2 TexUV : TexCoord0;
 	float4 Hue : COLOR0;
-	float2 Depth : TexCoord1;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -27,14 +26,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	float4x4 preViewProjection = mul(ViewMatrix, ProjectionMatrix);
 	float4x4 preWorldViewProjection = mul(WorldMatrix, preViewProjection);
 	output.Position = mul(input.Position, preWorldViewProjection);
-
-	// Half pixel offset for correct texel centering.
-	output.Position.x -= 0.5 / Viewport.x;
-	output.Position.y += 0.5 / Viewport.y;
-
-	output.Depth = float2((output.Position.z / output.Position.w), 0);
-	if (output.Depth.x < .5)
-		output.Position.z *= .9;
+	output.Position.xy += float2(1 / Viewport.x, -1 / Viewport.y); // correct texel
 
 	output.TexUV = input.TexUV;
 	output.Hue = input.Hue;

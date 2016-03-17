@@ -1,39 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
 
 namespace Ypsilon.Core.Graphics
 {
-    public class SpriteBatchExtended : DrawableGameComponent
+    public class SpriteBatchExtended
     {
-        private Effect _effect;
+        private Game m_Game;
+        private GraphicsDevice m_GraphicsDevice;
+        private Effect m_BasicEffect, m_CRTEffect;
+        private Texture2D m_Pixel;
 
-        private Dictionary<Texture2D, List<VertexPositionColorTexture>> _drawQueue;
-        private Queue<List<VertexPositionColorTexture>> _vertexListQueue;
-        private short[] _indexBuffer;
+        private Dictionary<Texture2D, List<VertexPositionColorTexture>> m_drawQueue;
+        private Queue<List<VertexPositionColorTexture>> m_vertexListQueue;
+        private short[] m_indexBuffer;
 
-        private Vector3 _zOffset = new Vector3();
-        public float ZOffset { set { _zOffset = new Vector3(0, 0, value); } }
+        private Vector3 m_zOffset = new Vector3();
+        public float ZOffset { set { m_zOffset = new Vector3(0, 0, value); } }
 
         public SpriteBatchExtended(Game game)
-            : base(game)
         {
-            if (Game.Services.GetService(this.GetType()) != null)
-                throw new Exception("A SpriteBatchLegacy service has already been added.");
-            Game.Services.AddService(this.GetType(), this);
+            m_Game = game;
         }
 
-        public override void Initialize()
+        public void Initialize()
         {
-            base.Initialize();
-
-            _effect = Game.Content.Load<Effect>("Basic");
-            _drawQueue = new Dictionary<Texture2D, List<VertexPositionColorTexture>>(256);
-            _indexBuffer = createIndexBuffer(0x2000);
-            _vertexListQueue = new Queue<List<VertexPositionColorTexture>>(256);
+            m_GraphicsDevice = m_Game.GraphicsDevice;
+            m_BasicEffect = m_Game.Content.Load<Effect>("BasicEffect");
+            m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
+            m_drawQueue = new Dictionary<Texture2D, List<VertexPositionColorTexture>>(256);
+            m_indexBuffer = createIndexBuffer(0x2000);
+            m_vertexListQueue = new Queue<List<VertexPositionColorTexture>>(256);
         }
 
         private short[] createIndexBuffer(int primitiveCount)
@@ -55,55 +53,85 @@ namespace Ypsilon.Core.Graphics
 
         public Texture2D NewTexture(int width, int height)
         {
-            return new Texture2D(Game.GraphicsDevice, width, height);
+            return new Texture2D(m_GraphicsDevice, width, height);
         }
 
-        public override void Draw(GameTime gameTime)
+        public void Begin(Color clear)
         {
-            GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            m_GraphicsDevice.Clear(clear);
+        }
+
+        public void End(Effects effect)
+        {
+            Effect fx;
+            SamplerState sample;
+
+            switch (effect)
+            {
+                case Effects.Basic:
+                    fx = m_BasicEffect;
+                    sample = SamplerState.LinearClamp;
+                    break;
+                case Effects.CRT:
+                    fx = m_CRTEffect;
+                    sample = SamplerState.AnisotropicClamp;
+                    break;
+                default:
+                    return;
+            }
+
+            m_GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            m_GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            m_GraphicsDevice.SamplerStates[0] = sample;
+            m_GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             Texture2D iTexture;
             List<VertexPositionColorTexture> iVertexList;
 
-            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionColorTexture>>> keyValuePairs = _drawQueue.GetEnumerator();
+            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionColorTexture>>> keyValuePairs = m_drawQueue.GetEnumerator();
 
-            _effect.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(GraphicsDevice));
-            _effect.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
-            _effect.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
-            _effect.Parameters["Viewport"].SetValue(new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
+            fx.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(m_GraphicsDevice));
+            fx.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
+            fx.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
+            fx.Parameters["Viewport"].SetValue(new Vector2(m_GraphicsDevice.Viewport.Width, m_GraphicsDevice.Viewport.Height));
 
-            _effect.CurrentTechnique.Passes[0].Apply();
+            fx.CurrentTechnique.Passes[0].Apply();
 
             while (keyValuePairs.MoveNext())
             {
                 iTexture = keyValuePairs.Current.Key;
                 iVertexList = keyValuePairs.Current.Value;
-                GraphicsDevice.Textures[0] = iTexture;
-                GraphicsDevice.DrawUserIndexedPrimitives<VertexPositionColorTexture>(PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, _indexBuffer, 0, iVertexList.Count / 2);
+                m_GraphicsDevice.Textures[0] = iTexture;
+                m_GraphicsDevice.DrawUserIndexedPrimitives(
+                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, m_indexBuffer, 0, iVertexList.Count / 2);
                 iVertexList.Clear();
-                _vertexListQueue.Enqueue(iVertexList);
+                m_vertexListQueue.Enqueue(iVertexList);
             }
 
-            _drawQueue.Clear();
-            GraphicsDevice.Textures[0] = null;
+            m_drawQueue.Clear();
+            m_GraphicsDevice.Textures[0] = null;
+        }
+
+        public void Dispose()
+        {
+            m_BasicEffect.Dispose();
+            m_CRTEffect.Dispose();
+            m_Pixel.Dispose();
         }
 
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue)
         {
             List<VertexPositionColorTexture> vertexList;
 
-            if (_drawQueue.ContainsKey(texture))
+            if (m_drawQueue.ContainsKey(texture))
             {
-                vertexList = _drawQueue[texture];
+                vertexList = m_drawQueue[texture];
             }
             else
             {
-                if (_vertexListQueue.Count > 0)
+                if (m_vertexListQueue.Count > 0)
                 {
-                    vertexList = _vertexListQueue.Dequeue();
+                    vertexList = m_vertexListQueue.Dequeue();
 
                     vertexList.Clear();
                 }
@@ -112,10 +140,10 @@ namespace Ypsilon.Core.Graphics
                     vertexList = new List<VertexPositionColorTexture>(1024);
                 }
 
-                _drawQueue.Add(texture, vertexList);
+                m_drawQueue.Add(texture, vertexList);
             }
 
-            position += _zOffset;
+            position += m_zOffset;
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, hue);
 
@@ -131,15 +159,15 @@ namespace Ypsilon.Core.Graphics
         {
             List<VertexPositionColorTexture> vertexList;
 
-            if (_drawQueue.ContainsKey(texture))
+            if (m_drawQueue.ContainsKey(texture))
             {
-                vertexList = _drawQueue[texture];
+                vertexList = m_drawQueue[texture];
             }
             else
             {
-                if (_vertexListQueue.Count > 0)
+                if (m_vertexListQueue.Count > 0)
                 {
-                    vertexList = _vertexListQueue.Dequeue();
+                    vertexList = m_vertexListQueue.Dequeue();
 
                     vertexList.Clear();
                 }
@@ -148,10 +176,10 @@ namespace Ypsilon.Core.Graphics
                     vertexList = new List<VertexPositionColorTexture>(1024);
                 }
 
-                _drawQueue.Add(texture, vertexList);
+                m_drawQueue.Add(texture, vertexList);
             }
 
-            position += _zOffset;
+            position += m_zOffset;
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue);
 
@@ -165,7 +193,7 @@ namespace Ypsilon.Core.Graphics
 
         public void DrawRectangle(Vector3 position, Vector2 area, Color hue)
         {
-            position += _zOffset;
+            position += m_zOffset;
 
             DrawFilledRectangle(position, new Vector2(area.X, 1), hue);
             DrawFilledRectangle(position + new Vector3(0, area.Y - 1, 0), new Vector2(area.X, 1), hue);
@@ -179,40 +207,14 @@ namespace Ypsilon.Core.Graphics
                 position + new Vector3(0, area.Y - 1, 0) }, true), hue);*/
         }
 
-        Texture2D _texture;
         public void DrawFilledRectangle(Vector3 position, Vector2 area, Color hue)
         {
-            if (_texture == null)
+            if (m_Pixel == null)
             {
-                _texture = new Texture2D(GraphicsDevice, 1, 1);
-                _texture.SetData<Color>(new Color[] { Color.White });
+                m_Pixel = new Texture2D(m_GraphicsDevice, 1, 1);
+                m_Pixel.SetData<Color>(new Color[] { Color.White });
             }
-            DrawSprite(_texture, position, area, hue);
+            DrawSprite(m_Pixel, position, area, hue);
         }
-    }
-
-    struct TextToDraw
-    {
-        public string Text;
-        public Vector2 Position;
-        public Color Hue;
-        public bool IsOriginCentered;
-        public float Z;
-        public int FontIndex;
-
-        public TextToDraw(string text, FontEnum font, Vector3 position, Color hue, bool isOriginCentered)
-        {
-            Text = text;
-            FontIndex = (int)font;
-            Position = new Vector2(position.X, position.Y);
-            Hue = hue;
-            IsOriginCentered = isOriginCentered;
-            Z = position.Z;
-        }
-    }
-
-    public enum FontEnum
-    {
-        Arial12 = 0
     }
 }
