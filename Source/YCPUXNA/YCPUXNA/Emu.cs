@@ -164,9 +164,9 @@ namespace YCPUXNA
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
 #if DEBUG
-                m_Emulator.LoadBinaryToCPU("../../Tests/rain.asm.bin", 0x0000);
+                m_Emulator.LoadBinaryToCPU("../../Tests/testconsole.asm.bin", 0x0000);
 #else
-                m_Emulator.LoadBinaryToCPU("../Tests/bld/AsmTstGn-0.asm.bin", 0x0000);
+                m_Emulator.LoadBinaryToCPU("../Tests/bld/testconsole.asm.bin", 0x0000);
 #endif
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))

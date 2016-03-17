@@ -22,7 +22,7 @@ struct VertexShaderOutput
 // Apply radial distortion to the given coordinate. 
 float2 radialDistortion(float2 coord, float2 pos)
 {
-	float distortion = 0.1;
+	float distortion = 0.05;
 
 	float2 cc = pos - 0.5;
 	float dist = dot(cc, cc) * distortion;
