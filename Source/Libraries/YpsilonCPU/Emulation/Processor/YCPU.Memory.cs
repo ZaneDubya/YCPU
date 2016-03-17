@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
@@ -112,10 +114,10 @@ namespace Ypsilon.Emulation.Processor
             m_Cycles += 1;
 
             Segment s = GetSegment(segment);
-            if (s != null)
-                return s[address];
-            else
-                return 0x00;
+            if (s == null)
+                throw new Exception("Unknown segment referenced in DebugReadMemory");
+
+            return s[address];
         }
 
         /// <summary>
@@ -128,7 +130,7 @@ namespace Ypsilon.Emulation.Processor
         {
             Segment s = GetSegment(segment);
             if (s == null)
-                return 0x0000;
+                throw new Exception("Unknown segment referenced in DebugReadMemory");
 
             if ((address & 0x0001) == 0x0001)
             {
@@ -159,7 +161,7 @@ namespace Ypsilon.Emulation.Processor
 
             Segment s = GetSegment(segment);
             if (s == null)
-                return;
+                throw new Exception("Unknown segment referenced in DebugReadMemory");
 
             s[address] = value;
         }
@@ -168,7 +170,7 @@ namespace Ypsilon.Emulation.Processor
         {
             Segment s = GetSegment(segment);
             if (s == null)
-                return;
+                throw new Exception("Unknown segment referenced in DebugReadMemory");
 
             if ((address & 0x0001) == 0x0001)
             {
@@ -193,7 +195,7 @@ namespace Ypsilon.Emulation.Processor
             long cycles = m_Cycles;
             Segment seg = GetSegment(segmentType);
             if (seg == null || seg.MemoryReference == null)
-                return 0x0000;
+                throw new Exception("Unknown segment referenced in DebugReadMemory");
 
             byte lo = seg.MemoryReference[seg.Base + address];
             byte hi = seg.MemoryReference[seg.Base + address + 1];

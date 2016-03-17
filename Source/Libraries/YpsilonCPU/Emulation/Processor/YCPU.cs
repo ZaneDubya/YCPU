@@ -6,8 +6,10 @@ namespace Ypsilon.Emulation.Processor
     /// A processor defined by the YCPU Specification.
     /// </summary>
     public partial class YCPU
+
+
     {
-        public const int ClockRateHz = 10240; // 10khz
+        public const int ClockRateHz = 10000; // 10khz
 
         /// <summary>
         /// The hardware bus, which hosts all hardware devices.
@@ -57,12 +59,11 @@ namespace Ypsilon.Emulation.Processor
             m_Running = true;
             while (m_Running)
             {
-                m_ExecuteFail = false;
-                ushort word = ReadMemInt16(PC, SegmentIndex.CS);
-                if (!m_ExecuteFail)
+                try
                 {
+                    ushort word = ReadMemInt16(PC, SegmentIndex.CS);
                     PC += 2;
-                    
+
                     // Execute Memory[PC] and increment the cycle counter:
                     YCPUInstruction opcode = Opcodes[word & 0x00FF];
                     opcode.Opcode(word);
@@ -85,6 +86,10 @@ namespace Ypsilon.Emulation.Processor
                         m_Pausing = false;
                     }
                 }
+                catch (SegFaultException e)
+                {
+                    Interrupt_SegFault(e.SegmentType, 0xffff, PC);
+                }
             }
         }
 
@@ -93,10 +98,9 @@ namespace Ypsilon.Emulation.Processor
         /// </summary>
         public void RunOneInstruction()
         {
-            m_ExecuteFail = false;
-            ushort word = ReadMemInt16(PC, SegmentIndex.CS);
-            if (!m_ExecuteFail)
+            try
             {
+                ushort word = ReadMemInt16(PC, SegmentIndex.CS);
                 PC += 2;
 
                 // Check for hardware interrupt:
@@ -112,6 +116,10 @@ namespace Ypsilon.Emulation.Processor
                 opcode.Opcode(word);
                 // Increment the Cycle counter.
                 m_Cycles += opcode.Cycles;
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, 0xffff, PC);
             }
         }
 
@@ -159,7 +167,7 @@ namespace Ypsilon.Emulation.Processor
             SSP = 7
         }
 
-        ushort ReadControlRegister(RegControl index)
+        ushort ReadControlRegister(ushort operand, RegControl index)
         {
             switch (index)
             {
@@ -172,7 +180,7 @@ namespace Ypsilon.Emulation.Processor
                         return m_PS;
                     else
                     {
-                        Interrupt_UnPrivFault();
+                        Interrupt_UnPrivFault(operand);
                         return 0;
                     }
                 case RegControl.USP:
@@ -183,12 +191,12 @@ namespace Ypsilon.Emulation.Processor
                     else
                         return m_USP;
                 default:
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                     return 0;
             }
         }
 
-        private void WriteControlRegister(RegControl index, ushort value)
+        private void WriteControlRegister(ushort operand, RegControl index, ushort value)
         {
             switch (index)
             {
@@ -204,7 +212,7 @@ namespace Ypsilon.Emulation.Processor
                     if (PS_S)
                         PS = value;
                     else
-                        Interrupt_UnPrivFault();
+                        Interrupt_UnPrivFault(operand);
                     break;
 
                 case RegControl.USP:
@@ -219,7 +227,7 @@ namespace Ypsilon.Emulation.Processor
                     break;
 
                 default:
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                     break;
             }
         }
@@ -552,17 +560,32 @@ namespace Ypsilon.Emulation.Processor
         #endregion
 
         #region Stack
-        private void StackPush(ushort value)
+        private void StackPush(ushort operand, ushort value)
         {
             SP -= 2;
-            WriteMemInt16(SP, value, SegmentIndex.SS);
+            try
+            {
+                WriteMemInt16(SP, value, SegmentIndex.SS);
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_StackFault(operand, e.Address);
+            }
         }
 
-        private ushort StackPop()
+        private ushort StackPop(ushort operand)
         {
-            ushort value = ReadMemInt16(SP, SegmentIndex.SS);
-            SP += 2;
-            return value;
+            try
+            {
+                ushort value = ReadMemInt16(SP, SegmentIndex.SS);
+                SP += 2;
+                return value;
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_StackFault(operand, e.Address);
+                return 0;
+            }
         }
         #endregion
 
@@ -573,10 +596,5 @@ namespace Ypsilon.Emulation.Processor
 
         private bool m_Running = false;
         private bool m_Pausing = false;
-
-        /// <summary>
-        /// Set to true when an attempt to read from CS/IS failed.
-        /// </summary>
-        private bool m_ExecuteFail = false;
     }
 }

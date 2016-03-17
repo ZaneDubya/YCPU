@@ -174,37 +174,37 @@ namespace YCPUXNA
 
             // registers - general purpose, then system.
             int r_y = 2;
-            ConsoleWrite(70, r_y - 1, "Registers");
-            ConsoleWrite(70, r_y + 1, string.Format("r0: ${0:X4}", cpu.R0));
-            ConsoleWrite(70, r_y + 2, string.Format("r1: ${0:X4}", cpu.R1));
-            ConsoleWrite(70, r_y + 3, string.Format("r2: ${0:X4}", cpu.R2));
-            ConsoleWrite(70, r_y + 4, string.Format("r3: ${0:X4}", cpu.R3));
-            ConsoleWrite(70, r_y + 5, string.Format("r4: ${0:X4}", cpu.R4));
-            ConsoleWrite(70, r_y + 6, string.Format("r5: ${0:X4}", cpu.R5));
-            ConsoleWrite(70, r_y + 7, string.Format("r6: ${0:X4}", cpu.R6));
-            ConsoleWrite(70, r_y + 8, string.Format("r7: ${0:X4}", cpu.R7));
+            ConsoleWrite(53,  r_y - 1, "Registers");
+            ConsoleWrite(53,  r_y + 1, string.Format("r0: ${0:X4}", cpu.R0));
+            ConsoleWrite(53,  r_y + 2, string.Format("r1: ${0:X4}", cpu.R1));
+            ConsoleWrite(53,  r_y + 3, string.Format("r2: ${0:X4}", cpu.R2));
+            ConsoleWrite(53,  r_y + 4, string.Format("r3: ${0:X4}", cpu.R3));
+            ConsoleWrite(53,  r_y + 5, string.Format("r4: ${0:X4}", cpu.R4));
+            ConsoleWrite(53,  r_y + 6, string.Format("r5: ${0:X4}", cpu.R5));
+            ConsoleWrite(53,  r_y + 7, string.Format("r6: ${0:X4}", cpu.R6));
+            ConsoleWrite(53,  r_y + 8, string.Format("r7: ${0:X4}", cpu.R7));
 
-            ConsoleWrite(70, r_y + 10, string.Format("fl: ${0:X4}", cpu.FL));
-            ConsoleWrite(70, r_y + 11, string.Format("pc: ${0:X4}", cpu.PC));
-            ConsoleWrite(70, r_y + 12, string.Format("ps: ${0:X4}", cpu.PS));
-            ConsoleWrite(69, r_y + 13, string.Format("usp: ${0:X4}", cpu.USP));
-            ConsoleWrite(69, r_y + 14, string.Format("ssp:*${0:X4}", cpu.SSP));
+            ConsoleWrite(53,  r_y + 10, string.Format("fl: ${0:X4}", cpu.FL));
+            ConsoleWrite(53,  r_y + 11, string.Format("pc: ${0:X4}", cpu.PC));
+            ConsoleWrite(53,  r_y + 12, string.Format("ps: ${0:X4}", cpu.PS));
+            ConsoleWrite(52, r_y + 13, string.Format("usp: ${0:X4}", cpu.USP));
+            ConsoleWrite(52, r_y + 14, string.Format("ssp:*${0:X4}", cpu.SSP));
 
-            ConsoleWrite(70, r_y + 19, "ps bits:");
-            ConsoleWrite(70, r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
+            ConsoleWrite(53,  r_y + 19, "ps bits:");
+            ConsoleWrite(53,  r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_H ? "I" : ".", ".",
                 cpu.PS_Q ? "Q" : ".", cpu.PS_V ? "V" : ".", cpu.PS_W ? "W" : ".", "."));
 
-            ConsoleWrite(70, r_y + 22, "fl bits:");
-            ConsoleWrite(70, r_y + 23, string.Format("{0}{1}{2}{3}",
+            ConsoleWrite(53,  r_y + 22, "fl bits:");
+            ConsoleWrite(53,  r_y + 23, string.Format("{0}{1}{2}{3}",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
-            ConsoleWrite(70, r_y + 25, "Memory management:");
-            ConsoleWrite(70, r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
-            ConsoleWrite(70, r_y + 27, "DS " + ConsoleSegmentRegisterString(cpu.DS));
-            ConsoleWrite(70, r_y + 28, "ES " + ConsoleSegmentRegisterString(cpu.ES));
-            ConsoleWrite(70, r_y + 29, "SS " + ConsoleSegmentRegisterString(cpu.SS));
-            ConsoleWrite(70, r_y + 30, "IS " + ConsoleSegmentRegisterString(cpu.IS));
+            ConsoleWrite(53,  r_y + 25, "Memory management:");
+            ConsoleWrite(53,  r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
+            ConsoleWrite(53,  r_y + 27, "DS " + ConsoleSegmentRegisterString(cpu.DS));
+            ConsoleWrite(53,  r_y + 28, "ES " + ConsoleSegmentRegisterString(cpu.ES));
+            ConsoleWrite(53,  r_y + 29, "SS " + ConsoleSegmentRegisterString(cpu.SS));
+            ConsoleWrite(53,  r_y + 30, "IS " + ConsoleSegmentRegisterString(cpu.IS));
 
             // disassembly
             ConsoleWrite(2, r_y - 1, "Disassembly");

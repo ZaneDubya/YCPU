@@ -168,7 +168,7 @@ ShowStartScreen:
     
     ; write logo in center of screen.
     lod     r1, $8200            ; yellow on blue
-    lod     r5, $80D6            ; location in video memory
+    lod     r5, $00D6            ; location in video memory
     lod     r6, txtBootText
     lod     r3, 3                ; count of lines to draw
     writeLine:

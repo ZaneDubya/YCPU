@@ -26,7 +26,6 @@ namespace Ypsilon.Emulation.Processor
             destination = (RegGeneral)(operand & 0x0007);           // R = destination register
             dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
 
-
             switch (addressingMode) // will always be between 0x0 and 0x7
             {
                 case 0: // Addressing mode: Immediate (r == 0), Absolute (r == 1), else Control Register.
@@ -44,7 +43,7 @@ namespace Ypsilon.Emulation.Processor
                     else // Control Register
                     {
                         RegControl cr = (RegControl)((operand & 0x0700) >> 8);
-                        value = ReadControlRegister(cr);
+                        value = ReadControlRegister(operand, cr);
                     }
                     break;
 
@@ -98,7 +97,7 @@ namespace Ypsilon.Emulation.Processor
                         // Immediate - no such addressing mode for STO.
                         source = RegGeneral.None;
                         destAddress = 0;
-                        Interrupt_UndefFault();
+                        Interrupt_UndefFault(operand);
                     }
                     else if ((int)addrRegister == 1)
                     {
@@ -108,7 +107,7 @@ namespace Ypsilon.Emulation.Processor
                     else
                     {
                         RegControl cr = (RegControl)((operand & 0x0700) >> 8);
-                        WriteControlRegister(cr, R[(int)source]);
+                        WriteControlRegister(operand, cr, R[(int)source]);
                         // set source = none so calling function doesn't attempt to interpret this as well.
                         source = RegGeneral.None;
                         destAddress = 0;
@@ -119,7 +118,7 @@ namespace Ypsilon.Emulation.Processor
                 case 1: // Register - no such addressing mode for STO.
                     source = RegGeneral.None;
                     destAddress = 0;
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                     break;
 
                 case 2: // Indirect

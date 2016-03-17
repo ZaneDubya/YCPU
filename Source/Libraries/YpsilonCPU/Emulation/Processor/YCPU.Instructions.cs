@@ -272,106 +272,150 @@ namespace Ypsilon.Emulation.Processor
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int u_result = R[(int)destination] + value + Carry;
-            int s_result = (short)R[(int)destination] + (short)value + Carry;
-            R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
-            FL_N = ((u_result & 0x8000) != 0);
-            FL_Z = (u_result == 0x0000);
-            FL_C = ((u_result & 0xFFFF0000) != 0);
-            FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                int u_result = R[(int)destination] + value + Carry;
+                int s_result = (short)R[(int)destination] + (short)value + Carry;
+                R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
+                FL_N = ((u_result & 0x8000) != 0);
+                FL_Z = (u_result == 0x0000);
+                FL_C = ((u_result & 0xFFFF0000) != 0);
+                FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void ADD(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int u_result = R[(int)destination] + value;
-            int s_result = (short)R[(int)destination] + (short)value;
-            R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
-            FL_N = ((u_result & 0x8000) != 0);
-            FL_Z = (u_result == 0x0000);
-            FL_C = ((u_result & 0xFFFF0000) != 0);
-            FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                int u_result = R[(int)destination] + value;
+                int s_result = (short)R[(int)destination] + (short)value;
+                R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
+                FL_N = ((u_result & 0x8000) != 0);
+                FL_Z = (u_result == 0x0000);
+                FL_C = ((u_result & 0xFFFF0000) != 0);
+                FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void AND(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int result = R[(int)destination] & value;
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((result & 0x8000) != 0);
-            FL_Z = (result == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                int result = R[(int)destination] & value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = ((result & 0x8000) != 0);
+                FL_Z = (result == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void CMP(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int register = R[(int)destination];
-            FL_N = ((short)register >= (short)value);
-            FL_Z = (register == value);
-            FL_C = (register >= value);
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                int register = R[(int)destination];
+                FL_N = ((short)register >= (short)value);
+                FL_Z = (register == value);
+                FL_C = (register >= value);
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void DIV(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
-            if (value == 0)
-            {
-                Interrupt_DivZeroFault();
-                return;
-            }
 
-            int result = R[(int)destination] / value;
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = false;
-            FL_Z = (value == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                if (value == 0)
+                {
+                    Interrupt_DivZeroFault(operand);
+                    return;
+                }
+
+                int result = R[(int)destination] / value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = false;
+                FL_Z = (value == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void DVI(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
-            if (value == 0)
-            {
-                Interrupt_DivZeroFault();
-                return;
-            }
 
-            if ((R[(int)destination] == 0x8000) && (value == 0xFFFF))
+            try
             {
-                // R is unchanged.
-                FL_N = true;
-                FL_Z = false;
-                // C [Carry] Not effected.
-                FL_V = true;
+                BitPatternALU(operand, out value, out destination);
+                if (value == 0)
+                {
+                    Interrupt_DivZeroFault(operand);
+                    return;
+                }
+
+                if ((R[(int)destination] == 0x8000) && (value == 0xFFFF))
+                {
+                    // R is unchanged.
+                    FL_N = true;
+                    FL_Z = false;
+                    // C [Carry] Not effected.
+                    FL_V = true;
+                }
+                else
+                {
+                    int result = (short)R[(int)destination] / (short)value;
+                    R[(int)RegGeneral.R0] = (ushort)(result >> 16);
+                    R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                    FL_N = ((result & 0x8000) != 0);
+                    FL_Z = (result == 0x0000);
+                    // C [Carry] Not effected.
+                    FL_V = false;
+                }
             }
-            else
+            catch (SegFaultException e)
             {
-                int result = (short)R[(int)destination] / (short)value;
-                R[(int)RegGeneral.R0] = (ushort)(result >> 16);
-                R[(int)destination] = (ushort)(result & 0x0000FFFF);
-                FL_N = ((result & 0x8000) != 0);
-                FL_Z = (result == 0x0000);
-                // C [Carry] Not effected.
-                FL_V = false;
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
             }
         }
 
@@ -379,123 +423,176 @@ namespace Ypsilon.Emulation.Processor
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int result = R[(int)destination] ^ value;
-            FL_N = ((value & 0x8000) != 0);
-            FL_Z = (value == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                int result = R[(int)destination] ^ value;
+                FL_N = ((value & 0x8000) != 0);
+                FL_Z = (value == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void LOD(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            R[(int)destination] = value;
-            FL_N = ((value & 0x8000) != 0);
-            FL_Z = (value == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                R[(int)destination] = value;
+                FL_N = ((value & 0x8000) != 0);
+                FL_Z = (value == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void MDI(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
-            if (value == 0)
-            {
-                Interrupt_DivZeroFault();
-                return;
-            }
 
-            int s_result = (short)R[(int)destination] % (short)value;
-            ushort r = (ushort)(s_result & 0x0000FFFF);
-            R[(int)destination] = r;
-            FL_N = ((r & 0x8000) != 0);
-            FL_Z = (r == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                if (value == 0)
+                {
+                    Interrupt_DivZeroFault(operand);
+                    return;
+                }
+
+                int s_result = (short)R[(int)destination] % (short)value;
+                ushort r = (ushort)(s_result & 0x0000FFFF);
+                R[(int)destination] = r;
+                FL_N = ((r & 0x8000) != 0);
+                FL_Z = (r == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void MLI(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            R[(int)destination] = 0xFFFE;
-            value = 0x8000;
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                R[(int)destination] = 0xFFFE;
+                value = 0x8000;
 
-            int result = (short)R[(int)destination] * (short)value;
-            R[(int)RegGeneral.R0] = (ushort)(result >> 16);
-            FL_C = (R[(int)RegGeneral.R0] != 0);
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((result & 0x80000000) != 0);
-            FL_Z = (result == 0);
-            // V [Overflow] Not effected.
+                int result = (short)R[(int)destination] * (short)value;
+                R[(int)RegGeneral.R0] = (ushort)(result >> 16);
+                FL_C = (R[(int)RegGeneral.R0] != 0);
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = ((result & 0x80000000) != 0);
+                FL_Z = (result == 0);
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void MOD(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
-            if (value == 0)
-            {
-                Interrupt_DivZeroFault();
-                return;
-            }
 
-            int result = R[(int)destination] % value;
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((result & 0x8000) != 0);
-            FL_Z = (result == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+                if (value == 0)
+                {
+                    Interrupt_DivZeroFault(operand);
+                    return;
+                }
+
+                int result = R[(int)destination] % value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = ((result & 0x8000) != 0);
+                FL_Z = (result == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void MUL(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int result = R[(int)destination] * value;
-            R[(int)RegGeneral.R0] = (ushort)(result >> 16);
-            FL_C = (R[(int)RegGeneral.R0] != 0);
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = false; // Always cleared.
-            FL_Z = (result == 0);
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+
+                int result = R[(int)destination] * value;
+                R[(int)RegGeneral.R0] = (ushort)(result >> 16);
+                FL_C = (R[(int)RegGeneral.R0] != 0);
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = false; // Always cleared.
+                FL_Z = (result == 0);
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void NEG(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            if (value == 0x8000)
+            try
             {
-                // negated value of -32768 doesn't fit in 16-bits.
-                R[(int)destination] = 0x8000;
-                FL_N = true;
-                FL_Z = false;
-                // C [Carry] Not effected.
-                FL_V = true;
+                BitPatternALU(operand, out value, out destination);
+
+                if (value == 0x8000)
+                {
+                    // negated value of -32768 doesn't fit in 16-bits.
+                    R[(int)destination] = 0x8000;
+                    FL_N = true;
+                    FL_Z = false;
+                    // C [Carry] Not effected.
+                    FL_V = true;
+                }
+                else
+                {
+                    int result = (0 - value);
+                    R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                    FL_N = ((result & 0x8000) != 0);
+                    FL_Z = (result == 0x0000);
+                    // C [Carry] Not effected.
+                    FL_V = false;
+                }
             }
-            else
+            catch (SegFaultException e)
             {
-                int result = (0 - value);
-                R[(int)destination] = (ushort)(result & 0x0000FFFF);
-                FL_N = ((result & 0x8000) != 0);
-                FL_Z = (result == 0x0000);
-                // C [Carry] Not effected.
-                FL_V = false;
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
             }
         }
 
@@ -503,81 +600,121 @@ namespace Ypsilon.Emulation.Processor
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int result = ~value;
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((result & 0x8000) != 0);
-            FL_Z = (result == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+
+                int result = ~value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = ((result & 0x8000) != 0);
+                FL_Z = (result == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void ORR(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int result = R[(int)destination] | value;
-            R[(int)destination] = (ushort)(result & 0x0000FFFF);
-            FL_N = ((result & 0x8000) != 0);
-            FL_Z = (result == 0x0000);
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+
+                int result = R[(int)destination] | value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
+                FL_N = ((result & 0x8000) != 0);
+                FL_Z = (result == 0x0000);
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void SBC(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int u_result = R[(int)destination] - value - (1 - Carry);
-            int s_result = (short)R[(int)destination] - (short)value - (1 - Carry);
-            R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
-            FL_N = ((u_result & 0x8000) != 0);
-            FL_Z = (u_result == 0x0000);
-            FL_C = ((u_result & 0xFFFF0000) != 0);
-            FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+
+                int u_result = R[(int)destination] - value - (1 - Carry);
+                int s_result = (short)R[(int)destination] - (short)value - (1 - Carry);
+                R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
+                FL_N = ((u_result & 0x8000) != 0);
+                FL_Z = (u_result == 0x0000);
+                FL_C = ((u_result & 0xFFFF0000) != 0);
+                FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void STO(ushort operand)
         {
-            ushort dest_address;
             RegGeneral source;
-            BitPatternSTO(operand, out dest_address, out source);
-            if (source == RegGeneral.None)
+            ushort dest_address;
+
+            try
             {
-                return;
-            }
-            else
-            {
-                SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
-                if ((operand & 0x0100) != 0) // eight bit mode
-                    WriteMemInt8(dest_address, (byte)R[(int)source], dataSeg);
+                BitPatternSTO(operand, out dest_address, out source);
+                if (source == RegGeneral.None)
+                {
+                    return;
+                }
                 else
-                    WriteMemInt16(dest_address, R[(int)source], dataSeg);
+                {
+                    SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
+                    if ((operand & 0x0100) != 0) // eight bit mode
+                        WriteMemInt8(dest_address, (byte)R[(int)source], dataSeg);
+                    else
+                        WriteMemInt16(dest_address, R[(int)source], dataSeg);
+                }
+                // N [Negative] Not effected.
+                // Z [Zero] Not effected.
+                // C [Carry] Not effected.
+                // V [Overflow] Not effected.
             }
-            // N [Negative] Not effected.
-            // Z [Zero] Not effected.
-            // C [Carry] Not effected.
-            // V [Overflow] Not effected.
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void SUB(ushort operand)
         {
             ushort value;
             RegGeneral destination;
-            BitPatternALU(operand, out value, out destination);
 
-            int u_result = R[(int)destination] - value;
-            int s_result = (short)R[(int)destination] - (short)value;
-            R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
-            FL_N = ((u_result & 0x8000) != 0);
-            FL_Z = (u_result == 0x0000);
-            FL_C = ((u_result & 0xFFFF0000) != 0);
-            FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            try
+            {
+                BitPatternALU(operand, out value, out destination);
+
+                int u_result = R[(int)destination] - value;
+                int s_result = (short)R[(int)destination] - (short)value;
+                R[(int)destination] = (ushort)(u_result & 0x0000FFFF);
+                FL_N = ((u_result & 0x8000) != 0);
+                FL_Z = (u_result == 0x0000);
+                FL_C = ((u_result & 0xFFFF0000) != 0);
+                FL_V = (s_result < -0x8000) | (s_result > 0x7FFF);
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
         #endregion
 
@@ -846,7 +983,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivFault();
+                Interrupt_UnPrivFault(operand);
                 return;
             }
 
@@ -903,8 +1040,23 @@ namespace Ypsilon.Emulation.Processor
             ushort value;
             uint farValue;
             bool isFar;
-            BitPatternJMI(operand, out value, out farValue, out isFar);
-            PC = value;
+
+            try
+            {
+                BitPatternJMI(operand, out value, out farValue, out isFar);
+                if (isFar && !PS_S)
+                {
+                    Interrupt_UnPrivFault(operand);
+                }
+                else
+                {
+                    PC = value;
+                }
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
 
         private void JSR(ushort operand)
@@ -912,15 +1064,27 @@ namespace Ypsilon.Emulation.Processor
             ushort value;
             uint farValue;
             bool isFar;
-            BitPatternJMI(operand, out value, out farValue, out isFar);
-            if (isFar)
-            {
-                StackPush((ushort)(farValue >> 16));
-                StackPush((ushort)farValue);
-            }
-            StackPush(PC);
 
-            PC = value;
+            try
+            {
+                BitPatternJMI(operand, out value, out farValue, out isFar);
+                if (isFar && !PS_S)
+                {
+                    Interrupt_UnPrivFault(operand);
+                }
+                else if (isFar)
+                {
+                    StackPush(operand, (ushort)(farValue >> 16));
+                    StackPush(operand, (ushort)farValue);
+                }
+                StackPush(operand, PC);
+
+                PC = value;
+            }
+            catch (SegFaultException e)
+            {
+                Interrupt_SegFault(e.SegmentType, operand, e.Address);
+            }
         }
         #endregion
 
@@ -929,7 +1093,7 @@ namespace Ypsilon.Emulation.Processor
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivFault();
+                Interrupt_UnPrivFault(operand);
                 return;
             }
 
@@ -955,7 +1119,7 @@ namespace Ypsilon.Emulation.Processor
                 case SegmentIndex.IS:
                     if (user)
                     {
-                        Interrupt_UndefFault();
+                        Interrupt_UndefFault(operand);
                         return;
                     }
                     else
@@ -965,7 +1129,7 @@ namespace Ypsilon.Emulation.Processor
                     break;
                 default:
                     // operand does not include a valid segment index.
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                     return;
             }
 
@@ -973,13 +1137,13 @@ namespace Ypsilon.Emulation.Processor
             {
                 ushort register_lo = (ushort)segment.Register;
                 ushort register_hi = (ushort)(segment.Register >> 16);
-                StackPush(register_hi);
-                StackPush(register_lo);
+                StackPush(operand, register_hi);
+                StackPush(operand, register_lo);
             }
             else
             {
-                ushort register_lo = StackPop();
-                ushort register_hi = StackPop();
+                ushort register_lo = StackPop(operand);
+                ushort register_hi = StackPop(operand);
                 segment.Register = (uint)(register_hi << 16) | register_lo;
             }
         }
@@ -1140,69 +1304,69 @@ namespace Ypsilon.Emulation.Processor
             switch (operation_index)
             {
                 case 0: // RTS
-                    RTS(false);
+                    RTS(operand, false);
                     break;
                 case 1: // RTS.F
-                    RTS(true);
+                    RTS(operand, true);
                     break;
                 case 2: // RTI
-                    RTI();
+                    RTI(operand);
                     break;
                 case 3: // SWI
-                    SWI();
+                    SWI(operand);
                     break;
                 case 4: // SLP
-                    SLP();
+                    SLP(operand);
                     break;
                 default:
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                     break;
             }
         }
 
-        private void RTS(bool far)
+        private void RTS(ushort operand, bool far)
         {
             if (!far)
             {
-                PC = StackPop();
+                PC = StackPop(operand);
             }
             else
             {
                 if (!PS_S)
                 {
-                    Interrupt_UnPrivFault();
+                    Interrupt_UnPrivFault(operand);
                     return;
                 }
-                PC = StackPop();
-                ushort cs_lo = StackPop();
-                ushort cs_hi = StackPop();
+                PC = StackPop(operand);
+                ushort cs_lo = StackPop(operand);
+                ushort cs_hi = StackPop(operand);
                 m_CSS.Register = (uint)(cs_lo + (cs_hi << 16));
             }
         }
 
-        private void RTI()
+        private void RTI(ushort operand)
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivFault();
+                Interrupt_UnPrivFault(operand);
                 return;
             }
 
             ReturnFromInterrupt();
         }
 
-        private void SLP()
+        private void SLP(ushort operand)
         {
             if (!PS_S)
             {
-                Interrupt_UnPrivFault();
+                Interrupt_UnPrivFault(operand);
                 return;
             }
 
             // pause processor
         }
 
-        private void SWI()
+        private void SWI(ushort operand)
         {
             Interrupt_SWI();
         }
@@ -1217,21 +1381,21 @@ namespace Ypsilon.Emulation.Processor
             if ((value & 0x0001) == 0)
             {
                 if ((value & 0x0100) != 0)
-                    StackPush(R[(int)RegGeneral.R0]);
+                    StackPush(operand, R[(int)RegGeneral.R0]);
                 if ((value & 0x0200) != 0)
-                    StackPush(R[(int)RegGeneral.R1]);
+                    StackPush(operand, R[(int)RegGeneral.R1]);
                 if ((value & 0x0400) != 0)
-                    StackPush(R[(int)RegGeneral.R2]);
+                    StackPush(operand, R[(int)RegGeneral.R2]);
                 if ((value & 0x0800) != 0)
-                    StackPush(R[(int)RegGeneral.R3]);
+                    StackPush(operand, R[(int)RegGeneral.R3]);
                 if ((value & 0x1000) != 0)
-                    StackPush(R[(int)RegGeneral.R4]);
+                    StackPush(operand, R[(int)RegGeneral.R4]);
                 if ((value & 0x2000) != 0)
-                    StackPush(R[(int)RegGeneral.R5]);
+                    StackPush(operand, R[(int)RegGeneral.R5]);
                 if ((value & 0x4000) != 0)
-                    StackPush(R[(int)RegGeneral.R6]);
+                    StackPush(operand, R[(int)RegGeneral.R6]);
                 if ((value & 0x8000) != 0)
-                    StackPush(R[(int)RegGeneral.R7]);
+                    StackPush(operand, R[(int)RegGeneral.R7]);
             }
             else
             {
@@ -1239,20 +1403,20 @@ namespace Ypsilon.Emulation.Processor
                     (value & 0x1000) != 0 ||
                     (value & 0x0800) != 0)
                 {
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                 }
                 else
                 {
                     if ((value & 0x8000) != 0)
-                        StackPush(SP);
+                        StackPush(operand, SP);
                     if ((value & 0x4000) != 0)
-                        StackPush(USP);
+                        StackPush(operand, USP);
                     if ((value & 0x0400) != 0)
-                        StackPush(PS);
+                        StackPush(operand, PS);
                     if ((value & 0x0200) != 0)
-                        StackPush(PC);
+                        StackPush(operand, PC);
                     if ((value & 0x0100) != 0)
-                        StackPush(FL);
+                        StackPush(operand, FL);
                 }
             }
         }
@@ -1265,21 +1429,21 @@ namespace Ypsilon.Emulation.Processor
             if ((value & 0x0001) == 0)
             {
                 if ((value & 0x8000) != 0)
-                    R[(int)RegGeneral.R7] = StackPop();
+                    R[(int)RegGeneral.R7] = StackPop(operand);
                 if ((value & 0x4000) != 0)
-                    R[(int)RegGeneral.R6] = StackPop();
+                    R[(int)RegGeneral.R6] = StackPop(operand);
                 if ((value & 0x2000) != 0)
-                    R[(int)RegGeneral.R5] = StackPop();
+                    R[(int)RegGeneral.R5] = StackPop(operand);
                 if ((value & 0x1000) != 0)
-                    R[(int)RegGeneral.R4] = StackPop();
+                    R[(int)RegGeneral.R4] = StackPop(operand);
                 if ((value & 0x0800) != 0)
-                    R[(int)RegGeneral.R3] = StackPop();
+                    R[(int)RegGeneral.R3] = StackPop(operand);
                 if ((value & 0x0400) != 0)
-                    R[(int)RegGeneral.R2] = StackPop();
+                    R[(int)RegGeneral.R2] = StackPop(operand);
                 if ((value & 0x0200) != 0)
-                    R[(int)RegGeneral.R1] = StackPop();
+                    R[(int)RegGeneral.R1] = StackPop(operand);
                 if ((value & 0x0100) != 0)
-                    R[(int)RegGeneral.R0] = StackPop();
+                    R[(int)RegGeneral.R0] = StackPop(operand);
             }
             else
             {
@@ -1287,20 +1451,20 @@ namespace Ypsilon.Emulation.Processor
                     (value & 0x1000) != 0 ||
                     (value & 0x0800) != 0)
                 {
-                    Interrupt_UndefFault();
+                    Interrupt_UndefFault(operand);
                 }
                 else
                 {
                     if ((value & 0x0100) != 0)
-                        FL = StackPop();
+                        FL = StackPop(operand);
                     if ((value & 0x0200) != 0)
-                        PC = StackPop();
+                        PC = StackPop(operand);
                     if ((value & 0x0400) != 0)
-                        PS = StackPop();
+                        PS = StackPop(operand);
                     if ((value & 0x4000) != 0)
-                        USP = StackPop();
+                        USP = StackPop(operand);
                     if ((value & 0x8000) != 0)
-                        SP = StackPop();
+                        SP = StackPop(operand);
                 }
             }
         }

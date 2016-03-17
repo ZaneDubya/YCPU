@@ -110,11 +110,9 @@ namespace Ypsilon.Emulation.Processor
         {
             get
             {
-                i &= 0x0000ffff;
                 if (i >= m_Size)
                 {
-                    m_Bus.CPU.Interrupt_SegFault(SegmentType);
-                    return 0;
+                    throw new SegFaultException(SegmentType, i);
                 }
                 else
                 {
@@ -123,7 +121,15 @@ namespace Ypsilon.Emulation.Processor
             }
             set
             {
-                m_MemoryReference[i + m_Base] = value;
+                if (i >= m_Size)
+                {
+                    throw new SegFaultException(SegmentType, i);
+                }
+                else
+                {
+                    m_MemoryReference[i + m_Base] = value;
+                }
+
             }
         }
 

@@ -182,15 +182,27 @@ namespace Ypsilon.Emulation.Processor
             RegGeneral r_src = (RegGeneral)((operand & 0x1C00) >> 10);
             int index_bits = ((operand & 0x0300) >> 8);
             SegmentIndex segData = ((operand & 0x8000) != 0) ? SegmentIndex.ES : SegmentIndex.DS;
+            bool isFar = (operand & 0x0100) != 0;
+            if (isFar)
+            {
+                name += ".F";
+            }
 
             switch (addressingmode)
             {
                 case 0: // Immediate or Absolute
-                    instructionSize = 8;
-                    bool absolute = (operand & 0x0100) != 0;
-                    return string.Format("{0,-8}{2}${1:X4}{3}{4}", name, nextword,
-                        absolute ? "[" : string.Empty, absolute ? "]" : string.Empty,
-                        absolute ? string.Format("         (${0:X4})", DebugReadMemory(nextword, SegmentIndex.CS)) : string.Empty);
+                    bool absolute = (operand & 0x0200) != 0;
+                    instructionSize = (ushort)(isFar && !absolute ? 8 : 4);
+                    if (absolute)
+                    {
+                        return string.Format("{0,-8}[${1:X4}]{2}", name, nextword,
+                            string.Format("         (${0:X4})", DebugReadMemory(nextword, SegmentIndex.CS)));
+                    }
+                    else
+                    {
+                        return string.Format("{0,-8}${1:X4}{2}", name, nextword, isFar ? ", $<SEGREG>" : string.Empty);
+                    }
+                    
                 case 1: // Register
                     instructionSize = 2;
                     return string.Format("{0,-8}{1}              (${2:X4})", name,

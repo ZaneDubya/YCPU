@@ -430,7 +430,7 @@ status bit in PS is set, the processor checks for IRQs before executing each
 opcode. If a hardware device is asserting an IRQ when the processor checks, the
 processor will push a 16-bit word containing the bus index of the first device
 on the bus that is asserting an IRQ onto the stack as part of the hardware
-interrupt.
+interrupt. This bus index must be pulled from the stack before RTI is executed!
 
 Note that devices in lower index slots in the hardware bus always have
 priority over devices in higher index slots.
@@ -454,7 +454,11 @@ interrupts will be acknowledged by the CPU if the H status bit is clear.
 
 For interrupts caused by an error condition, the U status bit in PS will be set
 if the processor was in user mode when the fault occured, or clear if the
-processor was in supervisor mode when the fault occured.
+processor was in supervisor mode when the fault occured. Also, a 16-bit error
+code will be pushed to the stack after PS and PC. This error code must be pulled
+from the stack before RTI is executed!
+
+The error code will be equal to the instruction word that caused the fault.
 
 Interrupts designated as 'Faults' are:
     - DivZeroFault  ($02),
@@ -525,6 +529,10 @@ It then executes the following sequence of operations:
         
     7.  If this is a Segment Fault:
         The V and W status bits are set as appropriate (See 2.D.5.).
+    
+    8.  If this is Fault interrupt (See 2.D.4. for a list of fault interrupts):
+        Push a 16-bit error code to the stack. The error code is equal to to the
+        instruction word that caused the Fault.
     
     8.  Set PC to IS[$0000 + (InterruptIndex * 2)].
     

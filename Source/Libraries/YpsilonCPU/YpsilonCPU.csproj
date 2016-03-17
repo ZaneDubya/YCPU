@@ -40,6 +40,7 @@
     <Compile Include="Emulation\Emulator.cs" />
     <Compile Include="Emulation\Processor\MemoryChunk.cs" />
     <Compile Include="Emulation\IMemoryInterface.cs" />
+    <Compile Include="Emulation\Processor\SegFaultException.cs" />
     <Compile Include="Emulation\Processor\Segment.cs" />
     <Compile Include="Emulation\Processor\YBUS.cs" />
     <Compile Include="Emulation\Processor\YCPU.cs" />

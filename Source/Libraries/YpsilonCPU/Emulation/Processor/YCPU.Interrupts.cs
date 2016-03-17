@@ -39,10 +39,10 @@ namespace Ypsilon.Emulation.Processor
                 PS_S = true;
                 PS_I = true;
                 PS_Q = (interrupt == Interrupts.HWI);
-                StackPush(ps);
-                StackPush(PC);
+                StackPush(0xffff, ps);
+                StackPush(0xffff, PC);
                 if (error_code != null)
-                    StackPush(error_code.Value);
+                    StackPush(0xffff, error_code.Value);
             }
             PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
             m_Cycles += 31;
@@ -50,8 +50,8 @@ namespace Ypsilon.Emulation.Processor
 
         private void ReturnFromInterrupt()
         {
-            PC = StackPop();
-            PS = StackPop();
+            PC = StackPop(0xffff);
+            PS = StackPop(0xffff);
             m_PS &= 0xF0FF; // clear Q, U, W.
         }
 
@@ -83,51 +83,49 @@ namespace Ypsilon.Emulation.Processor
             Interrupt(Interrupts.Clock);
         }
 
-        private void Interrupt_DivZeroFault()
+        private void Interrupt_DivZeroFault(ushort opcode)
         {
-            Interrupt(Interrupts.DivZeroFault);
+            Interrupt(Interrupts.DivZeroFault, opcode);
         }
 
-        private void Interrupt_DoubleFault()
+        private void Interrupt_DoubleFault(ushort opcode)
         {
-            Interrupt(Interrupts.DoubleFault);
+            Interrupt(Interrupts.DoubleFault, opcode);
         }
 
-        private void Interrupt_StackFault()
+        private void Interrupt_StackFault(ushort opcode, ushort address)
         {
-            Interrupt(Interrupts.StackFault);
+            Interrupt(Interrupts.StackFault, opcode);
         }
 
-        internal void Interrupt_SegFault(SegmentIndex segmentType)
+        internal void Interrupt_SegFault(SegmentIndex segmentType, ushort opcode, ushort address)
         {
             if (segmentType == SegmentIndex.CS)
             {
-                m_ExecuteFail = true;               // do not execute the read address (which will be 0x0000, as the read from CS failed).
-                Interrupt(Interrupts.SegFault);
+                Interrupt(Interrupts.SegFault, opcode);
             }
             else if (segmentType == SegmentIndex.IS)
             {
-                m_ExecuteFail = true;               // do not execute the read address (which will be 0x0000, as the read from IS failed).
-                Interrupt_DoubleFault();
+                Interrupt_DoubleFault(opcode);
             }
             else if (segmentType == SegmentIndex.DS || segmentType == SegmentIndex.ES)
             {
-                Interrupt(Interrupts.SegFault);
+                Interrupt(Interrupts.SegFault, opcode);
             }
             else if (segmentType == SegmentIndex.SS)
             {
-                Interrupt(Interrupts.StackFault);
+                Interrupt(Interrupts.StackFault, opcode);
             }
         }
 
-        private void Interrupt_UnPrivFault()
+        private void Interrupt_UnPrivFault(ushort opcode)
         {
-            Interrupt(Interrupts.UnPrivFault);
+            Interrupt(Interrupts.UnPrivFault, opcode);
         }
 
-        private void Interrupt_UndefFault()
+        private void Interrupt_UndefFault(ushort opcode)
         {
-            Interrupt(Interrupts.UndefFault);
+            Interrupt(Interrupts.UndefFault, opcode);
         }
 
         public void Interrupt_HWI()
