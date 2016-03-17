@@ -217,6 +217,105 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
+        private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+            return string.Format(name);
+        }
+
+        private string DisassemblePRX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            int operation_index = (operand & 0xff00) >> 8;
+            usesNextWord = false;
+            switch (operation_index)
+            {
+                case 0: // RTS
+                    return "RTS";
+                case 1: // RTS.F
+                    return "RTS.F";
+                case 2: // RTI
+                    return "RTI";
+                case 3: // SWI
+                    return "SWI";
+                case 4: // SLP
+                    return "SLP";
+                default:
+                    return "???";
+            }
+        }
+
+        private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
+            int value = ((operand & 0x1F00) >> 8);
+            if ((operand & 0x0001) == 1)
+            {
+                if (value <= 0x0A)
+                    value = (ushort)(0x0001 << (value + 0x05));
+                else
+                    value = (ushort)(0xFFE0 + value);
+            }
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), string.Format("${0:X2}", value));
+        }
+
+        private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
+            string value = string.Empty;
+            if ((operand & 0x1000) == 0)
+            {
+                int shiftby = ((operand & 0x0F00) >> 8) + 1;
+                value = string.Format("${0:X2}", (ushort)shiftby);
+            }
+            else
+                value = NameOfRegGP((RegGeneral)((operand & 0x0700) >> 8));
+            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
+        }
+
+        private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+            string flags = "{0}{1}{2}{3}{4}{5}{6}{7}";
+            if ((operand & 0x0001) == 0x0000)
+            {
+                flags = string.Format(flags,
+                    ((operand & 0x8000) != 0) ? "R7 " : string.Empty,
+                    ((operand & 0x4000) != 0) ? "R6 " : string.Empty,
+                    ((operand & 0x2000) != 0) ? "R5 " : string.Empty,
+                    ((operand & 0x1000) != 0) ? "R4 " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "R3 " : string.Empty,
+                    ((operand & 0x0400) != 0) ? "R2 " : string.Empty,
+                    ((operand & 0x0200) != 0) ? "R1 " : string.Empty,
+                    ((operand & 0x0100) != 0) ? "R0 " : string.Empty);
+            }
+            else
+            {
+                flags = string.Format(flags,
+                    ((operand & 0x8000) != 0) ? "SP " : string.Empty,
+                    ((operand & 0x4000) != 0) ? "USP " : string.Empty,
+                    ((operand & 0x2000) != 0) ? "?? " : string.Empty,
+                    ((operand & 0x1000) != 0) ? "?? " : string.Empty,
+                    ((operand & 0x0800) != 0) ? "?? " : string.Empty,
+                    ((operand & 0x0400) != 0) ? "PS " : string.Empty,
+                    ((operand & 0x0200) != 0) ? "PC " : string.Empty,
+                    ((operand & 0x0100) != 0) ? "FL " : string.Empty);
+            }
+            if (flags == string.Empty)
+                flags = "<NONE>";
+            return string.Format("{0,-8}{1}", name, flags);
+        }
+
+        private string DisassembleSTX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
+        {
+            usesNextWord = false;
+
+            int sp_delta = (sbyte)((operand & 0xff00) >> 8);
+
+            return string.Format("{0,-8}{1}{2}", name, sp_delta >=0 ? "+" : string.Empty, sp_delta);
+        }
+
         private string DisassembleXSG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
         {
             usesNextWord = false;
@@ -252,85 +351,6 @@ namespace Ypsilon.Emulation.Processor
             }
 
             return string.Format("{0,-8}{1}", name, reg);
-        }
-
-        private string DisassembleNoBits(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            return string.Format(name);
-        }
-
-        private string DisassembleRTS(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            bool far = ((operand & 0x0100) != 0);
-                
-            return string.Format("{0}{1}", name, far ? ".F" : string.Empty);
-        }
-
-        private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            string flags = "{0}{1}{2}{3}{4}{5}{6}{7}";
-            if ((operand & 0x0001) == 0x0000)
-            {
-                flags = string.Format(flags,
-                    ((operand & 0x8000) != 0) ? "R7 " : string.Empty,
-                    ((operand & 0x4000) != 0) ? "R6 " : string.Empty,
-                    ((operand & 0x2000) != 0) ? "R5 " : string.Empty,
-                    ((operand & 0x1000) != 0) ? "R4 " : string.Empty,
-                    ((operand & 0x0800) != 0) ? "R3 " : string.Empty,
-                    ((operand & 0x0400) != 0) ? "R2 " : string.Empty,
-                    ((operand & 0x0200) != 0) ? "R1 " : string.Empty,
-                    ((operand & 0x0100) != 0) ? "R0 " : string.Empty);
-            }
-            else
-            {
-                flags = string.Format(flags,
-                    ((operand & 0x8000) != 0) ? "SP " : string.Empty,
-                    ((operand & 0x4000) != 0) ? "USP " : string.Empty,
-                    ((operand & 0x2000) != 0) ? "?? " : string.Empty,
-                    ((operand & 0x1000) != 0) ? "?? " : string.Empty,
-                    ((operand & 0x0800) != 0) ? "?? " : string.Empty,
-                    ((operand & 0x0400) != 0) ? "PS " : string.Empty,
-                    ((operand & 0x0200) != 0) ? "PC " : string.Empty,
-                    ((operand & 0x0100) != 0) ? "FL " : string.Empty);
-            }
-            if (flags == string.Empty)
-                flags = "<NONE>";
-            if (name.ToLowerInvariant() == "pop" && (flags.Trim() == "PC"))
-                return "RTS";
-            return string.Format("{0,-8}{1}", name, flags);
-        }
-
-        private string DisassembleSET(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
-            int value = ((operand & 0x1F00) >> 8);
-            if ((operand & 0x0001) == 1)
-            {
-                if (value <= 0x0A)
-                    value = (ushort)(0x0001 << (value + 0x05));
-                else
-                    value = (ushort)(0xFFE0 + value);
-            }
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), string.Format("${0:X2}", value));
-        }
-
-        private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out bool usesNextWord)
-        {
-            usesNextWord = false;
-            RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
-            string value = string.Empty;
-            if ((operand & 0x1000) == 0)
-            {
-                int shiftby = ((operand & 0x0F00) >> 8) + 1;
-                value = string.Format("${0:X2}", (ushort)shiftby);
-            }
-            else
-                value = NameOfRegGP((RegGeneral)((operand & 0x0700) >> 8));
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
         }
 
         private string AppendMemoryContents(string disasm, ushort mem)

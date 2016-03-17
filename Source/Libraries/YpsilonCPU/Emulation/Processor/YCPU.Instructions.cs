@@ -249,7 +249,7 @@ namespace Ypsilon.Emulation.Processor
             Opcodes[0xB1] = new YCPUInstruction("PSH", PSH, DisassembleSTK, 0);
             Opcodes[0xB2] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
             Opcodes[0xB3] = new YCPUInstruction("POP", POP, DisassembleSTK, 0);
-            Opcodes[0xB4] = new YCPUInstruction("RTS", RTS, DisassembleRTS, 1);
+            Opcodes[0xB4] = new YCPUInstruction("PRX", PRX, DisassemblePRX, 1);
             Opcodes[0xB5] = new YCPUInstruction("XSG", XSG, DisassembleXSG, 3);
 
             Opcodes[0xB6] = new YCPUInstruction("ADI", ADI, DisassembleINC, 0);
@@ -257,9 +257,7 @@ namespace Ypsilon.Emulation.Processor
             Opcodes[0xB8] = new YCPUInstruction("JMP", JMP, DisassembleJMP, 0);
             Opcodes[0xB9] = new YCPUInstruction("JSR", JSR, DisassembleJMP, 1);
             Opcodes[0xBA] = new YCPUInstruction("HWQ", HWQ, DisassembleHWQ, 0);
-            Opcodes[0xBB] = new YCPUInstruction("SLP", SLP, DisassembleNoBits, 0);
-            Opcodes[0xBC] = new YCPUInstruction("SWI", SWI, DisassembleNoBits, 0);
-            Opcodes[0xBD] = new YCPUInstruction("RTI", RTI, DisassembleNoBits, 11);
+            Opcodes[0xBB] = new YCPUInstruction("STX", STX, DisassembleSTX, 0);
 
             // 0xBE = 0xFF are undefined (66 opcodes).
 
@@ -272,8 +270,7 @@ namespace Ypsilon.Emulation.Processor
         #region NOP
         private void NOP(ushort operand)
         {
-            // InterruptReset();
-            // raise an error
+            // do nohting for one cycle.
         }
         #endregion
 
@@ -905,17 +902,6 @@ namespace Ypsilon.Emulation.Processor
                     break;
             }
         }
-
-        private void SLP(ushort operand)
-        {
-            if (!PS_S)
-            {
-                Interrupt_UnPrivFault();
-                return;
-            }
-
-            // pause processor
-        }
         #endregion
 
         #region JMP Instructions
@@ -940,7 +926,7 @@ namespace Ypsilon.Emulation.Processor
                 StackPush((ushort)farValue);
             }
             StackPush(PC);
-            
+
             PC = value;
         }
         #endregion
@@ -1006,7 +992,7 @@ namespace Ypsilon.Emulation.Processor
         }
         #endregion
 
-            #region SET Instructions
+        #region SET Instructions
         private void SET(ushort operand)
         {
             RegGeneral regDestination;
@@ -1153,13 +1139,55 @@ namespace Ypsilon.Emulation.Processor
         }
         #endregion
 
-        #region SWI / RTI / RTS
-        private void SWI(ushort operand)
+        #region PRX Instructions: RTS / RTI / SWI / SLP
+
+        private void PRX(ushort operand)
         {
-            Interrupt_SWI();
+            int operation_index = (operand & 0xff00) >> 8;
+            switch (operation_index)
+            {
+                case 0: // RTS
+                    RTS(false);
+                    break;
+                case 1: // RTS.F
+                    RTS(true);
+                    break;
+                case 2: // RTI
+                    RTI();
+                    break;
+                case 3: // SWI
+                    SWI();
+                    break;
+                case 4: // SLP
+                    SLP();
+                    break;
+                default:
+                    Interrupt_UndefFault();
+                    break;
+            }
         }
 
-        private void RTI(ushort operand)
+        private void RTS(bool far)
+        {
+            if (!far)
+            {
+                PC = StackPop();
+            }
+            else
+            {
+                if (!PS_S)
+                {
+                    Interrupt_UnPrivFault();
+                    return;
+                }
+                PC = StackPop();
+                ushort cs_lo = StackPop();
+                ushort cs_hi = StackPop();
+                m_CSS.Register = (uint)(cs_lo + (cs_hi << 16));
+            }
+        }
+
+        private void RTI()
         {
             if (!PS_S)
             {
@@ -1170,26 +1198,24 @@ namespace Ypsilon.Emulation.Processor
             ReturnFromInterrupt();
         }
 
-        private void RTS(ushort operand)
+        private void SLP()
         {
-            bool far = (operand & 0x0100) != 0;
-            if (far)
+            if (!PS_S)
             {
-                if (!PS_S)
-                    Interrupt_UnPrivFault();
-                PC = StackPop();
-                ushort cs_lo = StackPop();
-                ushort cs_hi = StackPop();
-                m_CSS.Register = (uint)(cs_lo + (cs_hi << 16));
+                Interrupt_UnPrivFault();
+                return;
             }
-            else
-            {
-                PC = StackPop();
-            }
+
+            // pause processor
+        }
+
+        private void SWI()
+        {
+            Interrupt_SWI();
         }
         #endregion
 
-        #region Stack Instructions
+        #region STK Instructions
         private void PSH(ushort operand)
         {
             ushort value;
@@ -1286,5 +1312,21 @@ namespace Ypsilon.Emulation.Processor
             }
         }
         #endregion
+
+        #region STX Instructions
+        private void STX(ushort operand)
+        {
+            int sp_delta = (sbyte)((operand & 0xff00) >> 8);
+            if (PS_S)
+            {
+                SSP = (ushort)(SSP + (sp_delta * 2));
+            }
+            else
+            {
+                USP = (ushort)(USP + (sp_delta * 2));
+            }
+        }
+        #endregion
     }
+
 }
