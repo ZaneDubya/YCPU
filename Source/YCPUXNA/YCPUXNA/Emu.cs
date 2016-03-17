@@ -18,6 +18,8 @@ namespace YCPUXNA
             private set;
         }
 
+        const int window_w = 640, window_h = 480;
+
         private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
@@ -59,8 +61,8 @@ namespace YCPUXNA
             m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
             m_Curses = new Curses(GraphicsDevice, 80, c_ConsoleHeight, c_CursesFont, true);
 
-            m_Graphics.PreferredBackBufferWidth = 600 * 2;
-            m_Graphics.PreferredBackBufferHeight = 450;
+            m_Graphics.PreferredBackBufferWidth = window_w * 2;
+            m_Graphics.PreferredBackBufferHeight = window_h;
             m_Graphics.IsFullScreen = false;
             m_Graphics.ApplyChanges();
             IsMouseVisible = true;
@@ -109,7 +111,7 @@ namespace YCPUXNA
             m_SpriteBatch.Begin(new Color(32, 32, 32, 255));
 
             // draw the debug console
-            m_SpriteBatch.DrawSprite(debug, Vector3.Zero, new Vector2(600, 450), Color.Lime);
+            m_SpriteBatch.DrawSprite(debug, Vector3.Zero, new Vector2(window_w, window_h), Color.Lime);
 
             // render the devices
             m_DeviceTextures.Clear();
@@ -118,8 +120,8 @@ namespace YCPUXNA
             {
                 m_SpriteBatch.DrawSprite(
                     (m_DeviceTextures[i] as YTexture).Texture,
-                    new Vector3(600, 0, 0),
-                    new Vector2(600, 450), Color.White);
+                    new Vector3(window_w, 0, 0),
+                    new Vector2(window_w, window_h), Color.White);
             }
 
             // End the spritebatch.
