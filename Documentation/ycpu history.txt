@@ -216,3 +216,6 @@
   * New memory layout when MMU is disabled.
   * Remove XSR, ALU instructions can once against reference.
   * Reorg of opcodes from 1011 0101 to 1111 1111.
+0.9     3/16/16
+  * RELEASE CANDIDATE.
+  * New STX instruction - allows modifying stack pointer.
