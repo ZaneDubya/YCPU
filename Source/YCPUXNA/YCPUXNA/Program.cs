@@ -34,7 +34,7 @@ namespace YCPUXNA
                             waitForKey = false;
                             break;*/
                         case '2':
-                            args = new string[] { "-emu" };
+                            args = new string[] { "-emu", "../Examples/testconsole.asm.bin" };
                             waitForKey = false;
                             break;
                         case '3':
@@ -63,6 +63,7 @@ namespace YCPUXNA
                     case "-emu": // run emulator!
                         StdConsole.StdOutWriteLine("Starting emulator...");
                         Emu e = new Emu();
+                        e.SetArgs(args);
                         StdConsole.HideConsoleWindow();
                         e.Run();
                         break;

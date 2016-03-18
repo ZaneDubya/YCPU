@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using YCPUXNA.Providers;
 using Ypsilon.Core.Graphics;
@@ -24,6 +25,7 @@ namespace YCPUXNA
         private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
+        private string m_RomPath = "../Examples/testconsole.asm.bin";
 
         private const string c_CursesFont = @"Content\BIOS8x14.png";
 
@@ -45,6 +47,15 @@ namespace YCPUXNA
         {
             m_Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+        }
+
+        public void SetArgs(string[] args)
+        {
+            if (args.Length >= 2)
+            {
+                if (File.Exists(args[1]))
+                    m_RomPath = args[1];
+            }
         }
 
         protected override void Initialize()
@@ -177,7 +188,7 @@ namespace YCPUXNA
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
-                m_Emulator.LoadBinaryToCPU("../Examples/testconsole.asm.bin", 0x0000);
+                m_Emulator.LoadBinaryToCPU(m_RomPath, 0x0000);
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
             {
