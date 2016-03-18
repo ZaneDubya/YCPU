@@ -153,9 +153,13 @@
       </Target>
     -->
   <Target Name="AfterBuild">
-    <ItemGroup>
-      <MyFiles Include="$(OutputPath)\..\..\Examples\*.*" />
+    <Exec Command="xcopy.exe  $(OutputPath)..\..\Documentation $(OutputPath)..\Documentation\ /e /Y /q" />
+    <Exec Command="xcopy.exe  $(OutputPath)..\..\Examples $(OutputPath)..\Examples\ /e /Y /q" />
+    <!-- <ItemGroup>
+      <Doc_Files Include="$(OutputPath)\..\..\Documentation\**\*.*" />
+      <Exa_Files Include="$(OutputPath)\..\..\Examples\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(MyFiles)" DestinationFolder="$(OutputPath)\..\Examples\" ContinueOnError="false" />
+    <Copy SourceFiles="@(Doc_Files)" DestinationFolder="$(OutputPath)\..\Documentation\" ContinueOnError="false" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(Exa_Files)" DestinationFolder="$(OutputPath)\..\Examples\" ContinueOnError="false" SkipUnchangedFiles="true" /> -->
   </Target>
 </Project>
