@@ -79,7 +79,7 @@ namespace Ypsilon.Core.Graphics
         /// <summary>
         /// Draws the given poly line (wireframe).
         /// </summary>
-        public void DrawLines(VertexPositionNormalTextureData[] polygon, Vector3 translation, bool closePolygon)
+        public void DrawLines(VertexPositionTextureDataColor[] polygon, Vector3 translation, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -142,12 +142,12 @@ namespace Ypsilon.Core.Graphics
 
             if (m_WorldLines.Count > 0)
             {
-                m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.LineList, m_WorldLines.Vertices, 0, m_WorldLines.Index, m_LineIndices, 0, m_WorldLines.Count);
+                m_Graphics.DrawUserIndexedPrimitives<VertexPositionTextureDataColor>(PrimitiveType.LineList, m_WorldLines.Vertices, 0, m_WorldLines.Index, m_LineIndices, 0, m_WorldLines.Count);
                 m_WorldLines.Reset();
             }
             if (m_WorldTris.Count > 0)
             {
-                m_Graphics.DrawUserIndexedPrimitives<VertexPositionNormalTextureData>(PrimitiveType.TriangleList, m_WorldTris.Vertices, 0, m_WorldTris.Index, m_TriIndices, 0, m_WorldTris.Count);
+                m_Graphics.DrawUserIndexedPrimitives<VertexPositionTextureDataColor>(PrimitiveType.TriangleList, m_WorldTris.Vertices, 0, m_WorldTris.Index, m_TriIndices, 0, m_WorldTris.Count);
                 m_WorldTris.Reset();
             }
         }

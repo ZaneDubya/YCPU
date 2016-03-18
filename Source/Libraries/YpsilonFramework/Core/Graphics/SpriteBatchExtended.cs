@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 
 namespace Ypsilon.Core.Graphics
@@ -12,8 +11,8 @@ namespace Ypsilon.Core.Graphics
         private Effect m_BasicEffect, m_CRTEffect;
         private Texture2D m_Pixel;
 
-        private Dictionary<Texture2D, List<VertexPositionColorTexture>> m_drawQueue;
-        private Queue<List<VertexPositionColorTexture>> m_vertexListQueue;
+        private Dictionary<Texture2D, List<VertexPositionTextureDataColor>> m_drawQueue;
+        private Queue<List<VertexPositionTextureDataColor>> m_vertexListQueue;
         private short[] m_indexBuffer;
 
         private Vector3 m_zOffset = new Vector3();
@@ -29,9 +28,9 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice = m_Game.GraphicsDevice;
             m_BasicEffect = m_Game.Content.Load<Effect>("BasicEffect");
             m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
-            m_drawQueue = new Dictionary<Texture2D, List<VertexPositionColorTexture>>(256);
+            m_drawQueue = new Dictionary<Texture2D, List<VertexPositionTextureDataColor>>(256);
             m_indexBuffer = createIndexBuffer(0x2000);
-            m_vertexListQueue = new Queue<List<VertexPositionColorTexture>>(256);
+            m_vertexListQueue = new Queue<List<VertexPositionTextureDataColor>>(256);
         }
 
         private short[] createIndexBuffer(int primitiveCount)
@@ -86,9 +85,9 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             Texture2D iTexture;
-            List<VertexPositionColorTexture> iVertexList;
+            List<VertexPositionTextureDataColor> iVertexList;
 
-            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionColorTexture>>> keyValuePairs = m_drawQueue.GetEnumerator();
+            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_drawQueue.GetEnumerator();
 
             fx.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(m_GraphicsDevice));
             fx.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
@@ -119,45 +118,20 @@ namespace Ypsilon.Core.Graphics
             m_Pixel.Dispose();
         }
 
+
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue)
         {
-            List<VertexPositionColorTexture> vertexList;
-
-            if (m_drawQueue.ContainsKey(texture))
-            {
-                vertexList = m_drawQueue[texture];
-            }
-            else
-            {
-                if (m_vertexListQueue.Count > 0)
-                {
-                    vertexList = m_vertexListQueue.Dequeue();
-
-                    vertexList.Clear();
-                }
-                else
-                {
-                    vertexList = new List<VertexPositionColorTexture>(1024);
-                }
-
-                m_drawQueue.Add(texture, vertexList);
-            }
-
-            position += m_zOffset;
-
-            PreTransformedQuad q = new PreTransformedQuad(position, area, hue);
-
-            for (int i = 0; i < q.Vertices.Length; i++)
-            {
-                vertexList.Add(q.Vertices[i]);
-            }
-
-            return true;
+            return DrawSprite(texture, position, area, new Vector4(0, 0, 1, 1), hue, Vector4.Zero);
         }
 
         public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue)
         {
-            List<VertexPositionColorTexture> vertexList;
+            return DrawSprite(texture, position, area, uv, hue, Vector4.Zero);
+        }
+
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue, Vector4 data)
+        {
+            List<VertexPositionTextureDataColor> vertexList;
 
             if (m_drawQueue.ContainsKey(texture))
             {
@@ -173,7 +147,7 @@ namespace Ypsilon.Core.Graphics
                 }
                 else
                 {
-                    vertexList = new List<VertexPositionColorTexture>(1024);
+                    vertexList = new List<VertexPositionTextureDataColor>(1024);
                 }
 
                 m_drawQueue.Add(texture, vertexList);
@@ -181,7 +155,7 @@ namespace Ypsilon.Core.Graphics
 
             position += m_zOffset;
 
-            PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue);
+            PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue, data);
 
             for (int i = 0; i < q.Vertices.Length; i++)
             {

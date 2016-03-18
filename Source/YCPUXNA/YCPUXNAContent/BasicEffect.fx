@@ -9,6 +9,7 @@ struct VertexShaderInput
 {
 	float4 Position : POSITION0;
 	float2 TexUV : TEXCOORD0;
+	float4 Data : TEXCOORD1;
 	float4 Hue : COLOR0;
 };
 

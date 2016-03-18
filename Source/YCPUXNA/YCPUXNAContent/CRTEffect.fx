@@ -9,25 +9,17 @@ struct VertexShaderInput
 {
 	float4 Position : POSITION0;
 	float2 TexUV : TEXCOORD0;
+	float4 Data : TEXCOORD1;
 	float4 Hue : COLOR0;
 };
 
 struct VertexShaderOutput
 {
 	float4 Position : POSITION0;
-	float2 TexUV : TexCoord0;
+	float2 TexUV : TEXCOORD0;
+	float4 Data : TEXCOORD1;
 	float4 Hue : COLOR0;
 };
-
-// Apply radial distortion to the given coordinate. 
-float2 radialDistortion(float2 coord, float2 pos)
-{
-	float distortion = 0.05;
-
-	float2 cc = pos - 0.5;
-	float dist = dot(cc, cc) * distortion;
-	return coord * (pos + cc * (1.0 + dist) * dist) / pos;
-}
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
@@ -39,9 +31,34 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	output.Position.xy += float2(1 / Viewport.x, -1 / Viewport.y); // correct texel
 
 	output.TexUV = input.TexUV;
+	output.Data = input.Data;
 	output.Hue = input.Hue;
 
 	return output;
+}
+
+// Apply radial distortion to the given coordinate. 
+float2 radialDistortion(float2 coord, float2 pos)
+{
+	float distortion = 0.07;
+
+	float2 cc = pos - 0.5;
+	float dist = dot(cc, cc) * distortion;
+	return coord * (pos + cc * (1.0 + dist) * dist) / pos;
+}
+
+float4 ApplyMoire(VertexShaderOutput input, float4 color)
+{
+	int pp = (int)(input.Data.x * input.TexUV.x) % 3;
+	float4 muls = float4(0, 0, 0, 1);
+	float vertsColor = 0.9, vertsColor2 = 0.75;
+
+	if (pp == 1) { muls.r = 1; muls.g = vertsColor; muls.b = vertsColor2; }
+	else if (pp == 2) { muls.r = vertsColor2;  muls.g = 1; muls.b = vertsColor; }
+	else { muls.r = vertsColor; muls.g = vertsColor2; muls.b = 1; }
+	color = color * muls;
+
+	return color;
 }
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
@@ -50,7 +67,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
 		discard;
 	float4 color = tex2D(Texture, uv) * input.Hue;
-	return color;
+
+	return ApplyMoire(input, color);
 }
 
 technique Technique1

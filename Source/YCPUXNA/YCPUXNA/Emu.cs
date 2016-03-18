@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using YCPUXNA.Providers;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
@@ -18,8 +20,7 @@ namespace YCPUXNA
             private set;
         }
 
-        const int window_w = 640, window_h = 480;
-
+        private const int window_w = 640, window_h = 480;
         private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
@@ -110,8 +111,13 @@ namespace YCPUXNA
             // clear the screen:
             m_SpriteBatch.Begin(new Color(32, 32, 32, 255));
 
-            // draw the debug console
-            m_SpriteBatch.DrawSprite(debug, Vector3.Zero, new Vector2(window_w, window_h), Color.Lime);
+            // draw the debug console device
+            m_SpriteBatch.DrawSprite(debug, 
+                Vector3.Zero, 
+                new Vector2(window_w, window_h), 
+                new Vector4(0, 0, 1, 1), 
+                new Color(64, 255, 64), 
+                new Vector4(window_w, window_h, 0, 0));
 
             // render the devices
             m_DeviceTextures.Clear();
@@ -121,7 +127,10 @@ namespace YCPUXNA
                 m_SpriteBatch.DrawSprite(
                     (m_DeviceTextures[i] as YTexture).Texture,
                     new Vector3(window_w, 0, 0),
-                    new Vector2(window_w, window_h), Color.White);
+                    new Vector2(window_w, window_h),
+                    new Vector4(0, 0, 1, 1),
+                    Color.White,
+                    new Vector4(window_w, window_h, 0, 0));
             }
 
             // End the spritebatch.
@@ -161,15 +170,12 @@ namespace YCPUXNA
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, true))
             {
-                m_Emulator.RunCycles(100);
+                
+                m_Emulator.RunCycles(10000000);
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
-#if DEBUG
-                m_Emulator.LoadBinaryToCPU("../../Tests/testconsole.asm.bin", 0x0000);
-#else
-                m_Emulator.LoadBinaryToCPU("../Tests/bld/testconsole.asm.bin", 0x0000);
-#endif
+                m_Emulator.LoadBinaryToCPU("../Examples/testconsole.asm.bin", 0x0000);
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
             {
@@ -190,6 +196,8 @@ namespace YCPUXNA
             YCPU cpu = m_Emulator.CPU;
 
             // registers - general purpose, then system.
+            ConsoleWrite(0, 0, DateTime.Now.ToString());
+
             int r_y = 2;
             ConsoleWrite(53,  r_y - 1, "Registers");
             ConsoleWrite(53,  r_y + 1, string.Format("r0: ${0:X4}", cpu.R0));
@@ -207,13 +215,13 @@ namespace YCPUXNA
             ConsoleWrite(52, r_y + 13, string.Format("usp: ${0:X4}", cpu.USP));
             ConsoleWrite(52, r_y + 14, string.Format("ssp:*${0:X4}", cpu.SSP));
 
-            ConsoleWrite(53,  r_y + 19, "ps bits:");
-            ConsoleWrite(53,  r_y + 20, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
+            ConsoleWrite(53,  r_y + 16, "ps bits:");
+            ConsoleWrite(53,  r_y + 17, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
                 cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_H ? "I" : ".", ".",
                 cpu.PS_Q ? "Q" : ".", cpu.PS_V ? "V" : ".", cpu.PS_W ? "W" : ".", "."));
 
-            ConsoleWrite(53,  r_y + 22, "fl bits:");
-            ConsoleWrite(53,  r_y + 23, string.Format("{0}{1}{2}{3}",
+            ConsoleWrite(53,  r_y + 18, "fl bits:");
+            ConsoleWrite(53,  r_y + 19, string.Format("{0}{1}{2}{3}",
                 cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
 
             ConsoleWrite(53,  r_y + 25, "Segments:");
@@ -242,22 +250,11 @@ namespace YCPUXNA
         private void ConsoleWrite(int x, int y, string s)
         {
             m_Curses.WriteString(x, y, s);
-            // Console.SetCursorPosition(x, y);
-            // Console.Write(s);
         }
 
         private string ConsoleSegmentRegisterString(uint register)
         {
             return string.Format("${0:X8}", register);
-            /*ushort bank = (ushort)(cache0 & 0x00ff);
-            ushort device = (ushort)((cache0 >> 8) & 0x0f);
-            return string.Format("${0:X1} ${1:X2} {2}{3}{4}{5}",
-                    device, bank,
-                    (cache0 & 0x8000) != 0 ? "S" : ".",
-                    (cache0 & 0x4000) != 0 ? "W" : ".",
-                    (cache0 & 0x2000) != 0 ? "P" : ".",
-                    (cache0 & 0x1000) != 0 ? "A" : "."
-                    );*/
         }
         #endregion
     }
