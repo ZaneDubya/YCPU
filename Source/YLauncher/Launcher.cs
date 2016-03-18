@@ -10,13 +10,13 @@ namespace YLauncher
     {
         public static void Main(string[] args)
         {
-            /*string path = Assembly.GetExecutingAssembly().Location;
+            string path = Assembly.GetExecutingAssembly().Location;
             path = Path.GetDirectoryName(path);
             Directory.SetCurrentDirectory(path + @"\App");
             // Environment.CurrentDirectory += @"\App";
-            Assembly asm = Assembly.LoadFrom(Environment.CurrentDirectory + @"\YCPUXNA.exe");
+            /*Assembly asm = Assembly.LoadFrom(Environment.CurrentDirectory + @"\YCPUXNA.exe");
             asm.EntryPoint.Invoke(null, new object[] { new string[0] });*/
-            Process.Start(@"App\YCPUXNA.exe");
+            Process.Start(@"YCPUXNA.exe");
         }
 
         /// <summary>

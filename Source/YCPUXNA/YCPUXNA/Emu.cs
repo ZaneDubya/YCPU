@@ -69,6 +69,8 @@ namespace YCPUXNA
             IsMouseVisible = true;
 
             base.Initialize();
+
+            SystemFunctions.SetFocus(this.Window.Handle);
         }
 
         protected override void UnloadContent()
