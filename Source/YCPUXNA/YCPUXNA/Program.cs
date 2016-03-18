@@ -8,8 +8,8 @@ namespace YCPUXNA
     {
         static string[] s_DefaultArgs = new string[] { "-emu", "../Examples/testconsole.asm" };
         const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
-            "    1. Assemble default 'testconsole.asm' file.\n    2. Disassemble default 'testconsole.asm.bin' file.\n" + 
-            "    3. Run emulator!\n    4. Run assembly tests.\n    5. Exit.";
+            "    1. Assemble default 'testconsole.asm' file.\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
+            "    2. Run emulator!\n    3. Run assembly tests.\n    4. Exit.";
 
         // default entry point
         static void Main(string[] args)
@@ -29,19 +29,19 @@ namespace YCPUXNA
                             args = new string[] { "-asm", "../Examples/testconsole.asm" };
                             waitForKey = false;
                             break;
-                        case '2':
+                        /*case '2':
                             args = new string[] { "-disasm", "../Examples/testconsole.asm.bin" };
                             waitForKey = false;
-                            break;
-                        case '3':
+                            break;*/
+                        case '2':
                             args = new string[] { "-emu" };
                             waitForKey = false;
                             break;
-                        case '4':
+                        case '3':
                             args = new string[] { "-test" };
                             waitForKey = false;
                             break;
-                        case '5':
+                        case '4':
                             waitForKey = false;
                             break;
                     }
