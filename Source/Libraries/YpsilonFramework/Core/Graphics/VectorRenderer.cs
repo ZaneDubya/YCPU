@@ -20,7 +20,7 @@ namespace Ypsilon.Core.Graphics
         public VectorRenderer(GraphicsDevice g, ContentManager c)
         {
             m_Graphics = g;
-            m_Effect = c.Load<Effect>("DataEffect");
+            m_Effect = c.Load<Effect>("BasicEffect");
 
             // create vertex and index collections
             m_WorldLines = new VertexList(c_MaxPrimitives, 2);

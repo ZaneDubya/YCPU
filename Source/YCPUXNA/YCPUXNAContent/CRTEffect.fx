@@ -66,7 +66,14 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float2 uv = radialDistortion(input.TexUV, input.TexUV);
 	if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
 		discard;
-	float4 color = tex2D(Texture, uv) * input.Hue;
+	
+	float var = 0.95;
+	float var2 = (1 / (1 - var));
+	float2 falloff = pow(abs(uv * 2 - 1), 2);
+	falloff.x = (falloff.x < var) ? 1 : (1 - falloff.x) * var2;
+	falloff.y = (falloff.y < var) ? 1 : (1 - falloff.y) * var2;
+
+	float4 color = tex2D(Texture, uv) * input.Hue * falloff.x * falloff.y;
 
 	return ApplyMoire(input, color);
 }

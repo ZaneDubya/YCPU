@@ -17,6 +17,7 @@ struct VertexShaderOutput
 {
 	float4 Position : POSITION0;
 	float2 TexUV : TexCoord0;
+	float4 Data : TEXCOORD1;
 	float4 Hue : COLOR0;
 };
 
@@ -30,6 +31,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	output.Position.xy += float2(1 / Viewport.x, -1 / Viewport.y); // correct texel
 
 	output.TexUV = input.TexUV;
+	output.Data = input.Data;
 	output.Hue = input.Hue;
 
 	return output;

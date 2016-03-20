@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading;
+﻿using System.Collections.Generic;
 using Ypsilon.Emulation.Processor;
-using System.Collections.Generic;
 
 namespace Ypsilon.Emulation
 {
