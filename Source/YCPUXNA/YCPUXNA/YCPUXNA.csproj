@@ -155,8 +155,9 @@
       </Target>
     -->
   <Target Name="AfterBuild">
-    <Exec Command="xcopy.exe  $(OutputPath)..\..\Documentation $(OutputPath)..\Documentation\ /e /Y /q" />
-    <Exec Command="xcopy.exe  $(OutputPath)..\..\Examples $(OutputPath)..\Examples\ /e /Y /q" />
+    <Exec Command="xcopy /e /Y /q $(OutputPath)..\..\Documentation $(OutputPath)..\Documentation\" />
+    <Exec Command="xcopy /e /Y /q $(OutputPath)..\..\Examples $(OutputPath)..\Examples\" />
+    <Exec Command="move  /Y ..\..\..\Emulator\App\..\Documentation\readme.txt ..\..\..\Emulator\App\..\" />
     <!-- <ItemGroup>
       <Doc_Files Include="$(OutputPath)\..\..\Documentation\**\*.*" />
       <Exa_Files Include="$(OutputPath)\..\..\Examples\**\*.*" />
