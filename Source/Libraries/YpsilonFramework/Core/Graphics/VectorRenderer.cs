@@ -60,8 +60,6 @@ namespace Ypsilon.Core.Graphics
             if (polygon == null)
                 return;
 
-            Vector4 data = color.ToVector4();
-
             int length = polygon.Length - (closePolygon ? 0 : 1);
             for (int i = 0; i < length; i++)
             {
@@ -69,9 +67,9 @@ namespace Ypsilon.Core.Graphics
                     throw new Exception("Raster graphics count has exceeded limit.");
 
                 m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
-                m_WorldLines.Vertices[m_WorldLines.Index++].Data = data;
+                m_WorldLines.Vertices[m_WorldLines.Index++].Hue = color;
                 m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
-                m_WorldLines.Vertices[m_WorldLines.Index++].Data = data;
+                m_WorldLines.Vertices[m_WorldLines.Index++].Hue = color;
                 m_WorldLines.Count++;
             }
         }
@@ -106,8 +104,6 @@ namespace Ypsilon.Core.Graphics
             if (polygon == null)
                 return;
 
-            Vector4 data = color.ToVector4();
-
             int count = polygon.Length / 3;
             for (int i = 0; i < count; i++)
             {
@@ -115,11 +111,11 @@ namespace Ypsilon.Core.Graphics
                     throw new Exception("Raster graphics count has exceeded limit.");
 
                 m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
                 m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 1], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
                 m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 2], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
                 m_WorldTris.Count++;
             }
         }

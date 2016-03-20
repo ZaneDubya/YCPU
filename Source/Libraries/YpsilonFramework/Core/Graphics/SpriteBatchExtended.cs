@@ -18,6 +18,11 @@ namespace Ypsilon.Core.Graphics
         private Vector3 m_zOffset = new Vector3();
         public float ZOffset { set { m_zOffset = new Vector3(0, 0, value); } }
 
+        public GraphicsDevice Graphics
+        {
+            get { return m_GraphicsDevice; }
+        }
+
         public SpriteBatchExtended(Game game)
         {
             m_Game = game;
