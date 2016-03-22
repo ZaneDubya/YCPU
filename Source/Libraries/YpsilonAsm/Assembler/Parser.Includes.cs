@@ -14,7 +14,27 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        bool IncludeBinary(List<string> tokens, ParserState state)
+        private bool IncludeAsm(List<string> tokens, ParserState state)
+        {
+            if (tokens.Count == 1)
+                throw new Exception(string.Format("No file specified for .include pragma.", tokens[1]));
+
+            tokens[1] = tokens[1].Replace("\"", string.Empty);
+            string pathToAsmFile = state.WorkingDirectory + @"\" + tokens[1];
+
+            string asmFileContents = getFileContents(pathToAsmFile);
+            if (asmFileContents == null)
+                throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
+            List<string> includeLines = Common.SplitString(asmFileContents, "\n");
+
+            m_Lines.InsertRange(m_CurrentLine, includeLines);
+            m_CurrentLine--;
+            m_Lines.RemoveAt(m_CurrentLine);
+
+            return true;
+        }
+
+        private bool IncludeBinary(List<string> tokens, ParserState state)
         {
             if (tokens.Count == 1)
                 throw new Exception(string.Format("No file specified for .incbin pragma.", tokens[1]));
@@ -47,7 +67,7 @@ namespace Ypsilon.Assembler
             return true;
         }
 
-        byte[] GetBytesFromFile(string path)
+        private byte[] GetBytesFromFile(string path)
         {
             try
             {
@@ -58,6 +78,24 @@ namespace Ypsilon.Assembler
             {
                 return null;
             }
+        }
+
+        private string getFileContents(string in_path)
+        {
+            if (!File.Exists(in_path))
+            {
+                return null;
+            }
+
+            string in_code = null;
+            using (StreamReader sr = new StreamReader(in_path))
+            {
+                in_code = sr.ReadToEnd().Trim();
+            }
+
+            if (in_code == string.Empty)
+                return null;
+            return in_code;
         }
     }
 }

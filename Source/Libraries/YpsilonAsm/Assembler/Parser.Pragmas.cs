@@ -36,6 +36,18 @@ namespace Ypsilon.Assembler
                 {
 
                 }
+                else if (pragma == ".alignglobals")
+                {
+                    if (tokens.Count != 2)
+                        throw new Exception("alignglobals pragma takes a single parameter.");
+                    int value;
+                    if (!int.TryParse(tokens[1], out value))
+                        throw new Exception("alignglobals pragma parameter must be an integer.");
+                    if (value < 1 || value > 4)
+                        throw new Exception("alignglobals pragma parameter must be an integer between 1 and 4.");
+                    m_Alignment = value;
+                    return true;
+                }
                 else if (pragma == ".checkpc")
                 {
 
@@ -50,7 +62,7 @@ namespace Ypsilon.Assembler
                 }
                 else if (pragma == ".include")
                 {
-
+                    return IncludeAsm(tokens, state);
                 }
                 else if (pragma == ".macro")
                 {

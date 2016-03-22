@@ -22,6 +22,14 @@ namespace Ypsilon.Assembler
             m_Global = new Scope(0, 0);
         }
 
+        public bool IsScopeOpen
+        {
+            get
+            {
+                return GetLastOpenScope() == m_Global;
+            }
+        }
+
         public void ScopeOpen(int address, int line)
         {
             m_Scopes.Add(new Scope(address, line));

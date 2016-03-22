@@ -13,6 +13,10 @@ namespace Ypsilon.Assembler
 {
     public partial class Parser
     {
+        private List<string> m_Lines;
+        private int m_CurrentLine = 0;
+        private int m_Alignment = 1;
+
         public Parser()
         {
             Initialize();
@@ -22,15 +26,15 @@ namespace Ypsilon.Assembler
         {
             ParserState state = new ParserState(this);
             state.WorkingDirectory = workingDirectory;
-            List<string> lines = Common.SplitString(code, "\n");
 
-            int indexOfCurrentLine = 0;
+            m_Lines = Common.SplitString(code, "\n");
+            m_CurrentLine = 0;
 
             // pass 1: assemble the assembly file into machine code
-            for (int i = 0; i < lines.Count; i++)
+            for (int i = 0; i < m_Lines.Count; i++)
             {
-                string line = lines[i];
-                indexOfCurrentLine++;
+                string line = m_Lines[i];
+                m_CurrentLine++;
 
                 // trim whitespace at tail/end and discard empty lines
                 string stripped = StripComments(line);
@@ -46,12 +50,12 @@ namespace Ypsilon.Assembler
 
                     try
                     {
-                        AssembleLine(indexOfCurrentLine, currentLine, state);
+                        AssembleLine(m_CurrentLine, currentLine, state);
                     }
                     catch (Exception ex)
                     {
-                        AddMessageLine(string.Format("Line {0}: {1}.", indexOfCurrentLine, ex.Message));
-                        ErrorLine = indexOfCurrentLine;
+                        AddMessageLine(string.Format("Line {0}: {1}.", m_CurrentLine, ex.Message));
+                        ErrorLine = m_CurrentLine;
                         return null;
                     }
                 }
@@ -74,7 +78,7 @@ namespace Ypsilon.Assembler
             catch (Exception ex)
             {
                 AddMessageLine(string.Format("Error while updating labels. {0}", ex.Message));
-                ErrorLine = indexOfCurrentLine;
+                ErrorLine = m_CurrentLine;
                 return null;
             }
 
@@ -106,6 +110,12 @@ namespace Ypsilon.Assembler
 
             if (LineSearch.MatchLabel(line))
             {
+                if (!state.Scopes.IsScopeOpen) // global scope
+                {
+                    while ((state.Code.Count % m_Alignment) != 0)
+                        state.Code.Add(0x00);
+                }
+
                 // parse label and determine if there is anything else to parse on this line.
                 int remaiderLineContentIndex = ParseLabel(line, state);
                 if (remaiderLineContentIndex <= 0)

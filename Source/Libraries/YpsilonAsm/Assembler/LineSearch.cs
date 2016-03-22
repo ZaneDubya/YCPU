@@ -25,7 +25,7 @@ namespace Ypsilon.Assembler
             return false;
         }
 
-        private static string m_Pragmas = "target|alu_width|advance|alias|checkpc|dat8|dat16|incbin|include|macro|macend|org|require|reserve|scope|scend|data|text";
+        private static string m_Pragmas = "advance|alias|alignglobals|checkpc|dat8|dat16|incbin|include|macro|macend|org|require|reserve|scope|scend|data|text";
 
         public static bool MatchPragma(string line)
         {
