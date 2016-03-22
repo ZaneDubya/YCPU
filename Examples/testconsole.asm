@@ -58,18 +58,22 @@ ResetInt:
     ; use r5 as index to onscreen char, starting at y = 0, x = 0
     lod     r5, $0000
     
-    checkForKB:
-        jsr     GetKeyboardEvents
+    Update:
+        jsr     GetKeyboardEvents   ; R0 = number of events, 16bit events copied to $7002-$701F
         cmp     r0, 0
-        beq     checkForKB
+        beq     Update
     
-        lod     r1, $2800            ; yellow on blue
+        lod     r1, $2800            ; hi byte is color: yellow on blue
         lod     r6, $7002            ; get first char, written in $7002 (see GetKeyboardEvents)
         writeSingleChar:
             lod     r2, [r6]
             adi     r6, 2
+            lod     r3, r2
+            rnr     r3, 8
+            and     r3, 0x000f
+            cmp     r3, 3
+            bne     writeSingleChar
             and     r2, 0x00ff
-            cmp     r2, 0x0D
             bne     writeChar
             baw     writeSingleChar
         writeChar:
@@ -78,7 +82,7 @@ ResetInt:
             adi     r5, 2
             dec     r0
             bne     writeSingleChar
-        baw     checkForKB
+        baw     Update
 }
 
 ; === GetKeyboardEvents ========================================================

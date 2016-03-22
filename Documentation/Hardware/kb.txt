@@ -10,17 +10,16 @@ Behaviour:
     HWQ $02:
     R1  R2?     Message
     $00 Y       Set mode based on R2. 
-                    Default: get only press events, where possible translated to ASCII.
+                    Default: get only press events.
                     R2 & $01 = get press, up, and down events.
-                    R2 & $02 = do not translate presses to ASCII.
                 All pending events cleared. Returns MSG_ACK
                 
-    $01 Y       Get pending events. Memory at [R2] set as follows:
+    $01 Y       Get pending events. Memory at DS[R2] set as follows:
                     + $0000 = count of events (max 15)
-                    + $0001 = event 0
                     + $0002 = event 1
+                    + $0004 = event 2
                        ...
-                    + $000F = event 15
+                    + $001E = event 15
                 If event count is less than 15, only memory up to the number
                 of pending events will be set.
                 
@@ -30,8 +29,9 @@ Format of keyboard events:
         S = shift down
         A = alt down
         C = ctrl down
-        E = event type (1 = up, 2 = down, 3 = press, 4 = ascii press)
+        E = event type (1 = up, 2 = down, 3 = press)
         K = key-code.
-            k is ASCII if the event type is 4, otherwise, a virtual key code.
+            k is a virtual key code.
             VKs are detailed at https://msdn.microsoft.com/en-us/library/ms927178.aspx.
+            Some VK->ASCII are at http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
         
