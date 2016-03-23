@@ -26,7 +26,11 @@ namespace YCPUXNA
                     switch (cki.KeyChar)
                     {
                         case '1':
+#if DEBUG
+                            args = new string[] { "-asm", "../../Examples/testconsole.asm" };
+#else
                             args = new string[] { "-asm", "../Examples/testconsole.asm" };
+#endif
                             waitForKey = false;
                             break;
                         /*case '2':
@@ -34,7 +38,11 @@ namespace YCPUXNA
                             waitForKey = false;
                             break;*/
                         case '2':
+#if DEBUG
+                            args = new string[] { "-emu", "../../Examples/testconsole.asm.bin" };
+#else
                             args = new string[] { "-emu", "../Examples/testconsole.asm.bin" };
+#endif
                             waitForKey = false;
                             break;
                         case '3':
