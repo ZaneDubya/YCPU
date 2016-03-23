@@ -20,12 +20,12 @@ namespace Ypsilon.Assembler
             {
                 if (pragma == ".dat8")
                 {
-                    ParseData8(line.Replace(".dat8", string.Empty), state);
+                    ParseData8(line.Replace(".dat8", string.Empty).Trim(), state);
                     return true;
                 }
                 else if (pragma == ".dat16")
                 {
-                    ParseData16(line.Replace(".dat16", string.Empty), state);
+                    ParseData16(line.Replace(".dat16", string.Empty).Trim(), state);
                     return true;
                 }
                 else if (pragma == ".advance")

@@ -150,9 +150,9 @@ namespace Ypsilon.Assembler
                 }
             }
 
-            if (field != string.Empty)
+            if (field.Trim() != string.Empty)
             {
-                dataFields.Add(field);
+                dataFields.Add(field.Trim());
             }
 
             GenerateMachineCodeForDataFields(dataFields, DataFieldTypes.Int8, state);
