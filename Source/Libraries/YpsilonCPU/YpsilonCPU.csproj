@@ -37,6 +37,7 @@
     <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Emulation\Devices\Graphics\MemoryBankLEM.cs" />
     <Compile Include="Emulation\Devices\Input\KeyboardDevice.cs" />
+    <Compile Include="Emulation\Devices\Storage\CRW200.cs" />
     <Compile Include="Emulation\Emulator.cs" />
     <Compile Include="Emulation\Processor\MemoryChunk.cs" />
     <Compile Include="Emulation\IMemoryInterface.cs" />
@@ -58,9 +59,7 @@
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Emulation\Devices\Storage\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

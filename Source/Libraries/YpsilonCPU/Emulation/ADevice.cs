@@ -7,6 +7,7 @@ namespace Ypsilon.Emulation
     {
         public const ushort DeviceTypeGraphicsAdapter = 0x0001;
         public const ushort DeviceTypeKeyboard = 0x0002;
+        public const ushort DeviceTypeStorage = 0x0003;
 
         public const ushort MSG_NO_DEVICE = 0x0000;
         public const ushort MSG_ACK = 0x0001;
