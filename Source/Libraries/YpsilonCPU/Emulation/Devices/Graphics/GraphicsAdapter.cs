@@ -122,7 +122,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             MemoryLEM lem = (MemoryLEM)m_Bank;
             if (lem.SCRRAM_Delta)
             {
-
+                // this is read every frame.
             }
 
             if (lem.CHRRAM_Delta)
