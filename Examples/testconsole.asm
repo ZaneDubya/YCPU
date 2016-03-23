@@ -4,41 +4,117 @@
 
 ; === Interrupt vector table ===================================================
 ; Described in 2.D.6.
-.dat16  ResetInt,   ClockInt,   0x0000,     0x0000
+.dat16  ResetInt,   ClockInt,   DivZeroFlt, DoubleFault
+.dat16  StackFault, SegFault,   UnprivFault,UndefFault
 .dat16  0x0000,     0x0000,     0x0000,     0x0000
-.dat16  0x0000,     0x0000,     0x0000,     0x0000
-.dat16  0x0000,     0x0000,     0x0000,     0x0000
+.dat16  HWI,        BusRefresh, DebugQuery, SWI
 
-; === ClockInt =================================================================
-ClockInt:
+; === DivZeroFlt ===============================================================
+DivZeroFlt:
 {
-    psh r0, r1, r2, r3, fl      ; save register contents    
-    hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
-    lod     r0, $0000           ; Ensure the result is clear
-    lod     r1, $000a
-    and     r2, $003f
-    getTens:
-        cmp     r2, r1
-        buf     getOnes
-        add     r0, $0010
-        sub     r2, r1
-        baw     getTens
-    getOnes:
-        add     r0, r2
-    writeToScreen:
-        lod     r2, $0104 ; index 260
-        lod     r1, r0
-        asr     r0, 4
-        and     r1, $000f
-        add     r1, $2830   ; yellow on blue, char $30 + r1
-        sbi     r2, 2
-        sto     r1, ES[r2]
-        lod     r1, r0
-        add     r1, $2830   ; yellow on blue, char $30 + r1
-        sbi     r2, 2
-        sto     r1, ES[r2]
-    pop r0, r1, r2, r3, fl
-    rti
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "DivZeroFault", 0x00
+}
+
+; === DoubleFault ==============================================================
+DoubleFault:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "DoubleFault", 0x00
+}
+
+; === StackFault ===============================================================
+StackFault:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "StackFault", 0x00
+}
+
+; === SegFault =================================================================
+SegFault:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "SegFault", 0x00
+}
+
+; === UnprivFault ==============================================================
+UnprivFault:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "UnprivFault", 0x00
+}
+
+; === UndefFault ===============================================================
+UndefFault:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "UndefFault", 0x00
+}
+
+; === HWI ======================================================================
+HWI:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "HWI", 0x00
+}
+
+; === BusRefresh ===============================================================
+BusRefresh:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "BusRefresh", 0x00
+}
+
+; === DebugQuery ===============================================================
+DebugQuery:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "DebugQuery", 0x00
+}
+
+; === SWI ======================================================================
+SWI:
+{
+    lod     r6, txtFault
+    jmp     BSOD
+    txtFault:
+    .dat8 "SWI", 0x00
+}
+
+; === BSOD =====================================================================
+BSOD:
+{
+    ; disable clock
+    lod     r0, 0
+    hwq     $83
+    
+    jsr ClearScreen
+    
+    ; write text at location in r6.
+    lod     r1, $8200            ; yellow on blue
+    lod     r5, $0000            ; location in video memory
+    jsr     WriteChars
+    
+    HangAtBSOD:
+        baw HangAtBSOD
 }
 
 ; === ResetInt =================================================================
@@ -49,11 +125,16 @@ ResetInt:
     lod     r0, $0000
     sto     r0, sp
     
-    ;set up clock interrupt, devices, mmu, etc.
+    ;set up devices, mmu, etc.
     jsr     Setup
     
     ; show the 'NYA ELEKTRISKA' screen
     jsr     ShowStartScreen
+    jsr     ClearScreen
+    
+    ; enable clock interrupt - tick at 100hz
+    lod     r0, 100
+    hwq     $83
     
     ; use r5 as index to onscreen char, starting at y = 0, x = 0
     lod     r5, $0000
@@ -83,6 +164,44 @@ ResetInt:
             dec     r0
             bne     writeSingleChar
         baw     Update
+}
+
+; === ClockInt =================================================================
+ClockInt:
+{
+    psh     r0, r1, r2, r3, fl  ; save register contents    
+    hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
+    psh     r0, r1, r2          ; save RTC time.
+    
+    pop     r2
+    psh     r2
+    and     r2, $003f           ; r2 = hex seconds
+    jsr     HexToDec            ; r0 = dec seconds
+    lod     r1, $003c
+    jsr     WriteDecToScreen
+    
+    pop     r2
+    asr     r2, 8               ; r2 = hex minutes
+    jsr     HexToDec            ; r0 = dec minutes
+    lod     r1, $0036
+    jsr     WriteDecToScreen
+    
+    lod     r0, $283A           ; r0 is yellow on blue colon
+    sto     r0, ES[r1]
+    
+    pop     r2
+    ;psh     r2
+    and     r2, $001f
+    jsr     HexToDec            ; r0 = dec hours
+    lod     r1, $0030
+    jsr     WriteDecToScreen
+    
+    lod     r0, $283A           ; r0 is yellow on blue colon
+    sto     r0, ES[r1]
+    
+    pop     r0
+    pop     r0, r1, r2, r3, fl
+    rti
 }
 
 ; === GetKeyboardEvents ========================================================
@@ -153,10 +272,6 @@ Setup:
     ; push r3 (calling PC) to stack
     psh     r3
     
-    ; enable clock interrupt - tick at 100hz
-    lod     r0, 100
-    hwq     $83
-    
     rts
 }
 
@@ -164,11 +279,7 @@ Setup:
 ; Draws the NE logo on r0 blue screen
 ShowStartScreen:
 {
-    ; clear screen
-    lod     r1, $0220    ; space char with blue background
-    lod     r2, 384      ; words to write
-    lod     r5, $0000    ; start of video memory
-    jsr.f   FillMemoryWords, $80000000
+    jsr ClearScreen
     
     ; write logo in center of screen.
     lod     r1, $8200            ; yellow on blue
@@ -182,9 +293,25 @@ ShowStartScreen:
         beq     LastLine
         bne     writeLine
     lastLine:
-        add     r5, $3C          ; skip line, left 4 chars
-        add     r2, 4
+        add     r5, $3C          ; skip line, align left 4 chars
         jsr     WriteChars
+    rts
+    
+    ; boot up txt - local to this routine
+    txtBootText:
+    .dat8 "  \\ |  ___", 0x00
+    .dat8 "|\\ \\|  ___", 0x00
+    .dat8 "| \\       ", 0x00
+    .dat8 "NYA ELEKTRISKA", 0x00
+}
+
+; === ClearScreen ==============================================================
+ClearScreen:
+{
+    lod     r1, $0220       ; space char with blue background
+    lod     r2, 384         ; words to write
+    lod     r5, $0000       ; start of video memory
+    jsr     FillMemoryWords ; far call example: jsr.f FillMemoryWords, $80000000
     rts
 }
 
@@ -198,13 +325,13 @@ WriteChars:
     psh     r0, r5              ; push r0 r5 to stack
     ssg     ds                  ; push DS register to stack
     ssg     cs
-    lsg     ds                  ; DS = CS (ROM at $00000000) (we are going to be reading from txtBootText).
-    writeChar:                  ; copy r2 chars from r6 to r5
-        lod.8   r0, DS[r6]
+    lsg     ds                  ; DS = CS (ROM@$00000000) (reading from ROM).
+    writeChar:                  ; copy chars from ds[r6] to es[r5] 
+        lod.8   r0, DS[r6]      ; ... until ds[r6] == 0x00.
         beq     return
-        inc     r6
         orr     r0, r1
         sto     r0, ES[r5]
+        inc     r6
         adi     r5, 2
         baw     writeChar
     return:
@@ -230,12 +357,49 @@ FillMemoryWords:
         cmp     r5, r2          ; if r5
         bne     copyWord
     pop r2, r5                  ; restore r2 and r5
-    rts.f
+    rts
 }
 
-; boot up txt
-txtBootText:
-.dat8 "  \\ |  ___", 0x00
-.dat8 "|\\ \\|  ___", 0x00
-.dat8 "| \\       ", 0x00
-.dat8 "NYA ELEKTRISKA", 0x00
+; === HexToDec =================================================================
+; Converts two digit hex in r2 to three digit decimal in r0.
+; Wipes out r2, r1, & r0.
+HexToDec:
+{
+    lod     r0, $0000           ; r0 = 0
+    lod     r1, $0064           ; r1 = 100
+    getHundreds:
+        cmp     r2, r1
+        buf     getTensBegin    ; if r2 < 100 goto getTensBegin
+        add     r0, $0100       ; else r0 += 100
+        sub     r2, r1          ;   r2 -= 100
+        baw     getHundreds
+    getTensBegin:
+        lod     r1, $000a       ; r1 = 10
+    getTens:
+        cmp     r2, r1
+        buf     getOnes         ; if r2 < 10 goto getOnes
+        add     r0, $0010       ; else r0 += 10
+        sub     r2, r1
+        baw     getTens
+    getOnes:
+        add     r0, r2
+        rts
+}
+
+; === WriteDecToScreen =========================================================
+; Writes two digit dec in r0 to ES at r1. Wipes out r0, r1 += 4.
+WriteDecToScreen:
+{
+    psh     r0
+    asr     r0, 4
+    and     r0, $000f
+    add     r0, $2830   ; yellow on blue, char $30 + r1
+    sto     r0, ES[r1]
+    adi     r1, 2
+    pop     r0
+    and     r0, $000f
+    add     r0, $2830   ; yellow on blue, char $30 + r1
+    sto     r0, ES[r1]
+    adi     r1, 2
+    rts
+}
