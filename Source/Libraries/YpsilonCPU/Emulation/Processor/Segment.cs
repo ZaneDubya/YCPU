@@ -1,5 +1,4 @@
 ﻿using System;
-using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation.Processor
 {

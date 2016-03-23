@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ypsilon.Emulation.Processor
+﻿namespace Ypsilon.Emulation.Processor
 {
     class MemoryChunk : IMemoryInterface
     {

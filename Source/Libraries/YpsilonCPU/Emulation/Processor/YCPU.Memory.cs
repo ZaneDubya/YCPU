@@ -105,9 +105,6 @@ namespace Ypsilon.Emulation.Processor
         /// <summary>
         /// Reads an 8-bit value from the address specified.
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="execute"></param>
-        /// <returns>Return the value of the Int8 at this address.</returns>
         public byte ReadMemInt8(ushort address, SegmentIndex segment)
         {
             // Int8 accesses do not have to be 16-bit aligned. Only one memory access is needed.
@@ -123,9 +120,6 @@ namespace Ypsilon.Emulation.Processor
         /// <summary>
         /// Reads a 16-bit value from the address specified.
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="execute"></param>
-        /// <returns>Return the value of the Int16 at this address.</returns>
         public ushort ReadMemInt16(ushort address, SegmentIndex segment)
         {
             Segment s = GetSegment(segment);

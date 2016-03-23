@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Ypsilon.Emulation.Processor
+﻿namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
     {
@@ -27,7 +22,7 @@ namespace Ypsilon.Emulation.Processor
             SWI
         }
 
-        private void Interrupt(Interrupts interrupt, ushort? error_code = null)
+        private void Interrupt(Interrupts interrupt, ushort? errorCode = null)
         {
             // !!! Must handle stack_values
             // If this is not a reset interrupt, we should save PS and PC.
@@ -41,8 +36,8 @@ namespace Ypsilon.Emulation.Processor
                 PS_Q = (interrupt == Interrupts.HWI);
                 StackPush(0xffff, ps);
                 StackPush(0xffff, PC);
-                if (error_code != null)
-                    StackPush(0xffff, error_code.Value);
+                if (errorCode != null)
+                    StackPush(0xffff, errorCode.Value);
             }
             PC = ReadMemInt16((ushort)((ushort)interrupt * 2), SegmentIndex.IS);
             m_Cycles += 7;

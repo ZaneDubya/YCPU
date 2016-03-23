@@ -159,7 +159,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             for (uint i = 0; i < 0x10; i += 1)
             {
                 ushort color = (ushort)(m_Bank[0x0C00 + i * 2] + (m_Bank[0x0C00 + i * 2 + 1] << 8));
-                m_LEM_PALRAM[i] = (uint)(0xFF000000) | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
+                m_LEM_PALRAM[i] = 0xFF000000 | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
         }
 

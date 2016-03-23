@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ypsilon.Emulation.Processor
+﻿namespace Ypsilon.Emulation.Processor
 {
     partial class YCPU
     {
@@ -171,12 +169,6 @@ namespace Ypsilon.Emulation.Processor
             value = (ushort)(((operand & 0x1F00) >> 8) + 1);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="operand">Input: 16-bit machine code word</param>
-        /// <param name="value">Output: Value that PC should be set to</param>
-        /// <param name="unused">Output: Unused</param>
         private void BitPatternJMI(ushort operand, out ushort address, out uint addressFar, out bool isFarJump)
         {
             int addressingMode;

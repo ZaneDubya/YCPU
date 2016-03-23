@@ -52,9 +52,6 @@ namespace Ypsilon.Core.Graphics
         /// <summary>
         /// Creates a Curses display. Width and Height are in 8x8 character increments.
         /// </summary>
-        /// <param name="graphics"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
         public Curses(GraphicsDevice graphics, int width, int height, string font, bool useHorizSpacingPixel)
         {
             ScreenWidth = width;

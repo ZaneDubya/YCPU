@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Ypsilon.Emulation
+﻿namespace Ypsilon.Emulation
 {
     public interface ITexture
     {

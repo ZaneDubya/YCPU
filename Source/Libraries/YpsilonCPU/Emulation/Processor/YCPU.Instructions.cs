@@ -1219,7 +1219,7 @@ namespace Ypsilon.Emulation.Processor
             if (value != 0)
             {
                 uint register = (uint)R[(int)destination] << value;
-                uint lo_bits = (uint)(register & 0xFFFF0000) >> 16;
+                uint lo_bits = (register & 0xFFFF0000) >> 16;
                 R[(int)destination] = (ushort)((register & 0x0000FFFF) | lo_bits);
                 // C [Carry]       Not effected.
                 // V [Overflow]    Not effected.
@@ -1236,9 +1236,9 @@ namespace Ypsilon.Emulation.Processor
 
             if (value != 0)
             {
-                uint register = (uint)((ushort)R[(int)destination] >> value);
+                uint register = (uint)(R[(int)destination] >> value);
                 uint lo_mask = (uint)0x0000FFFF >> (16 - value);
-                uint lo_bits = (uint)(R[(int)destination] & lo_mask) << (16 - value);
+                uint lo_bits = (R[(int)destination] & lo_mask) << (16 - value);
                 R[(int)destination] = (ushort)((register & 0x0000FFFF) | lo_bits);
                 // C [Carry]       Not effected.
                 // V [Overflow]    Not effected.
@@ -1257,10 +1257,10 @@ namespace Ypsilon.Emulation.Processor
             {
                 uint out_carry = (uint)R[(int)destination] & (ushort)Math.Pow(2, (16 - value));
                 uint in_carry = (FL_C ? (uint)(Math.Pow(2, value - 1)) : 0);
-                uint register = (uint)((ushort)R[(int)destination] << value);
+                uint register = (uint)(R[(int)destination] << value);
                 uint hi_mask = 0xFFFF0000 ^ (uint)Math.Pow(2, 15 + value);
 
-                R[(int)destination] = (ushort)((uint)(register & 0x0000FFFF) | (uint)((register & hi_mask) >> 16) | (uint)in_carry);
+                R[(int)destination] = (ushort)(register & 0x0000FFFF | (register & hi_mask) >> 16 | in_carry);
                 FL_C = (out_carry != 0);
 
                 // V [Overflow]    Not effected.
@@ -1283,11 +1283,11 @@ namespace Ypsilon.Emulation.Processor
 
                 uint out_carry = (uint)R[(int)destination] & (ushort)Math.Pow(2, value - 1);
                 uint in_carry = (FL_C ? (uint)(Math.Pow(2, 16 - value)) : 0);
-                uint register = (uint)((ushort)R[(int)destination] >> value);
+                uint register = (uint)(R[(int)destination] >> value);
                 uint lo_mask = (uint)0x0000FFFF >> (17 - value);
-                uint lo_bits = (uint)(R[(int)destination] & lo_mask) << (17 - value);
+                uint lo_bits = (R[(int)destination] & lo_mask) << (17 - value);
 
-                R[(int)destination] = (ushort)((uint)(register & 0x0000FFFF) | lo_bits | (uint)in_carry);
+                R[(int)destination] = (ushort)(register & 0x0000FFFF | lo_bits | in_carry);
                 FL_C = (out_carry != 0);
                 // V [Overflow]    Not effected.
             }

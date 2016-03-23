@@ -67,7 +67,7 @@ namespace Ypsilon.Emulation.Processor
             info[0] = (ushort)((year << 8) + month);
             info[1] = (ushort)((day << 8) + hour);
             info[2] = (ushort)((minute << 8) + second);
-            info[3] = (ushort)(tick);
+            info[3] = tick;
             return info;
         }
     }

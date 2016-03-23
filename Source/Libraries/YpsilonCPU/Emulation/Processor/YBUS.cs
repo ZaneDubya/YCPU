@@ -151,8 +151,6 @@ namespace Ypsilon.Emulation.Processor
         /// <summary>
         /// Adds a device in the specified slot index. INDEX MUST BE 1 - 16.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="index"></param>
         public void RemoveDevice(ushort index)
         {
             if (index == 0 || index > 16)

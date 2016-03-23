@@ -29,7 +29,7 @@ namespace Ypsilon.Core.Input
                 if (m_keyChar != WinKeys.None)
                 {
                     char ch = CultureHandler.TranslateChar((char)m_keyChar);
-                    return (char)ch;
+                    return ch;
                 }
                 else
                     return '\0';
