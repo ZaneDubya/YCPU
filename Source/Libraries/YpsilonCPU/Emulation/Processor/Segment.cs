@@ -196,12 +196,12 @@ namespace Ypsilon.Emulation.Processor
             // get base
             if (IsDevice)
             {
-                uint b = (m_Register & c_SEGREG_MemBase);
+                uint b = (m_Register & c_SEGREG_DeviceBase);
                 m_Base = b << 8;
             }
             else
             {
-                uint b = (m_Register & c_SEGREG_DeviceBase);
+                uint b = (m_Register & c_SEGREG_MemBase);
                 m_Base = b << 8;
             }
         }

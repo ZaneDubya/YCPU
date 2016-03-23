@@ -140,7 +140,7 @@ namespace Ypsilon.Emulation.Processor
                 byte byte0 = s[address];
                 byte byte1 = s[(ushort)(address + 1)];
 
-                return (ushort)(byte1 << 8 + byte0);
+                return (ushort)((byte1 << 8) + byte0);
             }
             else
             {
