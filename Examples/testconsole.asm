@@ -16,16 +16,21 @@ ResetInt:
     ;set up devices, mmu, etc.
     jsr     Setup
     
-    ; show the 'NYA ELEKTRISKA' screen
+    ; show the 'NYA ELEKTRISKA' screen, then clear
     jsr     ShowStartScreen
     jsr     ClearScreen
+    ; top bar on screen
+    lod     r1, $2820       ; space char with yellow background
+    lod     r2, 32          ; words to write
+    lod     r5, $0000       ; start of video memory
+    jsr     FillMemoryWords ;
     
-    ; enable clock interrupt - tick at 100hz
-    lod     r0, 100
+    ; enable clock interrupt - tick at 120hz
+    lod     r0, 120
     hwq     $83
     
-    ; use r5 as index to onscreen char, starting at y = 0, x = 0
-    lod     r5, $0000
+    ; use r5 as index to onscreen char, starting at y = 1, x = 0
+    lod     r5, $0040
     
     Update:
         jsr     GetKeyboardEvents   ; R0 = number of events, 16bit events copied to $7002-$701F
@@ -61,35 +66,40 @@ ClockInt:
     hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
     psh     r0, r1, r2          ; save RTC time.
     
-    pop     r2
-    psh     r2
     and     r2, $003f           ; r2 = hex seconds
-    jsr     HexToDec            ; r0 = dec seconds
+    jsr     HexToDec            ; r0 = decimal seconds
     lod     r1, $003c
     jsr     WriteDecToScreen
     
     pop     r2
     asr     r2, 8               ; r2 = hex minutes
-    jsr     HexToDec            ; r0 = dec minutes
+    jsr     HexToDec            ; r0 = decimal minutes
     lod     r1, $0036
     jsr     WriteDecToScreen
     
-    lod     r0, $283A           ; r0 is yellow on blue colon
+    lod     r0, $283A           ; r0 = yellow on blue colon
     sto     r0, ES[r1]
     
     pop     r2
     ;psh     r2
     and     r2, $001f
-    jsr     HexToDec            ; r0 = dec hours
+    jsr     HexToDec            ; r0 = decimal hours
     lod     r1, $0030
     jsr     WriteDecToScreen
     
-    lod     r0, $283A           ; r0 is yellow on blue colon
+    lod     r0, $283A           ; r0 = yellow on blue colon
     sto     r0, ES[r1]
     
     pop     r0
     pop     r0, r1, r2, r3, fl
     rti
+}
+
+; === Getc =====================================================================
+; 
+Getc:
+{
+
 }
 
 ; === GetKeyboardEvents ========================================================
@@ -236,15 +246,15 @@ WriteChars:
 ; in:   r5 - first address to write to in ES
 FillMemoryWords:
 {
-    psh r2, r5                  ; save r2 and r5
-    asl r2, 1                   ; r2 = count of bytes
-    add r2, r5                  ; r2 = first address after all bytes are written
-    copyWord:
-        sto     r1, ES[r5]      ; save word in r1 to [r5], r5 = r5 + 2
+    psh     r0, r2, r5              ; save r0, r2, r5
+    asl     r2, 1                   ; r2 = count of bytes
+    add     r2, r5                  ; r2 = first address after all bytes are written
+    copyWordOneAtATime:
+        sto     r1, ES[r5]          ; save word in r1 to [r5], r5 = r5 + 2
         adi     r5, 2
-        cmp     r5, r2          ; if r5
-        bne     copyWord
-    pop r2, r5                  ; restore r2 and r5
+        cmp     r5, r2              ; if r5
+        bne     copyWordOneAtATime
+    pop     r0, r2, r5              ; restore r0, r2, r5
     rts
 }
 
@@ -275,7 +285,7 @@ HexToDec:
 }
 
 ; === WriteDecToScreen =========================================================
-; Writes two digit dec in r0 to ES at r1. Wipes out r0, r1 += 4.
+; Writes two digit dec in r0.8 to ES at r1. Wipes out r0, r1 += 4.
 WriteDecToScreen:
 {
     psh     r0
