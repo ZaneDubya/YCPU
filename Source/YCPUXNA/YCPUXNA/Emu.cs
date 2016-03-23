@@ -24,7 +24,7 @@ namespace YCPUXNA
         private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
-        private string m_RomPath = "../Examples/testconsole.asm.bin";
+        private string m_RomPath = null;
 
         private const string c_CursesFont = @"Content\BIOS8x14.png";
 
@@ -187,7 +187,8 @@ namespace YCPUXNA
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
-                m_Emulator.LoadBinaryToCPU(m_RomPath, 0x0000);
+                if (File.Exists(m_RomPath))
+                    m_Emulator.LoadBinaryToCPU(m_RomPath, 0x0000);
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
             {
