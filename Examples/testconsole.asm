@@ -39,7 +39,7 @@ ResetInt:
         jsr     Getc                ; A = event, or $0000 if no event.
         beq     Update
         
-        lod     C, A              ; C = event type
+        lod     C, A                ; C = event type
         lsr     C, 8
         and     C, $000f
         cmp     C, 3
@@ -52,8 +52,12 @@ ResetInt:
         pop     A
         jsr     WriteHexToScreen
         pop     A
+        lod     B, A
+        and     A, $8000            ; upper bit set = not ascii
+        bne     Update
+        lod     A, B
         and     A, $00ff
-        orr     A, $8200          ; yellow on blue.
+        orr     A, $8200            ; yellow on blue.
         sto     A, ES[X]
         adi     X, 2
         baw     Update
