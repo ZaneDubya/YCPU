@@ -11,8 +11,8 @@ ResetInt:
 {
     ; After the reset interrupt, the processor state is as described in 2.G.
     ; set stack pointer to $0000.
-    lod     r0, $0000
-    sto     r0, sp
+    lod     A, $0000
+    sto     A, sp
     
     ;set up devices, mmu, etc.
     jsr     Setup
@@ -21,135 +21,135 @@ ResetInt:
     jsr     ShowStartScreen
     jsr     ClearScreen
     ; draw top bar on screen
-    lod     r1, $2820       ; space char with yellow background
-    lod     r2, 32          ; words to write
-    lod     r5, $0000       ; start of video memory
+    lod     B, $2820       ; space char with yellow background
+    lod     C, 32          ; words to write
+    lod     X, $0000       ; start of video memory
     jsr     FillMemoryWords ;
     
     ; enable clock interrupt - tick at 120hz
-    lod     r0, 120
+    lod     A, 120
     hwq     $83
     
-    ; use r5 as index to onscreen char, starting at y = 1, x = 0
-    lod     r5, $0040
+    ; use X as index to onscreen char, starting at y = 1, x = 0
+    lod     X, $0040
     
     Update:
-        jsr     Getc                ; R0 = event, or 0x0000 if no event.
+        jsr     Getc                ; A = event, or 0x0000 if no event.
         beq     Update
         
-        lod     r2, r0              ; r2 = event type
-        lsr     r2, 8
-        and     r2, 0x000f
-        cmp     r2, 3
+        lod     C, A              ; C = event type
+        lsr     C, 8
+        and     C, 0x000f
+        cmp     C, 3
         bne     Update
-        and     r0, 0x00ff
-        orr     r0, 0x2800          ; yellow on blue.
-        sto     r0, ES[r5]
-        adi     r5, 2
+        and     A, 0x00ff
+        orr     A, 0x8200          ; yellow on blue.
+        sto     A, ES[X]
+        adi     X, 2
         baw     Update
 }
 
 ; === ClockInt =================================================================
 ClockInt:
 {
-    psh     r0, r1, r2, r3, fl  ; save register contents    
-    hwq     $80                 ; get RTC time. seconds in low 6 bits of R2.
-    psh     r0, r1, r2          ; save RTC time.
+    psh     A, B, C, D, fl  ; save register contents    
+    hwq     $80                 ; get RTC time. seconds in low 6 bits of C.
+    psh     A, B, C          ; save RTC time.
     
-    and     r2, $003f           ; r2 = hex seconds
-    jsr     HexToDec            ; r0 = decimal seconds
-    lod     r1, $003c
+    and     C, $003f           ; C = hex seconds
+    jsr     HexToDec            ; A = decimal seconds
+    lod     B, $003c
     jsr     WriteDecToScreen
     
-    pop     r2
-    asr     r2, 8               ; r2 = hex minutes
-    jsr     HexToDec            ; r0 = decimal minutes
-    lod     r1, $0036
+    pop     C
+    asr     C, 8               ; C = hex minutes
+    jsr     HexToDec            ; A = decimal minutes
+    lod     B, $0036
     jsr     WriteDecToScreen
     
-    lod     r0, $283A           ; r0 = yellow on blue colon
-    sto     r0, ES[r1]
+    lod     A, $283A           ; A = yellow on blue colon
+    sto     A, ES[B]
     
-    pop     r2
-    ;psh     r2
-    and     r2, $001f
-    jsr     HexToDec            ; r0 = decimal hours
-    lod     r1, $0030
+    pop     C
+    ;psh     C
+    and     C, $001f
+    jsr     HexToDec            ; A = decimal hours
+    lod     B, $0030
     jsr     WriteDecToScreen
     
-    lod     r0, $283A           ; r0 = yellow on blue colon
-    sto     r0, ES[r1]
+    lod     A, $283A           ; A = yellow on blue colon
+    sto     A, ES[B]
     
-    pop     r0
-    pop     r0, r1, r2, r3, fl
+    pop     A
+    pop     A, B, C, D, fl
     rti
 }
 
 ; === Getc =====================================================================
-; r0 should be index of file descriptor. right now, does not matter, we read
-; only from keyboard. Returns ascii key code in r0.8, 0x00 if no key code.
+; A should be index of file descriptor. right now, does not matter, we read
+; only from keyboard. Returns ascii key code in A.8, 0x00 if no key code.
 Getc:
 {
-    psh     r1, r2
+    psh     B, C
 GetCAgain:
-    lod.8   r1, [KeyboardData+0]    ; r1 = number of events in buffer
-    lod.8   r2, [KeyboardData+1]    ; r2 = last handled event
-    cmp     r1, r2                  ; if r1 == r2, get new events.
+    lod.8   B, [KeyboardData+0]    ; B = number of events in buffer
+    lod.8   C, [KeyboardData+1]    ; C = last handled event
+    cmp     B, C                  ; if B == C, get new events.
     beq     getKeyboardEvents
-    inc     r2
-    sto.8   r2, [KeyboardData+1]    
-    asl     r2, 1
-    lod     r0, [KeyboardData,r2]
+    inc     C
+    sto.8   C, [KeyboardData+1]    
+    asl     C, 1
+    lod     A, [KeyboardData,C]
 return:
-    pop     r1, r2
+    pop     B, C
     rts
     ; === GetKeyboardEvents ====================
     ; gets all keyboard events, copies to $7000.
-    ; returns: r0 is number of keyboard events.
+    ; returns: A is number of keyboard events.
     getKeyboardEvents:
-        lod     r0, $0002
-        lod     r1, $0001
-        lod     r2, KeyboardData
+        lod     A, $0002
+        lod     B, $0001
+        lod     C, KeyboardData
         hwq     $02
-        lod     r0, [KeyboardData]
+        lod     A, [KeyboardData]
         bne     GetCAgain       ; if events, then do Getc again
-        baw     return          ; else return, r0 == 0x0000
+        baw     return          ; else return, A == 0x0000
 }
 
 ; === Setup ====================================================================
-; uses r0, r1, r2, r3.
+; uses A, B, C, D.
 Setup:
 {
-    ; r3 = calling address
-    pop     r3
+    ; D = calling address
+    pop     D
     
     ; set up devices
-    lod     r0, $0001    ; set graphics adapter to LEM mode.
-    lod     r1, $0000
-    lod     r2, $0001
+    lod     A, $0001    ; set graphics adapter to LEM mode.
+    lod     B, $0000
+    lod     C, $0001
     hwq     $02
-    lod     r0, $0002    ; reset keyboard, press events only.
-    lod     r1, $0000
-    lod     r2, $0000
+    lod     A, $0002    ; reset keyboard, press events only.
+    lod     B, $0000
+    lod     C, $0000
     hwq     $02
     
     ; set up segment registers. (See 2.F.1.)
-    lod     r0, $0000
-    lod     r1, $0800
-    psh     r1          ; ds = $0800 0000 (RAM @ $00000000, size = $8000)
-    psh     r0
-    add     r0, $0180
-    psh     r1          ; ss = $0800 0180 (RAM @ $00018000, size = $8000)
-    psh     r0
-    lod     r0, $0000
-    lod     r1, $8000
-    psh     r1          ; is = $8000 0000 (ROM @ $00000000, size = $10000)
-    psh     r0
-    psh     r1          ; cs = $8000 0000 (ROM @ $00000000, size = $10000)
-    psh     r0
-    add     r1, $0101   ; es = $8101 0000 (device 1 @ $00000000, size = $1000)
-    psh     r1           
-    psh     r0
+    lod     A, $0000
+    lod     B, $0800
+    psh     B          ; ds = $0800 0000 (RAM @ $00000000, size = $8000)
+    psh     A
+    add     A, $0180
+    psh     B          ; ss = $0800 0180 (RAM @ $00018000, size = $8000)
+    psh     A
+    lod     A, $0000
+    lod     B, $8000
+    psh     B          ; is = $8000 0000 (ROM @ $00000000, size = $10000)
+    psh     A
+    psh     B          ; cs = $8000 0000 (ROM @ $00000000, size = $10000)
+    psh     A
+    add     B, $0101   ; es = $8101 0000 (device 1 @ $00000000, size = $1000)
+    psh     B           
+    psh     A
     lsg     es
     lsg     cs
     lsg     is
@@ -157,39 +157,39 @@ Setup:
     lsg     ds
     
     ; enable mmu by setting 'm' bit in PS. See 2.A.2.
-    lod     r0, ps
-    orr     r0, 0x4000
-    sto     r0, ps
+    lod     A, ps
+    orr     A, 0x4000
+    sto     A, ps
     
     ; sp = $8000
-    lod     r0, $8000
-    sto     r0, sp
+    lod     A, $8000
+    sto     A, sp
     
-    ; push r3 (calling PC) to stack
-    psh     r3
+    ; push D (calling PC) to stack
+    psh     D
     
     rts
 }
 
 ; === ShowStartScreen ==========================================================
-; Draws the NE logo on r0 blue screen
+; Draws the NE logo on A blue screen
 ShowStartScreen:
 {
     jsr ClearScreen
     
     ; write logo in center of screen.
-    lod     r1, $8200            ; yellow on blue
-    lod     r5, $00D6            ; location in video memory
-    lod     r6, txtBootText
-    lod     r3, 3                ; count of lines to draw
+    lod     B, $8200            ; yellow on blue
+    lod     X, $00D6            ; location in video memory
+    lod     Y, txtBootText
+    lod     D, 3                ; count of lines to draw
     writeLine:
         jsr WriteChars
-        add     r5, 64           ; increment one line in video memory (32 words)
-        dec     r3
+        add     X, 64           ; increment one line in video memory (32 words)
+        dec     D
         beq     LastLine
         bne     writeLine
     lastLine:
-        add     r5, $3C          ; skip line, align left 4 chars
+        add     X, $3C          ; skip line, align left 4 chars
         jsr     WriteChars
     rts
     
@@ -204,98 +204,98 @@ ShowStartScreen:
 ; === ClearScreen ==============================================================
 ClearScreen:
 {
-    lod     r1, $0220       ; space char with blue background
-    lod     r2, 384         ; words to write
-    lod     r5, $0000       ; start of video memory
+    lod     B, $0220       ; space char with blue background
+    lod     C, 384         ; words to write
+    lod     X, $0000       ; start of video memory
     jsr     FillMemoryWords ; far call example: jsr.f FillMemoryWords, $80000000
     rts
 }
 
 ; === WriteChars ===============================================================
-; Writes r0 null-terminated string of 8-bit chars to video memory.
-; in:   r1: color
-; in:   r5: location to write to video memory.
-; in:   r6: location to read 8-bit characters from. on exit, points to next byte after string.
+; Writes A null-terminated string of 8-bit chars to video memory.
+; in:   B: color
+; in:   X: location to write to video memory.
+; in:   Y: location to read 8-bit characters from. on exit, points to next byte after string.
 WriteChars:
 {
-    psh     r0, r5              ; push r0 r5 to stack
+    psh     A, X              ; push A X to stack
     ssg     ds                  ; push DS register to stack
     ssg     cs
     lsg     ds                  ; DS = CS (ROM@$00000000) (reading from ROM).
-    writeChar:                  ; copy chars from ds[r6] to es[r5] 
-        lod.8   r0, DS[r6]      ; ... until ds[r6] == 0x00.
+    writeChar:                  ; copy chars from ds[Y] to es[X] 
+        lod.8   A, DS[Y]      ; ... until ds[Y] == 0x00.
         beq     return
-        orr     r0, r1
-        sto     r0, ES[r5]
-        inc     r6
-        adi     r5, 2
+        orr     A, B
+        sto     A, ES[X]
+        inc     Y
+        adi     X, 2
         baw     writeChar
     return:
-        inc     r6
+        inc     Y
         lsg     ds              ; pop ds register from stack
-        pop     r0, r5          ; pop r0 r5 from stack
+        pop     A, X          ; pop A X from stack
         rts
 }
 
 ; === FillMemoryWords ==========================================================
 ; Fills range of memory with words of specified value.
-; in:   r1 - word to fill memory with
-; in:   r2 - count of words of memory to fill    
-; in:   r5 - first address to write to in ES
+; in:   B - word to fill memory with
+; in:   C - count of words of memory to fill    
+; in:   X - first address to write to in ES
 FillMemoryWords:
 {
-    psh     r0, r2, r5              ; save r0, r2, r5
-    asl     r2, 1                   ; r2 = count of bytes
-    add     r2, r5                  ; r2 = first address after all bytes are written
+    psh     A, C, X              ; save A, C, X
+    asl     C, 1                   ; C = count of bytes
+    add     C, X                  ; C = first address after all bytes are written
     copyWordOneAtATime:
-        sto     r1, ES[r5]          ; save word in r1 to [r5], r5 = r5 + 2
-        adi     r5, 2
-        cmp     r5, r2              ; if r5
+        sto     B, ES[X]          ; save word in B to [X], X = X + 2
+        adi     X, 2
+        cmp     X, C              ; if X
         bne     copyWordOneAtATime
-    pop     r0, r2, r5              ; restore r0, r2, r5
+    pop     A, C, X              ; restore A, C, X
     rts
 }
 
 ; === HexToDec =================================================================
-; Converts two digit hex in r2 to three digit decimal in r0.
-; Wipes out r2, r1, & r0.
+; Converts two digit hex in C to three digit decimal in A.
+; Wipes out C, B, & A.
 HexToDec:
 {
-    lod     r0, $0000           ; r0 = 0
-    lod     r1, $0064           ; r1 = 100
+    lod     A, $0000           ; A = 0
+    lod     B, $0064           ; B = 100
     getHundreds:
-        cmp     r2, r1
-        buf     getTensBegin    ; if r2 < 100 goto getTensBegin
-        add     r0, $0100       ; else r0 += 100
-        sub     r2, r1          ;   r2 -= 100
+        cmp     C, B
+        buf     getTensBegin    ; if C < 100 goto getTensBegin
+        add     A, $0100       ; else A += 100
+        sub     C, B          ;   C -= 100
         baw     getHundreds
     getTensBegin:
-        lod     r1, $000a       ; r1 = 10
+        lod     B, $000a       ; B = 10
     getTens:
-        cmp     r2, r1
-        buf     getOnes         ; if r2 < 10 goto getOnes
-        add     r0, $0010       ; else r0 += 10
-        sub     r2, r1
+        cmp     C, B
+        buf     getOnes         ; if C < 10 goto getOnes
+        add     A, $0010       ; else A += 10
+        sub     C, B
         baw     getTens
     getOnes:
-        add     r0, r2
+        add     A, C
         rts
 }
 
 ; === WriteDecToScreen =========================================================
-; Writes two digit dec in r0.8 to ES at r1. Wipes out r0, r1 += 4.
+; Writes two digit dec in A.8 to ES at B. Wipes out A, B += 4.
 WriteDecToScreen:
 {
-    psh     r0
-    asr     r0, 4
-    and     r0, $000f
-    add     r0, $2830   ; yellow on blue, char $30 + r1
-    sto     r0, ES[r1]
-    adi     r1, 2
-    pop     r0
-    and     r0, $000f
-    add     r0, $2830   ; yellow on blue, char $30 + r1
-    sto     r0, ES[r1]
-    adi     r1, 2
+    psh     A
+    asr     A, 4
+    and     A, $000f
+    add     A, $2830   ; yellow on blue, char $30 + B
+    sto     A, ES[B]
+    adi     B, 2
+    pop     A
+    and     A, $000f
+    add     A, $2830   ; yellow on blue, char $30 + B
+    sto     A, ES[B]
+    adi     B, 2
     rts
 }

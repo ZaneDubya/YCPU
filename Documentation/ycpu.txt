@@ -83,7 +83,9 @@ please reference Section 3., Hardware Information. For detailed information on
 how these instructions are encoded, please reference Section 4., Instruction
 Set Description.
 
-These instructions often change the value of
+These instructions often change the value of the eight general purpose
+registers, which are named r0, r1, r2, r3, r4, r5, r6, and r7. Assemblers should
+also accept the names A, B, C, D, W, X, Y, and Z for these registers.
 
 
 === 2.A. Math instructions  ====================================================
