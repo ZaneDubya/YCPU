@@ -129,9 +129,7 @@ public static class GraphicsDeviceX
         }
         catch (Exception ex)
         {
-            throw new Exception(string.Format("Error trying to save texture to '{0}'. Error is '{1}'.",
-                                                fileName,
-                                                ex.ToString()));
+            throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex.ToString()}'.");
         }
     }
 

@@ -34,7 +34,7 @@ namespace Ypsilon.Core
 
         public bool Contains(Vector2 pPoint)
         {
-            if ((pPoint.X > this.m_x) && (pPoint.X < this.m_x2) && (pPoint.Y > this.m_y) && (pPoint.Y < this.m_y2))
+            if ((pPoint.X > m_x) && (pPoint.X < m_x2) && (pPoint.Y > m_y) && (pPoint.Y < m_y2))
             {
                 return true;
             }

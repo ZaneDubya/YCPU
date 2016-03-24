@@ -13,7 +13,7 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        void ParseData8(string line, ParserState state)
+        private void ParseData8(string line, ParserState state)
         {
             List<string> dataFields = new List<string>();
 
@@ -139,7 +139,7 @@ namespace Ypsilon.Assembler
                                 }
                                 break;
                             default:
-                                throw new Exception(string.Format("Unknown escaped character \\{0}", c));
+                                throw new Exception($"Unknown escaped character \\{c}");
                         }
                         isEscaped = false;
                     }
@@ -158,7 +158,7 @@ namespace Ypsilon.Assembler
             GenerateMachineCodeForDataFields(dataFields, DataFieldTypes.Int8, state);
         }
 
-        void ParseData16(string line, ParserState state)
+        private void ParseData16(string line, ParserState state)
         {
             List<string> dataFields = new List<string>();
 
@@ -238,7 +238,7 @@ namespace Ypsilon.Assembler
                     if (valField == string.Empty)
                         continue;
 
-                    uint val = (uint)0;
+                    uint val;
 
                     if (valField.Substring(0, 2) == "0x")
                     {
@@ -256,13 +256,13 @@ namespace Ypsilon.Assembler
                     switch (dataType)
                     {
                         case DataFieldTypes.Int8:
-                            if ((val > byte.MaxValue) || (val < byte.MinValue))
-                                throw new Exception(string.Format("Included byte value '{0}' cannot be expressed in an 8-bit value.", field));
+                            if (val > byte.MaxValue)
+                                throw new Exception($"Included byte value '{field}' cannot be expressed in an 8-bit value.");
                             state.Code.Add((byte)val);
                             break;
                         case DataFieldTypes.Int16:
-                            if ((val > ushort.MaxValue) || (val < ushort.MinValue))
-                                throw new Exception(string.Format("Included ushort value '{0}' cannot be expressed in a 16-bit value.", field));
+                            if (val > ushort.MaxValue)
+                                throw new Exception($"Included ushort value '{field}' cannot be expressed in a 16-bit value.");
                             state.Code.Add((byte)((ushort)val & 0x00ff));
                             state.Code.Add((byte)((ushort)(val & 0xff00) >> 8));
                             break;

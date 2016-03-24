@@ -24,7 +24,7 @@ namespace Ypsilon.Assembler
 
             string asmFileContents = getFileContents(pathToAsmFile);
             if (asmFileContents == null)
-                throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
+                throw new Exception($"Error loading file '{tokens[1]}'.");
             List<string> includeLines = Common.SplitString(asmFileContents, "\n");
 
             m_Lines.InsertRange(m_CurrentLine, includeLines);
@@ -43,7 +43,7 @@ namespace Ypsilon.Assembler
 
             byte[] data = GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
             if (data == null)
-                throw new Exception(string.Format("Error loading file '{0}'.", tokens[1]));
+                throw new Exception($"Error loading file '{tokens[1]}'.");
 
             int begin = 0, length = data.Length;
             if (tokens.Count >= 3)

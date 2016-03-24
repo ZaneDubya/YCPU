@@ -46,7 +46,7 @@ namespace Ypsilon.Core.Graphics
 
         public override string ToString()
         {
-            return string.Format("VPTDC: <{0}> <{1}>", Position.ToString(), UV.ToString());
+            return $"VPTDC: <{Position.ToString()}> <{UV.ToString()}>";
         }
     }
 }

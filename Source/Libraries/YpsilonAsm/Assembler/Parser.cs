@@ -54,7 +54,7 @@ namespace Ypsilon.Assembler
                     }
                     catch (Exception ex)
                     {
-                        AddMessageLine(string.Format("Line {0}: {1}.", m_CurrentLine, ex.Message));
+                        AddMessageLine($"Line {m_CurrentLine}: {ex.Message}.");
                         ErrorLine = m_CurrentLine;
                         return null;
                     }
@@ -65,7 +65,7 @@ namespace Ypsilon.Assembler
             Scopes.Scope openScope;
             if (state.Scopes.TryGetOpenScope(out openScope))
             {
-                AddMessageLine(string.Format("Unclosed scope beginning at line {0}.", openScope.StartLine));
+                AddMessageLine($"Unclosed scope beginning at line {openScope.StartLine}.");
                 ErrorLine = openScope.StartLine;
                 return null;
             }
@@ -77,7 +77,7 @@ namespace Ypsilon.Assembler
             }
             catch (Exception ex)
             {
-                AddMessageLine(string.Format("Error while updating labels. {0}", ex.Message));
+                AddMessageLine($"Error while updating labels. {ex.Message}");
                 ErrorLine = m_CurrentLine;
                 return null;
             }
@@ -91,7 +91,7 @@ namespace Ypsilon.Assembler
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        string StripComments(string line)
+        private string StripComments(string line)
         {
             string clearedLine = line;
             int commentIndex = line.IndexOf(';');
@@ -104,7 +104,7 @@ namespace Ypsilon.Assembler
             return clearedLine;
         }
 
-        void AssembleLine(int lineIndex, string line, ParserState state)
+        private void AssembleLine(int lineIndex, string line, ParserState state)
         {
             line = line.Trim();
 
@@ -126,7 +126,7 @@ namespace Ypsilon.Assembler
                     return;
             }
 
-            List<string> tokens = this.Tokenize(line);
+            List<string> tokens = Tokenize(line);
             string opcode = tokens[0];
             opcode = opcode.Trim();
 
@@ -144,7 +144,7 @@ namespace Ypsilon.Assembler
                 // opcode has a flag
                 string flag = opcode.Substring(opcode.IndexOf('.') + 1);
                 if (!ParseOpcodeFlag(flag, ref opcodeFlag))
-                    throw new Exception(string.Format("Unknown bit width flag '{0}' for instruction '{1}'.", flag, line));
+                    throw new Exception($"Unknown bit width flag '{flag}' for instruction '{line}'.");
                 opcode = opcode.Substring(0, opcode.IndexOf('.'));
             }
 
@@ -156,7 +156,7 @@ namespace Ypsilon.Assembler
             }
             else
             {
-                throw new Exception(string.Format("Undefined command in line {0}", line));
+                throw new Exception($"Undefined command in line {line}");
             }
 
             // get the parameters
@@ -167,7 +167,7 @@ namespace Ypsilon.Assembler
             // pass the params to the opcode's assembler. If no output, throw error.
             List<ushort> code = assembler(param, opcodeFlag, state);
             if (code == null)
-                throw new Exception(string.Format("Error assembling line {0}", line));
+                throw new Exception($"Error assembling line {line}");
 
             // add the output of the assembler to the machine code output. 
             for (int i = 0; i < code.Count; i++)
@@ -178,7 +178,7 @@ namespace Ypsilon.Assembler
             }
         }
 
-        bool GetOpcodeAssembler(string opcode, out Func<List<string>, OpcodeFlag, ParserState, List<ushort>> assembler)
+        private bool GetOpcodeAssembler(string opcode, out Func<List<string>, OpcodeFlag, ParserState, List<ushort>> assembler)
         {
             assembler = null;
             if (m_Opcodes.TryGetValue(opcode.ToLowerInvariant(), out assembler))
@@ -187,7 +187,7 @@ namespace Ypsilon.Assembler
                 return false;
         }
 
-        bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
+        private bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
         {
             switch (value)
             {
@@ -207,7 +207,7 @@ namespace Ypsilon.Assembler
             }
         }
 
-        List<string> Tokenize(string data)
+        private List<string> Tokenize(string data)
         {
             List<string> tokens = Common.SplitString(data, new[] { " ", "\t", "," });
             for (int i = 0; i < tokens.Count - 1; i++)

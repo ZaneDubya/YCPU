@@ -21,7 +21,7 @@ namespace Ypsilon.Core.Input
             get { return m_eventType; }
         }
 
-        WinKeys m_keyChar = WinKeys.None;
+        private WinKeys m_keyChar = WinKeys.None;
         public char KeyChar
         {
             get

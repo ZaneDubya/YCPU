@@ -154,7 +154,8 @@
         #endregion
 
         #region Control Registers
-        enum RegControl
+
+        private enum RegControl
         {
             FL = 0,
             PC = 1,
@@ -163,7 +164,7 @@
             SSP = 7
         }
 
-        ushort ReadControlRegister(ushort operand, RegControl index)
+        private ushort ReadControlRegister(ushort operand, RegControl index)
         {
             switch (index)
             {

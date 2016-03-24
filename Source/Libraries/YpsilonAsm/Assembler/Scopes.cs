@@ -13,14 +13,8 @@ namespace Ypsilon.Assembler
 {
     public class Scopes
     {
-        private List<Scope> m_Scopes;
-        private Scope m_Global;
-
-        public Scopes()
-        {
-            m_Scopes = new List<Scope>();
-            m_Global = new Scope(0, 0);
-        }
+        private readonly List<Scope> m_Scopes = new List<Scope>();
+        private readonly Scope m_Global = new Scope(0, 0);
 
         public bool IsScopeOpen
         {
@@ -51,7 +45,7 @@ namespace Ypsilon.Assembler
             {
                 if (!m_Global.AddLabel(label, address))
                 {
-                    throw new Exception(string.Format("Label '{0}' already exists within the global scope.", label));
+                    throw new Exception($"Label '{label}' already exists within the global scope.");
                 }
                 return true;
             }
@@ -59,30 +53,52 @@ namespace Ypsilon.Assembler
             {
                 if (!scope.AddLabel(label, address))
                 {
-                    throw new Exception(string.Format("Label '{0}' already exists within the {1} scope.", label, (scope == m_Global) ? "global" : "current local"));
+                    throw new Exception(
+                        $"Label '{label}' already exists within the {((scope == m_Global) ? "global" : "current local")} scope.");
                 }
                 return true;
             }
         }
 
-        public bool ContainsLabel(string label, int from_address)
+        public bool ContainsLabel(string label, int fromAddress)
         {
-            return (LabelAddress(label, from_address) != -1);
+            return LabelAddress(label, fromAddress) != -1;
         }
 
-        public int LabelAddress(string label, int from_address)
+        public bool ContainsAlias(string label, int fromAddress)
         {
-            Scope scope_match = m_Global;
+            return AliasAddress(label, fromAddress) != -1;
+        }
+
+        public int LabelAddress(string label, int fromAddress)
+        {
+            Scope scopeMatch = m_Global;
 
             for (int i = 0; i < m_Scopes.Count; i++)
             {
-                if (m_Scopes[i].ContainsAddress(from_address) && m_Scopes[i].ContainsLabel(label))
-                    if ((scope_match == null) || (m_Scopes[i].StartAddress >= scope_match.StartAddress))
-                        scope_match = m_Scopes[i];
+                if (m_Scopes[i].ContainsAddress(fromAddress) && m_Scopes[i].ContainsLabel(label))
+                    if ((scopeMatch == null) || (m_Scopes[i].StartAddress >= scopeMatch.StartAddress))
+                        scopeMatch = m_Scopes[i];
             }
 
-            if (scope_match != null)
-                return scope_match.LabelAddress(label);
+            if (scopeMatch != null)
+                return scopeMatch.LabelAddress(label);
+            return -1;
+        }
+
+        public int AliasAddress(string alias, int fromAddress)
+        {
+            Scope scopeMatch = m_Global;
+
+            for (int i = 0; i < m_Scopes.Count; i++)
+            {
+                if (m_Scopes[i].ContainsAddress(fromAddress) && m_Scopes[i].ContainsAlias(alias))
+                    if ((scopeMatch == null) || (m_Scopes[i].StartAddress >= scopeMatch.StartAddress))
+                        scopeMatch = m_Scopes[i];
+            }
+
+            if (scopeMatch != null)
+                return scopeMatch.AliasAddress(alias);
             return -1;
         }
 
@@ -107,11 +123,12 @@ namespace Ypsilon.Assembler
 
         public class Scope
         {
-            public int StartAddress = -1;
+            public int StartAddress;
             public int EndAddress = -1;
-            public int StartLine = -1;
+            public int StartLine;
 
-            Dictionary<string, ushort> m_LabelAddressDictionary;
+            private readonly Dictionary<string, ushort> m_LabelAddressDictionary = new Dictionary<string, ushort>();
+            private readonly Dictionary<string, ushort> m_AliasDirectory = new Dictionary<string, ushort>();
 
             public bool IsOpen
             {
@@ -122,13 +139,21 @@ namespace Ypsilon.Assembler
             {
                 StartAddress = beginAddress;
                 StartLine = beginLine;
-                m_LabelAddressDictionary = new Dictionary<string, ushort>();
             }
 
             public bool ContainsAddress(int address)
             {
                 return ((StartAddress <= address) && (EndAddress >= address));
             }
+
+            public override string ToString()
+            {
+                return $"{StartAddress}~{EndAddress}, {m_LabelAddressDictionary.Count} labels";
+            }
+
+            // ======================================================================
+            // Labels
+            // ======================================================================
 
             public bool AddLabel(string label, int address)
             {
@@ -150,9 +175,31 @@ namespace Ypsilon.Assembler
                 return m_LabelAddressDictionary[label];
             }
 
-            public override string ToString()
+            // ======================================================================
+            // Aliases
+            // ======================================================================
+
+            public bool AddAlias(string alias, ushort address)
             {
-                return string.Format("{0}~{1}, {2} labels", StartAddress, EndAddress, m_LabelAddressDictionary.Count);
+                alias = alias.ToLower();
+                if (ContainsLabel(alias))
+                    return false;
+                m_AliasDirectory.Add(alias, address);
+                return true;
+            }
+
+            public bool ContainsAlias(string alias)
+            {
+                alias = alias.ToLower();
+                return m_AliasDirectory.ContainsKey(alias);
+            }
+
+            public ushort AliasAddress(string alias)
+            {
+                alias = alias.ToLower();
+                if (!ContainsAlias(alias))
+                    return 0xffff;
+                return m_AliasDirectory[alias];
             }
         }
     }

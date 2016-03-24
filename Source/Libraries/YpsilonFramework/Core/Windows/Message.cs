@@ -25,10 +25,10 @@ namespace Ypsilon.Core.Windows
 
         public Message(uint id, IntPtr wParam, IntPtr lParam)
         {
-            this.Id = id;
-            this.WParam = wParam;
-            this.LParam = lParam;
-            this.Point = new Point(LowWord(lParam), HighWord(lParam));
+            Id = id;
+            WParam = wParam;
+            LParam = lParam;
+            Point = new Point(LowWord(lParam), HighWord(lParam));
         }
 
         public override bool Equals(object obj)

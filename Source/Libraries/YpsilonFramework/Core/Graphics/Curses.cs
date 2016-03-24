@@ -208,13 +208,13 @@ namespace Ypsilon.Core.Graphics
             }
         }
 
-        byte[] m_CurseDecorationDoubleLine = new byte[9] {
+        private byte[] m_CurseDecorationDoubleLine = new byte[9] {
             0xC9, 0xCD, 0xBB,
             0xBA, 0x00, 0xBA,
             0xC8, 0xCD, 0xBC
         };
 
-        byte[] m_CurseDecorationBlock = new byte[9] {
+        private byte[] m_CurseDecorationBlock = new byte[9] {
             0xDB, 0xDB, 0xDB,
             0xDB, 0x00, 0xDB,
             0xDB, 0xDB, 0xDB

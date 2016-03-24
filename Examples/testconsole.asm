@@ -3,6 +3,7 @@
 ; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 128kb RAM.
 
 .alignglobals 2                 ; align global labels to 16-bit boundaries
+.alias  KeyboardData    $7000
 .include "testconsole.ivt.asm"  ; include int vector table & interrupt handlers
 
 ; === ResetInt =================================================================
@@ -33,12 +34,12 @@ ResetInt:
     lod     r5, $0040
     
     Update:
-        jsr     GetKeyboardEvents   ; R0 = number of events, 16bit events copied to $7002-$701F
+        jsr     Getc                ; R0 = number of events, 16bit events copied to $7002-$701F
         cmp     r0, 0
         beq     Update
     
-        lod     r1, $2800            ; hi byte is color: yellow on blue
-        lod     r6, $7002            ; get first char, written in $7002 (see GetKeyboardEvents)
+        lod     r1, $2800           ; hi byte is color: yellow on blue
+        lod     r6, $7002           ; get first char, written in $7002 (see GetKeyboardEvents)
         writeSingleChar:
             lod     r2, [r6]
             adi     r6, 2
@@ -96,26 +97,36 @@ ClockInt:
 }
 
 ; === Getc =====================================================================
-; 
+; r0 should be index of file descriptor. right now, does not matter, we read
+; only from keyboard. Returns ascii key code in r0.8, 0x00 if no key code.
 Getc:
 {
-
-}
-
-; === GetKeyboardEvents ========================================================
-; gets all keyboard events, copies to $7000.
-; returns: r0 is number of keyboard events.
-GetKeyboardEvents:
-{
     psh     r1, r2
-    lod     r0, $0002
-    lod     r1, $0001
-    lod     r2, $7000
-    hwq     $02
-    
-    lod     r0, [$7000]
+    lod     r2, [KeyboardData]
+    lod.8   r1, r2
+    lsr     r2, 8
+    cmp     r1, r2
+    beq     getKeyboardEvents
+    inc     r1
+    sto.8   r1, [KeyboardData+1]    
+    asl     r1, 1
+    lod     r0, [KeyboardData,r1]
+return:
     pop     r1, r2
     rts
+    
+    ; === GetKeyboardEvents ====================
+    ; gets all keyboard events, copies to $7000.
+    ; returns: r0 is number of keyboard events.
+    getKeyboardEvents:
+        
+        lod     r0, $0002
+        lod     r1, $0001
+        lod     r2, KeyboardData
+        hwq     $02
+        lod     r0, [KeyboardData]
+        bne     Getc            ; if events, then do Getc again
+        baw     return          ; else return
 }
 
 ; === Setup ====================================================================

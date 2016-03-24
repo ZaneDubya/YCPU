@@ -4,15 +4,16 @@ using Ypsilon;
 
 namespace YCPUXNA
 {
-    class Program
+    internal class Program
     {
-        static string[] s_DefaultArgs = new string[] { "-emu", "../Examples/testconsole.asm" };
-        const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
+        private static string[] s_DefaultArgs = new string[] { "-emu", "../Examples/testconsole.asm" };
+
+        private const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
             "    1. Assemble default 'testconsole.asm' file.\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
             "    2. Run emulator!\n    3. Run assembly tests.\n    4. Exit.";
 
         // default entry point
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             StdConsole.ShowConsoleWindow();
 

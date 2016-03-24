@@ -5,7 +5,7 @@ namespace Ypsilon.Emulation.Processor
     /// <summary>
     /// A segment is a window into memory.
     /// </summary>
-    class Segment
+    internal class Segment
     {
         // ======================================================================
         // Public properties.
@@ -207,7 +207,7 @@ namespace Ypsilon.Emulation.Processor
 
         public override string ToString()
         {
-            return string.Format("{0} [{1:X8}:{2}]", Enum.GetName(typeof(SegmentIndex), SegmentType), m_Register, m_MemoryReference);
+            return $"{Enum.GetName(typeof (SegmentIndex), SegmentType)} [{m_Register:X8}:{m_MemoryReference}]";
         }
     }
 

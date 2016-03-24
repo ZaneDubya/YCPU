@@ -8,7 +8,7 @@
 
 namespace Ypsilon.Assembler
 {
-    static class Optimizations
+    internal static class Optimizations
     {
         public static void DoOptimizations(ParserState state)
         {

@@ -15,115 +15,116 @@ namespace Ypsilon.Assembler
     {
         public const int c_InstructionSize = 2;
 
-        OpcodeFlag[] flag8or16 = new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 };
+        private OpcodeFlag[] flag8or16 = new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 };
 
         #region ALU
-        List<ushort> AssembleCMP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleCMP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0000, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleNEG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleNEG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0008, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleADD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleADD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0010, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleSUB(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSUB(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0018, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleADC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleADC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0020, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleSBC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSBC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0028, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleMUL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleMUL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0030, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleDIV(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleDIV(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0038, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleMLI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleMLI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0040, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleDVI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleDVI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0048, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleMOD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleMOD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0050, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleMDI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleMDI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0058, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleAND(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleAND(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0060, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleORR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleORR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0068, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleEOR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleEOR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
             return state.Parser.AssembleALU((ushort)0x0070, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleNOT(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleNOT(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, state.Parser.flag8or16);
@@ -131,7 +132,7 @@ namespace Ypsilon.Assembler
         }
 
 
-        List<ushort> AssembleLOD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleLOD(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
@@ -139,7 +140,7 @@ namespace Ypsilon.Assembler
             return state.Parser.AssembleALU((ushort)0x0080, param[0], param[1], opcodeFlag, state);
         }
 
-        List<ushort> AssembleSTO(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSTO(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth8, OpcodeFlag.BitWidth16 });
@@ -154,77 +155,78 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Branch operations
-        List<ushort> AssembleBCC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleBCC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0090, param[0], state);
         }
 
-        List<ushort> AssembleBCS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBCS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0091, param[0], state);
         }
 
-        List<ushort> AssembleBNE(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBNE(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0092, param[0], state);
         }
 
-        List<ushort> AssembleBEQ(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBEQ(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0093, param[0], state);
         }
 
-        List<ushort> AssembleBPL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBPL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0094, param[0], state);
         }
 
-        List<ushort> AssembleBMI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBMI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0095, param[0], state);
         }
 
-        List<ushort> AssembleBVC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBVC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0096, param[0], state);
         }
 
-        List<ushort> AssembleBVS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBVS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0097, param[0], state);
         }
 
-        List<ushort> AssembleBUG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBUG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0098, param[0], state);
         }
 
-        List<ushort> AssembleBSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBRA((ushort)0x0099, param[0], state);
         }
 
-        List<ushort> AssembleBAW(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBAW(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -233,56 +235,57 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Shift operations
-        List<ushort> AssembleASL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleASL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A0, param[0], param[1]);
         }
 
-        List<ushort> AssembleLSL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleLSL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A1, param[0], param[1]);
         }
 
-        List<ushort> AssembleROL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleROL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A2, param[0], param[1]);
         }
 
-        List<ushort> AssembleRNL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleRNL(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A3, param[0], param[1]);
         }
 
-        List<ushort> AssembleASR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleASR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A4, param[0], param[1]);
         }
 
-        List<ushort> AssembleLSR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleLSR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A5, param[0], param[1]);
         }
 
-        List<ushort> AssembleROR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleROR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSHF((ushort)0x00A6, param[0], param[1]);
         }
 
-        List<ushort> AssembleRNR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleRNR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -291,28 +294,29 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Bit testing operations
-        List<ushort> AssembleBTT(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleBTT(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBTI((ushort)0x00A8, param[0], param[1]);
         }
 
-        List<ushort> AssembleBTX(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBTX(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBTI((ushort)0x00A9, param[0], param[1]);
         }
 
-        List<ushort> AssembleBTC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBTC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleBTI((ushort)0x00AA, param[0], param[1]);
         }
 
-        List<ushort> AssembleBTS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleBTS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -321,14 +325,15 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Set flags
-        List<ushort> AssembleSEF(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleSEF(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountMinMax(param, 1, 4);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleFLG((ushort)0x00AE, param);
         }
 
-        List<ushort> AssembleCLF(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleCLF(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountMinMax(param, 1, 4);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -337,14 +342,15 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Stack Push/Pop/Flush
-        List<ushort> AssemblePSH(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssemblePSH(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountMinMax(param, 1, 13);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleSTK(0x00B0, param, false);
         }
 
-        List<ushort> AssemblePOP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssemblePOP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountMinMax(param, 1, 13);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -353,48 +359,50 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region MMU
-        List<ushort> AssembleLSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleLSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             return state.Parser.AssembleMMU((ushort)0x00B5, param[0], state);
         }
 
-        List<ushort> AssembleSSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSSG(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             return state.Parser.AssembleMMU((ushort)0x01B5, param[0], state);
         }
         #endregion
 
-        List<ushort> AssembleSET(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSET(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             return state.Parser.AssembleSEI((ushort)0x00AC, param[0], param[1]);
         }
 
         #region Inc/Dec
-        List<ushort> AssembleINC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleINC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleIMM((ushort)0x00B6, param[0], 1.ToString());
         }
 
-        List<ushort> AssembleADI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleADI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleIMM((ushort)0x00B6, param[0], param[1]);
         }
 
-        List<ushort> AssembleDEC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleDEC(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return state.Parser.AssembleIMM((ushort)0x00B7, param[0], 1.ToString());
         }
 
-        List<ushort> AssembleSBI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSBI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 2);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -403,7 +411,8 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Processor Functions
-        List<ushort> AssembleHWQ(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleHWQ(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -412,7 +421,8 @@ namespace Ypsilon.Assembler
         #endregion
 
         #region Jump operations
-        List<ushort> AssembleJMP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleJMP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
@@ -427,7 +437,7 @@ namespace Ypsilon.Assembler
             }
         }
 
-        List<ushort> AssembleJSR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleJSR(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
             {
@@ -442,7 +452,7 @@ namespace Ypsilon.Assembler
         }
         #endregion
 
-        List<ushort> AssembleRTS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleRTS(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             if (opcodeFlag.HasFlag(OpcodeFlag.FarJump))
             {
@@ -454,14 +464,14 @@ namespace Ypsilon.Assembler
             }
         }
 
-        List<ushort> AssembleRTI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleRTI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 0);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return new List<ushort>() { (ushort)0x02B4 };
         }
 
-        List<ushort> AssembleSTX(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSTX(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 1);
 
@@ -476,14 +486,14 @@ namespace Ypsilon.Assembler
             return new List<ushort>() { (ushort)(0x00BB | (((sbyte)p1i) << 8)) };
         }
 
-        List<ushort> AssembleSWI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSWI(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 0);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
             return new List<ushort>() { (ushort)0x03B4 };
         }
 
-        List<ushort> AssembleSLP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleSLP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 0);
             Guard.RequireOpcodeFlag(opcodeFlag, new OpcodeFlag[] { OpcodeFlag.BitWidth16 });
@@ -491,7 +501,8 @@ namespace Ypsilon.Assembler
         }
 
         #region Macro NOP
-        List<ushort> AssembleNOP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
+
+        private List<ushort> AssembleNOP(List<string> param, OpcodeFlag opcodeFlag, ParserState state)
         {
             Guard.RequireParamCountExact(param, 0);
             return new List<ushort>() { (ushort)0x2080 }; // LOD R0, R0
@@ -500,7 +511,7 @@ namespace Ypsilon.Assembler
 
         private List<ushort> m_Code = new List<ushort>();
 
-        List<ushort> AssembleALU(ushort opcode, string param1, string param2, OpcodeFlag opcodeFlag, ParserState state)
+        private List<ushort> AssembleALU(ushort opcode, string param1, string param2, OpcodeFlag opcodeFlag, ParserState state)
         {
             Param p1 = ParseParam(param1);
             Param p2 = ParseParam(param2);
@@ -592,7 +603,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleBTI(ushort opcode, string param1, string param2)
+        private List<ushort> AssembleBTI(ushort opcode, string param1, string param2)
         {
             Param p1 = ParseParam(param1);
             Param p2 = ParseParam(param2);
@@ -637,7 +648,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleBRA(ushort opcode, string param1, ParserState state)
+        private List<ushort> AssembleBRA(ushort opcode, string param1, ParserState state)
         {
             Param p1 = ParseParam(param1);
             // must be branching to a label or an immediate value between $7f and -$80
@@ -651,7 +662,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleFLG(ushort opcode, List<string> param)
+        private List<ushort> AssembleFLG(ushort opcode, List<string> param)
         {
             bool n = false, z = false, c = false, v = false;
             // there MUST be 1 - 4 params.
@@ -685,7 +696,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleHWI(ushort opcode, string param1)
+        private List<ushort> AssembleHWI(ushort opcode, string param1)
         {
             // param1 = index of operations, must be integer from 0-255
             Param p1 = ParseParam(param1);
@@ -704,7 +715,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleIMM(ushort opcode, string param1, string param2)
+        private List<ushort> AssembleIMM(ushort opcode, string param1, string param2)
         {
             // param1 = source/dest register, MUST be register
             // param2 = immediate value, MUST be number, MUST be 1 - 32
@@ -729,7 +740,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleJMI(ushort opcode, string param1, string param2, ParserState state)
+        private List<ushort> AssembleJMI(ushort opcode, string param1, string param2, ParserState state)
         {
             Param p1, p2;
             p1 = ParseParam(param1);
@@ -812,7 +823,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleMMU(ushort opcode, string param1, ParserState state)
+        private List<ushort> AssembleMMU(ushort opcode, string param1, ParserState state)
         {
             // param1 = segment register, MUST be segment register
             Param p1 = ParseParam(param1);
@@ -830,7 +841,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleSEI(ushort opcode, string param1, string param2)
+        private List<ushort> AssembleSEI(ushort opcode, string param1, string param2)
         {
             Param p1 = ParseParam(param1);
             Param p2 = ParseParam(param2);
@@ -847,20 +858,20 @@ namespace Ypsilon.Assembler
             bool valueIsAllowed = TryGetSETValue(p2, out value, out alternateValueBit);
 
             if (!valueIsAllowed)
-                throw new Exception(string.Format("SET instruction with invalid value parameter: {0}.", p2.ImmediateWordShort));
+                throw new Exception($"SET instruction with invalid value parameter: {p2.ImmediateWordShort}.");
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | alternateValueBit | (value << 8) | ((p1.RegisterIndex & 0x0007) << 13)));
             return m_Code;
         }
 
-        bool IsAcceptableSETValue(Param input)
+        private bool IsAcceptableSETValue(Param input)
         {
             ushort alternateValueBit, value;
             return TryGetSETValue(input, out value, out alternateValueBit);
         }
 
-        bool TryGetSETValue(Param input, out ushort value, out ushort alternateValueBit)
+        private bool TryGetSETValue(Param input, out ushort value, out ushort alternateValueBit)
         {
             alternateValueBit = 0;
             value = 0;
@@ -898,7 +909,7 @@ namespace Ypsilon.Assembler
             return false;
         }
 
-        List<ushort> AssembleSHF(ushort opcode, string param1, string param2)
+        private List<ushort> AssembleSHF(ushort opcode, string param1, string param2)
         {
             Param p1 = ParseParam(param1);
             Param p2 = ParseParam(param2);
@@ -944,7 +955,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleSFL(ushort opcode, string param1)
+        private List<ushort> AssembleSFL(ushort opcode, string param1)
         {
             // param1 = index of operations, must be integer from 1-256
             Param p1 = ParseParam(param1);
@@ -963,7 +974,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleSTK(ushort opcode, List<string> param, bool general_first)
+        private List<ushort> AssembleSTK(ushort opcode, List<string> param, bool general_first)
         {
             ushort flags0 = 0x0000, flags1 = 0x0000;
             // there MUST be 1 - 10 params.
@@ -976,7 +987,7 @@ namespace Ypsilon.Assembler
                 Param op = ParseParam(p);
                 if (op == null || 
                     ((op.AddressingMode != AddressingMode.Register) && (op.AddressingMode != AddressingMode.ControlRegister)))
-                    throw new Exception(string.Format("STK operation with unknown register '{0}'.", p));
+                    throw new Exception($"STK operation with unknown register '{p}'.");
                 else
                 {
                     if (op.AddressingMode == AddressingMode.Register)
@@ -1002,7 +1013,7 @@ namespace Ypsilon.Assembler
             return m_Code;
         }
 
-        List<ushort> AssembleSWO(ushort opcode, string param1, string param2, string param3)
+        private List<ushort> AssembleSWO(ushort opcode, string param1, string param2, string param3)
         {
             // param1 = source register, MUST be register
             // param2 = dest register, MUST be register
