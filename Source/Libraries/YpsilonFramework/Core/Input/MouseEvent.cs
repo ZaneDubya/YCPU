@@ -9,6 +9,6 @@
         DragBegin,
         DragEnd,
         Click,
-        DoubleClick,
+        DoubleClick
     }
 }

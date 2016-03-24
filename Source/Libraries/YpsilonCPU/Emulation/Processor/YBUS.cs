@@ -176,10 +176,7 @@ namespace Ypsilon.Emulation.Processor
         // YCPU.IRQ Functions
         // ===================================================================================================
 
-        public bool IsIRQ
-        {
-            get { return m_DevicesRaisingIRQ.Count > 0; }
-        }
+        public bool IsIRQ => m_DevicesRaisingIRQ.Count > 0;
 
         public ushort FirstIRQ
         {
@@ -229,7 +226,7 @@ namespace Ypsilon.Emulation.Processor
                 info[3] = 0x0000;
                 return info;
             }
-            else if ((deviceIndex > 16) || m_Devices[deviceIndex] == null)
+            if ((deviceIndex > 16) || m_Devices[deviceIndex] == null)
             {
                 // query device index beyond number of slots, or empty device
                 ushort[] info = new ushort[0x04];
@@ -239,11 +236,8 @@ namespace Ypsilon.Emulation.Processor
                 info[3] = 0x0000;
                 return info;
             }
-            else
-            {
-                // query present device
-                return m_Devices[deviceIndex - 1].Bus_DeviceQuery();
-            }
+            // query present device
+            return m_Devices[deviceIndex - 1].Bus_DeviceQuery();
         }
 
         public ushort SendDeviceMessage(ushort deviceIndex, ushort param_0, ushort param_1)
@@ -253,16 +247,13 @@ namespace Ypsilon.Emulation.Processor
                 // send message to YCPU
                 return ADevice.MSG_NO_DEVICE;
             }
-            else if ((deviceIndex > 16) || m_Devices[deviceIndex - 1] == null)
+            if ((deviceIndex > 16) || m_Devices[deviceIndex - 1] == null)
             {
                 // send message to device index beyond number of slots, or empty device
                 return ADevice.MSG_NO_DEVICE;
             }
-            else
-            {
-                // send message to present device
-                return m_Devices[deviceIndex - 1].Bus_SendMessage(param_0, param_1);
-            }
+            // send message to present device
+            return m_Devices[deviceIndex - 1].Bus_SendMessage(param_0, param_1);
         }
 
         // ===================================================================================================
@@ -279,7 +270,6 @@ namespace Ypsilon.Emulation.Processor
             if (device_index == -1)
             {
                 // device raising irq does not exist on bus - should never occur
-                return; 
             }
             else
             {
@@ -292,21 +282,9 @@ namespace Ypsilon.Emulation.Processor
         // Memory Reference Functions
         // ===================================================================================================
 
-        public int RAMSize
-        {
-            get
-            {
-                return m_RAM.Size;
-            }
-        }
+        public int RAMSize => m_RAM.Size;
 
-        public int ROMSize
-        {
-            get
-            {
-                return m_ROM.Size;
-            }
-        }
+        public int ROMSize => m_ROM.Size;
 
         internal void AddSegmentToReferences(Segment segment)
         {

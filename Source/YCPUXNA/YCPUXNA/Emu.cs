@@ -1,8 +1,8 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using YCPUXNA.Providers;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
@@ -24,7 +24,7 @@ namespace YCPUXNA
         private const int c_ConsoleWidth = 120;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
-        private string m_RomPath = null;
+        private string m_RomPath;
 
         private const string c_CursesFont = @"Content\BIOS8x14.png";
 
@@ -39,8 +39,8 @@ namespace YCPUXNA
         private Emulator m_Emulator;
         private Curses m_Curses;
 
-        private double m_LastConsoleUpdate = 0;
-        private bool m_DoScreenshot = false;
+        private double m_LastConsoleUpdate;
+        private bool m_DoScreenshot;
 
         public Emu()
         {
@@ -61,10 +61,10 @@ namespace YCPUXNA
         {
             Registry = new ServiceRegistry();
 
-            Registry.Register<SpriteBatchExtended>(m_SpriteBatch = new SpriteBatchExtended(this));
+            Registry.Register(m_SpriteBatch = new SpriteBatchExtended(this));
             m_SpriteBatch.Initialize();
 
-            Registry.Register<InputManager>(m_InputManager = new InputManager(Window.Handle));
+            Registry.Register(m_InputManager = new InputManager(Window.Handle));
 
             m_InputProvider = new InputProvider(m_InputManager);
             m_DisplayProvider = new DisplayProvider(m_SpriteBatch);

@@ -1,5 +1,5 @@
-﻿using Ypsilon.Emulation.Processor;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation
 {
@@ -44,14 +44,8 @@ namespace Ypsilon.Emulation
 
         protected YBUS BUS;
 
-        private bool m_IRQ = false;
-        public bool IRQ
-        {
-            get
-            {
-                return m_IRQ;
-            }
-        }
+        private bool m_IRQ;
+        public bool IRQ => m_IRQ;
 
         protected void RaiseIRQ()
         {

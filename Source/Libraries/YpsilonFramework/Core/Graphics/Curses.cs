@@ -1,7 +1,7 @@
-﻿﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.IO;
+﻿﻿using System;
+﻿using System.IO;
+﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon.Core.Graphics
 {
@@ -14,21 +14,9 @@ namespace Ypsilon.Core.Graphics
         public int CharWidth, CharHeight;
         private bool m_AdditionalHorizSpacingPixel;
 
-        public int DisplayWidth
-        {
-            get
-            {
-                return ScreenWidth * (CharWidth + (m_AdditionalHorizSpacingPixel ? 1 : 0));
-            }
-        }
+        public int DisplayWidth => ScreenWidth * (CharWidth + (m_AdditionalHorizSpacingPixel ? 1 : 0));
 
-        public int DisplayHeight
-        {
-            get
-            {
-                return ScreenHeight * CharHeight;
-            }
-        }
+        public int DisplayHeight => ScreenHeight * CharHeight;
 
         /*public Color[] Colors = new Color[16] {
             new Color(0, 0, 0),

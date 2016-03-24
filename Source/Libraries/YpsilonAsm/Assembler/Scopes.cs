@@ -16,13 +16,7 @@ namespace Ypsilon.Assembler
         private readonly List<Scope> m_Scopes = new List<Scope>();
         private readonly Scope m_Global = new Scope(0, 0);
 
-        public bool IsScopeOpen
-        {
-            get
-            {
-                return GetLastOpenScope() == m_Global;
-            }
-        }
+        public bool IsScopeOpen => GetLastOpenScope() == m_Global;
 
         public void ScopeOpen(int address, int line)
         {
@@ -49,15 +43,12 @@ namespace Ypsilon.Assembler
                 }
                 return true;
             }
-            else
+            if (!scope.AddLabel(label, address))
             {
-                if (!scope.AddLabel(label, address))
-                {
-                    throw new Exception(
-                        $"Label '{label}' already exists within the {((scope == m_Global) ? "global" : "current local")} scope.");
-                }
-                return true;
+                throw new Exception(
+                    $"Label '{label}' already exists within the {((scope == m_Global) ? "global" : "current local")} scope.");
             }
+            return true;
         }
 
         public bool ContainsLabel(string label, int fromAddress)
@@ -130,10 +121,7 @@ namespace Ypsilon.Assembler
             private readonly Dictionary<string, ushort> m_LabelAddressDictionary = new Dictionary<string, ushort>();
             private readonly Dictionary<string, ushort> m_AliasDirectory = new Dictionary<string, ushort>();
 
-            public bool IsOpen
-            {
-                get { return EndAddress == -1; }
-            }
+            public bool IsOpen => EndAddress == -1;
 
             public Scope(int beginAddress, int beginLine)
             {

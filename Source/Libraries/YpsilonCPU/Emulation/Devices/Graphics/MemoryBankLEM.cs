@@ -14,7 +14,7 @@
             m_PALRAM = new byte[0x0020]; // 16 words
         }
 
-        public bool SCRRAM_Delta, CHRRAM_Delta, PALRAM_Delta = false;
+        public bool SCRRAM_Delta, CHRRAM_Delta, PALRAM_Delta;
 
         public void ResetDeltas()
         {
@@ -30,10 +30,9 @@
                 i &= 0x0FFF;
                 if (i < 0x0800)
                     return m_SCRRAM[i % 0x0400];
-                else if (i < 0x0C00)
+                if (i < 0x0C00)
                     return m_CHRRAM[i % 0x0200];
-                else
-                    return m_PALRAM[i % 0x0020];
+                return m_PALRAM[i % 0x0020];
             }
             set
             {

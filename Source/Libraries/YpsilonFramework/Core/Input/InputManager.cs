@@ -9,11 +9,13 @@
  *
  ***************************************************************************/
 #region usings
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Ypsilon.Core.Windows;
+
 #endregion
 
 namespace Ypsilon.Core.Input
@@ -108,10 +110,7 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        public int MouseStationarySeconds
-        {
-            get { return (int)m_mouseStationarySeconds; }
-        }
+        public int MouseStationarySeconds => (int)m_mouseStationarySeconds;
 
         public Point MousePosition
         {
@@ -348,10 +347,7 @@ namespace Ypsilon.Core.Input
             {
                 throw new Exception("No corresponding KeyPress event for this WM_CHAR message.");
             }
-            else
-            {
-                pressEvent.OverrideKeyChar(e.KeyCode);
-            }
+            pressEvent.OverrideKeyChar(e.KeyCode);
         }
 
         private void copyEvents()

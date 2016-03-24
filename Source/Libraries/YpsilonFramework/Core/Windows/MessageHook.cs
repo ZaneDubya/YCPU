@@ -8,6 +8,7 @@
  *   (at your option) any later version.
  *
  ***************************************************************************/
+
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -23,10 +24,7 @@ namespace Ypsilon.Core.Windows
         private IntPtr m_prevWndProc;
         private IntPtr m_hIMC;
 
-        public IntPtr HWnd
-        {
-            get { return m_hWnd; }
-        }
+        public IntPtr HWnd => m_hWnd;
 
         public MessageHook(IntPtr hWnd)
         {

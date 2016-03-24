@@ -109,7 +109,6 @@
                         // set source = none so calling function doesn't attempt to interpret this as well.
                         source = RegGeneral.None;
                         destAddress = 0;
-                        break;
                     }
                     break;
 

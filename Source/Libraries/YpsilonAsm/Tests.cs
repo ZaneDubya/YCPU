@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Ypsilon.Assembler;
-using System.Linq;
 
 namespace Ypsilon
 {
     public static class Tests
     {
-        private static int m_TestCount = 0;
+        private static int m_TestCount;
 
         public static string Run()
         {
@@ -18,20 +18,20 @@ namespace Ypsilon
             try
             {
                 // test number formats
-                Test(string.Format("cmp r7, 1234"), (ushort)(0x0007), 1234); // test non-hex numbers
-                Test(string.Format("cmp r7, $1234"), (ushort)(0x0007), 0x1234); // test non-hex numbers
-                Test(string.Format("cmp r7, 0x1234"), (ushort)(0x0007), 0x1234); // test non-hex numbers
+                Test("cmp r7, 1234", (ushort)(0x0007), 1234); // test non-hex numbers
+                Test("cmp r7, $1234", (ushort)(0x0007), 0x1234); // test non-hex numbers
+                Test("cmp r7, 0x1234", (ushort)(0x0007), 0x1234); // test non-hex numbers
 
                 // test alu
-                string[] alu_instructions = new string[] {
+                string[] alu_instructions = {
                     "cmp", "neg", "add", "sub", "adc", "sbc", "mul", "div",
                     "mli", "dvi", "mod", "mdi", "and", "orr", "eor", "not",
                     "lod", "sto" };
-                ushort[] alu_codes = new ushort[] {
+                ushort[] alu_codes = {
                     0x0000, 0x0008, 0x0010, 0x0018, 0x0020, 0x0028, 0x0030, 0x0038,
                     0x0040, 0x0048, 0x0050, 0x0058, 0x0060, 0x0068, 0x0070, 0x0078,
                     0x0080, 0x0088 };
-                string[] reg_control = new string[] { "fl", "pc", "ps", string.Empty, string.Empty, string.Empty, "usp", "sp" };
+                string[] reg_control = { "fl", "pc", "ps", string.Empty, string.Empty, string.Empty, "usp", "sp" };
 
                 for (int ins = 0; ins < alu_instructions.Length; ins++)
                 {
@@ -80,10 +80,10 @@ namespace Ypsilon
                 }
 
                 // test branch
-                string[] bra_instructions = new string[] {
+                string[] bra_instructions = {
                     "bcc", "bcs", "bne", "beq", "bpl", "bmi", "bvc", "bvs",
                     "bug", "bsg", "baw" };
-                ushort[] bra_codes = new ushort[] {
+                ushort[] bra_codes = {
                     0x0090, 0x0091, 0x0092, 0x0093, 0x0094, 0x0095, 0x0096, 0x0097,
                     0x0098, 0x0099, 0x009F };
 
@@ -96,11 +96,11 @@ namespace Ypsilon
                 }
 
                 // test shift
-                string[] shf_instructions = new string[] {
+                string[] shf_instructions = {
                     "asl", "lsl", "rol", "rnl",
                     "asr", "lsr", "ror", "rnr"
                 };
-                ushort[] shf_codes = new ushort[] {
+                ushort[] shf_codes = {
                     0x00A0, 0x00A1, 0x00A2, 0x00A3,
                     0x00A4, 0x00A5, 0x00A6, 0x00A7
                 };
@@ -124,10 +124,10 @@ namespace Ypsilon
                 }
 
                 // test bit-testing, setting, clearing
-                string[] bti_instructions = new string[] {
+                string[] bti_instructions = {
                     "btt", "btx", "btc", "bts"
                 };
-                ushort[] bti_codes = new ushort[] {
+                ushort[] bti_codes = {
                     0x00A8, 0x00A9, 0x00AA, 0x00AB
                 };
 
@@ -204,7 +204,7 @@ namespace Ypsilon
                             (ushort)(0x00B2 | (stk << 8)));
                 }
 
-                string[] stk_crs = new string[] {
+                string[] stk_crs = {
                     "fl", "pc", "ps", string.Empty, string.Empty, string.Empty, "usp", "sp" };
                 for (int stk = 1; stk < 256; stk++)
                 {
@@ -236,9 +236,9 @@ namespace Ypsilon
                 Test("slp", 0x04B4);
 
                 // test lsg / ssg
-                string[] mmu_instructions = new string[] { "lsg", "ssg" };
-                ushort[] mmu_codes = new ushort[] { 0x00B5, 0x01B5 };
-                string[] seg_regs = new string[] { "cs", "ds", "es", "ss" };
+                string[] mmu_instructions = { "lsg", "ssg" };
+                ushort[] mmu_codes = { 0x00B5, 0x01B5 };
+                string[] seg_regs = { "cs", "ds", "es", "ss" };
 
                 for (int ins = 0; ins < mmu_instructions.Length; ins++)
                 {
@@ -271,8 +271,8 @@ namespace Ypsilon
                 }
 
                 // test jmp / jsr
-                string[] jmi_instructions = new string[] { "jmp", "jsr" };
-                ushort[] jmi_codes = new ushort[] { 0x00B8, 0x00B9 };
+                string[] jmi_instructions = { "jmp", "jsr" };
+                ushort[] jmi_codes = { 0x00B8, 0x00B9 };
 
                 for (int ins = 0; ins < jmi_instructions.Length; ins++)
                 {
@@ -373,7 +373,7 @@ namespace Ypsilon
                         }
                         throw new Exception(string.Format("Failure to match expected bit pattern.\n" + 
                             "Expected: {1}\n" + "Actual:   {2}", 
-                            asm, sbCode.ToString(), sbAssembled.ToString()));
+                            asm, sbCode, sbAssembled));
                     }
                 }
             }

@@ -11,45 +11,15 @@ namespace Ypsilon.Emulation.Processor
         // Segment Registers used when MMU is active.
         private Segment m_CSS, m_CSU, m_DSS, m_DSU, m_ESS, m_ESU, m_SSS, m_SSU, m_IS;
 
-        public uint CS
-        {
-            get
-            {
-                return (PS_M) ? ((PS_S) ? m_CSS.Register : m_CSU.Register) : m_CS_NoMMU.Register;
-            }
-        }
+        public uint CS => (PS_M) ? ((PS_S) ? m_CSS.Register : m_CSU.Register) : m_CS_NoMMU.Register;
 
-        public uint DS
-        {
-            get
-            {
-                return (PS_M) ? ((PS_S) ? m_DSS.Register : m_DSU.Register) : m_DS_NoMMU.Register;
-            }
-        }
+        public uint DS => (PS_M) ? ((PS_S) ? m_DSS.Register : m_DSU.Register) : m_DS_NoMMU.Register;
 
-        public uint ES
-        {
-            get
-            {
-                return (PS_M) ? ((PS_S) ? m_ESS.Register : m_ESU.Register) : m_ES_NoMMU.Register;
-            }
-        }
+        public uint ES => (PS_M) ? ((PS_S) ? m_ESS.Register : m_ESU.Register) : m_ES_NoMMU.Register;
 
-        public uint SS
-        {
-            get
-            {
-                return (PS_M) ? ((PS_S) ? m_SSS.Register : m_SSU.Register) : m_SS_NoMMU.Register;
-            }
-        }
+        public uint SS => (PS_M) ? ((PS_S) ? m_SSS.Register : m_SSU.Register) : m_SS_NoMMU.Register;
 
-        public uint IS
-        {
-            get
-            {
-                return (PS_M) ? m_IS.Register : m_IS_NoMMU.Register;
-            }
-        }
+        public uint IS => (PS_M) ? m_IS.Register : m_IS_NoMMU.Register;
 
         /// <summary>
         /// Initializes arrays for memory banks, internal ram, and internal rom.

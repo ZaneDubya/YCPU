@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using Ypsilon.Emulation;
 using Ypsilon.Core.Graphics;
+using Ypsilon.Emulation;
 
 namespace YCPUXNA.Providers
 {
@@ -44,7 +44,7 @@ namespace YCPUXNA.Providers
                     }
                 }
             }
-            m_LEM.SetData<uint>(m_LEM_Data);
+            m_LEM.SetData(m_LEM_Data);
 
             return new YTexture(m_LEM);
         }

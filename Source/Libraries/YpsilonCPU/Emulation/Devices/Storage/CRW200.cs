@@ -5,22 +5,13 @@ namespace Ypsilon.Emulation.Devices.Storage
 {
     public class CRW200 : ADevice, IMemoryInterface
     {
-        protected override ushort DeviceType
-        {
-            get { return DeviceTypeStorage; }
-        }
-        protected override ushort ManufacturerID
-        {
-            get { return 0x0000; }
-        }
-        protected override ushort DeviceID
-        {
-            get { return 0x0200; }
-        }
-        protected override ushort DeviceRevision
-        {
-            get { return 0x0009; }
-        }
+        protected override ushort DeviceType => DeviceTypeStorage;
+
+        protected override ushort ManufacturerID => 0x0000;
+
+        protected override ushort DeviceID => 0x0200;
+
+        protected override ushort DeviceRevision => 0x0009;
 
         public byte this[uint address]
         {

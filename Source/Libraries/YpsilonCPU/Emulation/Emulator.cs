@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Ypsilon.Emulation.Devices.Graphics;
+using Ypsilon.Emulation.Devices.Input;
 using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation
@@ -11,14 +13,14 @@ namespace Ypsilon.Emulation
             private set;
         }
 
-        private bool m_Running = false;
+        private bool m_Running;
 
         public Emulator(IDisplayProvider display, IInputProvider input)
         {
             CPU = new YCPU();
             CPU.BUS.Reset();
-            CPU.BUS.AddDevice(new Devices.Graphics.GraphicsAdapter(CPU.BUS), 1);
-            CPU.BUS.AddDevice(new Devices.Input.KeyboardDevice(CPU.BUS), 2);
+            CPU.BUS.AddDevice(new GraphicsAdapter(CPU.BUS), 1);
+            CPU.BUS.AddDevice(new KeyboardDevice(CPU.BUS), 2);
             CPU.BUS.SetRAM(0x20000);
             CPU.BUS.SetROM(0x04000);
             CPU.BUS.SetProviders(display, input);

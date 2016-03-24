@@ -16,11 +16,11 @@ namespace Ypsilon.Core.Graphics
         {
             Vector2 texelPixelOffset = new Vector2(); // new Vector2(0.5f / device.Viewport.Width, 0.5f / device.Viewport.Height);
 
-            Vertices = new VertexPositionTextureDataColor[]{
+            Vertices = new[]{
                 new VertexPositionTextureDataColor( position, new Vector2(uv.X, uv.Y) + texelPixelOffset, data, hue), // top left
                 new VertexPositionTextureDataColor( position + new Vector3(area.X, 0, 0), new Vector2(uv.Z, uv.Y) + texelPixelOffset, data, hue), // top right
                 new VertexPositionTextureDataColor( position + new Vector3(0, area.Y, 0), new Vector2(uv.X, uv.W) + texelPixelOffset, data, hue), // bottom left
-                new VertexPositionTextureDataColor( position + new Vector3(area, 0), new Vector2(uv.Z, uv.W) + texelPixelOffset, data, hue), // bottom right
+                new VertexPositionTextureDataColor( position + new Vector3(area, 0), new Vector2(uv.Z, uv.W) + texelPixelOffset, data, hue) // bottom right
             };
         }
     }

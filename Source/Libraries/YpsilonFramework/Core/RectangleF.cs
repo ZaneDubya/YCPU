@@ -4,12 +4,12 @@ namespace Ypsilon.Core
 {
     public class RectangleF
     {
-        protected float m_x = 0.0F;
-        protected float m_y = 0.0F;
-        protected float m_width = 0.0F;
-        protected float m_height = 0.0F;
-        protected float m_x2 = 0.0F;
-        protected float m_y2 = 0.0F;
+        protected float m_x;
+        protected float m_y;
+        protected float m_width;
+        protected float m_height;
+        protected float m_x2;
+        protected float m_y2;
 
         public RectangleF()
         {
@@ -38,10 +38,7 @@ namespace Ypsilon.Core
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public RectangleF Union(RectangleF rect1, RectangleF rect2)
@@ -130,15 +127,9 @@ namespace Ypsilon.Core
             }
         }
 
-        public float X2
-        {
-            get { return m_x2; }
-        }
+        public float X2 => m_x2;
 
-        public float Y2
-        {
-            get { return m_y2; }
-        }
+        public float Y2 => m_y2;
 
         public RectangleF Duplicate()
         {

@@ -678,7 +678,6 @@ namespace Ypsilon.Emulation.Processor
                 BitPatternSTO(operand, out dest_address, out source);
                 if (source == RegGeneral.None)
                 {
-                    return;
                 }
                 else
                 {
@@ -1127,10 +1126,7 @@ namespace Ypsilon.Emulation.Processor
                         Interrupt_UndefFault(operand);
                         return;
                     }
-                    else
-                    {
-                        segment = m_IS;
-                    }
+                    segment = m_IS;
                     break;
                 default:
                     // operand does not include a valid segment index.
@@ -1362,7 +1358,6 @@ namespace Ypsilon.Emulation.Processor
             if (!PS_S)
             {
                 Interrupt_UnPrivFault(operand);
-                return;
             }
 
             // pause processor

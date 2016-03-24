@@ -8,7 +8,6 @@ namespace Ypsilon.Emulation.Processor
         public readonly ushort Address;
 
         public SegFaultException(SegmentIndex si, ushort address)
-            : base()
         {
             SegmentType = si;
             Address = address;

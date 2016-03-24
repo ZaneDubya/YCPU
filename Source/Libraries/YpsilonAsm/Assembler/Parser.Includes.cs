@@ -7,8 +7,8 @@
  * =============================================================== */
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Ypsilon.Assembler
 {
@@ -48,7 +48,7 @@ namespace Ypsilon.Assembler
             int begin = 0, length = data.Length;
             if (tokens.Count >= 3)
                 if (!Int32.TryParse(tokens[2], out begin))
-                    throw new Exception(string.Format("Third paramter for incbin must be numeric."));
+                    throw new Exception("Third paramter for incbin must be numeric.");
 
             if (tokens.Count == 3)
             {
@@ -57,7 +57,7 @@ namespace Ypsilon.Assembler
 
             if (tokens.Count == 4)
                 if (!Int32.TryParse(tokens[3], out length))
-                    throw new Exception(string.Format("Fourth paramter for incbin must be numeric."));
+                    throw new Exception("Fourth paramter for incbin must be numeric.");
 
             if ((begin >= length) || (begin + length > data.Length))
                 throw new Exception("Out of bounds for incbin.");

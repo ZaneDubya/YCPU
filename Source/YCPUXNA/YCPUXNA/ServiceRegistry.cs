@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ypsilon;
 
 namespace YCPUXNA
 {
@@ -30,10 +29,6 @@ namespace YCPUXNA
             {
                 m_Services.Remove(type);
             }
-            else
-            {
-                // Tracer.Critical(string.Format("Attempted to unregister service of type {0}, but no service of this type (or type and equality) is registered.", type.ToString()));
-            }
         }
 
         public bool ServiceExists<T>()
@@ -44,10 +39,7 @@ namespace YCPUXNA
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public T GetService<T>()
@@ -58,11 +50,8 @@ namespace YCPUXNA
             {
                 return (T)m_Services[type];
             }
-            else
-            {
-                // Tracer.Critical(string.Format("Attempted to get service service of type {0}, but no service of this type is registered.", type.ToString()));
-                return default(T);
-            }
+            // Tracer.Critical(string.Format("Attempted to get service service of type {0}, but no service of this type is registered.", type.ToString()));
+            return default(T);
         }
     }
 }

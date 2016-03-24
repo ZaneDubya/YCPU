@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
 
 namespace Ypsilon.Core.Graphics
 {
@@ -15,13 +15,10 @@ namespace Ypsilon.Core.Graphics
         private Queue<List<VertexPositionTextureDataColor>> m_vertexListQueue;
         private short[] m_indexBuffer;
 
-        private Vector3 m_zOffset = new Vector3();
+        private Vector3 m_zOffset;
         public float ZOffset { set { m_zOffset = new Vector3(0, 0, value); } }
 
-        public GraphicsDevice Graphics
-        {
-            get { return m_GraphicsDevice; }
-        }
+        public GraphicsDevice Graphics => m_GraphicsDevice;
 
         public SpriteBatchExtended(Game game)
         {
@@ -191,7 +188,7 @@ namespace Ypsilon.Core.Graphics
             if (m_Pixel == null)
             {
                 m_Pixel = new Texture2D(m_GraphicsDevice, 1, 1);
-                m_Pixel.SetData<Color>(new Color[] { Color.White });
+                m_Pixel.SetData(new Color[] { Color.White });
             }
             DrawSprite(m_Pixel, position, area, hue);
         }

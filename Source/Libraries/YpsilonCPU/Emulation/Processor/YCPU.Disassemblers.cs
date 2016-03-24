@@ -49,17 +49,14 @@ namespace Ypsilon.Emulation.Processor
                             instructionSize = 2;
                             return "???";
                         }
-                        else
-                        {
-                            instructionSize = 4;
-                            string disasm =
-                                $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, ${nextword:X4}";
-                            if (showMemoryContents)
-                                disasm = AppendMemoryContents(disasm, nextword);
-                            return disasm;
-                        }
+                        instructionSize = 4;
+                        string disasm =
+                            $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, ${nextword:X4}";
+                        if (showMemoryContents)
+                            disasm = AppendMemoryContents(disasm, nextword);
+                        return disasm;
                     }
-                    else if ((int)regSrc == 1) // absolute
+                    if ((int)regSrc == 1) // absolute
                     {
                         instructionSize = 4;
                         string disasm =
@@ -171,11 +168,8 @@ namespace Ypsilon.Emulation.Processor
                         return
                             $"{name,-8}[${nextword:X4}]{string.Format($"         (${DebugReadMemory(nextword, SegmentIndex.CS):X4})", DebugReadMemory(nextword, SegmentIndex.CS))}";
                     }
-                    else
-                    {
-                        return $"{name,-8}${nextword:X4}{(isFar ? ", $<SEGREG>" : string.Empty)}";
-                    }
-                    
+                    return $"{name,-8}${nextword:X4}{(isFar ? ", $<SEGREG>" : string.Empty)}";
+
                 case 1: // Register
                     instructionSize = 2;
                     return $"{name,-8}{NameOfRegGP(r_src)}              (${R[(int) r_src]:X4})";

@@ -129,7 +129,7 @@ public static class GraphicsDeviceX
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex.ToString()}'.");
+            throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex}'.");
         }
     }
 

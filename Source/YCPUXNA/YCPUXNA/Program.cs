@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Ypsilon;
 
 namespace YCPUXNA
 {
     internal class Program
     {
-        private static string[] s_DefaultArgs = new string[] { "-emu", "../Examples/testconsole.asm" };
+        private static string[] s_DefaultArgs = { "-emu", "../Examples/testconsole.asm" };
 
         private const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
             "    1. Assemble default 'testconsole.asm' file.\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
@@ -30,7 +29,7 @@ namespace YCPUXNA
 #if DEBUG
                             args = new string[] { "-asm", "../../Examples/testconsole.asm" };
 #else
-                            args = new string[] { "-asm", "../Examples/testconsole.asm" };
+                            args = new[] { "-asm", "../Examples/testconsole.asm" };
 #endif
                             waitForKey = false;
                             break;
@@ -42,12 +41,12 @@ namespace YCPUXNA
 #if DEBUG
                             args = new string[] { "-emu", "../../Examples/testconsole.asm.bin" };
 #else
-                            args = new string[] { "-emu", "../Examples/testconsole.asm.bin" };
+                            args = new[] { "-emu", "../Examples/testconsole.asm.bin" };
 #endif
                             waitForKey = false;
                             break;
                         case '3':
-                            args = new string[] { "-test" };
+                            args = new[] { "-test" };
                             waitForKey = false;
                             break;
                         case '4':
@@ -87,7 +86,6 @@ namespace YCPUXNA
             }
 
             StdConsole.HideConsoleWindow();
-            return;
         }
     }
 }

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Ypsilon.Assembler
@@ -20,96 +21,81 @@ namespace Ypsilon.Assembler
             if (!LineSearch.MatchPragma(pragma))
                 return false;
 
-            if (pragma == ".dat8")
+            switch (pragma)
             {
-                ParseData8(line.Replace(".dat8", string.Empty).Trim(), state);
-                return true;
-            }
-            else if (pragma == ".dat16")
-            {
-                ParseData16(line.Replace(".dat16", string.Empty).Trim(), state);
-                return true;
-            }
-            else if (pragma == ".advance")
-            {
+                case ".dat8":
+                    ParseData8(line.Replace(".dat8", string.Empty).Trim(), state);
+                    return true;
+                case ".dat16":
+                    ParseData16(line.Replace(".dat16", string.Empty).Trim(), state);
+                    return true;
+                case ".advance":
 
-            }
-            else if (pragma == ".alias")
-            {
-                string alias;
-                int value;
-                if (tokens.Count != 3)
-                    throw new Exception("alias pragma takes two parameters.");
-                alias = tokens[1];
-                if (!char.IsLetter(alias[0]))
-                    throw new Exception("alias must begin with a letter.");
-                if (alias.Any(t => !char.IsLetterOrDigit(t)))
-                    throw new Exception("alias must be comprised of letters and digits.");
+                    break;
+                case ".alias":
+                {
+                    int value;
+                    if (tokens.Count != 3)
+                        throw new Exception("alias pragma takes two parameters.");
+                    string alias = tokens[1];
+                    if (!char.IsLetter(alias[0]))
+                        throw new Exception("alias must begin with a letter.");
+                    if (alias.Any(t => !char.IsLetterOrDigit(t)))
+                        throw new Exception("alias must be comprised of letters and digits.");
 
-                tokens[2] = tokens[2].Replace("$", "0x");
-                object convertFromString = new System.ComponentModel.Int32Converter().ConvertFromString(tokens[2]);
-                if (convertFromString != null)
-                    value = (int)convertFromString;
-                else
-                    throw new Exception("alias pragma - ushort parameter must be an unsigned 16-bit integer.");
+                    tokens[2] = tokens[2].Replace("$", "0x");
+                    object convertFromString = new Int32Converter().ConvertFromString(tokens[2]);
+                    if (convertFromString != null)
+                        value = (int)convertFromString;
+                    else
+                        throw new Exception("alias pragma - ushort parameter must be an unsigned 16-bit integer.");
 
-                Scopes.Scope scope = state.Scopes.GetLastOpenScope();
-                scope.AddAlias(alias, (ushort)value);
+                    Scopes.Scope scope = state.Scopes.GetLastOpenScope();
+                    scope.AddAlias(alias, (ushort)value);
 
-                return true;
-            }
-            else if (pragma == ".alignglobals")
-            {
-                int value;
-                if (tokens.Count != 2)
-                    throw new Exception("alignglobals pragma takes a single parameter.");
-                if (!int.TryParse(tokens[1], out value))
-                    throw new Exception("alignglobals pragma parameter must be an integer.");
-                if (value < 1 || value > 4)
-                    throw new Exception("alignglobals pragma parameter must be an integer between 1 and 4.");
-                m_Alignment = value;
-                return true;
-            }
-            else if (pragma == ".checkpc")
-            {
+                    return true;
+                }
+                case ".alignglobals":
+                {
+                    int value;
+                    if (tokens.Count != 2)
+                        throw new Exception("alignglobals pragma takes a single parameter.");
+                    if (!int.TryParse(tokens[1], out value))
+                        throw new Exception("alignglobals pragma parameter must be an integer.");
+                    if (value < 1 || value > 4)
+                        throw new Exception("alignglobals pragma parameter must be an integer between 1 and 4.");
+                    m_Alignment = value;
+                    return true;
+                }
+                case ".checkpc":
 
-            }
-            else if (pragma == ".org")
-            {
+                    break;
+                case ".org":
 
-            }
-            else if (pragma == ".incbin")
-            {
-                return IncludeBinary(tokens, state);
-            }
-            else if (pragma == ".include")
-            {
-                return IncludeAsm(tokens, state);
-            }
-            else if (pragma == ".macro")
-            {
+                    break;
+                case ".incbin":
+                    return IncludeBinary(tokens, state);
+                case ".include":
+                    return IncludeAsm(tokens, state);
+                case ".macro":
 
-            }
-            else if (pragma == ".macend")
-            {
+                    break;
+                case ".macend":
 
-            }
-            else if (pragma == ".require")
-            {
+                    break;
+                case ".require":
 
-            }
-            else if (pragma == ".reserve")
-            {
+                    break;
+                case ".reserve":
 
-            }
-            else if (pragma == ".scope" || pragma == "{")
-            {
-                state.Scopes.ScopeOpen(state.Code.Count, lineIndex);
-                return true;
-            }
-            else if (pragma == ".scend" || pragma == "}")
-            {
-                return state.Scopes.ScopeClose(state.Code.Count);
+                    break;
+                case ".scope":
+                case "{":
+                    state.Scopes.ScopeOpen(state.Code.Count, lineIndex);
+                    return true;
+                case ".scend":
+                case "}":
+                    return state.Scopes.ScopeClose(state.Code.Count);
             }
 
             throw new Exception($"Unimplemented pragma in line {line}");

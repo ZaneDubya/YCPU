@@ -43,10 +43,7 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        public ushort DeviceIndex
-        {
-            get { return (ushort)((m_Register & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift); }
-        }
+        public ushort DeviceIndex => (ushort)((m_Register & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift);
 
         public bool IsWriteProtected
         {
@@ -91,15 +88,9 @@ namespace Ypsilon.Emulation.Processor
             }
         }
 
-        public uint Base
-        {
-            get { return m_Base; }
-        }
+        public uint Base => m_Base;
 
-        public IMemoryInterface MemoryReference
-        {
-            get { return m_MemoryReference; }
-        }
+        public IMemoryInterface MemoryReference => m_MemoryReference;
 
         // ======================================================================
         // Public methods.
@@ -113,10 +104,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     throw new SegFaultException(SegmentType, i);
                 }
-                else
-                {
-                    return m_MemoryReference[i + m_Base];
-                }
+                return m_MemoryReference[i + m_Base];
             }
             set
             {
@@ -124,11 +112,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     throw new SegFaultException(SegmentType, i);
                 }
-                else
-                {
-                    m_MemoryReference[i + m_Base] = value;
-                }
-
+                m_MemoryReference[i + m_Base] = value;
             }
         }
 
@@ -227,6 +211,6 @@ namespace Ypsilon.Emulation.Processor
         None = 0x0000,
         RAM = 0x0100,
         ROM = 0x0200,
-        Device = 0x0400,
+        Device = 0x0400
     }
 }

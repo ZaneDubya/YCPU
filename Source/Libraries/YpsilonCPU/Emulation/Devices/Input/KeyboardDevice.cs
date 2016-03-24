@@ -4,22 +4,13 @@ namespace Ypsilon.Emulation.Devices.Input
 {
     public class KeyboardDevice : ADevice
     {
-        protected override ushort DeviceType
-        {
-            get { return DeviceTypeKeyboard; }
-        }
-        protected override ushort ManufacturerID
-        {
-            get { return 0x0000; }
-        }
-        protected override ushort DeviceID
-        {
-            get { return 0x0000; }
-        }
-        protected override ushort DeviceRevision
-        {
-            get { return 0x0000; }
-        }
+        protected override ushort DeviceType => DeviceTypeKeyboard;
+
+        protected override ushort ManufacturerID => 0x0000;
+
+        protected override ushort DeviceID => 0x0000;
+
+        protected override ushort DeviceRevision => 0x0000;
 
         public KeyboardDevice(YBUS bus)
             : base(bus)
@@ -27,7 +18,7 @@ namespace Ypsilon.Emulation.Devices.Input
             m_CommandBuffer = new ushort[16];
         }
 
-        private bool m_GetOnlyPressEvents = false;
+        private bool m_GetOnlyPressEvents;
         private ushort[] m_CommandBuffer;
 
         private const ushort EventUp = 0x0100;

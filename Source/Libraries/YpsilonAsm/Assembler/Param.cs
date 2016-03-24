@@ -49,8 +49,8 @@ namespace Ypsilon.Assembler
             }
         }
         
-        private ushort m_ImmediateWord = 0x0000;
-        private uint m_ImmediateWordLong = 0x00000000;
-        private string m_Label = null;
+        private ushort m_ImmediateWord;
+        private uint m_ImmediateWordLong;
+        private string m_Label;
     }
 }

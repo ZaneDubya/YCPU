@@ -6,22 +6,13 @@ namespace Ypsilon.Emulation.Devices.Graphics
 {
     public class GraphicsAdapter : ADevice
     {
-        protected override ushort DeviceType
-        {
-            get { return DeviceTypeGraphicsAdapter; }
-        }
-        protected override ushort ManufacturerID
-        {
-            get { return 0x0000; }
-        }
-        protected override ushort DeviceID
-        {
-            get { return 0x0000; }
-        }
-        protected override ushort DeviceRevision
-        {
-            get { return 0x0000; }
-        }
+        protected override ushort DeviceType => DeviceTypeGraphicsAdapter;
+
+        protected override ushort ManufacturerID => 0x0000;
+
+        protected override ushort DeviceID => 0x0000;
+
+        protected override ushort DeviceRevision => 0x0000;
 
         public GraphicsAdapter(YBUS bus)
             : base(bus)
@@ -169,11 +160,11 @@ namespace Ypsilon.Emulation.Devices.Graphics
             LEM1802
         }
 
-        private static byte[] c_DefaultPalette = new byte[] {
+        private static byte[] c_DefaultPalette = {
             0x00, 0x00, 0xDA, 0x0F, 0x90, 0x0F, 0x50, 0x08, 0x21, 0x03, 0xD8, 0x01, 0x90, 0x01, 0x42, 0x04, 
             0xEF, 0x06, 0x8F, 0x00, 0x6A, 0x00, 0x34, 0x02, 0x5F, 0x08, 0x0D, 0x01, 0xFF, 0x0F, 0x99, 0x09 };
 
-        private static byte[] c_DefaultCharset = new byte[] {
+        private static byte[] c_DefaultCharset = {
             0x22, 0xE2, 0x00, 0x00, 0x22, 0xF2, 0x00, 0x00, 0x00, 0xF0, 0x22, 0x22, 0x22, 0xE2, 0x22, 0x22,
             0x00, 0xF0, 0x00, 0x00, 0x22, 0xF2, 0x22, 0x22, 0x22, 0x2E, 0x2E, 0x22, 0x55, 0xD5, 0x55, 0x55,
             0x55, 0x1D, 0x0F, 0x00, 0x00, 0x1F, 0x5D, 0x55, 0x55, 0x0D, 0x0F, 0x00, 0x00, 0x0F, 0x5D, 0x55,

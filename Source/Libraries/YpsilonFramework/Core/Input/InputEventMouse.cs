@@ -24,16 +24,10 @@ namespace Ypsilon.Core.Input
         }
 
         private readonly MouseEvent m_eventType;
-        public MouseEvent EventType
-        {
-            get { return m_eventType; }
-        }
+        public MouseEvent EventType => m_eventType;
 
         private const int WHEEL_DELTA = 120;
-        public int WheelValue
-        {
-            get { return (m_clicks / WHEEL_DELTA); }
-        }
+        public int WheelValue => (m_clicks / WHEEL_DELTA);
 
         private readonly WinMouseButtons m_button;
         private readonly int m_clicks;
@@ -59,25 +53,13 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        public int MouseData
-        {
-            get { return m_mouseData; }
-        }
+        public int MouseData => m_mouseData;
 
-        public int X
-        {
-            get { return m_x; }
-        }
+        public int X => m_x;
 
-        public int Y
-        {
-            get { return m_y; }
-        }
+        public int Y => m_y;
 
-        public Point Position
-        {
-            get { return new Point(m_x, m_y); }
-        }
+        public Point Position => new Point(m_x, m_y);
 
         public InputEventMouse(MouseEvent eventType, WinMouseButtons button, int clicks, int x, int y, int mouseData, WinKeys modifiers)
             : base(modifiers)

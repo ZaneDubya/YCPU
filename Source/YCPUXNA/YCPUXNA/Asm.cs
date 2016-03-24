@@ -25,10 +25,6 @@ namespace YCPUXNA
                 StdConsole.StdOutWriteLine(string.Format(errArguments, error));
                 return;
             }
-            else
-            {
-                // check for options?
-            }
 
             StdConsole.StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
 

@@ -9,9 +9,11 @@
  *
  ***************************************************************************/
 #region usings
-using Microsoft.Win32.SafeHandles;
+
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+
 #endregion
 
 namespace Ypsilon.Core.Windows

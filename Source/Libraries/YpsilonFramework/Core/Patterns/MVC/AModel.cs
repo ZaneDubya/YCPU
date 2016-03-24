@@ -21,11 +21,6 @@
             return m_Controller;
         }
 
-        public AModel()
-        {
-
-        }
-
         public abstract void Initialize();
         public abstract void Dispose();
 

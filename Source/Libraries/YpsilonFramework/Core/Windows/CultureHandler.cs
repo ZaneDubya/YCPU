@@ -15,7 +15,7 @@ namespace Ypsilon.Core.Windows
 {
     internal static class CultureHandler
     {
-        private static Encoding s_Encoding = null;
+        private static Encoding s_Encoding;
 
         public static void InvalidateEncoder()
         {
@@ -26,7 +26,7 @@ namespace Ypsilon.Core.Windows
         {
             if (s_Encoding == null)
                 s_Encoding = GetCurrentEncoding();
-            char[] chars = s_Encoding.GetChars(new byte[] { (byte)inputChar });
+            char[] chars = s_Encoding.GetChars(new[] { (byte)inputChar });
             return chars[0];
         }
 

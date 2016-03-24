@@ -7,7 +7,7 @@ namespace YCPUXNA
     {
         public bool TryDisassemble(string[] args)
         {
-            string[] disassembly = null;
+            string[] disassembly;
 
             if (args.Length <= 1)
                 return false;
@@ -15,19 +15,15 @@ namespace YCPUXNA
             string inPath = args[1];
             string outPath = inPath + ".disasm";
 
-            if (File.Exists(inPath))
-            {
-                using (BinaryReader reader = new BinaryReader(File.Open(inPath, FileMode.Open)))
-                {
-                    disassembly = Disassemble(reader);
-                }
-                File.WriteAllLines(outPath, disassembly);
-                return true;
-            }
-            else
-            {
+            if (!File.Exists(inPath))
                 return false;
+
+            using (BinaryReader reader = new BinaryReader(File.Open(inPath, FileMode.Open)))
+            {
+                disassembly = Disassemble(reader);
             }
+            File.WriteAllLines(outPath, disassembly);
+            return true;
         }
 
         private string[] Disassemble(BinaryReader reader)

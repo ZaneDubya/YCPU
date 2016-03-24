@@ -1,21 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-
 
 namespace Ypsilon
 {
     public static class GraphicsUtility
     {
-        public static Matrix ProjectionMatrixUI
-        {
-            get { return Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -1000f, 3000f); }
-        }
+        public static Matrix ProjectionMatrixUI => Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -1000f, 3000f);
 
-        public static Matrix ProjectionMatrixScreen
-        {
-            get { return Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -2000f, 2000f); }
-        }
+        public static Matrix ProjectionMatrixScreen => Matrix.CreateOrthographicOffCenter(0f, 1280f, 720f, 0f, -2000f, 2000f);
 
         public static Matrix CreateProjectionMatrixScreenOffset(GraphicsDevice graphics)
         {

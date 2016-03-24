@@ -19,12 +19,6 @@
             Count = 0;
         }
 
-        public int SizeOf
-        {
-            get
-            {
-                return sizeof(int) * 2 + VertexPositionTextureDataColor.SizeInBytes * Vertices.Length;
-            }
-        }
+        public int SizeOf => sizeof(int) * 2 + VertexPositionTextureDataColor.SizeInBytes * Vertices.Length;
     }
 }

@@ -4,10 +4,10 @@ namespace Ypsilon.Emulation.Processor
 {
     internal class YRTC
     {
-        private long m_NextTickAtCycle = 0;
-        private long m_CyclesPerTick = 0;
+        private long m_NextTickAtCycle;
+        private long m_CyclesPerTick;
 
-        public bool IsEnabled = false;
+        public bool IsEnabled;
 
         public ushort SetTickRate(ushort value, long cycle)
         {
@@ -16,17 +16,14 @@ namespace Ypsilon.Emulation.Processor
                 DisableInterrupt();
                 return 0;
             }
-            else
-            {
-                IsEnabled = true;
-                double tickHz = value;
-                double maxHz = YCPU.ClockRateHz / 1024d;
-                if (tickHz > maxHz)
-                    tickHz = maxHz;
-                m_CyclesPerTick = (int)(YCPU.ClockRateHz / tickHz);
-                m_NextTickAtCycle = cycle + m_CyclesPerTick;
-                return (ushort)tickHz;
-            }
+            IsEnabled = true;
+            double tickHz = value;
+            double maxHz = YCPU.ClockRateHz / 1024d;
+            if (tickHz > maxHz)
+                tickHz = maxHz;
+            m_CyclesPerTick = (int)(YCPU.ClockRateHz / tickHz);
+            m_NextTickAtCycle = cycle + m_CyclesPerTick;
+            return (ushort)tickHz;
         }
 
         public ushort GetTickRate()
@@ -47,10 +44,7 @@ namespace Ypsilon.Emulation.Processor
                 m_NextTickAtCycle += m_CyclesPerTick;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public ushort[] GetData()

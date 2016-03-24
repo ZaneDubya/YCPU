@@ -8,6 +8,7 @@
  *   (at your option) any later version.
  *
  ***************************************************************************/
+
 using System;
 using Microsoft.Xna.Framework.Input;
 using Ypsilon.Core.Input;
@@ -25,10 +26,7 @@ namespace Ypsilon.Core.Windows
         private const bool WP_PASSTHROUGH = true;
         private const bool WP_NOPASSTHROUGH = false;
 
-        public override int HookType
-        {
-            get { return NativeConstants.WH_CALLWNDPROC; }
-        }
+        public override int HookType => NativeConstants.WH_CALLWNDPROC;
 
         public WndProc(IntPtr hWnd)
             : base(hWnd)
@@ -36,13 +34,7 @@ namespace Ypsilon.Core.Windows
             
         }
 
-        public MouseState MouseState
-        {
-            get
-            {
-                return Mouse.GetState();
-            }
-        }
+        public MouseState MouseState => Mouse.GetState();
 
         /// <summary>
         /// Gets the currently pressed Modifier keys, Control, Alt, Shift

@@ -1,4 +1,6 @@
-﻿namespace Ypsilon.Emulation.Processor
+﻿using System.Threading;
+
+namespace Ypsilon.Emulation.Processor
 {
     /// <summary>
     /// A processor defined by the YCPU Specification.
@@ -10,23 +12,14 @@
         /// <summary>
         /// The hardware bus, which hosts all hardware devices.
         /// </summary>
-        public YBUS BUS
-        {
-            get { return m_Bus; }
-        }
+        public YBUS BUS => m_Bus;
 
-        public long Cycles
-        {
-            get { return m_Cycles; }
-        }
-        
+        public long Cycles => m_Cycles;
+
         /// <summary>
         /// Is this YCPU currently executing?
         /// </summary>
-        public bool Running
-        {
-            get { return m_Running; }
-        }
+        public bool Running => m_Running;
 
         /// <summary>
         /// Initializes a new YCPU.
@@ -127,11 +120,11 @@
             if (!m_Running)
                 return;
             m_Pausing = true;
-            while (m_Pausing == true)
+            while (m_Pausing)
             {
                 // wait until the cpu has stopped running, then return.
                 // we wait 1ms between each try so we don't lock this variable.
-                System.Threading.Thread.Sleep(1);
+                Thread.Sleep(1);
             }
         }
 
@@ -143,14 +136,15 @@
             None
         }
         private ushort[] R = new ushort[(int)RegGeneral.Count];
-        public ushort R0 { get { return R[0]; } }
-        public ushort R1 { get { return R[1]; } }
-        public ushort R2 { get { return R[2]; } }
-        public ushort R3 { get { return R[3]; } }
-        public ushort R4 { get { return R[4]; } }
-        public ushort R5 { get { return R[5]; } }
-        public ushort R6 { get { return R[6]; } }
-        public ushort R7 { get { return R[7]; } }
+        public ushort R0 => R[0];
+        public ushort R1 => R[1];
+        public ushort R2 => R[2];
+        public ushort R3 => R[3];
+        public ushort R4 => R[4];
+        public ushort R5 => R[5];
+        public ushort R6 => R[6];
+        public ushort R7 => R[7];
+
         #endregion
 
         #region Control Registers
@@ -175,18 +169,14 @@
                 case RegControl.PS:
                     if (PS_S)
                         return m_PS;
-                    else
-                    {
-                        Interrupt_UnPrivFault(operand);
-                        return 0;
-                    }
+                    Interrupt_UnPrivFault(operand);
+                    return 0;
                 case RegControl.USP:
                     return m_USP;
                 case RegControl.SSP:
                     if (PS_S)
                         return m_SSP;
-                    else
-                        return m_USP;
+                    return m_USP;
                 default:
                     Interrupt_UndefFault(operand);
                     return 0;
@@ -230,17 +220,15 @@
         }
 
         #region FL
-        private ushort m_FL = 0x0000;
+        private ushort m_FL;
         private const ushort c_FL_N = 0x8000, c_FL_Z = 0x4000, c_FL_C = 0x2000, c_FL_V = 0x1000;
         public ushort FL
         {
             get { return m_FL; }
             set { m_FL = value; }
         }
-        public ushort Carry
-        {
-            get { return ((m_FL & c_FL_C) != 0) ? (ushort)1 : (ushort)0; }
-        }
+        public ushort Carry => ((m_FL & c_FL_C) != 0) ? (ushort)1 : (ushort)0;
+
         public bool FL_N
         {
             get
@@ -253,7 +241,7 @@
                 {
                     m_FL &= unchecked((ushort)~c_FL_N);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_FL |= c_FL_N;
                 }
@@ -271,7 +259,7 @@
                 {
                     m_FL &= unchecked((ushort)~c_FL_Z);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_FL |= c_FL_Z;
                 }
@@ -289,7 +277,7 @@
                 {
                     m_FL &= unchecked((ushort)~c_FL_C);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_FL |= c_FL_C;
                 }
@@ -307,7 +295,7 @@
                 {
                     m_FL &= unchecked((ushort)~c_FL_V);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_FL |= c_FL_V;
                 }
@@ -315,10 +303,10 @@
         }
         #endregion
         #region PS
-        private ushort m_PS = 0x0000;
+        private ushort m_PS;
         private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_H = 0x2000, c_PS_I = 0x1000;
         private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_V = 0x0200, c_PS_W = 0x0100;
-        private bool m_PS_S = false;
+        private bool m_PS_S;
         public ushort PS
         {
             private set
@@ -349,7 +337,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_S);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_S;
                 }
@@ -374,7 +362,7 @@
                     {
                         m_PS &= unchecked((ushort)~c_PS_M);
                     }
-                    else if (value == true)
+                    else if (value)
                     {
                         m_PS |= c_PS_M;
                     }
@@ -397,7 +385,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_H);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_H;
                 }
@@ -419,7 +407,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_I);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_I;
                 }
@@ -441,7 +429,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_Q);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_Q;
                 }
@@ -463,7 +451,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_U);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_U;
                 }
@@ -485,7 +473,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_V);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_V;
                 }
@@ -507,7 +495,7 @@
                 {
                     m_PS &= unchecked((ushort)~c_PS_W);
                 }
-                else if (value == true)
+                else if (value)
                 {
                     m_PS |= c_PS_W;
                 }
@@ -515,7 +503,7 @@
         }
         #endregion
         #region PC
-        private ushort m_PC = 0x0000;
+        private ushort m_PC;
         public ushort PC
         {
             get { return m_PC; }
@@ -539,7 +527,7 @@
         }
         #endregion
         #region USP
-        private ushort m_USP = 0x0000;
+        private ushort m_USP;
         public ushort USP
         {
             get { return m_USP; }
@@ -547,7 +535,7 @@
         }
         #endregion
         #region SSP
-        private ushort m_SSP = 0x0000;
+        private ushort m_SSP;
         public ushort SSP
         {
             get { return m_SSP; }
@@ -591,7 +579,7 @@
 
         private long m_Cycles;
 
-        private bool m_Running = false;
-        private bool m_Pausing = false;
+        private bool m_Running;
+        private bool m_Pausing;
     }
 }

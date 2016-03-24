@@ -2,10 +2,7 @@
 {
     internal class MemoryChunk : IMemoryInterface
     {
-        public int Size
-        {
-            get { return m_Memory.Length; }
-        }
+        public int Size => m_Memory.Length;
 
         /// <summary>
         /// Set to true for ROM, false for RAM.
@@ -20,7 +17,7 @@
             m_Memory = new byte[size];
         }
 
-        private byte[] m_Memory;
+        private readonly byte[] m_Memory;
 
         public byte this[uint address]
         {

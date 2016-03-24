@@ -14,7 +14,7 @@ namespace Ypsilon.Assembler
     public partial class Parser
     {
         private List<string> m_Lines;
-        private int m_CurrentLine = 0;
+        private int m_CurrentLine;
         private int m_Alignment = 1;
 
         public Parser()
@@ -98,7 +98,7 @@ namespace Ypsilon.Assembler
 
             if (commentIndex == 0)
                 return string.Empty;
-            else if (commentIndex > 0)
+            if (commentIndex > 0)
                 clearedLine = line.Substring(0, commentIndex).Trim();
 
             return clearedLine;
@@ -183,8 +183,7 @@ namespace Ypsilon.Assembler
             assembler = null;
             if (m_Opcodes.TryGetValue(opcode.ToLowerInvariant(), out assembler))
                 return true;
-            else
-                return false;
+            return false;
         }
 
         private bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
@@ -209,7 +208,7 @@ namespace Ypsilon.Assembler
 
         private List<string> Tokenize(string data)
         {
-            List<string> tokens = Common.SplitString(data, new[] { " ", "\t", "," });
+            List<string> tokens = Common.SplitString(data, " ", "\t", ",");
             for (int i = 0; i < tokens.Count - 1; i++)
             {
                 string token = tokens[i];

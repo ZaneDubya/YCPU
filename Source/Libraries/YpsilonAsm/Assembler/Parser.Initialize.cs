@@ -108,46 +108,52 @@ namespace Ypsilon.Assembler
 
         private void InitRegisterDictionary()
         {
-            m_Registers = new Dictionary<string, ushort>();
-            m_Registers.Add("r0", (ushort)YCPUReg.R0);
-            m_Registers.Add("r1", (ushort)YCPUReg.R1);
-            m_Registers.Add("r2", (ushort)YCPUReg.R2);
-            m_Registers.Add("r3", (ushort)YCPUReg.R3);
-            m_Registers.Add("r4", (ushort)YCPUReg.R4);
-            m_Registers.Add("r5", (ushort)YCPUReg.R5);
-            m_Registers.Add("r6", (ushort)YCPUReg.R6);
-            m_Registers.Add("r7", (ushort)YCPUReg.R7);
+            m_Registers = new Dictionary<string, ushort>
+            {
+                {"r0", (ushort) YCPUReg.R0},
+                {"r1", (ushort) YCPUReg.R1},
+                {"r2", (ushort) YCPUReg.R2},
+                {"r3", (ushort) YCPUReg.R3},
+                {"r4", (ushort) YCPUReg.R4},
+                {"r5", (ushort) YCPUReg.R5},
+                {"r6", (ushort) YCPUReg.R6},
+                {"r7", (ushort) YCPUReg.R7},
+                {"a", (ushort) YCPUReg.R0},
+                {"b", (ushort) YCPUReg.R1},
+                {"c", (ushort) YCPUReg.R2},
+                {"d", (ushort) YCPUReg.R3},
+                {"w", (ushort) YCPUReg.R4},
+                {"x", (ushort) YCPUReg.R5},
+                {"y", (ushort) YCPUReg.R6},
+                {"z", (ushort) YCPUReg.R7}
+            };
             // alternate naming scheme
-            m_Registers.Add("a", (ushort)YCPUReg.R0);
-            m_Registers.Add("b", (ushort)YCPUReg.R1);
-            m_Registers.Add("c", (ushort)YCPUReg.R2);
-            m_Registers.Add("d", (ushort)YCPUReg.R3);
-            m_Registers.Add("w", (ushort)YCPUReg.R4);
-            m_Registers.Add("x", (ushort)YCPUReg.R5);
-            m_Registers.Add("y", (ushort)YCPUReg.R6);
-            m_Registers.Add("z", (ushort)YCPUReg.R7);
 
-            m_ControlRegisters = new Dictionary<string, ushort>();
-            m_ControlRegisters.Add("fl", (ushort)YCPUReg.FL);
-            m_ControlRegisters.Add("pc", (ushort)YCPUReg.PC);
-            m_ControlRegisters.Add("ps", (ushort)YCPUReg.PS);
-            m_ControlRegisters.Add("usp", (ushort)YCPUReg.USP);
-            m_ControlRegisters.Add("sp", (ushort)YCPUReg.SP);
+            m_ControlRegisters = new Dictionary<string, ushort>
+            {
+                {"fl", (ushort) YCPUReg.FL},
+                {"pc", (ushort) YCPUReg.PC},
+                {"ps", (ushort) YCPUReg.PS},
+                {"usp", (ushort) YCPUReg.USP},
+                {"sp", (ushort) YCPUReg.SP}
+            };
 
-            m_SegmentRegisters = new Dictionary<string, ushort>();
-            m_SegmentRegisters.Add("cs", (ushort)0x0000);
-            m_SegmentRegisters.Add("ds", (ushort)0x0001);
-            m_SegmentRegisters.Add("es", (ushort)0x0002);
-            m_SegmentRegisters.Add("ss", (ushort)0x0003);
-            m_SegmentRegisters.Add("css", (ushort)0x0000);
-            m_SegmentRegisters.Add("dss", (ushort)0x0001);
-            m_SegmentRegisters.Add("ess", (ushort)0x0002);
-            m_SegmentRegisters.Add("sss", (ushort)0x0003);
-            m_SegmentRegisters.Add("csu", (ushort)0x0040);
-            m_SegmentRegisters.Add("dsu", (ushort)0x0041);
-            m_SegmentRegisters.Add("esu", (ushort)0x0042);
-            m_SegmentRegisters.Add("ssu", (ushort)0x0043);
-            m_SegmentRegisters.Add("is", (ushort)0x0004);
+            m_SegmentRegisters = new Dictionary<string, ushort>
+            {
+                {"cs", 0x0000},
+                {"ds", 0x0001},
+                {"es", 0x0002},
+                {"ss", 0x0003},
+                {"css", 0x0000},
+                {"dss", 0x0001},
+                {"ess", 0x0002},
+                {"sss", 0x0003},
+                {"csu", 0x0040},
+                {"dsu", 0x0041},
+                {"esu", 0x0042},
+                {"ssu", 0x0043},
+                {"is", 0x0004}
+            };
         }
 
         private enum YCPUReg : ushort
@@ -165,7 +171,7 @@ namespace Ypsilon.Assembler
             PC = 0x0001,
             PS = 0x0002,
             USP = 0x0006,
-            SP = 0x0007,
+            SP = 0x0007
         }
     }
 }

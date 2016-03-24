@@ -30,7 +30,7 @@ namespace Ypsilon.Assembler
             for (int i = 0; i < acceptable.Length; i++)
                 if (flag.HasFlag(acceptable[i]))
                     return;
-            throw new Exception($"Opcode flag of '{flag.ToString()}' is unsupported for this opcode.");
+            throw new Exception($"Opcode flag of '{flag}' is unsupported for this opcode.");
         }
     }
 }

@@ -41,19 +41,19 @@ namespace Ypsilon.Assembler
             if (m_Registers.ContainsKey(param))
             {
                 // Register: R0
-                parsed.RegisterIndex = (ushort)m_Registers[param];
+                parsed.RegisterIndex = m_Registers[param];
                 parsed.AddressingMode = AddressingMode.Register;
             }
             else if (m_ControlRegisters.ContainsKey(param))
             {
                 // Processor Register: Pc
-                parsed.RegisterIndex = (ushort)m_ControlRegisters[param];
+                parsed.RegisterIndex = m_ControlRegisters[param];
                 parsed.AddressingMode = AddressingMode.ControlRegister;
             }
             else if (m_SegmentRegisters.ContainsKey(param))
             {
                 // segment Register: cs,ds,es,ss,css,dss,ess,sss,csu,dsu,esu,ssu,is
-                parsed.RegisterIndex = (ushort)m_SegmentRegisters[param];
+                parsed.RegisterIndex = m_SegmentRegisters[param];
                 parsed.AddressingMode = AddressingMode.SegmentRegister;
             }
             else if (isParamBracketed(param))
@@ -63,7 +63,7 @@ namespace Ypsilon.Assembler
                 if (m_Registers.ContainsKey(param))
                 {
                     // Indirect: [R0]
-                    parsed.RegisterIndex = (ushort)m_Registers[param];
+                    parsed.RegisterIndex = m_Registers[param];
                     parsed.AddressingMode = AddressingMode.Indirect;
                 }
                 else if (param.IndexOf(',') != -1)
@@ -93,14 +93,14 @@ namespace Ypsilon.Assembler
                     {
                         // Value base, Register index: [R0,$0000]
                         TryParseLiteralParameter(parsed, param1);
-                        parsed.RegisterIndex = (ushort)(m_Registers[param0]);
+                        parsed.RegisterIndex = m_Registers[param0];
                         parsed.AddressingMode = AddressingMode.IndirectOffset;
                     }
                     else if (CanDecodeLiteral(param0) && m_Registers.ContainsKey(param1))
                     {
                         // Value base, Register index: [$0000,R0]
                         TryParseLiteralParameter(parsed, param0);
-                        parsed.RegisterIndex = (ushort)(m_Registers[param1]);
+                        parsed.RegisterIndex = m_Registers[param1];
                         parsed.AddressingMode = AddressingMode.IndirectOffset;
                     }
                     else
@@ -241,18 +241,15 @@ namespace Ypsilon.Assembler
             {
                 return false;
             }
-            else if (literalBig.HasValue)
+            if (literalBig.HasValue)
             {
                 parsedOpcode.AddressingMode = AddressingMode.ImmediateBig;
                 parsedOpcode.ImmediateWordLong = literalBig.Value;
                 return true;
             }
-            else
-            {
-                parsedOpcode.AddressingMode = AddressingMode.Immediate;
-                parsedOpcode.ImmediateWordShort = literalValue.Value;
-                return true;
-            }
+            parsedOpcode.AddressingMode = AddressingMode.Immediate;
+            parsedOpcode.ImmediateWordShort = literalValue.Value;
+            return true;
         }
 
         public bool CanDecodeLiteral(string param)
@@ -266,8 +263,7 @@ namespace Ypsilon.Assembler
         {
             if ((param.StartsWith("[") && param.EndsWith("]")) || (param.StartsWith("(") && param.EndsWith(")")))
                 return true;
-            else
-                return false;
+            return false;
         }
 
         private string removeBrackets(string param)

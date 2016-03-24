@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Ypsilon.Assembler
 {
@@ -124,7 +125,7 @@ namespace Ypsilon.Assembler
                                     char x0 = line[i + 1], x1 = line[i + 2];
                                     if (IsHex(x0) && IsHex(x1))
                                     {
-                                        int hex = Int32.Parse(x0.ToString() + x1.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+                                        int hex = Int32.Parse(x0 + x1.ToString(), NumberStyles.AllowHexSpecifier);
                                         field += (char)hex;
                                         i += 2;
                                     }
@@ -226,7 +227,7 @@ namespace Ypsilon.Assembler
                                 state.Code.Add((byte)c);
                                 break;
                             case DataFieldTypes.Int16:
-                                state.Code.Add((byte)((ushort)c & 0x00ff));
+                                state.Code.Add((byte)(c & 0x00ff));
                                 state.Code.Add((byte)((ushort)(c & 0xff00) >> 8));
                                 break;
                         }

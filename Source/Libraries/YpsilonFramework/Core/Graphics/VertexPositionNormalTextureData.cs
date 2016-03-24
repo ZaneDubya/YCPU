@@ -18,9 +18,9 @@ namespace Ypsilon.Core.Graphics
             new VertexElement(sizeof(float) * 9, VertexElementFormat.Color, VertexElementUsage.Color, 0)  // color
         );
 
-        VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
+        VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
 
-        public static int SizeInBytes { get { return sizeof(float) * 10; } }
+        public static int SizeInBytes => sizeof(float) * 10;
 
         public VertexPositionTextureDataColor(Vector3 position, Vector2 uv, Vector4 data, Color hue)
         {
@@ -46,7 +46,7 @@ namespace Ypsilon.Core.Graphics
 
         public override string ToString()
         {
-            return $"VPTDC: <{Position.ToString()}> <{UV.ToString()}>";
+            return $"VPTDC: <{Position}> <{UV}>";
         }
     }
 }
