@@ -17,10 +17,10 @@ ResetInt:
     ;set up devices, mmu, etc.
     jsr     Setup
     
-    ; show the 'NYA ELEKTRISKA' screen, then clear
+    ; draw the 'NYA ELEKTRISKA' screen, then clear
     jsr     ShowStartScreen
     jsr     ClearScreen
-    ; top bar on screen
+    ; draw top bar on screen
     lod     r1, $2820       ; space char with yellow background
     lod     r2, 32          ; words to write
     lod     r5, $0000       ; start of video memory
@@ -34,29 +34,18 @@ ResetInt:
     lod     r5, $0040
     
     Update:
-        jsr     Getc                ; R0 = number of events, 16bit events copied to $7002-$701F
-        cmp     r0, 0
+        jsr     Getc                ; R0 = event, or 0x0000 if no event.
         beq     Update
-    
-        lod     r1, $2800           ; hi byte is color: yellow on blue
-        lod     r6, $7002           ; get first char, written in $7002 (see GetKeyboardEvents)
-        writeSingleChar:
-            lod     r2, [r6]
-            adi     r6, 2
-            lod     r3, r2
-            rnr     r3, 8
-            and     r3, 0x000f
-            cmp     r3, 3
-            bne     writeSingleChar
-            and     r2, 0x00ff
-            bne     writeChar
-            baw     writeSingleChar
-        writeChar:
-            orr     r2, r1
-            sto     r2, ES[r5]
-            adi     r5, 2
-            dec     r0
-            bne     writeSingleChar
+        
+        lod     r2, r0              ; r2 = event type
+        lsr     r2, 8
+        and     r2, 0x000f
+        cmp     r2, 3
+        bne     Update
+        and     r0, 0x00ff
+        orr     r0, 0x2800          ; yellow on blue.
+        sto     r0, ES[r5]
+        adi     r5, 2
         baw     Update
 }
 
@@ -102,31 +91,29 @@ ClockInt:
 Getc:
 {
     psh     r1, r2
-    lod     r2, [KeyboardData]
-    lod.8   r1, r2
-    lsr     r2, 8
-    cmp     r1, r2
+GetCAgain:
+    lod.8   r1, [KeyboardData+0]    ; r1 = number of events in buffer
+    lod.8   r2, [KeyboardData+1]    ; r2 = last handled event
+    cmp     r1, r2                  ; if r1 == r2, get new events.
     beq     getKeyboardEvents
-    inc     r1
-    sto.8   r1, [KeyboardData+1]    
-    asl     r1, 1
-    lod     r0, [KeyboardData,r1]
+    inc     r2
+    sto.8   r2, [KeyboardData+1]    
+    asl     r2, 1
+    lod     r0, [KeyboardData,r2]
 return:
     pop     r1, r2
     rts
-    
     ; === GetKeyboardEvents ====================
     ; gets all keyboard events, copies to $7000.
     ; returns: r0 is number of keyboard events.
     getKeyboardEvents:
-        
         lod     r0, $0002
         lod     r1, $0001
         lod     r2, KeyboardData
         hwq     $02
         lod     r0, [KeyboardData]
-        bne     Getc            ; if events, then do Getc again
-        baw     return          ; else return
+        bne     GetCAgain       ; if events, then do Getc again
+        baw     return          ; else return, r0 == 0x0000
 }
 
 ; === Setup ====================================================================

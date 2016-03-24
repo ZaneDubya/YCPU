@@ -29,6 +29,11 @@ namespace Ypsilon.Emulation.Processor
                 Cycles = cycles;
                 IsNOP = isNOP;
             }
+
+            public override string ToString()
+            {
+                return Name;
+            }
         }
 
         public YCPUInstruction[] Opcodes = new YCPUInstruction[0x100];
@@ -1196,9 +1201,6 @@ namespace Ypsilon.Emulation.Processor
             ushort value;
             RegGeneral destination;
             BitPatternSHF(operand, out value, out destination);
-
-            R[(int)destination] = 0x8000;
-            value = 1;
 
             uint register = (uint)R[(int)destination] >> value;
             uint mask = (uint)Math.Pow(2, value) - 1;
