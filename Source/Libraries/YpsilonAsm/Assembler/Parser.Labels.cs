@@ -12,14 +12,14 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        int ParseLabel(string line, ParserState state)
+        private int ParseLabel(string line, ParserState state)
         {
-            int colon_pos = line.IndexOf(':');
-            string labelName = line.Substring(0, colon_pos);
+            int colonPos = line.IndexOf(':');
+            string labelName = line.Substring(0, colonPos);
 
             if (!state.Scopes.AddLabel(labelName.Trim().ToLowerInvariant(), state.Code.Count))
-                throw new Exception(string.Format("Error adding label '{0}'.", labelName));
-            return colon_pos + 1;
+                throw new Exception($"Error adding label '{labelName}'.");
+            return colonPos + 1;
         }
     }
 }

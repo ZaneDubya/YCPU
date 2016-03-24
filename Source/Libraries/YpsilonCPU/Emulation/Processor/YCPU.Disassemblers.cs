@@ -17,10 +17,8 @@ namespace Ypsilon.Emulation.Processor
                 YCPUInstruction opcode = Opcodes[word & 0x00FF];
                 if (extendedFormat)
                 {
-                    s[i] = string.Format("{0:X4}:{1:X4} {2}",
-                        address, word, (opcode.Disassembler != null) ?
-                        opcode.Disassembler(opcode.Name, word, nextword, address, true, out instructionSize) :
-                        opcode.Name);
+                    s[i] =
+                        $"{address:X4}:{word:X4} {((opcode.Disassembler != null) ? opcode.Disassembler(opcode.Name, word, nextword, address, true, out instructionSize) : opcode.Name)}";
                 }
                 else
                 {
@@ -54,10 +52,8 @@ namespace Ypsilon.Emulation.Processor
                         else
                         {
                             instructionSize = 4;
-                            string disasm = string.Format("{0,-8}{1}, ${2:X4}",
-                                name + (isEightBit ? ".8" : string.Empty),
-                                NameOfRegGP(regDest),
-                                nextword);
+                            string disasm =
+                                $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, ${nextword:X4}";
                             if (showMemoryContents)
                                 disasm = AppendMemoryContents(disasm, nextword);
                             return disasm;
@@ -66,10 +62,8 @@ namespace Ypsilon.Emulation.Processor
                     else if ((int)regSrc == 1) // absolute
                     {
                         instructionSize = 4;
-                        string disasm = string.Format("{0,-8}{1}, [${2:X4}]",
-                            name + (isEightBit ? ".8" : string.Empty),
-                            NameOfRegGP(regDest),
-                            nextword);
+                        string disasm =
+                            $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, [${nextword:X4}]";
                         if (showMemoryContents)
                             disasm = AppendMemoryContents(disasm, DebugReadMemory(nextword, segData));
                         return disasm;
@@ -78,10 +72,7 @@ namespace Ypsilon.Emulation.Processor
                     {
                         instructionSize = 2;
                         RegControl cr = (RegControl)((operand & 0x0700) >> 8);
-                        string disasm = string.Format("{0,-8}{1}, {2}",
-                            name,
-                            NameOfRegGP(regDest),
-                            NameOfRegSP(cr));
+                        string disasm = $"{name,-8}{NameOfRegGP(regDest)}, {NameOfRegSP(cr)}";
                         if (showMemoryContents)
                             disasm = AppendMemoryContents(disasm, nextword);
                         return disasm;
@@ -89,37 +80,23 @@ namespace Ypsilon.Emulation.Processor
 
                 case 1: // Register
                     instructionSize = 2;
-                    return string.Format("{0,-8}{1}, {2,-12}(${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP(regSrc),
-                        R[(int)regSrc]);
+                    return
+                        $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, {NameOfRegGP(regSrc),-12}(${R[(int) regSrc]:X4})";
 
                 case 2: // Indirect
                     instructionSize = 2;
-                    return string.Format("{0,-8}{1}, [{2}]        (${3:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP(regSrc),
-                        DebugReadMemory(R[(int)regSrc], segData));
+                    return
+                        $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, [{NameOfRegGP(regSrc)}]        (${DebugReadMemory(R[(int) regSrc], segData):X4})";
 
                 case 3: // Indirect Offset (also Absolute Offset)
                     instructionSize = 4;
-                    return string.Format("{0,-8}{1}, [{2},${3:X4}]  (${4:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP(regSrc), 
-                        nextword,
-                        DebugReadMemory((ushort)(R[(int)regSrc] + nextword), segData));
+                    return
+                        $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, [{NameOfRegGP(regSrc)},${nextword:X4}]  (${DebugReadMemory((ushort) (R[(int) regSrc] + nextword), segData):X4})";
                 default: // $4 - $7 are Indirect Indexed
                     instructionSize = 2;
                     RegGeneral regIndex = (RegGeneral)((operand & 0x7000) >> 12);
-                    return string.Format("{0,-8}{1}, [{2},{3}]     (${4:X4})",
-                        name + (isEightBit ? ".8" : string.Empty), 
-                        NameOfRegGP(regDest),
-                        NameOfRegGP(regSrc),
-                        NameOfRegGP(regIndex),
-                        DebugReadMemory((ushort)(R[(int)regSrc] + R[(int)regIndex]), segData));
+                    return
+                        $"{name + (isEightBit ? ".8" : string.Empty),-8}{NameOfRegGP(regDest)}, [{NameOfRegGP(regSrc)},{NameOfRegGP(regIndex)}]     (${DebugReadMemory((ushort) (R[(int) regSrc] + R[(int) regIndex]), segData):X4})";
             }
         }
 
@@ -131,9 +108,8 @@ namespace Ypsilon.Emulation.Processor
             ushort value = (as_register) ?
                 (ushort)((operand & 0x0700) >> 8) :
                 (ushort)((operand & 0x0F00) >> 8);
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), as_register ?
-                string.Format("{0,-8}(${1:X1})", NameOfRegGP((RegGeneral)value), R[value]) :
-                string.Format("${0:X1}", value));
+            return
+                $"{name,-8}{NameOfRegGP(destination)}, {(as_register ? $"{NameOfRegGP((RegGeneral) value),-8}(${R[value]:X1})" : $"${value:X1}")}";
         }
 
         private string DisassembleBRA(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -146,14 +122,11 @@ namespace Ypsilon.Emulation.Processor
         private string DisassembleFLG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
         {
             instructionSize = 2;
-            string flags = string.Format("{0}{1}{2}{3}",
-                ((operand & 0x8000) != 0) ? "N " : string.Empty,
-                ((operand & 0x4000) != 0) ? "Z " : string.Empty,
-                ((operand & 0x2000) != 0) ? "C " : string.Empty,
-                ((operand & 0x1000) != 0) ? "V" : string.Empty);
+            string flags =
+                $"{(((operand & 0x8000) != 0) ? "N " : string.Empty)}{(((operand & 0x4000) != 0) ? "Z " : string.Empty)}{(((operand & 0x2000) != 0) ? "C " : string.Empty)}{(((operand & 0x1000) != 0) ? "V" : string.Empty)}";
             if (flags == string.Empty)
                 flags = "<NONE>";
-            return string.Format("{0,-8}{1}", name, flags);
+            return $"{name,-8}{flags}";
         }
 
         private string DisassembleHWQ(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -163,7 +136,7 @@ namespace Ypsilon.Emulation.Processor
             ushort value;
             BitPatternHWQ(operand, out value, out unused);
 
-            return string.Format("{0,-8}${1:X2}", name, value);
+            return $"{name,-8}${value:X2}";
         }
 
         private string DisassembleINC(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -173,7 +146,7 @@ namespace Ypsilon.Emulation.Processor
             ushort value;
             BitPatternIMM(operand, out value, out destination);
 
-            return string.Format("{0,-8}{1}, ${2:X2}", name, NameOfRegGP(destination), value);
+            return $"{name,-8}{NameOfRegGP(destination)}, ${value:X2}";
         }
 
         private string DisassembleJMP(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -195,37 +168,30 @@ namespace Ypsilon.Emulation.Processor
                     instructionSize = (ushort)(isFar && !absolute ? 8 : 4);
                     if (absolute)
                     {
-                        return string.Format("{0,-8}[${1:X4}]{2}", name, nextword,
-                            string.Format("         (${0:X4})", DebugReadMemory(nextword, SegmentIndex.CS)));
+                        return
+                            $"{name,-8}[${nextword:X4}]{string.Format($"         (${DebugReadMemory(nextword, SegmentIndex.CS):X4})", DebugReadMemory(nextword, SegmentIndex.CS))}";
                     }
                     else
                     {
-                        return string.Format("{0,-8}${1:X4}{2}", name, nextword, isFar ? ", $<SEGREG>" : string.Empty);
+                        return $"{name,-8}${nextword:X4}{(isFar ? ", $<SEGREG>" : string.Empty)}";
                     }
                     
                 case 1: // Register
                     instructionSize = 2;
-                    return string.Format("{0,-8}{1}              (${2:X4})", name,
-                        NameOfRegGP(r_src),
-                        R[(int)r_src]);
+                    return $"{name,-8}{NameOfRegGP(r_src)}              (${R[(int) r_src]:X4})";
                 case 2: // Indirect
                     instructionSize = 2;
-                    return string.Format("{0,-8}[{1}]            (${2:X4})", name,
-                        NameOfRegGP(r_src),
-                        DebugReadMemory(R[(int)r_src], segData));
+                    return
+                        $"{name,-8}[{NameOfRegGP(r_src)}]            (${DebugReadMemory(R[(int) r_src], segData):X4})";
                 case 3: // Indirect Offset (also Absolute Offset)
                     instructionSize = 4;
-                    return string.Format("{0,-8}[{1},${2:X4}]      (${3:X4})", name,
-                        NameOfRegGP(r_src), nextword,
-                        DebugReadMemory((ushort)(R[(int)r_src] + nextword), segData));
+                    return
+                        $"{name,-8}[{NameOfRegGP(r_src)},${nextword:X4}]      (${DebugReadMemory((ushort) (R[(int) r_src] + nextword), segData):X4})";
                 default: // $8 - $f = Indirect Indexed
                     instructionSize = 2;
                     index_bits += (operand & 0x4000) >> 12;
-                    return string.Format("{0,-8}[{1},{2}]         (${3:X4})", name,
-                        NameOfRegGP(r_src),
-                        NameOfRegGP((RegGeneral)index_bits),
-                        DebugReadMemory((ushort)
-                            (R[(int)r_src] + R[index_bits]), segData));
+                    return
+                        $"{name,-8}[{NameOfRegGP(r_src)},{NameOfRegGP((RegGeneral) index_bits)}]         (${DebugReadMemory((ushort) (R[(int) r_src] + R[index_bits]), segData):X4})";
             }
         }
 
@@ -268,7 +234,7 @@ namespace Ypsilon.Emulation.Processor
                 else
                     value = (ushort)(0xFFE0 + value);
             }
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), string.Format("${0:X2}", value));
+            return $"{name,-8}{NameOfRegGP(destination)}, {string.Format($"${value:X2}", value)}";
         }
 
         private string DisassembleSHF(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -279,11 +245,11 @@ namespace Ypsilon.Emulation.Processor
             if ((operand & 0x1000) == 0)
             {
                 int shiftby = ((operand & 0x0F00) >> 8) + 1;
-                value = string.Format("${0:X2}", (ushort)shiftby);
+                value = $"${(ushort) shiftby:X2}";
             }
             else
                 value = NameOfRegGP((RegGeneral)((operand & 0x0700) >> 8));
-            return string.Format("{0,-8}{1}, {2}", name, NameOfRegGP(destination), value);
+            return $"{name,-8}{NameOfRegGP(destination)}, {value}";
         }
 
         private string DisassembleSTK(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -316,7 +282,7 @@ namespace Ypsilon.Emulation.Processor
             }
             if (flags == string.Empty)
                 flags = "<NONE>";
-            return string.Format("{0,-8}{1}", name, flags);
+            return $"{name,-8}{flags}";
         }
 
         private string DisassembleSTX(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -325,7 +291,7 @@ namespace Ypsilon.Emulation.Processor
 
             int sp_delta = (sbyte)((operand & 0xff00) >> 8);
 
-            return string.Format("{0,-8}{1}{2}", name, sp_delta >=0 ? "+" : string.Empty, sp_delta);
+            return $"{name,-8}{(sp_delta >= 0 ? "+" : string.Empty)}{sp_delta}";
         }
 
         private string DisassembleXSG(string name, ushort operand, ushort nextword, ushort address, bool showMemoryContents, out ushort instructionSize)
@@ -362,13 +328,13 @@ namespace Ypsilon.Emulation.Processor
                     break;
             }
 
-            return string.Format("{0,-8}{1}", name, reg);
+            return $"{name,-8}{reg}";
         }
 
         private string AppendMemoryContents(string disasm, ushort mem)
         {
             int len = disasm.Length;
-            disasm = string.Format("{0}{1}(${2:X4})", disasm, new string(' ', 24 - len), mem);
+            disasm = $"{disasm}{new string(' ', 24 - len)}(${mem:X4})";
             return disasm;
         }
 

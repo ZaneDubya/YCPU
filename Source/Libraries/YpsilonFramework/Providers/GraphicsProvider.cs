@@ -8,10 +8,10 @@ namespace YCPUXNA.Providers
     {
         // YPSILON STUFF
 
-        Texture2D m_LEM;
-        uint[] m_LEM_Data;
+        private Texture2D m_LEM;
+        private uint[] m_LEM_Data;
 
-        SpriteBatchExtended m_SpriteBatch;
+        private SpriteBatchExtended m_SpriteBatch;
 
         public ITexture RenderLEM(IMemoryInterface devicemem, uint[] chr, uint[] pal)
         {

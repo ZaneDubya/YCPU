@@ -106,7 +106,7 @@ namespace Ypsilon.Assembler
                     else
                     {
                         // indexed register is invalid.
-                        throw new Exception(string.Format("Invalid operand '{0}'", originalParam));
+                        throw new Exception($"Invalid operand '{originalParam}'");
                     }
                 }
                 else if (CanDecodeLiteral(param))
@@ -118,7 +118,7 @@ namespace Ypsilon.Assembler
                 else
                 {
                     // invlid bracketed operand.
-                    throw new Exception(string.Format("Invalid operand '{0}'", originalParam));
+                    throw new Exception($"Invalid operand '{originalParam}'");
                 }
             }
             else if (CanDecodeLiteral(param))
@@ -129,7 +129,7 @@ namespace Ypsilon.Assembler
             else
             {
                 // what is this?! not an acceptable operand, that's for certain!
-                throw new Exception(string.Format("Invalid operand '{0}'", originalParam));
+                throw new Exception($"Invalid operand '{originalParam}'");
             }
 
             if (useExtraDataSegment)
@@ -143,14 +143,15 @@ namespace Ypsilon.Assembler
                         parsed.UsesExtraDataSegment = true;
                         break;
                     default:
-                        throw new Exception(string.Format("Cannot parse {0}: use of extended segment not allowed with this addressing mode.", originalParam));
+                        throw new Exception(
+                            $"Cannot parse {originalParam}: use of extended segment not allowed with this addressing mode.");
                 }
             }
 
             return parsed;
         }
 
-        bool TryParseLiteralParameter(Param parsedOpcode, string originalParam)
+        private bool TryParseLiteralParameter(Param parsedOpcode, string originalParam)
         {
             ushort? literalValue = null;
             ushort value;
@@ -181,7 +182,7 @@ namespace Ypsilon.Assembler
                         }
                         catch
                         {
-                            throw new Exception(string.Format("Could not parse this hexidecimal parameter: '{0}'", originalParam));
+                            throw new Exception($"Could not parse this hexidecimal parameter: '{originalParam}'");
                         }
                     }
                 }
@@ -200,7 +201,7 @@ namespace Ypsilon.Assembler
                         }
                         catch
                         {
-                            throw new Exception(string.Format("Could not parse this hexidecimal parameter: '{0}'", originalParam));
+                            throw new Exception($"Could not parse this hexidecimal parameter: '{originalParam}'");
                         }
                     }
                 }
@@ -261,7 +262,7 @@ namespace Ypsilon.Assembler
             return success;
         }
 
-        bool isParamBracketed(string param)
+        private bool isParamBracketed(string param)
         {
             if ((param.StartsWith("[") && param.EndsWith("]")) || (param.StartsWith("(") && param.EndsWith(")")))
                 return true;
@@ -269,7 +270,7 @@ namespace Ypsilon.Assembler
                 return false;
         }
 
-        string removeBrackets(string param)
+        private string removeBrackets(string param)
         {
             return param.Substring(1, param.Length - 2);
         }

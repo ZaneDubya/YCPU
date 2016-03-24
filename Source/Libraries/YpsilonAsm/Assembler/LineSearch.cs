@@ -8,7 +8,7 @@
 
 namespace Ypsilon.Assembler
 {
-    class LineSearch
+    internal class LineSearch
     {
         public static bool MatchLabel(string line)
         {

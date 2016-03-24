@@ -2,7 +2,7 @@
 
 namespace Ypsilon.Emulation.Processor
 {
-    class YRTC
+    internal class YRTC
     {
         private long m_NextTickAtCycle = 0;
         private long m_CyclesPerTick = 0;

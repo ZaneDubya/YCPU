@@ -22,8 +22,8 @@ namespace Ypsilon.Core.Windows
     /// </summary>
     public class WndProc : MessageHook
     {
-        const bool WP_PASSTHROUGH = true;
-        const bool WP_NOPASSTHROUGH = false;
+        private const bool WP_PASSTHROUGH = true;
+        private const bool WP_NOPASSTHROUGH = false;
 
         public override int HookType
         {

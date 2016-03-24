@@ -18,7 +18,7 @@ namespace Ypsilon.Core.Input
     {
         public bool IsEvent(MouseEvent e, MouseButton b)
         {
-            if (e == this.EventType && b == this.Button)
+            if (e == EventType && b == Button)
                 return true;
             return false;
         }

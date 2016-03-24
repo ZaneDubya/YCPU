@@ -3,7 +3,7 @@ using Ypsilon.Emulation.Processor;
 
 namespace YCPUXNA
 {
-    class Dsm
+    internal class Dsm
     {
         public bool TryDisassemble(string[] args)
         {

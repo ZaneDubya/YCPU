@@ -22,7 +22,7 @@ namespace Ypsilon.Assembler
             private set;
         }
 
-        void AddMessageLine(string input)
+        private void AddMessageLine(string input)
         {
             if (ErrorMsg == null)
                 ErrorMsg = string.Empty;

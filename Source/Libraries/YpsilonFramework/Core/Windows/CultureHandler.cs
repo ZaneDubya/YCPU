@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Ypsilon.Core.Windows
 {
-    static class CultureHandler
+    internal static class CultureHandler
     {
         private static Encoding s_Encoding = null;
 

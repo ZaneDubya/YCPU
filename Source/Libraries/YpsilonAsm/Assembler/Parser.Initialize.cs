@@ -13,18 +13,18 @@ namespace Ypsilon.Assembler
 {
     partial class Parser
     {
-        Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>> m_Opcodes;
-        Dictionary<string, ushort> m_Registers;
-        Dictionary<string, ushort> m_ControlRegisters;
-        Dictionary<string, ushort> m_SegmentRegisters;
+        private Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>> m_Opcodes;
+        private Dictionary<string, ushort> m_Registers;
+        private Dictionary<string, ushort> m_ControlRegisters;
+        private Dictionary<string, ushort> m_SegmentRegisters;
 
-        void Initialize()
+        private void Initialize()
         {
             InitOpcodeDictionary();
             InitRegisterDictionary();
         }
 
-        void InitOpcodeDictionary()
+        private void InitOpcodeDictionary()
         {
             m_Opcodes = new Dictionary<string, Func<List<string>, OpcodeFlag, ParserState, List<ushort>>>();
 
@@ -106,7 +106,7 @@ namespace Ypsilon.Assembler
             m_Opcodes.Add("stx", AssembleSTX);
         }
 
-        void InitRegisterDictionary()
+        private void InitRegisterDictionary()
         {
             m_Registers = new Dictionary<string, ushort>();
             m_Registers.Add("r0", (ushort)YCPUReg.R0);
@@ -150,7 +150,7 @@ namespace Ypsilon.Assembler
             m_SegmentRegisters.Add("is", (ushort)0x0004);
         }
 
-        enum YCPUReg : ushort
+        private enum YCPUReg : ushort
         {
             R0 = 0x0000,
             R1 = 0x0001,

@@ -77,9 +77,9 @@ namespace Ypsilon.Emulation.Devices.Graphics
         }
 
         // Internal Variables
-        GraphicsMode m_GraphicsMode = GraphicsMode.None;
+        private GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
-        IMemoryInterface m_Bank;
+        private IMemoryInterface m_Bank;
 
         // Internal Routines
         private void SetMode(ushort i)
@@ -104,12 +104,12 @@ namespace Ypsilon.Emulation.Devices.Graphics
             if (m_GraphicsMode != GraphicsMode.LEM1802)
             {
                 byte[] chrram_default = new byte[512];
-                System.Buffer.BlockCopy(c_DefaultCharset, 0, chrram_default, 0, 512);
+                Buffer.BlockCopy(c_DefaultCharset, 0, chrram_default, 0, 512);
                 for (uint i = 0; i < 512; i += 1)
                     m_Bank[0x0800 + i] = chrram_default[i];
 
                 byte[] palram_default = new byte[32];
-                System.Buffer.BlockCopy(c_DefaultPalette, 0, palram_default, 0, 32);
+                Buffer.BlockCopy(c_DefaultPalette, 0, palram_default, 0, 32);
                 for (uint i = 0; i < 32; i += 1)
                     m_Bank[0x0C00 + i] = palram_default[i];
 
@@ -138,8 +138,8 @@ namespace Ypsilon.Emulation.Devices.Graphics
             }
         }
 
-        uint[] m_LEM_CHRRAM = new uint[0x80];
-        uint[] m_LEM_PALRAM = new uint[0x10];
+        private uint[] m_LEM_CHRRAM = new uint[0x80];
+        private uint[] m_LEM_PALRAM = new uint[0x10];
 
         private void Update_LEM_CHRRAM()
         {
@@ -163,7 +163,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             }
         }
 
-        enum GraphicsMode
+        private enum GraphicsMode
         {
             None,
             LEM1802

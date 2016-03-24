@@ -1,6 +1,6 @@
 ﻿namespace Ypsilon.Emulation.Processor
 {
-    class MemoryChunk : IMemoryInterface
+    internal class MemoryChunk : IMemoryInterface
     {
         public int Size
         {

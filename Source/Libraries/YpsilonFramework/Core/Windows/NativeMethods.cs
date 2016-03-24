@@ -18,7 +18,7 @@ namespace Ypsilon.Core.Windows
 {
     public delegate IntPtr WndProcHandler(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-    class NativeMethods
+    internal class NativeMethods
     {
         [DllImport("Kernel32")]
         private unsafe static extern int m_lread(SafeFileHandle hFile, void* lpBuffer, int wBytes);

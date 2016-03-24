@@ -77,7 +77,7 @@ namespace Ypsilon.Core.Windows
 
     // This is the class that brings back the alt messages
     // http://www.gamedev.net/community/forums/topic.asp?topic_id=554322
-    class InputMessageFilter : IMessageFilter
+    internal class InputMessageFilter : IMessageFilter
     {
         private WndProcHandler m_Hook;
 

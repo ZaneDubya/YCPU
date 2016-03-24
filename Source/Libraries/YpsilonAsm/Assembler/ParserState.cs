@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Ypsilon.Assembler
 {
-    class ParserState
+    internal class ParserState
     {
         public Parser Parser;
         public Dictionary<ushort, string> Branches { get; private set; }
@@ -41,57 +41,55 @@ namespace Ypsilon.Assembler
 
         private void SetLabelAddressReferences()
         {
-            foreach (ushort index in this.Labels.Keys)
+            foreach (ushort index in Labels.Keys)
             {
-                string labelName = this.Labels[index].ToLowerInvariant();
-
-                if (!this.Scopes.ContainsLabel(labelName, index))
+                string labelName = Labels[index].ToLowerInvariant();
+                if (Scopes.ContainsLabel(labelName, index))
                 {
-                    throw new Exception(string.Format("Unknown label reference '{0}'", labelName));
+                    ushort address = (ushort)Scopes.LabelAddress(labelName, index);
+                    Code[index] = (byte)(address & 0x00ff);
+                    Code[index + 1] = (byte)((address & 0xff00) >> 8);
+                    return;
                 }
-
-                ushort address = (ushort)this.Scopes.LabelAddress(labelName, index);
-                this.Code[index] = (byte)(address & 0x00ff);
-                this.Code[index + 1] = (byte)((address & 0xff00) >> 8);
             }
         }
 
         private void SetDataFieldLabelAddressReferences()
         {
-            foreach (ushort key in this.DataFields.Keys)
+            foreach (ushort key in DataFields.Keys)
             {
-                string labelName = this.DataFields[key].ToLowerInvariant();
+                string labelName = DataFields[key].ToLowerInvariant();
 
-                if (this.Scopes.ContainsLabel(labelName, key) != true)
+                if (Scopes.ContainsLabel(labelName, key) != true)
                 {
-                    throw new Exception(string.Format("Unknown label '{0}' referenced in data field", labelName));
+                    throw new Exception($"Unknown label '{labelName}' referenced in data field");
                 }
 
-                ushort address = (ushort)this.Scopes.LabelAddress(labelName, key);
-                this.Code[key] = (byte)(address & 0x00ff);
-                this.Code[key + 1] = (byte)((address & 0xff00) >> 8);
+                ushort address = (ushort)Scopes.LabelAddress(labelName, key);
+                Code[key] = (byte)(address & 0x00ff);
+                Code[key + 1] = (byte)((address & 0xff00) >> 8);
             }
         }
 
         private void SetBranchLabelAddressReferences()
         {
-            foreach (ushort index in this.Branches.Keys)
+            foreach (ushort index in Branches.Keys)
             {
-                string labelName = this.Branches[index];
+                string labelName = Branches[index];
 
-                if (!this.Scopes.ContainsLabel(labelName, index))
+                if (!Scopes.ContainsLabel(labelName, index))
                 {
-                    throw new Exception(string.Format("Unknown label reference '{0}'.", labelName));
+                    throw new Exception($"Unknown label reference '{labelName}'.");
                 }
 
-                ushort label_address = (ushort)this.Scopes.LabelAddress(labelName, index);
+                ushort label_address = (ushort)Scopes.LabelAddress(labelName, index);
                 int delta = label_address - index;
                 if ((delta & 0x00000001) != 00)
-                    throw new Exception(string.Format("Branch to label '{0}' is not word aligned.", labelName));
+                    throw new Exception($"Branch to label '{labelName}' is not word aligned.");
                 delta /= 2;
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
                     throw new Exception("Branch operation out of range.");
-                this.Code[index + 1] = (byte)((sbyte)delta);
+                Code[index + 1] = (byte)((sbyte)delta);
             }
         }
     }

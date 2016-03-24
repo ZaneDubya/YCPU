@@ -12,7 +12,7 @@ using Ypsilon.Emulation.Processor;
 
 namespace YCPUXNA
 {
-    class Emu : Game
+    internal class Emu : Game
     {
         public static ServiceRegistry Registry
         {
@@ -80,7 +80,7 @@ namespace YCPUXNA
 
             base.Initialize();
 
-            SystemFunctions.SetFocus(this.Window.Handle);
+            SystemFunctions.SetFocus(Window.Handle);
         }
 
         protected override void UnloadContent()
@@ -102,7 +102,7 @@ namespace YCPUXNA
             base.Update(gameTime);
         }
 
-        RenderTarget2D debug;
+        private RenderTarget2D debug;
 
         protected override void Draw(GameTime gameTime)
         {
@@ -213,29 +213,28 @@ namespace YCPUXNA
 
             int r_y = 2;
             ConsoleWrite(53,  r_y - 1, "Registers");
-            ConsoleWrite(53,  r_y + 1, string.Format("r0: ${0:X4}", cpu.R0));
-            ConsoleWrite(53,  r_y + 2, string.Format("r1: ${0:X4}", cpu.R1));
-            ConsoleWrite(53,  r_y + 3, string.Format("r2: ${0:X4}", cpu.R2));
-            ConsoleWrite(53,  r_y + 4, string.Format("r3: ${0:X4}", cpu.R3));
-            ConsoleWrite(53,  r_y + 5, string.Format("r4: ${0:X4}", cpu.R4));
-            ConsoleWrite(53,  r_y + 6, string.Format("r5: ${0:X4}", cpu.R5));
-            ConsoleWrite(53,  r_y + 7, string.Format("r6: ${0:X4}", cpu.R6));
-            ConsoleWrite(53,  r_y + 8, string.Format("r7: ${0:X4}", cpu.R7));
+            ConsoleWrite(53,  r_y + 1, $"r0: ${cpu.R0:X4}");
+            ConsoleWrite(53,  r_y + 2, $"r1: ${cpu.R1:X4}");
+            ConsoleWrite(53,  r_y + 3, $"r2: ${cpu.R2:X4}");
+            ConsoleWrite(53,  r_y + 4, $"r3: ${cpu.R3:X4}");
+            ConsoleWrite(53,  r_y + 5, $"r4: ${cpu.R4:X4}");
+            ConsoleWrite(53,  r_y + 6, $"r5: ${cpu.R5:X4}");
+            ConsoleWrite(53,  r_y + 7, $"r6: ${cpu.R6:X4}");
+            ConsoleWrite(53,  r_y + 8, $"r7: ${cpu.R7:X4}");
 
-            ConsoleWrite(53,  r_y + 10, string.Format("fl: ${0:X4}", cpu.FL));
-            ConsoleWrite(53,  r_y + 11, string.Format("pc: ${0:X4}", cpu.PC));
-            ConsoleWrite(53,  r_y + 12, string.Format("ps: ${0:X4}", cpu.PS));
-            ConsoleWrite(52, r_y + 13, string.Format("usp: ${0:X4}", cpu.USP));
-            ConsoleWrite(52, r_y + 14, string.Format("ssp:*${0:X4}", cpu.SSP));
+            ConsoleWrite(53,  r_y + 10, $"fl: ${cpu.FL:X4}");
+            ConsoleWrite(53,  r_y + 11, $"pc: ${cpu.PC:X4}");
+            ConsoleWrite(53,  r_y + 12, $"ps: ${cpu.PS:X4}");
+            ConsoleWrite(52, r_y + 13, $"usp: ${cpu.USP:X4}");
+            ConsoleWrite(52, r_y + 14, $"ssp:*${cpu.SSP:X4}");
 
             ConsoleWrite(53,  r_y + 16, "ps bits:");
-            ConsoleWrite(53,  r_y + 17, string.Format("{0}{1}{2}{3} {4}{5}{6}{7}",
-                cpu.PS_S ? "S" : ".", cpu.PS_M ? "M" : ".", cpu.PS_H ? "H" : ".", cpu.PS_I ? "I" : ".",
-                cpu.PS_Q ? "Q" : ".", cpu.PS_U ? "U" : ".", cpu.PS_V ? "V" : ".", cpu.PS_W ? "W" : "."));
+            ConsoleWrite(53,  r_y + 17,
+                $"{(cpu.PS_S ? "S" : ".")}{(cpu.PS_M ? "M" : ".")}{(cpu.PS_H ? "H" : ".")}{(cpu.PS_I ? "I" : ".")} {(cpu.PS_Q ? "Q" : ".")}{(cpu.PS_U ? "U" : ".")}{(cpu.PS_V ? "V" : ".")}{(cpu.PS_W ? "W" : ".")}");
 
             ConsoleWrite(53,  r_y + 18, "fl bits:");
-            ConsoleWrite(53,  r_y + 19, string.Format("{0}{1}{2}{3}",
-                cpu.FL_N ? "N" : ".", cpu.FL_Z ? "Z" : ".", cpu.FL_C ? "C" : ".", cpu.FL_V ? "V" : "."));
+            ConsoleWrite(53,  r_y + 19,
+                $"{(cpu.FL_N ? "N" : ".")}{(cpu.FL_Z ? "Z" : ".")}{(cpu.FL_C ? "C" : ".")}{(cpu.FL_V ? "V" : ".")}");
 
             ConsoleWrite(53,  r_y + 25, "Segments:");
             ConsoleWrite(53,  r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
@@ -250,7 +249,7 @@ namespace YCPUXNA
             for (int i = 0; i < 21; i += 1)
                 ConsoleWrite(2, r_y + i + 1, disasm[i] + new string(' ', 50 - disasm[i].Length));
             ConsoleWrite(1, 3, ">");
-            ConsoleWrite(2, 25, string.Format("{0} Cycles total", cpu.Cycles));
+            ConsoleWrite(2, 25, $"{cpu.Cycles} Cycles total");
 
             ConsoleWrite(2, 27, "Ctrl-L: Load debug console program.");
             ConsoleWrite(2, 28, "Ctrl-R: Run at 10 khz.");
@@ -267,7 +266,7 @@ namespace YCPUXNA
 
         private string ConsoleSegmentRegisterString(uint register)
         {
-            return string.Format("${0:X8}", register);
+            return $"${register:X8}";
         }
         #endregion
     }

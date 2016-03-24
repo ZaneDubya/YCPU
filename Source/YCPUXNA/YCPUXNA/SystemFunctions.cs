@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace YCPUXNA
 {
-    static class SystemFunctions
+    internal static class SystemFunctions
     {
         [DllImport("user32.dll")]
         internal static extern IntPtr SetForegroundWindow(IntPtr hWnd);

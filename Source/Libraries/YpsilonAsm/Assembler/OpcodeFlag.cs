@@ -8,7 +8,7 @@
 
 namespace Ypsilon.Assembler
 {
-    enum OpcodeFlag
+    internal enum OpcodeFlag
     {
         BitWidth8 = 0x01,
         BitWidth16 = 0x02,

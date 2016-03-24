@@ -34,12 +34,12 @@ ResetInt:
     lod     r5, $0040
     
     Update:
-        jsr     GetKeyboardEvents   ; R0 = number of events, 16bit events copied to $7002-$701F
+        jsr     Getc                ; R0 = number of events, 16bit events copied to $7002-$701F
         cmp     r0, 0
         beq     Update
     
-        lod     r1, $2800            ; hi byte is color: yellow on blue
-        lod     r6, $7002            ; get first char, written in $7002 (see GetKeyboardEvents)
+        lod     r1, $2800           ; hi byte is color: yellow on blue
+        lod     r6, $7002           ; get first char, written in $7002 (see GetKeyboardEvents)
         writeSingleChar:
             lod     r2, [r6]
             adi     r6, 2
