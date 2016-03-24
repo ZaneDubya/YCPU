@@ -54,7 +54,7 @@ namespace Ypsilon.Emulation.Processor
                     PC += 2;
 
                     // Execute Memory[PC] and increment the cycle counter:
-                    YCPUInstruction opcode = Opcodes[word & 0x00FF];
+                    YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                     opcode.Opcode(word);
                     m_Cycles += opcode.Cycles;
 
@@ -101,7 +101,7 @@ namespace Ypsilon.Emulation.Processor
                     Interrupt_Clock();
 
                 // Execute Memory[PC]
-                YCPUInstruction opcode = Opcodes[word & 0x00FF];
+                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                 opcode.Opcode(word);
                 // Increment the Cycle counter.
                 m_Cycles += opcode.Cycles;

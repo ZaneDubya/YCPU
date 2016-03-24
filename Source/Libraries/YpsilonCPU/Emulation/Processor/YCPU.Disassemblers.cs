@@ -14,7 +14,7 @@ namespace Ypsilon.Emulation.Processor
                 ushort nextword = DebugReadMemory((ushort)(address + 2), SegmentIndex.CS);
                 ushort instructionSize = 2;
 
-                YCPUInstruction opcode = Opcodes[word & 0x00FF];
+                YCPUInstruction opcode = m_Opcodes[word & 0x00FF];
                 if (extendedFormat)
                 {
                     s[i] =
