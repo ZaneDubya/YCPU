@@ -3,7 +3,9 @@
 ; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 128kb RAM.
 
 .alignglobals 2                 ; align global labels to 16-bit boundaries
-.alias  KeyboardData    $7000
+
+.alias  KeyboardData    $0020   ; 16x2byte in memory - stores up to 15 kb events
+
 .include "testconsole.ivt.asm"  ; include int vector table & interrupt handlers
 
 ; === ResetInt =================================================================
@@ -34,16 +36,24 @@ ResetInt:
     lod     X, $0040
     
     Update:
-        jsr     Getc                ; A = event, or 0x0000 if no event.
+        jsr     Getc                ; A = event, or $0000 if no event.
         beq     Update
         
         lod     C, A              ; C = event type
         lsr     C, 8
-        and     C, 0x000f
+        and     C, $000f
         cmp     C, 3
         bne     Update
-        and     A, 0x00ff
-        orr     A, 0x8200          ; yellow on blue.
+        psh     A
+        psh     A
+        lsr     A, 8
+        lod     B, $0000
+        jsr     WriteHexToScreen
+        pop     A
+        jsr     WriteHexToScreen
+        pop     A
+        and     A, $00ff
+        orr     A, $8200          ; yellow on blue.
         sto     A, ES[X]
         adi     X, 2
         baw     Update
@@ -87,7 +97,7 @@ ClockInt:
 
 ; === Getc =====================================================================
 ; A should be index of file descriptor. right now, does not matter, we read
-; only from keyboard. Returns ascii key code in A.8, 0x00 if no key code.
+; only from keyboard. Returns ascii key code in A.8, $00 if no key code.
 Getc:
 {
     psh     B, C
@@ -113,7 +123,7 @@ return:
         hwq     $02
         lod     A, [KeyboardData]
         bne     GetCAgain       ; if events, then do Getc again
-        baw     return          ; else return, A == 0x0000
+        baw     return          ; else return, A == $0000
 }
 
 ; === Setup ====================================================================
@@ -158,7 +168,7 @@ Setup:
     
     ; enable mmu by setting 'm' bit in PS. See 2.A.2.
     lod     A, ps
-    orr     A, 0x4000
+    orr     A, $4000
     sto     A, ps
     
     ; sp = $8000
@@ -195,10 +205,10 @@ ShowStartScreen:
     
     ; boot up txt - local to this routine
     txtBootText:
-    .dat8 "  \\ |  ___", 0x00
-    .dat8 "|\\ \\|  ___", 0x00
-    .dat8 "| \\       ", 0x00
-    .dat8 "NYA ELEKTRISKA", 0x00
+    .dat8 "  \\ |  ___", $00
+    .dat8 "|\\ \\|  ___", $00
+    .dat8 "| \\       ", $00
+    .dat8 "NYA ELEKTRISKA", $00
 }
 
 ; === ClearScreen ==============================================================
@@ -223,7 +233,7 @@ WriteChars:
     ssg     cs
     lsg     ds                  ; DS = CS (ROM@$00000000) (reading from ROM).
     writeChar:                  ; copy chars from ds[Y] to es[X] 
-        lod.8   A, DS[Y]      ; ... until ds[Y] == 0x00.
+        lod.8   A, DS[Y]      ; ... until ds[Y] == $00.
         beq     return
         orr     A, B
         sto     A, ES[X]
@@ -283,7 +293,7 @@ HexToDec:
 }
 
 ; === WriteDecToScreen =========================================================
-; Writes two digit dec in A.8 to ES at B. Wipes out A, B += 4.
+; Writes two digit dec in A.8 to ES at B. Wipes out A, B is incremented by 4.
 WriteDecToScreen:
 {
     psh     A
@@ -295,6 +305,32 @@ WriteDecToScreen:
     pop     A
     and     A, $000f
     add     A, $2830   ; yellow on blue, char $30 + B
+    sto     A, ES[B]
+    adi     B, 2
+    rts
+}
+
+; === WriteHexToScreen =========================================================
+; Writes two digit hex in A.8 to ES at B. Wipes out A, B is incremented by 4.
+WriteHexToScreen:
+{
+    psh     A               ; save a copy of A
+    asr     A, 4
+    and     A, $000f
+    cmp     A, $000a        ; if A < 10 goto write digit
+    bcc     writeDigit0
+    adi     A, 7            ; else add 7 (to make $000A ascii A)
+writeDigit0:
+    add     A, $2830        ; yellow on blue, char $30 + B
+    sto     A, ES[B]
+    adi     B, 2
+    pop     A               ; restore copy of A
+    and     A, $000f
+    cmp     A, $000a        ; if A < 10 goto write digit
+    bcc     writeDigit1
+    adi     A, 7            ; else add 7 (to make $000A ascii A)
+writeDigit1:
+    add     A, $2830        ; yellow on blue, char $30 + B
     sto     A, ES[B]
     adi     B, 2
     rts

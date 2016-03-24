@@ -240,7 +240,11 @@ namespace Ypsilon.Assembler
 
                     uint val;
 
-                    if (valField.Substring(0, 2) == "0x")
+                    if (valField.Substring(0, 1) == "$")
+                    {
+                        val = Convert.ToUInt32(valField.Substring(1, valField.Length - 1), 16);
+                    }
+                    else if (valField.Substring(0, 2) == "0x")
                     {
                         val = Convert.ToUInt32(valField.Substring(2, valField.Length - 2), 16);
                     }
