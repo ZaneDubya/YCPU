@@ -65,6 +65,11 @@ namespace Ypsilon.Assembler
             return LabelAddress(label, fromAddress) != -1;
         }
 
+        public bool ContainsAlias(string label, int fromAddress)
+        {
+            return AliasAddress(label, fromAddress) != -1;
+        }
+
         public int LabelAddress(string label, int fromAddress)
         {
             Scope scopeMatch = m_Global;
@@ -78,6 +83,22 @@ namespace Ypsilon.Assembler
 
             if (scopeMatch != null)
                 return scopeMatch.LabelAddress(label);
+            return -1;
+        }
+
+        public int AliasAddress(string alias, int fromAddress)
+        {
+            Scope scopeMatch = m_Global;
+
+            for (int i = 0; i < m_Scopes.Count; i++)
+            {
+                if (m_Scopes[i].ContainsAddress(fromAddress) && m_Scopes[i].ContainsAlias(alias))
+                    if ((scopeMatch == null) || (m_Scopes[i].StartAddress >= scopeMatch.StartAddress))
+                        scopeMatch = m_Scopes[i];
+            }
+
+            if (scopeMatch != null)
+                return scopeMatch.AliasAddress(alias);
             return -1;
         }
 
@@ -125,6 +146,11 @@ namespace Ypsilon.Assembler
                 return ((StartAddress <= address) && (EndAddress >= address));
             }
 
+            public override string ToString()
+            {
+                return $"{StartAddress}~{EndAddress}, {m_LabelAddressDictionary.Count} labels";
+            }
+
             // ======================================================================
             // Labels
             // ======================================================================
@@ -155,6 +181,7 @@ namespace Ypsilon.Assembler
 
             public bool AddAlias(string alias, ushort address)
             {
+                alias = alias.ToLower();
                 if (ContainsLabel(alias))
                     return false;
                 m_AliasDirectory.Add(alias, address);
@@ -163,19 +190,16 @@ namespace Ypsilon.Assembler
 
             public bool ContainsAlias(string alias)
             {
+                alias = alias.ToLower();
                 return m_AliasDirectory.ContainsKey(alias);
             }
 
             public ushort AliasAddress(string alias)
             {
-                if (!ContainsLabel(alias))
+                alias = alias.ToLower();
+                if (!ContainsAlias(alias))
                     return 0xffff;
                 return m_AliasDirectory[alias];
-            }
-
-            public override string ToString()
-            {
-                return $"{StartAddress}~{EndAddress}, {m_LabelAddressDictionary.Count} labels";
             }
         }
     }

@@ -44,12 +44,26 @@ namespace Ypsilon.Assembler
             foreach (ushort index in Labels.Keys)
             {
                 string labelName = Labels[index].ToLowerInvariant();
+                ushort offset = 0;
+                GetLabelOffset(ref labelName, ref offset);
+
                 if (Scopes.ContainsLabel(labelName, index))
                 {
                     ushort address = (ushort)Scopes.LabelAddress(labelName, index);
+                    address += offset;
                     Code[index] = (byte)(address & 0x00ff);
                     Code[index + 1] = (byte)((address & 0xff00) >> 8);
-                    return;
+                }
+                else if (Scopes.ContainsAlias(labelName, index))
+                {
+                    ushort address = (ushort)Scopes.AliasAddress(labelName, index);
+                    address += offset;
+                    Code[index] = (byte)(address & 0x00ff);
+                    Code[index + 1] = (byte)((address & 0xff00) >> 8);
+                }
+                else
+                {
+                    throw new Exception($"Unresolved label or alias: {labelName} with offset of {offset}");
                 }
             }
         }
@@ -90,6 +104,29 @@ namespace Ypsilon.Assembler
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
                     throw new Exception("Branch operation out of range.");
                 Code[index + 1] = (byte)((sbyte)delta);
+            }
+        }
+
+        private char[] offsetChars = { '+', '-' };
+
+        private void GetLabelOffset(ref string labelName, ref ushort offset)
+        {
+            int index;
+            while ((index = labelName.IndexOfAny(offsetChars)) != -1)
+            {
+                string sOffset;
+                int indexNext = labelName.IndexOfAny(offsetChars, index + 1);
+                indexNext = (indexNext == -1) ? labelName.Length : indexNext;
+                sOffset = labelName.Substring(index, indexNext - index);
+                labelName = labelName.Remove(index, indexNext - index);
+                if (sOffset[0] == '+')
+                {
+                    offset += ushort.Parse(sOffset.Substring(1));
+                }
+                else if (sOffset[0] == '-')
+                {
+                    offset -= ushort.Parse(sOffset.Substring(1));
+                }
             }
         }
     }
