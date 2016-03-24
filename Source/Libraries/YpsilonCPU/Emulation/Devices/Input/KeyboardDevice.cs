@@ -38,6 +38,7 @@ namespace Ypsilon.Emulation.Devices.Input
         private const ushort CtrlDown = 0x1000;
         private const ushort AltDown = 0x2000;
         private const ushort ShiftDown = 0x4000;
+        private const ushort ExtendedKey = 0x8000;
 
         protected override void Initialize()
         {
@@ -64,7 +65,7 @@ namespace Ypsilon.Emulation.Devices.Input
                         return MSG_ERROR;
                     }
                     break;
-                case 0x0001: // GET PENDING EVENTS, R1 is ptr.
+                case 0x0001: // GET PENDING EVENTS, R1 is ptr to buffer in memory.
                     ushort address = param_1;
                     BUS.CPU.WriteMemInt16(address, m_CommandBuffer[0], SegmentIndex.DS);
                     for (int i = 0; i < m_CommandBuffer[0]; i++)
@@ -88,11 +89,10 @@ namespace Ypsilon.Emulation.Devices.Input
             {
                 if (m_GetOnlyPressEvents && ((keycode & 0x0F00) == EventUp) || ((keycode & 0x0F00) == EventDown))
                     continue;
-                if (m_CommandBuffer[0] < m_CommandBuffer.Length - 1)
-                {
-                    m_CommandBuffer[0]++;
-                    m_CommandBuffer[m_CommandBuffer[0]] = keycode;
-                }
+                if (m_CommandBuffer[0] >= m_CommandBuffer.Length - 1) // we lose events when there are already 15 in the queue.
+                    continue;
+                m_CommandBuffer[0]++;
+                m_CommandBuffer[m_CommandBuffer[0]] = keycode;
             }
         }
     }

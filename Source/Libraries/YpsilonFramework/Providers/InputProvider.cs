@@ -20,6 +20,7 @@ namespace YCPUXNA.Providers
         public const ushort CtrlDown = 0x1000;
         public const ushort AltDown = 0x2000;
         public const ushort ShiftDown = 0x4000;
+        public const ushort ExtendedKey = 0x8000;
 
         public bool TryGetKeyboardEvent(out ushort eventCode)
         {
@@ -32,9 +33,16 @@ namespace YCPUXNA.Providers
                 InputEventKeyboard e = (InputEventKeyboard)m_EventsThisFrame[i];
                 m_EventsThisFrame.RemoveAt(i);
 
+                bool extended = false;
                 ushort bitsKeycode = (byte)e.KeyCode;
-                ushort bitsEvent = 0;
+                ushort bitsKeyChar = (byte)e.KeyChar;
+                if (bitsKeyChar == 0)
+                {
+                    extended = true;
+                    bitsKeyChar = bitsKeycode;
+                }
 
+                ushort bitsEvent;
                 switch (e.EventType)
                 {
                     case KeyboardEvent.Up:
@@ -50,7 +58,7 @@ namespace YCPUXNA.Providers
                         throw new ArgumentOutOfRangeException();
                 }
 
-                eventCode = (ushort) (bitsKeycode | bitsEvent | ((e.Shift) ? ShiftDown : 0) | ((e.Alt) ? AltDown : 0) | ((e.Control) ? CtrlDown : 0));
+                eventCode = (ushort) (bitsKeyChar | bitsEvent | (e.Shift ? ShiftDown : 0) | (e.Alt ? AltDown : 0) | (e.Control ? CtrlDown : 0) | (extended ? ExtendedKey : 0));
 
                 return true;
             }
