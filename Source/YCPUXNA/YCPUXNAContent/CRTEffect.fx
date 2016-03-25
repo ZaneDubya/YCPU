@@ -5,6 +5,8 @@ float2 Viewport;
 
 sampler Texture;
 
+float edgeBlurAt = 0.98;
+
 struct VertexShaderInput
 {
 	float4 Position : POSITION0;
@@ -65,15 +67,15 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
 	float2 uv = radialDistortion(input.TexUV, input.TexUV);
 	if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
-		discard;
+		return float4(0, 0, 0, 1);
 	
-	float var = 0.95;
-	float var2 = (1 / (1 - var));
+	float edge = (1 / (1 - edgeBlurAt));
 	float2 falloff = pow(abs(uv * 2 - 1), 2);
-	falloff.x = (falloff.x < var) ? 1 : (1 - falloff.x) * var2;
-	falloff.y = (falloff.y < var) ? 1 : (1 - falloff.y) * var2;
+	falloff.x = (falloff.x < edgeBlurAt) ? 1 : (1 - falloff.x) * edge;
+	falloff.y = (falloff.y < edgeBlurAt) ? 1 : (1 - falloff.y) * edge;
 
 	float4 color = tex2D(Texture, uv) * input.Hue * falloff.x * falloff.y;
+	color.a = 1;
 
 	return ApplyMoire(input, color);
 }
