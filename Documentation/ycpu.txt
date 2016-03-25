@@ -1109,7 +1109,7 @@ The clock provides time data with the following precision:
     Hour:    5 bits (0-23)
     Minute:  6 bits (0-59)
     Second:  6 bits (0-59)
-    M.Sec.: 12 bits (0-1000)
+    M.Sec.: 12 bits (0-999)
     
 This data is loaded to R0-R3 upon calling HWQ $80, in this format:
 

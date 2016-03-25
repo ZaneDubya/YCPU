@@ -4,6 +4,7 @@
 
 .alignglobals 2                     ; align global labels to 16-bit boundaries
 
+.alias  Ticks               $0010   ; 16bit tick - from 0-999    
 .alias  KBEventCount        $001E
 .alias  KBEventBuffer       $0020   ; 16x2byte in memory - stores up to 16 kb events
 
@@ -29,60 +30,108 @@ ResetInt:
     lod     X, $0000       ; start of video memory
     jsr     FillMemoryWords ;
     
-    ; enable clock interrupt - tick at 2hz
-    lod     A, 2
+    ; enable clock interrupt - tick at 10hz
+    lod     A, 10
     hwq     $83
     
     ; use X as index to onscreen char, starting at y = 1, x = 0
     lod     X, $0040
     
     Update:
+        ; blink!
+        lod     A, [Ticks]
+        sub     A, 500
+        bmi     noblink
+        lod     A, $2820
+        baw     storeblink
+        noblink:
+            lod     A, $8220
+        storeblink:
+            sto     A, ES[X]
+    
         jsr     Getc                ; A = event, or $0000 if no event.
         beq     Update
         
-        lod     C, A                ; C, event type = (A >> 8) & 0x000f
-        lsr     C, 8
-        and     C, $000f
-        cmp     C, 3                ; event type must be 3 (press)
-        bne     Update              
-        psh     A                   ; save A twice
-        psh     A                   ;
-        lsr     A, 8                ; print event as two hex bytes to screen UL
-        lod     B, $0000            ;   |    
-        jsr     WriteHexToScreen    ;   |
-        pop     A                   ;   |   restore A
-        jsr     WriteHexToScreen    ;   +
-        pop     A                   ; restore A
+        ; event type must be 3 (press)
+        lod     B, A                ; C, event type = (A >> 8) & 0x000f
+        lsr     B, 8
+        and     B, $000f
+        cmp     B, 3                
+        bne     Update
+        
+        ;jsr     PrintWordToTitle
+        
+        ; press event must be ascii to print.
         lod     B, A
-        and     A, $8000            ; upper bit set = ascii
+        and     B, $8000            ; upper bit set = ascii
         beq     Update
-        lod     A, B
+        
+        ; get char only
         and     A, $00ff
+        
+        ; compare with control codes.
+        cmp     A, $0008
+        beq     backSpace
+        cmp     A, $000D
+        beq     return
+        
         orr     A, $8200            ; yellow on blue.
         sto     A, ES[X]
         adi     X, 2
         baw     Update
+        
+        backSpace:
+            lod     A, $8220 ; wipe out char, if any.
+            sto     A, ES[X]
+            cmp     X, $0040
+            beq     Update
+            sbi     X, 2
+            lod     B, $8220
+            sto     B, ES[X]
+            baw     Update
+        return:
+            lod     A, $8220 ; wipe out char, if any.
+            sto     A, ES[X]
+            and     X, $ffc0
+            add     X, $0040
+            baw     Update
+}
+
+; === PrintWordToTitle =========================================================
+PrintWordToTitle:
+{
+    psh     A                   ; save A twice
+    psh     A                   ;
+    lsr     A, 8                ; print event as two hex bytes to screen UL
+    lod     B, $0000            ;   |    
+    jsr     WriteHexToScreen    ;   |
+    pop     A                   ;   |   restore A
+    jsr     WriteHexToScreen    ;   +
+    pop     A                   ; restore A
+    rts
 }
 
 ; === ClockInt =================================================================
 ClockInt:
 {
-    psh     A, B, C, D, fl  ; save register contents    
-    hwq     $80                 ; get RTC time. seconds in low 6 bits of C.
-    psh     A, B, C          ; save RTC time.
+    psh     A, B, C, D, fl      ; save register contents    
+    hwq     $80                 ; get RTC time in A, B, C, D.
+    psh     A, B, C             ; save RTC time.
     
-    and     C, $003f           ; C = hex seconds
+    sto     D, [Ticks]          ; D = ticks (0-999)
+    
+    and     C, $003f            ; C = hex seconds
     jsr     HexToDec            ; A = decimal seconds
     lod     B, $003c
     jsr     WriteDecToScreen
     
     pop     C
-    asr     C, 8               ; C = hex minutes
+    asr     C, 8                ; C = hex minutes
     jsr     HexToDec            ; A = decimal minutes
     lod     B, $0036
     jsr     WriteDecToScreen
     
-    lod     A, $283A           ; A = yellow on blue colon
+    lod     A, $283A            ; A = yellow on blue colon
     sto     A, ES[B]
     
     pop     C
@@ -92,7 +141,7 @@ ClockInt:
     lod     B, $0030
     jsr     WriteDecToScreen
     
-    lod     A, $283A           ; A = yellow on blue colon
+    lod     A, $283A            ; A = yellow on blue colon
     sto     A, ES[B]
     
     pop     A
@@ -127,6 +176,7 @@ return:
         lod     C, KBEventBuffer
         hwq     $02             ; A == number of events.
         sto     A, [KBEventCount]
+        cmp     A, $0000
         bne     GetCAgain       ; if events > 0, then do Getc again
         baw     return          ; else return, A == $0000
 }
