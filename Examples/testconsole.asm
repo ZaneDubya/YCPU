@@ -29,8 +29,8 @@ ResetInt:
     lod     X, $0000       ; start of video memory
     jsr     FillMemoryWords ;
     
-    ; enable clock interrupt - tick at 120hz
-    lod     A, 120
+    ; enable clock interrupt - tick at 2hz
+    lod     A, 2
     hwq     $83
     
     ; use X as index to onscreen char, starting at y = 1, x = 0

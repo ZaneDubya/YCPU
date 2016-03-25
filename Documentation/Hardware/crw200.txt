@@ -1,5 +1,5 @@
 
-                          April 1, 1978
+                            April 1, 1978
 
                         For Immediate Release
 
@@ -49,39 +49,39 @@ hardened against anomolous bit flips.
     
     HWQ $02 Message:
     
-    R1  R2?     Message
-    $00 Y       Query state. R0 is set to state bitfield:
-                fedcba98 76543210
-                eib..... ......pm
-                e = error code nonzero.
-                i = interrupt enabled.
-                b = drive is busy.
-                p = cartridge is write protected.
-                m = cartridge present in drive.
-                
-                R2 is used to set/disable interrupt. If R2 is 0, interrupt is
-                disabled. If R2 is nonzero, interrupt is enabled. While interrupt
-                is enabled, drive will cause hardware interrupt when:
-                * Error bit goes from 0 -> 1,
-                * Busy bit goes from 1 -> 0, or 
-                * MediaPresent bit changes.
-                
-    $01         Query error code. Last error code is returned in R0. Error status
-                cleared on read.
-                0x0000 ERROR_NONE       No error since last query.
-                0x0001 ERROR_BUSY       Attempted read/write while drive busy.
-                0x0002 ERROR_NO_MEDIA   Attempted read/write without cartridge present.
-                0x0003 ERROR_PROTECTED  Attempted write to write protected cartridge.
-                0x0004 ERROR_EJECT      Cartridge removed while reading or writing.
-                0x0005 ERROR_BAD_SECTOR Requested sector is bad, data on it is lost.
-                0xffff ERROR_BROKEN     Attempted read/write failed due to hardware.
+    R1      Message
+    $00     Query state. R0 is set to state bitfield:
+            fedcba98 76543210
+            eib..... ......pm
+            e = error code nonzero.
+            i = interrupt enabled.
+            b = drive is busy.
+            p = cartridge is write protected.
+            m = cartridge present in drive.
+            
+            R2 is used to set/disable interrupt. If R2 is 0, interrupt is
+            disabled. If R2 is nonzero, interrupt is enabled. While interrupt
+            is enabled, drive will cause hardware interrupt when:
+            * Error bit goes from 0 -> 1,
+            * Busy bit goes from 1 -> 0, or 
+            * MediaPresent bit changes.
+            
+    $01     Query error code. Last error code is returned in R0. Error status
+            cleared on read.
+            0x0000 ERROR_NONE       No error since last query.
+            0x0001 ERROR_BUSY       Attempted read/write while drive busy.
+            0x0002 ERROR_NO_MEDIA   Attempted read/write without cartridge present.
+            0x0003 ERROR_PROTECTED  Attempted write to write protected cartridge.
+            0x0004 ERROR_EJECT      Cartridge removed while reading or writing.
+            0x0005 ERROR_BAD_SECTOR Requested sector is bad, data on it is lost.
+            0xffff ERROR_BROKEN     Attempted read/write failed due to hardware.
     
-    $02 Y       Read sector. Begin read sector index in R2 to buffer.
-                R0 is set to 0 if reading is possible and started, else set to 1 and
-                internal error code set. Reading is only possible if media is present,
-                and the drive is not busy.
-                
-    $03 Y       Write sector. Write buffer to sector index R2.
-                R0 is set to 0 if writing is possible and started, else set to 1 and
-                internal error code set. Writing is only possible if media is present,
-                media is not write-protected, and the drive is not busy.
+    $02     Read sector. Begin read sector index in R2 to buffer.
+            R0 is set to 0 if reading is possible and started, else set to 1 and
+            internal error code set. Reading is only possible if media is present,
+            and the drive is not busy.
+            
+    $03     Write sector. Write buffer to sector index R2.
+            R0 is set to 0 if writing is possible and started, else set to 1 and
+            internal error code set. Writing is only possible if media is present,
+            media is not write-protected, and the drive is not busy.
