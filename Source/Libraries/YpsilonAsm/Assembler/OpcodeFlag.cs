@@ -6,8 +6,11 @@
  * This code is licensed under the MIT License
  * =============================================================== */
 
+using System;
+
 namespace Ypsilon.Assembler
 {
+    [Flags]
     internal enum OpcodeFlag
     {
         BitWidth8 = 0x01,

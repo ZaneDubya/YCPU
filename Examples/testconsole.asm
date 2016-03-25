@@ -2,9 +2,10 @@
 ; Tests segments and mmu, interrupts, etc.
 ; Expects Graphics Device @ bus index 1, Keyboard @ index 2, at least 128kb RAM.
 
-.alignglobals 2                 ; align global labels to 16-bit boundaries
+.alignglobals 2                     ; align global labels to 16-bit boundaries
 
-.alias  KeyboardData    $0020   ; 16x2byte in memory - stores up to 15 kb events
+.alias  KBEventCount        $001E
+.alias  KBEventBuffer       $0020   ; 16x2byte in memory - stores up to 16 kb events
 
 .include "testconsole.ivt.asm"  ; include int vector table & interrupt handlers
 
@@ -39,22 +40,22 @@ ResetInt:
         jsr     Getc                ; A = event, or $0000 if no event.
         beq     Update
         
-        lod     C, A                ; C = event type
+        lod     C, A                ; C, event type = (A >> 8) & 0x000f
         lsr     C, 8
         and     C, $000f
-        cmp     C, 3
-        bne     Update
-        psh     A
-        psh     A
-        lsr     A, 8
-        lod     B, $0000
-        jsr     WriteHexToScreen
-        pop     A
-        jsr     WriteHexToScreen
-        pop     A
+        cmp     C, 3                ; event type must be 3 (press)
+        bne     Update              
+        psh     A                   ; save A twice
+        psh     A                   ;
+        lsr     A, 8                ; print event as two hex bytes to screen UL
+        lod     B, $0000            ;   |    
+        jsr     WriteHexToScreen    ;   |
+        pop     A                   ;   |   restore A
+        jsr     WriteHexToScreen    ;   +
+        pop     A                   ; restore A
         lod     B, A
-        and     A, $8000            ; upper bit set = not ascii
-        bne     Update
+        and     A, $8000            ; upper bit set = ascii
+        beq     Update
         lod     A, B
         and     A, $00ff
         orr     A, $8200            ; yellow on blue.
@@ -106,14 +107,14 @@ Getc:
 {
     psh     B, C
 GetCAgain:
-    lod.8   B, [KeyboardData+0]    ; B = number of events in buffer
-    lod.8   C, [KeyboardData+1]    ; C = last handled event
-    cmp     B, C                  ; if B == C, get new events.
+    lod.8   B, [KBEventCount+0]   ; B = number of events in buffer
+    lod.8   C, [KBEventCount+1]   ; C = last handled event
+    cmp     B, C                    ; if B == C, get new events.
     beq     getKeyboardEvents
     inc     C
-    sto.8   C, [KeyboardData+1]    
+    sto.8   C, [KBEventCount+1]    
     asl     C, 1
-    lod     A, [KeyboardData,C]
+    lod     A, [KBEventBuffer-2,C]
 return:
     pop     B, C
     rts
@@ -123,10 +124,10 @@ return:
     getKeyboardEvents:
         lod     A, $0002
         lod     B, $0001
-        lod     C, KeyboardData
-        hwq     $02
-        lod     A, [KeyboardData]
-        bne     GetCAgain       ; if events, then do Getc again
+        lod     C, KBEventBuffer
+        hwq     $02             ; A == number of events.
+        sto     A, [KBEventCount]
+        bne     GetCAgain       ; if events > 0, then do Getc again
         baw     return          ; else return, A == $0000
 }
 
@@ -142,9 +143,9 @@ Setup:
     lod     B, $0000
     lod     C, $0001
     hwq     $02
-    lod     A, $0002    ; reset keyboard, press events only.
+    lod     A, $0002    ; reset keyboard, press events only, translate ascii
     lod     B, $0000
-    lod     C, $0000
+    lod     C, $0006
     hwq     $02
     
     ; set up segment registers. (See 2.F.1.)

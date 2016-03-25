@@ -20,7 +20,7 @@ namespace Ypsilon.Emulation
         protected abstract ushort DeviceRevision { get; }
 
         protected abstract void Initialize();
-        protected abstract ushort ReceiveMessage(ushort param_0, ushort param_1);
+        protected abstract ushort ReceiveMessage(ushort param0, ushort param1);
 
         public virtual IMemoryInterface GetMemoryInterface()
         {

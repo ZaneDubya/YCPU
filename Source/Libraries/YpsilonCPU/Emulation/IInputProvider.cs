@@ -3,6 +3,6 @@ namespace Ypsilon.Emulation
 {
     public interface IInputProvider
     {
-        bool TryGetKeyboardEvent(out ushort keycode);
+        bool TryGetKeyboardEvent(bool translateASCII, out ushort keycode);
     }
 }

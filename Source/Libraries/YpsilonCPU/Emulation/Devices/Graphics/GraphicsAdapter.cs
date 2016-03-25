@@ -35,12 +35,12 @@ namespace Ypsilon.Emulation.Devices.Graphics
             return m_Bank;
         }
 
-        protected override ushort ReceiveMessage(ushort param_0, ushort param_1)
+        protected override ushort ReceiveMessage(ushort param0, ushort param1)
         {
-            switch (param_0)
+            switch (param0)
             {
                 case 0x0000: // SET_MODE
-                    SetMode(param_1);
+                    SetMode(param1);
                     break;
                 default:
                     return MSG_ERROR;

@@ -38,7 +38,7 @@ namespace Ypsilon.Assembler
 
                 // trim whitespace at tail/end and discard empty lines
                 string stripped = StripComments(line);
-                if (stripped == null || stripped.Length == 0)
+                if (string.IsNullOrEmpty(stripped))
                 {
                     // do nothing, empty line
                 }
@@ -178,25 +178,17 @@ namespace Ypsilon.Assembler
             }
         }
 
-        private bool GetOpcodeAssembler(string opcode, out Func<List<string>, OpcodeFlag, ParserState, List<ushort>> assembler)
-        {
-            assembler = null;
-            if (m_Opcodes.TryGetValue(opcode.ToLowerInvariant(), out assembler))
-                return true;
-            return false;
-        }
-
         private bool ParseOpcodeFlag(string value, ref OpcodeFlag opcodeFlag)
         {
             switch (value)
             {
                 case "8":
                     opcodeFlag &= ~OpcodeFlag.BitWidthsAll;
-                    opcodeFlag = OpcodeFlag.BitWidth8;
+                    opcodeFlag |= OpcodeFlag.BitWidth8;
                     return true;
                 case "16":
                     opcodeFlag &= ~OpcodeFlag.BitWidthsAll;
-                    opcodeFlag = OpcodeFlag.BitWidth16;
+                    opcodeFlag |= OpcodeFlag.BitWidth16;
                     return true;
                 case "f":
                     opcodeFlag |= OpcodeFlag.FarJump;
@@ -213,20 +205,19 @@ namespace Ypsilon.Assembler
             {
                 string token = tokens[i];
                 string nextToken = tokens[i + 1];
-                if (((token.Length > 0) && (nextToken.Length > 0)) && (token.IndexOf('[') != -1) && (nextToken.IndexOf(']') == nextToken.Length - 1))
-                {
-                    tokens[i] = tokens[i] + "," + tokens[i + 1];
-                    tokens[i + 1] = string.Empty;
-                }
+                if (((token.Length <= 0) || (nextToken.Length <= 0)) || (token.IndexOf('[') == -1) || (nextToken.IndexOf(']') != nextToken.Length - 1))
+                    continue;
+
+                tokens[i] = tokens[i] + "," + tokens[i + 1];
+                tokens[i + 1] = string.Empty;
             }
 
             for (int i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i] == string.Empty)
-                {
-                    tokens.RemoveAt(i);
-                    i -= 1;
-                }
+                if (tokens[i] != string.Empty)
+                    continue;
+                tokens.RemoveAt(i);
+                i -= 1;
             }
 
             return tokens;

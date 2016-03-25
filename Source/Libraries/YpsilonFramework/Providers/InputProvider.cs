@@ -13,16 +13,16 @@ namespace YCPUXNA.Providers
     {
         // YPSILON STUFF
 
-        public const ushort EventUp = 0x0100;
-        public const ushort EventDown = 0x0200;
-        public const ushort EventPress = 0x0300;
+        private const ushort EventUp = 0x0100;
+        private const ushort EventDown = 0x0200;
+        private const ushort EventPress = 0x0300;
 
-        public const ushort CtrlDown = 0x1000;
-        public const ushort AltDown = 0x2000;
-        public const ushort ShiftDown = 0x4000;
-        public const ushort ExtendedKey = 0x8000;
+        private const ushort CtrlDown = 0x1000;
+        private const ushort AltDown = 0x2000;
+        private const ushort ShiftDown = 0x4000;
+        private const ushort TranslatedKey = 0x8000;
 
-        public bool TryGetKeyboardEvent(out ushort eventCode)
+        public bool TryGetKeyboardEvent(bool translateASCII, out ushort eventCode)
         {
             eventCode = 0;
             for (int i = 0; i < m_EventsThisFrame.Count; i++)
@@ -33,13 +33,13 @@ namespace YCPUXNA.Providers
                 InputEventKeyboard e = (InputEventKeyboard)m_EventsThisFrame[i];
                 m_EventsThisFrame.RemoveAt(i);
 
-                bool extended = false;
+                bool translated = false;
                 ushort bitsKeycode = (byte)e.KeyCode;
                 ushort bitsKeyChar = (byte)e.KeyChar;
-                if (bitsKeyChar == 0)
+                if (translateASCII && (bitsKeyChar != 0))
                 {
-                    extended = true;
-                    bitsKeyChar = bitsKeycode;
+                    translated = true;
+                    bitsKeycode = bitsKeyChar;
                 }
 
                 ushort bitsEvent;
@@ -58,7 +58,7 @@ namespace YCPUXNA.Providers
                         throw new ArgumentOutOfRangeException();
                 }
 
-                eventCode = (ushort) (bitsKeyChar | bitsEvent | (e.Shift ? ShiftDown : 0) | (e.Alt ? AltDown : 0) | (e.Control ? CtrlDown : 0) | (extended ? ExtendedKey : 0));
+                eventCode = (ushort) (bitsKeycode | bitsEvent | (e.Shift ? ShiftDown : 0) | (e.Alt ? AltDown : 0) | (e.Control ? CtrlDown : 0) | (translated ? TranslatedKey : 0));
 
                 return true;
             }
@@ -66,10 +66,8 @@ namespace YCPUXNA.Providers
         }
 
         // BASE STUFF
-
-        private InputManager m_InputManager;
-
-        private List<InputEvent> m_EventsThisFrame;
+        private readonly InputManager m_InputManager;
+        private readonly List<InputEvent> m_EventsThisFrame;
 
         public InputProvider(InputManager input)
         {
@@ -96,15 +94,14 @@ namespace YCPUXNA.Providers
         {
             foreach (InputEvent e in m_EventsThisFrame)
             {
-                if (!e.Handled && e is InputEventKeyboard)
-                {
-                    InputEventKeyboard ek = (InputEventKeyboard) e;
-                    if (ek.EventType == type && ek.KeyCode == key && ek.Shift == shift && ek.Alt == alt && ek.Control == ctrl)
-                    {
-                        e.Handled = true;
-                        return true;
-                    }
-                }
+                if (e.Handled || !(e is InputEventKeyboard))
+                    continue;
+                InputEventKeyboard ek = (InputEventKeyboard) e;
+                if (ek.EventType != type || ek.KeyCode != key || ek.Shift != shift || ek.Alt != alt || ek.Control != ctrl)
+                    continue;
+
+                e.Handled = true;
+                return true;
             }
             return false;
         }

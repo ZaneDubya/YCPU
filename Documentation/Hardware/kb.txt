@@ -7,15 +7,27 @@ DeviceRevision: 0
 
 Behaviour:
 
-    HWQ $02:
-    R1  R2?     Message
-    $00 Y       Set mode based on R2. 
+    HWQ
+    R1      Message
+    
+    $00     Set mode based on R2. Clear all pending events. R0 set to MSG_ACK.
+            R2: FEDC BA98 7654 3210
+                .... .... .... .TPE
+                E = 0: Do not report key down and key up events.
+                    1: Report key down and key up events.
+                P = 0: Do not report key press events.
+                    1: Report key press events.
+                T = 0: Where possible, translate key press events to ASCII.
+                    1: Do not translate key press events to ASCII.
                     Default: get only press events.
                     R2 & $01 = get press, up, and down events.
-                All pending events cleared. Returns MSG_ACK
                 
-    $01 Y       Get pending events. Memory at DS[R2] set as follows:
-                    + $0000 = count of events (max 15)
+                
+    $01         Get pending event buffer. Returns number of events in R0.
+                Expected values in R0 are 0 - 16. If there is an error, R0 will
+                be MSG_ERROR ($FFFF).
+                Memory at DS[R2] set as follows:
+                    + $0000 = event 0
                     + $0002 = event 1
                     + $0004 = event 2
                        ...
@@ -25,7 +37,8 @@ Behaviour:
                 
 Format of keyboard events:
     FEDC BA98 7654 3210
-    .SAC EEEE KKKK KKKK
+    TSAC EEEE KKKK KKKK
+        T = key code has been translated to ASCII
         S = shift down
         A = alt down
         C = ctrl down

@@ -15,16 +15,15 @@ namespace Ypsilon.Emulation.Devices.Input
         public KeyboardDevice(YBUS bus)
             : base(bus)
         {
-            m_CommandBuffer = new ushort[16];
         }
 
-        private bool m_GetOnlyPressEvents;
-        private ushort[] m_CommandBuffer;
+        private bool m_ReportUpDownEvents, m_ReportPressEvents, m_TranslateASCII;
+        private ushort m_BufferCount;
+        private readonly ushort[] m_CommandBuffer = new ushort[16];
 
         private const ushort EventUp = 0x0100;
         private const ushort EventDown = 0x0200;
         private const ushort EventPress = 0x0300;
-        private const ushort EventAscii = 0x0400;
 
         private const ushort CtrlDown = 0x1000;
         private const ushort AltDown = 0x2000;
@@ -33,57 +32,57 @@ namespace Ypsilon.Emulation.Devices.Input
 
         protected override void Initialize()
         {
-
+            m_ReportUpDownEvents = false;
+            m_ReportPressEvents = false;
+            m_TranslateASCII = false;
         }
 
-        protected override ushort ReceiveMessage(ushort param_0, ushort param_1)
+        protected override ushort ReceiveMessage(ushort param0, ushort param1)
         {
-            switch (param_0)
+            switch (param0)
             {
                 case 0x0000: // SET MODE
+                    m_BufferCount = 0;
                     for (int i = 0; i < m_CommandBuffer.Length; i++)
                         m_CommandBuffer[i] = 0;
-                    if (param_1 == 0)
-                    {
-                        m_GetOnlyPressEvents = true;
-                    }
-                    else if (param_1 == 1)
-                    {
-                        m_GetOnlyPressEvents = false;
-                    }
-                    else
-                    {
-                        return MSG_ERROR;
-                    }
-                    break;
-                case 0x0001: // GET PENDING EVENTS, R1 is ptr to buffer in memory.
-                    ushort address = param_1;
-                    BUS.CPU.WriteMemInt16(address, m_CommandBuffer[0], SegmentIndex.DS);
-                    for (int i = 0; i < m_CommandBuffer[0]; i++)
+                    m_ReportUpDownEvents = ((param1 & 0x0001) != 0);
+                    m_ReportPressEvents = ((param1 & 0x0002) != 0);
+                    m_TranslateASCII = ((param1 & 0x0004) != 0);
+                    return MSG_ACK;
+
+                case 0x0001: // GET PENDING EVENTS, param1 is ptr to buffer in memory.
+                    ushort address = param1;
+                    for (int i = 0; i < m_BufferCount; i++)
                     {
                         address += 2;
-                        BUS.CPU.WriteMemInt16(address, m_CommandBuffer[i + 1], SegmentIndex.DS);
+                        BUS.CPU.WriteMemInt16(address, m_CommandBuffer[i], SegmentIndex.DS);
                     }
                     for (int i = 0; i < m_CommandBuffer.Length; i++)
                         m_CommandBuffer[i] = 0;
-                    break;
+                    ushort r0 = m_BufferCount;
+                    m_BufferCount = 0;
+                    return r0;
                 default:
                     return MSG_ERROR;
             }
-            return MSG_ACK;
         }
 
         public override void Update(IInputProvider input)
         {
             ushort keycode;
-            while (input.TryGetKeyboardEvent(out keycode))
+            while (input.TryGetKeyboardEvent(m_TranslateASCII, out keycode))
             {
-                if (m_GetOnlyPressEvents && ((keycode & 0x0F00) == EventUp) || ((keycode & 0x0F00) == EventDown))
+                if (m_BufferCount >= 16)
                     continue;
-                if (m_CommandBuffer[0] >= m_CommandBuffer.Length - 1) // we lose events when there are already 15 in the queue.
-                    continue;
-                m_CommandBuffer[0]++;
-                m_CommandBuffer[m_CommandBuffer[0]] = keycode;
+
+                if (m_ReportUpDownEvents && ((keycode & 0x0F00) == EventUp) || ((keycode & 0x0F00) == EventDown))
+                {
+                    m_CommandBuffer[m_CommandBuffer[m_BufferCount++]] = keycode;
+                }
+                else if (m_ReportPressEvents && ((keycode & 0x0F00) == EventPress))
+                {
+                    m_CommandBuffer[m_CommandBuffer[m_BufferCount++]] = keycode;
+                }
             }
         }
     }

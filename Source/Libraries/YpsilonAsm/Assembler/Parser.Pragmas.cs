@@ -41,7 +41,7 @@ namespace Ypsilon.Assembler
                     if (!char.IsLetter(alias[0]))
                         throw new Exception("alias must begin with a letter.");
                     if (alias.Any(t => !char.IsLetterOrDigit(t)))
-                        throw new Exception("alias must be comprised of letters and digits.");
+                        throw new Exception("alias must be composed of letters and digits.");
 
                     tokens[2] = tokens[2].Replace("$", "0x");
                     object convertFromString = new Int32Converter().ConvertFromString(tokens[2]);

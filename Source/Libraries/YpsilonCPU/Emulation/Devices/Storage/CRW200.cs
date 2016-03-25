@@ -56,7 +56,7 @@ namespace Ypsilon.Emulation.Devices.Storage
             throw new NotImplementedException();
         }
 
-        protected override ushort ReceiveMessage(ushort param_0, ushort param_1)
+        protected override ushort ReceiveMessage(ushort param0, ushort param1)
         {
             throw new NotImplementedException();
         }
