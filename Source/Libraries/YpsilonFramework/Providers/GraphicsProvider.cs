@@ -9,25 +9,25 @@ namespace YCPUXNA.Providers
         // YPSILON STUFF
 
         private Texture2D m_LEM;
-        private uint[] m_LEM_Data;
+        private uint[] m_LEMData;
 
-        private SpriteBatchExtended m_SpriteBatch;
+        private readonly SpriteBatchExtended m_SpriteBatch;
 
-        public ITexture RenderLEM(IMemoryInterface devicemem, uint[] chr, uint[] pal)
+        public ITexture RenderLEM(byte[] devicemem, uint[] chr, uint[] pal, bool selectPage1)
         {
             if (m_LEM == null)
             {
                 m_LEM = m_SpriteBatch.NewTexture(128, 96);
-                m_LEM_Data = new uint[128 * 96];
+                m_LEMData = new uint[128 * 96];
             }
 
-            uint byte_index = 0;
+            uint index = (uint)(selectPage1 ? 0x0400 : 0x0000);
             for (int y = 0; y < 12; y += 1)
             {
                 for (int x = 0; x < 32; x += 1)
                 {
-                    byte data0 = devicemem[byte_index++];
-                    byte data1 = devicemem[byte_index++];
+                    byte data0 = devicemem[index++];
+                    byte data1 = devicemem[index++];
                     uint color0 = pal[(data1 & 0x0f)];
                     uint color1 = pal[(data1 & 0xf0) >> 4];
                     uint character = chr[data0 & 0x7F];
@@ -38,13 +38,13 @@ namespace YCPUXNA.Providers
                     {
                         for (int ix = 0; ix < 4; ix++)
                         {
-                            m_LEM_Data[offset + iy * 128 + ix] = ((character & 0x00000001) == 1) ? color1 : color0;
+                            m_LEMData[offset + iy * 128 + ix] = ((character & 0x00000001) == 1) ? color1 : color0;
                             character >>= 1;
                         }
                     }
                 }
             }
-            m_LEM.SetData(m_LEM_Data);
+            m_LEM.SetData(m_LEMData);
 
             return new YTexture(m_LEM);
         }

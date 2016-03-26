@@ -3,6 +3,6 @@ namespace Ypsilon.Emulation
 {
     public interface IDisplayProvider
     {
-        ITexture RenderLEM(IMemoryInterface bank, uint[] chr, uint[] pal);
+        ITexture RenderLEM(byte[] memory, uint[] chr, uint[] pal, bool selectPage1);
     }
 }

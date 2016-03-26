@@ -29,8 +29,8 @@ ResetInt:
     lod     X, $0000       ; start of video memory
     jsr     FillMemoryWords ;
     
-    ; enable clock interrupt - tick at 120hz
-    lod     A, 120
+    ; enable clock interrupt - tick at 10hz
+    lod     A, 10
     hwq     $83
     
     ; use X as index to onscreen char, starting at y = 1, x = 0
@@ -139,9 +139,9 @@ Setup:
     pop     D
     
     ; set up devices
-    lod     A, $0001    ; set graphics adapter to LEM mode.
-    lod     B, $0000
-    lod     C, $0001
+    lod     A, $0001    ; set graphics adapter to LEM mode, select page 0
+    lod     B, $0001
+    lod     C, $0000
     hwq     $02
     lod     A, $0002    ; reset keyboard, press events only, translate ascii
     lod     B, $0000

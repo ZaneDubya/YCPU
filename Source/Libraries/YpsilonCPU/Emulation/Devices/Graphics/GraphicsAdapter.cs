@@ -4,20 +4,52 @@ using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation.Devices.Graphics
 {
-    public class GraphicsAdapter : ADevice
+    /// <summary>
+    /// Implements the YPSILONTECH Graphics Adapter
+    /// </summary>
+    public class GraphicsAdapter : ADevice, IMemoryInterface
     {
+
+        // ========================================================================================
+        // Implementation of memory interface.
+        // ========================================================================================
+
+        private byte[] m_Bank = new byte[0x20000];
+
+        public byte this[uint address]
+        {
+            get
+            {
+                if (address >= m_Bank.Length)
+                    return 0x0000;
+                return m_Bank[address];
+            }
+
+            set
+            {
+                if (address >= m_Bank.Length)
+                    return;
+                m_Bank[address] = value;
+                if (address >= 0x0800 && address <= 0x09FF)
+                    m_LEMChrramChanged = true;
+                if (address >= 0x0C00 && address <= 0x0C1F)
+                m_LEMPalramChanged = true;
+            }
+        }
+
+        // ========================================================================================
+        // Implementation of ADevice.
+        // ========================================================================================
+
         protected override ushort DeviceType => DeviceTypeGraphicsAdapter;
-
         protected override ushort ManufacturerID => 0x0000;
-
         protected override ushort DeviceID => 0x0000;
-
-        protected override ushort DeviceRevision => 0x0000;
+        protected override ushort DeviceRevision => 0x0001;
 
         public GraphicsAdapter(YBUS bus)
             : base(bus)
         {
-            m_Bank = new MemoryLEM();
+
         }
 
         protected override void Initialize()
@@ -32,20 +64,21 @@ namespace Ypsilon.Emulation.Devices.Graphics
 
         public override IMemoryInterface GetMemoryInterface()
         {
-            return m_Bank;
+            return this;
         }
 
         protected override ushort ReceiveMessage(ushort param0, ushort param1)
         {
             switch (param0)
             {
-                case 0x0000: // SET_MODE
-                    SetMode(param1);
-                    break;
-                default:
-                    return MSG_ERROR;
+                case 0x0000:
+                    SetMode_None();
+                    return MSG_ACK;
+                case 0x0001:
+                    SetMode_LEM(param1);
+                    return MSG_ACK;
             }
-            return MSG_ACK;
+            return MSG_NO_DEVICE;
         }
 
         public override void Display(int busIndex, List<ITexture> textures, IDisplayProvider renderer)
@@ -57,80 +90,69 @@ namespace Ypsilon.Emulation.Devices.Graphics
                     return;
                 case GraphicsMode.LEM1802:
                     Update_LEM();
-                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEM_CHRRAM, m_LEM_PALRAM);
-                    if (texture != null)
-                    {
-                        texture.DeviceBusIndex = busIndex;
-                        textures.Add(texture);
-                    }
+                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEMChrRam, m_LEMPalRam, m_LEMSelectPage1);
+                    if (texture == null)
+                        return;
+
+                    texture.DeviceBusIndex = busIndex;
+                    textures.Add(texture);
                     return;
             }
         }
 
-        // Internal Variables
+        // ========================================================================================
+        // Internal variables and routines
+        // ========================================================================================
+
         private GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
-        private IMemoryInterface m_Bank;
-
-        // Internal Routines
-        private void SetMode(ushort i)
-        {
-            switch (i)
-            {
-                case 0x0000:
-                    SetMode_None();
-                    break;
-                case 0x0001:
-                    SetMode_LEM();
-                    break;
-            }
-        }
         private void SetMode_None()
         {
             m_GraphicsMode = GraphicsMode.None;
         }
 
-        private void SetMode_LEM()
+        private bool m_LEMSelectPage1 = false;
+        private readonly uint[] m_LEMChrRam = new uint[0x80];
+        private readonly uint[] m_LEMPalRam = new uint[0x10];
+        private bool m_LEMChrramChanged;
+        private bool m_LEMPalramChanged;
+
+        private void SetMode_LEM(ushort param1)
         {
-            if (m_GraphicsMode != GraphicsMode.LEM1802)
-            {
-                byte[] chrram_default = new byte[512];
-                Buffer.BlockCopy(c_DefaultCharset, 0, chrram_default, 0, 512);
-                for (uint i = 0; i < 512; i += 1)
-                    m_Bank[0x0800 + i] = chrram_default[i];
+            m_LEMSelectPage1 = (param1 & 0x0001) != 0;
 
-                byte[] palram_default = new byte[32];
-                Buffer.BlockCopy(c_DefaultPalette, 0, palram_default, 0, 32);
-                for (uint i = 0; i < 32; i += 1)
-                    m_Bank[0x0C00 + i] = palram_default[i];
+            if (m_GraphicsMode == GraphicsMode.LEM1802)
+                return;
 
-                m_GraphicsMode = GraphicsMode.LEM1802;
-            }
+            byte[] chrramDefault = new byte[512];
+            Buffer.BlockCopy(s_DefaultCharset, 0, chrramDefault, 0, 512);
+            for (uint i = 0; i < 512; i += 1)
+                m_Bank[0x0800 + i] = chrramDefault[i];
+
+            byte[] palramDefault = new byte[32];
+            Buffer.BlockCopy(s_DefaultPalette, 0, palramDefault, 0, 32);
+            for (uint i = 0; i < 32; i += 1)
+                m_Bank[0x0C00 + i] = palramDefault[i];
+
+            m_GraphicsMode = GraphicsMode.LEM1802;
+            m_LEMChrramChanged = true;
+            m_LEMPalramChanged = true;
         }
 
         private void Update_LEM()
         {
-            MemoryLEM lem = (MemoryLEM)m_Bank;
-            if (lem.SCRRAM_Delta)
-            {
-                // this is read every frame.
-            }
-
-            if (lem.CHRRAM_Delta)
+            if (m_LEMChrramChanged)
             {
                 Update_LEM_CHRRAM();
-                lem.CHRRAM_Delta = false;
+                m_LEMChrramChanged = false;
             }
 
-            if (lem.PALRAM_Delta)
+            if (m_LEMPalramChanged)
             {
                 Update_LEM_PALRAM();
-                lem.PALRAM_Delta = false;
+                m_LEMPalramChanged = false;
             }
         }
-
-        private uint[] m_LEM_CHRRAM = new uint[0x80];
-        private uint[] m_LEM_PALRAM = new uint[0x10];
 
         private void Update_LEM_CHRRAM()
         {
@@ -141,7 +163,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             // byte 1, bit 0-3: 3210
             // byte 1, bit 4-7: 7654
             // ... same for bytes 2 and 3.
-            Buffer.BlockCopy(c_DefaultCharset, 0, m_LEM_CHRRAM, 0, 512);
+            Buffer.BlockCopy(s_DefaultCharset, 0, m_LEMChrRam, 0, 512);
         }
 
         private void Update_LEM_PALRAM()
@@ -150,21 +172,15 @@ namespace Ypsilon.Emulation.Devices.Graphics
             for (uint i = 0; i < 0x10; i += 1)
             {
                 ushort color = (ushort)(m_Bank[0x0C00 + i * 2] + (m_Bank[0x0C00 + i * 2 + 1] << 8));
-                m_LEM_PALRAM[i] = 0xFF000000 | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
+                m_LEMPalRam[i] = 0xFF000000 | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
         }
 
-        private enum GraphicsMode
-        {
-            None,
-            LEM1802
-        }
-
-        private static byte[] c_DefaultPalette = {
+        private static readonly byte[] s_DefaultPalette = {
             0x00, 0x00, 0xDA, 0x0F, 0x90, 0x0F, 0x50, 0x08, 0x21, 0x03, 0xD8, 0x01, 0x90, 0x01, 0x42, 0x04, 
             0xEF, 0x06, 0x8F, 0x00, 0x6A, 0x00, 0x34, 0x02, 0x5F, 0x08, 0x0D, 0x01, 0xFF, 0x0F, 0x99, 0x09 };
 
-        private static byte[] c_DefaultCharset = {
+        private static readonly byte[] s_DefaultCharset = {
             0x22, 0xE2, 0x00, 0x00, 0x22, 0xF2, 0x00, 0x00, 0x00, 0xF0, 0x22, 0x22, 0x22, 0xE2, 0x22, 0x22,
             0x00, 0xF0, 0x00, 0x00, 0x22, 0xF2, 0x22, 0x22, 0x22, 0x2E, 0x2E, 0x22, 0x55, 0xD5, 0x55, 0x55,
             0x55, 0x1D, 0x0F, 0x00, 0x00, 0x1F, 0x5D, 0x55, 0x55, 0x0D, 0x0F, 0x00, 0x00, 0x0F, 0x5D, 0x55,
