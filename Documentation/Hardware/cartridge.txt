@@ -1,18 +1,12 @@
 
-                            April 1, 1978
-
-                        For Immediate Release
-
                          YPSILONTECH's CRW200
-                        
                          A data cartridge for
                         all your storage needs
 
     Shipping manifests. Asteroid field navigation maps. The latest software. At
-YPSILONTECH, we know you need a place to keep all your data. You need storage
-that is portable and reliable. That's why you need the CRW200 - the
-revolutionary solid state storage device that is readable, writable, and
-hardened against anomolous bit flips.
+    YPSILONTECH, we know you need storage that is portable and reliable. That's
+    why you need the CRW200 - the revolutionary solid state storage device that
+    is readable, writable, and hardened against anomolous bit flips.
 
 === On-board Buffer ============================================================
 

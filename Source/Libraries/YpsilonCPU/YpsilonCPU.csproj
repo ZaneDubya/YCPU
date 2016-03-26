@@ -35,7 +35,7 @@
     <Compile Include="Emulation\ADevice.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
-    <Compile Include="Emulation\Devices\Graphics\MemoryBankLEM.cs" />
+    <Compile Include="Emulation\Devices\Graphics\GraphicsMode.cs" />
     <Compile Include="Emulation\Devices\Input\KeyboardDevice.cs" />
     <Compile Include="Emulation\Devices\Storage\CRW200.cs" />
     <Compile Include="Emulation\Emulator.cs" />
