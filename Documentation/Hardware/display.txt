@@ -1,0 +1,104 @@
+    
+                            YPSILONTECH's YGA
+    
+    The Ypsilon Graphics Adaptor (YGA) is a standard monitor interface. It
+    allows the programmer to select pixel addressable and character-based
+    display modes, controlled by setting values via the HWQ instruction. The
+    adaptor has 128kb of memory on board.
+    
+=== Interfacing details ========================================================
+
+    DeviceType:     $0001 (Display)
+    ManufacturerID: $0000 (YPSILON)
+    DeviceID:       $0000
+    DeviceRevision: $0001
+    
+    HWQ $02 Message is used for Mode Selection. See 'Mode Selection' below.
+    
+    If bit 15 of R1 is clear, set adapter state based on R1. Other options may
+    be defined in R2. See 'Mode Selection' below. Following the hardware query,
+    R0 is set as follows:
+                
+        $0000   ERROR_NOT_VALID  Mode in R1 was not a valid mode.
+        $0001   MSG_ACK          Mode set based on R1.
+        $FFFF   ERROR_BROKEN     Display failure, broken, no output.
+        
+    If bit 15 of R1 is set, the adapter will write 32 bytes of undefined values
+    to Data Segment at the address in R2.
+    
+    
+=== Mode Selection =============================================================
+
+    The programmer selects a display mode and queries display modes via HWQ $02.
+    For more information about HWQ $02, see YCPU documentation 3.C.1.
+    
+    The value in R1 is used to determine the display adapter's action. The high
+    4 bits of R1 should be clear.The low 12 bits of R1 are an index that defines
+    the mode that is selected by this instruction:
+    
+    R1.     Notes
+    $000    Display inactivated. No signal will be output.
+    
+    $001    LEM180c compatability mode. Character based, 16 color. Outputs a
+            display of 128x96 pixels, made up of 32x12 characters, each 4 pixels
+            wide and 8 pixels high. Each character is defined by a 16-bit word
+            in video memory, with its own foreground and background color out of
+            a palette of 16 colors. The state of bit 0 of R2 selects which
+            screen ram page is output: clear selects page 0, set selects page 1.
+    
+=== Mode $01: LEM180c Compatability ============================================
+
+    The LEM180c is a 128x96 pixel color display adapter. The output display of
+    the adapter is made up of 32x12 tiles, each 4 pixels in width by 8 pixels in
+    height. Each tile displays one monochrome characters out of 128, based on
+    the contents of a 16-bit word describing the tile. Each tile has its own
+    foreground and background color out of a palette of 16 colors.
+    
+    LEM180c compatability mode uses the YGA internal memory to define the map of
+    characters displayed on the screen, define what the characters look like,
+    and the palette of colors used to display the characters. The memory map is:
+    
+    $0000 - $03FF:    Screen RAM page 0.
+    $0400 - $07FF:    Screen RAM page 1.
+    $0800 - $09FF:    Character RAM.
+    $0C00 - $0C1F:    Palette RAM.
+    
+    $0000 - $07FF - SCRRAM, repeats every $0400 bytes.
+    $0800 - $0BFF - CHRRAM, repeats every $0200 bytes.
+    $0C00 - $0FFF - PALRAM, repeats every $0020 bytes.
+    
+    Each Screen RAM page is a list of 512 x 16-bit words. Each word describes a
+    single tile on screen. Each word is formatted as follows:
+                
+        FEDC BA98 7654 3210
+        ffff bbbb Bccc cccc
+        f - palette color to display in foreground of this tile.
+        b - palette color to display in background of this tile.
+        B - blink this tile.
+        c - tile index to display in this tile.
+    
+    Character RAM is a list of 128 x 32-bit words. Each word describes a
+    character that can be displayed in a single tile. Characters are 4x8 1-bit
+    pixels, read from bottom to top then left to right. For example, the
+    character F looks like this:
+    
+       word0 = 1111111100001001
+       word1 = 0000100100000000
+    
+    Or, split into octets:
+    
+       word0 = 11111111 /
+               00001001
+       word1 = 00001001 /
+               00000000
+    
+    Palette RAM is a list of 16 x 16-bit words. Each word describes a
+    single color for the 16 colors in the palette. The format of each word is
+    as follows:
+    
+    FEDC BA98 7654 3210
+    .... rrrr gggg bbbb
+    
+    Where r, g, b are the red, green and blue channels. A higher value means a
+    lighter color.
+    
