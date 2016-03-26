@@ -112,14 +112,31 @@
     defined by object attribute memory (OAM).
     
     On HWQ $02, the value of R2 is read as follows:
+    FEDC BA98 7654 3210
+    .... .... .... ..sp
+    s = 0: disable sprites
+        1: enable sprites.
+    p = 0: display screen page 0
+        1: display screen page 1
     
     The memory map includes OAM RAM page 1 at $0400 - $07FF.
     The memory map includes OAM RAM at $0E00 - $0E3F.
     
+
+--- Sprites --------------------------------------------------------------------
+
+    Sprites are 16 color sprites (color 0 is transparent). 
+            Sprite data is 4 bits per pixel, four bytes per y-line,
+            color info indicates which colour index is transparent.
+
 --- OAM indexes ----------------------------------------------------------------
 
     OAM is 16 objects, each defined by 4 bytes. Each set of 16 OAM bytes is
     sequential in memory:
+    $0E00 ... $0E0F - OAM byte 0 for 16 objects.
+    $0E10 ... $0E1F - OAM byte 1 for 16 objects.
+    $0E20 ... $0E2F - OAM byte 2 for 16 objects.
+    $0E30 ... $0E3F - OAM byte 3 for 16 objects.
         
     OAM Byte 0: Y position of top of sprite.
     
@@ -129,28 +146,11 @@
     
     OAM Byte 2: Sprite Attribute:  
                 7654 3210
-                MM.. PPPP
-                C = 4 bits color info
-                M = 2 bits Sprite mode
+                .... VHSS
+                H = horizontal flip.
+                S = 2 bits size info. Bit 8=0: 8px wide; 1: 16px wide.
+                                      Bit 9=0: 8px high; 1: 16px high.
+                V = vertical flip.
     
     OAM Byte 3: X position of left of sprite.
 
---- OAM Sprite Modes -----------------------------------------------------------
-        
-    $0      8x8  15 color sprite with transparancy
-            Sprite data is 4 bits per pixel, four bytes per y-line,
-            color info indicates which colour index is transparent.
-    
-    $1      16x8  3 color sprite with Transparancy
-            Sprite data is 2 bits per pixel four bytes per y-line,
-            using colors 0-3, color info selects transparent color.
-    
-    $2      8x16  3 color sprite with Transparancy
-            Sprite data is 2 bits per pixel two bytes per line,
-            using colors 0-3, color info selects transparent color.
-    
-    $3      16x16  1 color plus Transparancy
-            Sprite Data is 1 bit per pixel one machine word per line
-            ZERO bits are transparent,  ONE bits are the colour indicated
-            by colour info.
-                

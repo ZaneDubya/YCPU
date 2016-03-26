@@ -13,7 +13,7 @@ namespace YCPUXNA.Providers
 
         private readonly SpriteBatchExtended m_SpriteBatch;
 
-        public ITexture RenderLEM(byte[] devicemem, uint[] chr, uint[] pal, bool selectPage1)
+        public ITexture RenderLEM(byte[] devicemem, uint[] chr, uint[] pal, bool selectPage1, bool doSprites)
         {
             if (m_LEM == null)
             {
@@ -44,6 +44,12 @@ namespace YCPUXNA.Providers
                     }
                 }
             }
+
+            if (doSprites)
+            {
+                
+            }
+
             m_LEM.SetData(m_LEMData);
 
             return new YTexture(m_LEM);
