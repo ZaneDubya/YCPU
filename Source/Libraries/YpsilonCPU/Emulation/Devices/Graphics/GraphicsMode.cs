@@ -8,6 +8,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
     enum GraphicsMode
     {
         None,
-        LEM1802
+        LEM180c,
+        LEM180Plus
     }
 }

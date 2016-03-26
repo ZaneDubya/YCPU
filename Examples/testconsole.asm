@@ -190,8 +190,8 @@ Setup:
     
     ; set up devices
     lod     A, $0001    ; set graphics adapter to LEM mode, select page 0
-    lod     B, $0001
-    lod     C, $0000
+    lod     B, $0002
+    lod     C, $0002
     hwq     $02
     lod     A, $0002    ; reset keyboard, press events only, translate ascii
     lod     B, $0000

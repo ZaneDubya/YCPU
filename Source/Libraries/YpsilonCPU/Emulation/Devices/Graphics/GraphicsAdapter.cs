@@ -30,10 +30,18 @@ namespace Ypsilon.Emulation.Devices.Graphics
                 if (address >= m_Bank.Length)
                     return;
                 m_Bank[address] = value;
-                if (address >= 0x0800 && address <= 0x09FF)
-                    m_LEMChrramChanged = true;
-                if (address >= 0x0C00 && address <= 0x0C1F)
-                m_LEMPalramChanged = true;
+
+                if (m_GraphicsMode == GraphicsMode.LEM180c || m_GraphicsMode == GraphicsMode.LEM180Plus)
+                {
+                    if (address >= 0x0800 && address <= 0x09FF)
+                        m_LEMChrramChanged = true;
+                    if (address >= 0x0C00 && address <= 0x0C1F)
+                        m_LEMPalramChanged = true;
+                }
+                else
+                {
+                    // no other modes written yet
+                }
             }
         }
 
@@ -75,7 +83,10 @@ namespace Ypsilon.Emulation.Devices.Graphics
                     SetMode_None();
                     return MSG_ACK;
                 case 0x0001:
-                    SetMode_LEM(param1);
+                    SetMode_LEM(GraphicsMode.LEM180c, 0x0000);
+                    return MSG_ACK;
+                case 0x0002:
+                    SetMode_LEM(GraphicsMode.LEM180Plus, param1);
                     return MSG_ACK;
             }
             return MSG_NO_DEVICE;
@@ -88,9 +99,10 @@ namespace Ypsilon.Emulation.Devices.Graphics
                 case GraphicsMode.None:
                     // do nothing;
                     return;
-                case GraphicsMode.LEM1802:
+                case GraphicsMode.LEM180c:
+                case GraphicsMode.LEM180Plus:
                     Update_LEM();
-                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEMChrRam, m_LEMPalRam, m_LEMSelectPage1);
+                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEMChrRam, m_LEMPalRam, m_LEMSelectPage1, m_LEMSpritesEnabled);
                     if (texture == null)
                         return;
 
@@ -111,30 +123,28 @@ namespace Ypsilon.Emulation.Devices.Graphics
             m_GraphicsMode = GraphicsMode.None;
         }
 
+        private bool m_LEMSpritesEnabled;
         private bool m_LEMSelectPage1;
+
         private readonly uint[] m_LEMChrRam = new uint[0x80];
         private readonly uint[] m_LEMPalRam = new uint[0x10];
         private bool m_LEMChrramChanged;
         private bool m_LEMPalramChanged;
 
-        private void SetMode_LEM(ushort param1)
+        private void SetMode_LEM(GraphicsMode mode, ushort param1)
         {
             m_LEMSelectPage1 = (param1 & 0x0001) != 0;
+            m_LEMSpritesEnabled = (param1 & 0x0002) != 0;
 
-            if (m_GraphicsMode == GraphicsMode.LEM1802)
+            if (m_GraphicsMode == mode)
                 return;
 
-            byte[] chrramDefault = new byte[512];
-            Buffer.BlockCopy(s_DefaultCharset, 0, chrramDefault, 0, 512);
             for (uint i = 0; i < 512; i += 1)
-                m_Bank[0x0800 + i] = chrramDefault[i];
-
-            byte[] palramDefault = new byte[32];
-            Buffer.BlockCopy(s_DefaultPalette, 0, palramDefault, 0, 32);
+                m_Bank[0x0800 + i] = s_DefaultCharset[i];
             for (uint i = 0; i < 32; i += 1)
-                m_Bank[0x0C00 + i] = palramDefault[i];
+                m_Bank[0x0C00 + i] = s_DefaultPalette[i];
 
-            m_GraphicsMode = GraphicsMode.LEM1802;
+            m_GraphicsMode = mode;
             m_LEMChrramChanged = true;
             m_LEMPalramChanged = true;
         }
@@ -163,7 +173,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             // byte 1, bit 0-3: 3210
             // byte 1, bit 4-7: 7654
             // ... same for bytes 2 and 3.
-            Buffer.BlockCopy(s_DefaultCharset, 0, m_LEMChrRam, 0, 512);
+            Buffer.BlockCopy(m_Bank, 0x0800, m_LEMChrRam, 0, 512);
         }
 
         private void Update_LEM_PALRAM()
@@ -174,6 +184,11 @@ namespace Ypsilon.Emulation.Devices.Graphics
                 ushort color = (ushort)(m_Bank[0x0C00 + i * 2] + (m_Bank[0x0C00 + i * 2 + 1] << 8));
                 m_LEMPalRam[i] = 0xFF000000 | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
+        }
+
+        private void Update_LEM_OAMRAM()
+        {
+            Buffer.BlockCopy(s_DefaultCharset, 0, m_LEMChrRam, 0, 512);
         }
 
         private static readonly byte[] s_DefaultPalette = {
