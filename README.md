@@ -7,7 +7,7 @@ This repository also hosts software which assembles and disassembles YCPU progra
 
 You can download a compiled version of the emulator from [zanedubya.itch.io/ycpu](https://zanedubya.itch.io/ycpu).
 
-![Screenshot of emulator.](https://cloud.githubusercontent.com/assets/7041719/13858850/7c14000c-ec4e-11e5-97a0-e6c534614429.png)
+![Screenshot of emulator.](https://cloud.githubusercontent.com/assets/7041719/14060723/0fdcc862-f33b-11e5-8f63-bcce0884cf4b.png)
 Source Tree
 ----
 - Documentation - Specifications describing the YCPU and auxiliary emulated hardware devices.
