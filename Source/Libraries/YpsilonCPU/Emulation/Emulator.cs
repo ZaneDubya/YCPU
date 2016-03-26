@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Ypsilon.Emulation.Devices.Graphics;
 using Ypsilon.Emulation.Devices.Input;
 using Ypsilon.Emulation.Processor;
@@ -10,7 +11,6 @@ namespace Ypsilon.Emulation
         public YCPU CPU
         {
             get;
-            private set;
         }
 
         private bool m_Running;
@@ -77,17 +77,30 @@ namespace Ypsilon.Emulation
             m_Running = false;
         }
 
-        public void LoadBinaryToCPU(string path, ushort address)
+        public void LoadBinaryToROM(string path)
         {
             StopCPU();
 
-            byte[] data = Common.GetBytesFromFile(path);
+            byte[] data = getBytesFromFile(path);
             if (data != null)
             {
                 CPU.BUS.FillROM(data);
             }
 
             CPU.Interrupt_Reset();
+        }
+
+        private byte[] getBytesFromFile(string path)
+        {
+            try
+            {
+                byte[] data = File.ReadAllBytes(path);
+                return data;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

@@ -59,7 +59,7 @@ ResetInt:
         cmp     B, 3                
         bne     Update
         
-        ;jsr     PrintWordToTitle
+        jsr     PrintWordToTitle
         
         ; press event must be ascii to print.
         lod     B, A

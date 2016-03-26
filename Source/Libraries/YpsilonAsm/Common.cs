@@ -1,23 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 
 namespace Ypsilon
 {
     public static class Common
     {
-        public static byte[] GetBytesFromFile(string path)
-        {
-            try
-            {
-                byte[] data = File.ReadAllBytes(path);
-                return data;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public static List<string> SplitString(string s, params string[] separators)
         {
             List<string> values = new List<string>();

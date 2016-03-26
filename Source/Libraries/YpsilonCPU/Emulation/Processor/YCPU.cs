@@ -41,8 +41,7 @@ namespace Ypsilon.Emulation.Processor
         public void Run(int cyclecount = -1)
         {
             // Count Cycles:
-            long cycles_start = m_Cycles;
-            long cycles_target = (cyclecount == -1) ? long.MaxValue : cyclecount + m_Cycles;
+            long cyclesTarget = (cyclecount == -1) ? long.MaxValue : cyclecount + m_Cycles;
 
             // Run the processor for cyclecount Cycles:
             m_Running = true;
@@ -67,7 +66,7 @@ namespace Ypsilon.Emulation.Processor
                         Interrupt_Clock();
 
                     // Check to see if we've exceeded our cycle target:
-                    if (m_Cycles >= cycles_target)
+                    if (m_Cycles >= cyclesTarget)
                         m_Pausing = true;
                     if (m_Pausing)
                     {
@@ -221,7 +220,11 @@ namespace Ypsilon.Emulation.Processor
 
         #region FL
         private ushort m_FL;
-        private const ushort c_FL_N = 0x8000, c_FL_Z = 0x4000, c_FL_C = 0x2000, c_FL_V = 0x1000;
+        private const ushort c_FL_N = 0x8000;
+        private const ushort c_FL_Z = 0x4000;
+        private const ushort c_FL_C = 0x2000;
+        private const ushort c_FL_V = 0x1000;
+
         public ushort FL
         {
             get { return m_FL; }
@@ -241,7 +244,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_FL &= unchecked((ushort)~c_FL_N);
                 }
-                else if (value)
+                else
                 {
                     m_FL |= c_FL_N;
                 }
@@ -259,7 +262,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_FL &= unchecked((ushort)~c_FL_Z);
                 }
-                else if (value)
+                else
                 {
                     m_FL |= c_FL_Z;
                 }
@@ -277,7 +280,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_FL &= unchecked((ushort)~c_FL_C);
                 }
-                else if (value)
+                else
                 {
                     m_FL |= c_FL_C;
                 }
@@ -295,7 +298,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_FL &= unchecked((ushort)~c_FL_V);
                 }
-                else if (value)
+                else
                 {
                     m_FL |= c_FL_V;
                 }
@@ -306,7 +309,6 @@ namespace Ypsilon.Emulation.Processor
         private ushort m_PS;
         private const ushort c_PS_S = 0x8000, c_PS_M = 0x4000, c_PS_H = 0x2000, c_PS_I = 0x1000;
         private const ushort c_PS_Q = 0x0800, c_PS_U = 0x0400, c_PS_V = 0x0200, c_PS_W = 0x0100;
-        private bool m_PS_S;
         public ushort PS
         {
             private set
@@ -337,11 +339,10 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_S);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_S;
                 }
-                m_PS_S = value;
             }
         }
 
@@ -362,7 +363,7 @@ namespace Ypsilon.Emulation.Processor
                     {
                         m_PS &= unchecked((ushort)~c_PS_M);
                     }
-                    else if (value)
+                    else
                     {
                         m_PS |= c_PS_M;
                     }
@@ -385,7 +386,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_H);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_H;
                 }
@@ -407,7 +408,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_I);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_I;
                 }
@@ -429,7 +430,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_Q);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_Q;
                 }
@@ -451,7 +452,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_U);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_U;
                 }
@@ -473,7 +474,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_V);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_V;
                 }
@@ -495,7 +496,7 @@ namespace Ypsilon.Emulation.Processor
                 {
                     m_PS &= unchecked((ushort)~c_PS_W);
                 }
-                else if (value)
+                else
                 {
                     m_PS |= c_PS_W;
                 }

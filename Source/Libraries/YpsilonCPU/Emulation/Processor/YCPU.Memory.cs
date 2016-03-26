@@ -156,7 +156,6 @@ namespace Ypsilon.Emulation.Processor
 
         public ushort DebugReadMemory(ushort address, SegmentIndex segmentType)
         {
-            long cycles = m_Cycles;
             Segment seg = GetSegment(segmentType);
             if (seg == null || seg.MemoryReference == null)
                 throw new Exception("Unknown segment referenced in DebugReadMemory");

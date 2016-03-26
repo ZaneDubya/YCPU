@@ -235,7 +235,7 @@ namespace Ypsilon.Emulation.Processor
         {
             instructionSize = 2;
             RegGeneral destination = (RegGeneral)((operand & 0xE000) >> 13);
-            string value = string.Empty;
+            string value;
             if ((operand & 0x1000) == 0)
             {
                 int shiftby = ((operand & 0x0F00) >> 8) + 1;

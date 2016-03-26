@@ -26,14 +26,13 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Emulation\ADevice.cs" />
-    <Compile Include="Common.cs" />
     <Compile Include="Emulation\Devices\Graphics\GraphicsAdapter.cs" />
     <Compile Include="Emulation\Devices\Graphics\GraphicsMode.cs" />
     <Compile Include="Emulation\Devices\Input\KeyboardDevice.cs" />

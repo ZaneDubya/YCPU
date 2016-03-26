@@ -28,7 +28,7 @@ namespace Ypsilon.Emulation.Processor
 
         public ushort GetTickRate()
         {
-            double tickHz = (YCPU.ClockRateHz / m_CyclesPerTick);
+            int tickHz = (int)(YCPU.ClockRateHz / m_CyclesPerTick);
             return (ushort)tickHz;
         }
 

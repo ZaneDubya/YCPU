@@ -29,48 +29,48 @@ namespace Ypsilon.Emulation.Processor
 
         public bool IsDevice
         {
-            get { return (m_Register & c_SEGREG_D) != 0; }
+            get { return (m_Register & c_SegRegD) != 0; }
             set
             {
                 if (IsDevice != value)
                 {
                     if (value)
-                        m_Register |= c_SEGREG_D;
+                        m_Register |= c_SegRegD;
                     else
-                        m_Register &= ~c_SEGREG_D;
+                        m_Register &= ~c_SegRegD;
                     RefreshMemoryReference();
                 }
             }
         }
 
-        public ushort DeviceIndex => (ushort)((m_Register & c_SEGREG_DeviceIndex) >> c_SEGREG_DeviceIndexShift);
+        public ushort DeviceIndex => (ushort)((m_Register & c_SegRegDeviceIndex) >> c_SegRegDeviceIndexShift);
 
         public bool IsWriteProtected
         {
-            get { return (m_Register & c_SEGREG_W) != 0; }
+            get { return (m_Register & c_SegRegW) != 0; }
             set
             {
                 if (IsWriteProtected != value)
                 {
                     if (value)
-                        m_Register |= c_SEGREG_W;
+                        m_Register |= c_SegRegW;
                     else
-                        m_Register &= ~c_SEGREG_W;
+                        m_Register &= ~c_SegRegW;
                 }
             }
         }
 
         public bool IsNotPresent
         {
-            get { return (m_Register & c_SEGREG_P) != 0; }
+            get { return (m_Register & c_SegRegP) != 0; }
             set
             {
                 if (IsNotPresent != value)
                 {
                     if (value)
-                        m_Register |= c_SEGREG_P;
+                        m_Register |= c_SegRegP;
                     else
-                        m_Register &= ~c_SEGREG_P;
+                        m_Register &= ~c_SegRegP;
                     RefreshMemoryReference();
                 }
             }
@@ -78,13 +78,13 @@ namespace Ypsilon.Emulation.Processor
 
         public bool IsAccessed
         {
-            get { return (m_Register & c_SEGREG_A) != 0; }
+            get { return (m_Register & c_SegRegA) != 0; }
             set
             {
                 if (value)
-                    m_Register |= c_SEGREG_A;
+                    m_Register |= c_SegRegA;
                 else
-                    m_Register &= ~c_SEGREG_A;
+                    m_Register &= ~c_SegRegA;
             }
         }
 
@@ -129,11 +129,16 @@ namespace Ypsilon.Emulation.Processor
         // Constants.
         // ======================================================================
 
-        private const uint c_SEGREG_A = 0x10000000, c_SEGREG_P = 0x20000000, c_SEGREG_W = 0x40000000, c_SEGREG_D = 0x80000000;
-        private const int c_SEGREG_Size = 0x0FF00000, c_SEGREG_SizeShift = 12;
-        private const int c_SEGREG_MemBase = 0x000FFFFF;
-        private const int c_SEGREG_DeviceIndex = 0x000F0000, c_SEGREG_DeviceIndexShift = 16;
-        private const int c_SEGREG_DeviceBase = 0x0000FFFF;
+        private const uint c_SegRegA = 0x10000000;
+        private const uint c_SegRegP = 0x20000000;
+        private const uint c_SegRegW = 0x40000000;
+        private const uint c_SegRegD = 0x80000000;
+        private const int c_SegRegSize = 0x0FF00000;
+        private const int c_SegRegSizeShift = 12;
+        private const int c_SegRegMemBase = 0x000FFFFF;
+        private const int c_SegRegDeviceIndex = 0x000F0000;
+        private const int c_SegRegDeviceIndexShift = 16;
+        private const int c_SegRegDeviceBase = 0x0000FFFF;
 
         // ======================================================================
         // Ctor and private methods.
@@ -173,18 +178,18 @@ namespace Ypsilon.Emulation.Processor
             }
 
             // get size
-            uint s = (m_Register & c_SEGREG_Size) >> c_SEGREG_SizeShift;
+            uint s = (m_Register & c_SegRegSize) >> c_SegRegSizeShift;
             m_Size = (s == 0) ? ushort.MaxValue + 1 : s;
 
             // get base
             if (IsDevice)
             {
-                uint b = (m_Register & c_SEGREG_DeviceBase);
+                uint b = (m_Register & c_SegRegDeviceBase);
                 m_Base = b << 8;
             }
             else
             {
-                uint b = (m_Register & c_SEGREG_MemBase);
+                uint b = (m_Register & c_SegRegMemBase);
                 m_Base = b << 8;
             }
         }
@@ -204,6 +209,7 @@ namespace Ypsilon.Emulation.Processor
         IS = 4
     }
 
+    [Flags]
     public enum MemoryReferenceInfo
     {
         DeviceIndex = 0x00FF,

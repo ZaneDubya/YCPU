@@ -111,7 +111,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             m_GraphicsMode = GraphicsMode.None;
         }
 
-        private bool m_LEMSelectPage1 = false;
+        private bool m_LEMSelectPage1;
         private readonly uint[] m_LEMChrRam = new uint[0x80];
         private readonly uint[] m_LEMPalRam = new uint[0x10];
         private bool m_LEMChrramChanged;

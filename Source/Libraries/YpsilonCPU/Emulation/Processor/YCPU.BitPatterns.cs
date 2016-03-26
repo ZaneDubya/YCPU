@@ -10,19 +10,15 @@
         /// <param name="destination">Output: index of general register result should be written to.</param>
         private void BitPatternALU(ushort operand, out ushort value, out RegGeneral destination)
         {
-            int addressingMode;
-            RegGeneral source;
-            bool eightBitMode;
             ushort address;
-            SegmentIndex dataSeg;
 
             // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
             //                                                         SAAA rrrE OOOO ORRR
-            addressingMode = (operand & 0x7000) >> 12;              // A = addressing mode
-            source = (RegGeneral)((operand & 0x0E00) >> 9);         // r = source register
-            eightBitMode = (operand & 0x0100) != 0;                 // E = 8-bit mode
+            int addressingMode = (operand & 0x7000) >> 12;
+            RegGeneral source = (RegGeneral)((operand & 0x0E00) >> 9);
+            bool eightBitMode = (operand & 0x0100) != 0;
             destination = (RegGeneral)(operand & 0x0007);           // R = destination register
-            dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
+            SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS;
 
             switch (addressingMode) // will always be between 0x0 and 0x7
             {
@@ -75,15 +71,11 @@
         /// <param name="source">Output: general register that is the source of the operation</param>
         private void BitPatternSTO(ushort operand, out ushort destAddress, out RegGeneral source)
         {
-            int addressingMode;
-            bool eightBitMode;
-            RegGeneral addrRegister;
-
             // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
             //                                                         SAAA rrrE OOOO ORRR
-            addressingMode = (operand & 0x7000) >> 12;              // A = addressing mode
-            addrRegister = (RegGeneral)((operand & 0x0E00) >> 9);   // r = address of destination register
-            eightBitMode = (operand & 0x0100) != 0;                 // E = 8-bit mode
+            int addressingMode = (operand & 0x7000) >> 12;
+            RegGeneral addrRegister = (RegGeneral)((operand & 0x0E00) >> 9);
+            
             source = (RegGeneral)(operand & 0x0007);                // R = source register
             
 
@@ -144,8 +136,8 @@
         {
             destination = (RegGeneral)((operand & 0xE000) >> 13);
             RegGeneral source = (RegGeneral)((operand & 0x1C00) >> 10);
-            bool as_register = ((operand & 0x0100) != 0);
-            value = (as_register) ?
+            bool asRegister = ((operand & 0x0100) != 0);
+            value = (asRegister) ?
                 (ushort)(R[(int)source] & 0x000F) :
                 (ushort)((operand & 0x1E00) >> 9);
         }
@@ -170,18 +162,15 @@
 
         private void BitPatternJMI(ushort operand, out ushort address, out uint addressFar, out bool isFarJump)
         {
-            int addressingMode;
-            RegGeneral source;
             ushort nextword;
-            SegmentIndex dataSeg;
 
             // Decode the operand word's constituent bits.             FEDC BA98 7654 3210                             
             //                                                         SAAA rrrF OOOO ORRR
-            addressingMode = (operand & 0x7000) >> 12;              // A = addressing mode
-            source = (RegGeneral)((operand & 0x0E00) >> 9);         // r = source register
-            isFarJump = (operand & 0x0100) != 0;                    // F = far jump mode
-            dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
+            int addressingMode = (operand & 0x7000) >> 12;
+            RegGeneral source = (RegGeneral)((operand & 0x0E00) >> 9);
+            SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS;
             addressFar = 0;
+            isFarJump = (operand & 0x0100) != 0;                    // F = far jump mode
 
             switch (addressingMode) // will always be between 0x0 and 0xf
             {

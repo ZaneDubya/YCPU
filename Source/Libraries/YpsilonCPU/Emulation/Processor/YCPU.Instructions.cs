@@ -387,11 +387,11 @@ namespace Ypsilon.Emulation.Processor
 
         private void DVI(ushort operand)
         {
-            ushort value;
-            RegGeneral destination;
-
             try
             {
+                ushort value;
+                RegGeneral destination;
+
                 BitPatternALU(operand, out value, out destination);
                 if (value == 0)
                 {
@@ -426,13 +426,14 @@ namespace Ypsilon.Emulation.Processor
 
         private void EOR(ushort operand)
         {
-            ushort value;
-            RegGeneral destination;
-
             try
             {
+                ushort value;
+                RegGeneral destination;
+
                 BitPatternALU(operand, out value, out destination);
                 int result = R[(int)destination] ^ value;
+                R[(int)destination] = (ushort)(result & 0x0000FFFF);
                 FL_N = ((value & 0x8000) != 0);
                 FL_Z = (value == 0x0000);
                 // C [Carry] Not effected.
@@ -682,7 +683,8 @@ namespace Ypsilon.Emulation.Processor
                 else
                 {
                     SegmentIndex dataSeg = (operand & 0x8000) != 0 ? SegmentIndex.ES : SegmentIndex.DS; // S = extra segment select.
-                    if ((operand & 0x0100) != 0) // eight bit mode
+                    bool eightBitMode = (operand & 0x0100) != 0;                 // E = 8-bit mode
+                    if (eightBitMode)
                         WriteMemInt8(dest_address, (byte)R[(int)source], dataSeg);
                     else
                         WriteMemInt16(dest_address, R[(int)source], dataSeg);
@@ -1032,7 +1034,7 @@ namespace Ypsilon.Emulation.Processor
                     R[(int)RegGeneral.R0] = m_RTC.SetTickRate(R[(int)RegGeneral.R0], m_Cycles);
                     break;
                 default:
-                    // fail silently.
+                    Interrupt_UndefFault(operand);
                     break;
             }
         }
@@ -1311,7 +1313,7 @@ namespace Ypsilon.Emulation.Processor
                     RTI(operand);
                     break;
                 case 3: // SWI
-                    SWI(operand);
+                    SWI();
                     break;
                 case 4: // SLP
                     SLP(operand);
@@ -1363,7 +1365,7 @@ namespace Ypsilon.Emulation.Processor
             // pause processor
         }
 
-        private void SWI(ushort operand)
+        private void SWI()
         {
             Interrupt_SWI();
         }

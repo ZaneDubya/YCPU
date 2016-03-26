@@ -74,9 +74,9 @@ namespace Ypsilon.Emulation
             return info;
         }
 
-        public ushort Bus_SendMessage(ushort param_0, ushort param_1)
+        public ushort Bus_SendMessage(ushort param0, ushort param1)
         {
-            return ReceiveMessage(param_0, param_1);
+            return ReceiveMessage(param0, param1);
         }
     }
 }

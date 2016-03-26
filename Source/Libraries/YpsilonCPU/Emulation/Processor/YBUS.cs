@@ -9,15 +9,12 @@ namespace Ypsilon.Emulation.Processor
     public class YBUS
     {
         public readonly YCPU CPU;
-
         private MemoryChunk m_RAM, m_ROM;
-        private List<Segment> m_References = new List<Segment>();
-
+        private readonly List<Segment> m_References = new List<Segment>();
         private IDisplayProvider m_DisplayProvider;
         private IInputProvider m_InputProvider;
-
-        private ADevice[] m_Devices = new ADevice[15];
-        private List<ushort> m_DevicesRaisingIRQ = new List<ushort>();
+        private readonly ADevice[] m_Devices = new ADevice[15];
+        private readonly List<ushort> m_DevicesRaisingIRQ = new List<ushort>();
 
         // ===================================================================================================
         // Emulator Functions

@@ -188,7 +188,7 @@ namespace YCPUXNA
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
                 if (File.Exists(m_RomPath))
-                    m_Emulator.LoadBinaryToCPU(m_RomPath, 0x0000);
+                    m_Emulator.LoadBinaryToROM(m_RomPath);
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.T, false, false, true))
             {

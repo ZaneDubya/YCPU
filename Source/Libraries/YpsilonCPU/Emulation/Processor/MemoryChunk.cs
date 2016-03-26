@@ -30,6 +30,8 @@
 
             set
             {
+                if (ReadOnly)
+                    return;
                 if (address < m_Memory.Length)
                     m_Memory[address] = value;
             }
