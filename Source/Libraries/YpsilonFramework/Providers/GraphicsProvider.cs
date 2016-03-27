@@ -55,59 +55,59 @@ namespace YCPUXNA.Providers
                 for (int oam = 0; oam < 16; oam++)
                 {
                     int y = devicemem[oamByte0 + oam];
-                    int address = 0x8000 + devicemem[oamByte1 + oam] * 32;
+                    int baseSprite = 0x8000 + devicemem[oamByte1 + oam] * 32;
                     int attr = devicemem[oamByte2 + oam];
                     int x = devicemem[oamByte3 + oam];
                     int width = 8, height = 8;
                     bool hflip = (attr & 0x01) != 0;
                     bool vflip = (attr & 0x02) != 0;
 
-                    // Y clipping
-                    if (m_CurrentLine < y || m_CurrentLine >= (y + height))
-                        continue;
-
-                    int spritey = m_CurrentLine - y;
-                    if (spritey < 0)
-                        spritey += 256; // !!! INCORRECT. SHOULD FLIP BASED ON TILE_HEIGHT
-
-                    if (vflip)
-                        spritey = (height - 1) - spritey;
-
-                    int baseInc = 1;
-                    if (hflip)
+                    for (int iy = 0; iy < 8; iy++)
                     {
-                        baseSprite += (width / 8) - 1;
-                        baseInc = -baseInc;
-                    }
+                        int cy = iy + y;
 
-                    // if ((attr0 & (1 << 13)) != 0)
-                    // always 32bit color, always blend
-                    for (int i = x; i < x + width; i++)
-                    {
-                        if ((i & 0x1ff) < width && (m_ScanLineWindows[i & 0x1ff] & sprites_in_window) != 0)
+                        // Y clipping
+                        if (cy < 0 || cy >= 127)
+                            continue;
+
+                        int spritey = vflip ? (7 - iy) : iy;
+
+                        int baseInc = 1;
+                        if (hflip)
                         {
-                            int tx = (i - x) & 7;
-                            if (hflip)
-                                tx = 7 - tx;
-                            int curIdx = baseSprite * 64 + ((spritey & 7) * 8) + tx;
-                            uint pixel = tileram[curIdx];
-                            // blend the pixel (if necessary) and write it the scanline.
-                            uint alpha = pixel & 0xFF000000;
-                            if (alpha == 0xFF000000)
-                            {
-                                m_ScanLinePixels[(i & 0x1ff)] = pixel;
-                            }
-                            else if (alpha != 0)
-                            {
-                                alpha = alpha >> 24;
-                                uint colora = m_ScanLinePixels[i]; // get the existing pixel
-                                uint rb = ((0x100 - alpha) * (colora & 0x00FF00FF)) + (alpha * (pixel & 0x00FF00FF));
-                                uint g = ((0x100 - alpha) * (colora & 0x0000FF00)) + (alpha * (pixel & 0x0000FF00));
-                                m_ScanLinePixels[(i & 0x1ff)] = 0xFF000000 | (((rb & 0xFF00FF00) + (g & 0x00FF0000)) >> 8);
-                            }
+                            baseSprite += (width / 8) - 1;
+                            baseInc = -baseInc;
                         }
-                        if (((i - x) & 7) == 7)
-                            baseSprite += baseInc;
+
+                        // if ((attr0 & (1 << 13)) != 0)
+                        // always 32bit color, always blend
+                        for (int i = x; i < x + width; i++)
+                        {
+                            if ((i & 0x1ff) < width && (m_ScanLineWindows[i & 0x1ff] & sprites_in_window) != 0)
+                            {
+                                int tx = (i - x) & 7;
+                                if (hflip)
+                                    tx = 7 - tx;
+                                int curIdx = baseSprite * 64 + ((spritey & 7) * 8) + tx;
+                                uint pixel = tileram[curIdx];
+                                // blend the pixel (if necessary) and write it the scanline.
+                                uint alpha = pixel & 0xFF000000;
+                                if (alpha == 0xFF000000)
+                                {
+                                    m_ScanLinePixels[(i & 0x1ff)] = pixel;
+                                }
+                                else if (alpha != 0)
+                                {
+                                    alpha = alpha >> 24;
+                                    uint colora = m_ScanLinePixels[i]; // get the existing pixel
+                                    uint rb = ((0x100 - alpha) * (colora & 0x00FF00FF)) + (alpha * (pixel & 0x00FF00FF));
+                                    uint g = ((0x100 - alpha) * (colora & 0x0000FF00)) + (alpha * (pixel & 0x0000FF00));
+                                    m_ScanLinePixels[(i & 0x1ff)] = 0xFF000000 | (((rb & 0xFF00FF00) + (g & 0x00FF0000)) >> 8);
+                                }
+                            }
+                            if (((i - x) & 7) == 7)
+                                baseSprite += baseInc;
+                        }
                     }
                 }
             }
