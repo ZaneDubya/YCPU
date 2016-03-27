@@ -41,6 +41,7 @@ namespace YCPUXNA
 
         private double m_LastConsoleUpdate;
         private bool m_DoScreenshot;
+        private double m_MS;
 
         public Emu()
         {
@@ -182,8 +183,11 @@ namespace YCPUXNA
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.M, false, false, true))
             {
-                
-                m_Emulator.RunCycles(10000000);
+                DateTime now = DateTime.Now;
+                m_Emulator.RunCycles(100000000);
+                DateTime then = DateTime.Now;
+                TimeSpan x = then - now;
+                m_MS = x.TotalMilliseconds;
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.L, false, false, true))
             {
@@ -255,8 +259,11 @@ namespace YCPUXNA
             ConsoleWrite(2, 28, "Ctrl-R: Run at 10 khz.");
             ConsoleWrite(2, 29, "Ctrl-B: Break.");
             ConsoleWrite(2, 30, "Ctrl-N: Run one instruction.");
-            ConsoleWrite(2, 31, "Ctrl-M: Run approximately 10 million cycles.");
+            ConsoleWrite(2, 31, "Ctrl-M: Run approximately 100 million cycles.");
             ConsoleWrite(2, 32, "Ctrl-T: Reset interrupt.");
+
+            if (m_MS != 0)
+                ConsoleWrite(2, 34, m_MS.ToString());
         }
 
         private void ConsoleWrite(int x, int y, string s)
