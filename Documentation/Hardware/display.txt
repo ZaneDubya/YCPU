@@ -125,9 +125,10 @@
 
 --- Sprites --------------------------------------------------------------------
 
-    Sprites are 16 color sprites (color 0 is transparent). 
-            Sprite data is 4 bits per pixel, four bytes per y-line,
-            color info indicates which colour index is transparent.
+    Sprites are single 8x8 tiles at 16 colors (color 0 is transparent). Sprite
+    data is 32 bytes per sprite tile (4 bits per pixel, four bytes per y-line,
+    eight y-lines per sprite).
+
 
 --- OAM indexes ----------------------------------------------------------------
 
@@ -141,15 +142,13 @@
     OAM Byte 0: Y position of top of sprite.
     
     OAM Byte 1: Sprite Tile Address, 8 bits.
-                Address is 1000 000A AAAA AAA0
-                Which is to say 0x8000 + (A * 2)
+                Address is 100A AAAA AAA0 0000
+                Which is to say 0x8000 + (A * 32)
     
     OAM Byte 2: Sprite Attribute:  
                 7654 3210
-                .... VHSS
+                .... ..VH
                 H = horizontal flip.
-                S = 2 bits size info. Bit 8=0: 8px wide; 1: 16px wide.
-                                      Bit 9=0: 8px high; 1: 16px high.
                 V = vertical flip.
     
     OAM Byte 3: X position of left of sprite.
