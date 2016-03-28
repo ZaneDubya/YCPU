@@ -1,82 +1,119 @@
 .alignglobals 2                     ; align global labels to 16-bit boundaries
 .include "testconsole.ivt.asm"  ; include int vector table & interrupt handlers
 
-.alias  speed       500
-.alias  pillsInMap  244
+.alias  speed               500
+.alias  pillsInMap          244
+.alias  powerPillStrength   128
+.alias  blueghost           0x0388
+.alias  whiteghost          0x0390
 
-.alias  ticker      $0000
-.alias  randish     $0002
-.alias  dead        $0004
-.alias  deathAge    $0006
-.alias  pillsEaten  $0008
+.alias  ticker              $0000
+.alias  randish             $0002
+.alias  dead                $0004
+.alias  deathAge            $0006
+.alias  pillsEaten          $0008
+.alias  fear                $000a
+.alias  currentFrame        $000c
+.alias  thisthat            $000e
+.alias  playerX             $0010
+.alias  playerY             $0012
+.alias  playerDx            $0014
+.alias  playerDy            $0016
+; each ghost is 16bytes: x,y,dx,dy,sprite address,spritedata,fear,respawn cntr
+.alias  ghost1              $0020
+.alias  ghost2              $0030
+.alias  ghost3              $0040
+.alias  ghost4              $0050
+.alias  deathFrames         $0060 ; 8 x 16bit addresses.
 
-deathFrames:
-  .dat16 0,1,2,3,4,5,6,7
-
-delay:
-  set a,0
-delayloop:
-  ifg a,speed
-  rts                     ; set pc,pop
-  add a,1
-  jmp delayloop             ; set pc,delayloop
+munchFrames:
+  .dat16 0x0300, 0x0320, 0x0328, 0x0330, 0x0328, 0x0320
+  .dat16 0x0300, 0x0308, 0x0310, 0x0318, 0x0310, 0x0308
+  .dat16 0x0300, 0x0338, 0x0340, 0x0348, 0x0340, 0x0338
+  .dat16 0x0300, 0x0350, 0x0358, 0x0360, 0x0358, 0x0350
 
 Reset:
-jsr init
+  jsr init
+  
+delay:
+  lod a, 0                  ; set a,0
+delayloop:
+  adi a, 1                  ; add a,1
+  cmp a, speed              ; ifg a,speed
+  bcc delayLoop             ; set pc,delayloop
+  rts                       ; set pc,pop       
 
 MainLoop:
-  add [ticker],1
-  jsr updatePlayer
-  ife [dead],0
-  jsr animate
-  ife [dead],0
-  jsr moveGhosts
-
-  jsr delay
-  jsr probeInput
-  
-  ife [pillsEaten],pillsInMap
-  jsr completeLevel
-jmp mainloop             ; set pc,mainloop
+  lod a, [ticker]           ; add [ticker],1
+  adi a, 1
+  sto a, [ticker]
+  jsr updatePlayer          ; jsr updatePlayer    
+  lod a, [dead]             ; ife [dead],0
+  beq notDead               ; jsr animate
+  jsr animate               ; ife [dead],0
+  jsr moveGhosts            ; jsr moveGhosts
+notDead:
+  jsr delay                 ; jsr delay
+  jsr probeInput            ; jsr probeInput
+  lod a, [pillsEaten]       ; ife [pillsEaten],pillsInMap
+  cmp a, pillsInMap         ; ife [pillsEaten],pillsInMap
+  bne mainLoop
+  jsr completeLevel         ; jsr completeLevel
+  baw mainloop              ; set pc,mainloop
 
 completeLevel:
-  set b,0
+  set b, 0                  ; set b,0
 completeLevel_Loop:
   jsr delay
-  add b,1
-  ifn b,10
-  jmp completeLevel_Loop             ; set pc,completeLevel_Loop
-  jsr wipe
-  jsr startNewLevel
-  rts                     ; set pc,pop
+  adi b, 1                  ; add b,1
+  cmp b, 10                 ; ifn b,10
+  bne completeLevel_Loop    ; set pc,completeLevel_Loop
+  jsr wipe                  ; jsr wipe
+  jsr startNewLevel         ; jsr startNewLevel
+  rts                       ; set pc,pop
   
-setDeathFrames:
-  set a,deathframes
-  set [a],sprites
-  set [a+1],death1
-  set [a+2],death2
-  set [a+3],death3
-  set [a+4],death4
-  set [a+5],death5
-  set [a+6],death6
-  set [a+7],death7
 
-  rts                     ; set pc,pop
 
 
 
 init:
   jsr setDeathFrames
-
   ; copy sprites to vram
-  set a,sprites
-  set b,0x8600
-  set c,304
+  lod a, sprites                ; set a,sprites
+  lod b, 0x8600                 ; set b,0x8600
+  lod c, 304                    ; set c,304
   jsr copy
-
-  SET [0x9040],1  ; turn graphics mode on
-  jsr startNewLevel
-  rts                     ; set pc,pop
+  ; turn graphics mode on
+  lod a, 1                      ; SET [0x9040],1      
+  sto a, [0x9040]               ;  
+  jsr startNewLevel             ; jsr startNewLevel
+  rts                           ; set pc,pop
+setDeathFrames:
+  lod a, deathframes            ; set a,deathframes
+  lod b, sprites                ; set [a],sprites
+  sto b, [a]
+  adi a, 2                      ; set [a+1],death1
+  lod b, death1
+  sto b, [a]
+  adi a, 2                      ; set [a+2],death2
+  lod b, death2
+  sto b, [a]
+  adi a, 2                      ; set [a+3],death3
+  lod b, death3
+  sto b, [a]
+  adi a, 2                      ; set [a+4],death4
+  lod b, death4
+  sto b, [a]
+  adi a, 2                      ; set [a+5],death5
+  lod b, death5
+  sto b, [a]
+  adi a, 2                      ; set [a+6],death6
+  lod b, death6
+  sto b, [a]
+  adi a, 2                      ; set [a+7],death7
+  lod b, death7
+  sto b, [a]
+  rts                           ; set pc,pop
 
 animate:
    add [currentFrame],1
@@ -101,13 +138,13 @@ animate:
    rts                     ; set pc,pop
 fraidyghosts:
    sub [fear],1
-   set a,[blueghost]
+   set a,blueghost          ; set a,blueghost
    set b,[fear]
    and b,2
    ifg [fear],14  
    set b,0
    ife b,2
-   set a,[whiteghost]
+   set a,whiteghost         ; set a,whiteghost
    set [0x9053],a
    set [0x9055],a
    set [0x9057],a
@@ -117,68 +154,76 @@ fraidyghosts:
 
 fraidyghost:
    sub [i+6],1
-   set a,[blueghost]
+   set a,blueghost              ; set a,blueghost
    set b,[i+6]
    and b,2
    ifg [i+6],14  
    set b,0
    ife b,2
-   set a,[whiteghost]
+   set a,whiteghost             ; set a,whiteghost
    set b,[i+4]
    set [b+1],a
    ife [i+6],0
    set [b+1],[i+5]
-   rts                     ; set pc,pop
-
-fear:
-   .dat16 0;
-
-currentFrame:
-  .dat16 0
-munchFrames:
-  .dat16 0x0300, 0x0320, 0x0328, 0x0330, 0x0328, 0x0320
-  .dat16 0x0300, 0x0308, 0x0310, 0x0318, 0x0310, 0x0308
-  .dat16 0x0300, 0x0338, 0x0340, 0x0348, 0x0340, 0x0338
-  .dat16 0x0300, 0x0350, 0x0358, 0x0360, 0x0358, 0x0350
+   rts                              ; set pc,pop
 
 updatePlayer:
-  ife [dead],1
-  jmp deathAction              ; set pc,deathAction 
-  add [playerX],[playerDx]
-  add [playerY],[playerDy]
-  ifb [playerX],0x8000
-  add [playerX],81
-  ifg [playerX],81
-  sub [playerX],81
+  psh a
+  lod   a, [dead]                   ; ife [dead],1
+  beq   deathAction                 ; set pc,deathAction 
+  lod a, [playerDx]                 ; add [playerX],[playerDx]
+  add a, [playerX]
+  sto a, [playerX]
+  lod a, [playerDy]                 ; add [playerY],[playerDy]
+  add a, [playerY]
+  sto a, [playerY]
+  
+; check if we went through the middle tunnel
+  lod a, [playerX]                  ; ifb [playerX],0x8000
+  bpl checkTunnelRight
+  add a, 81                         ; add [playerX],81
+  baw afterCheckTunnel
+checkTunnelRight:
+  cmp a, 81                         ; ifg [playerX], 81
+  bpl afterCheckTunnel
+  sub a, 81                         ; sub [playerX], 81
+afterCheckTunnel:
+  sto a, [playerX]
+  pop a
   
   set x,[playerX]
   set y,[playerY]
   mod x,3
   mod y,3
-  bor x,y
-  ife x,0
+  orr x,y                           ; bor x,y
+  bne noCellAlignCheck              ; ife x,0
   jsr cellAlignedCheck
-  set a,[playerX]
-  add a,62
-  set b,[playerY];
-  add b,62;
-  shl a,8
-  bor b,a
-  set [0x9050],b
-  rts                     ; set pc,pop
-
+noCellAlignCheck:
+  set a,[playerX]                   ; set a,[playerX]
+  add a,62                          ; add a,62
+  set b,[playerY]                   ; set b,[playerY];
+  add b,62                          ; add b,62
+  asl a, 8                          ; shl a,8
+  orr b, a                          ; bor b,a
+  sto b, [0x9050]                   ; set [0x9050],b
+  rts                               ; set pc,pop
 deathAction:
-  add [deathAge],1
-  set a,[deathAge]
-  sub a,10
-  ifn O,0
+  lod a, [deathAge]                 ; add [deathAge],1
+  add a, 1                          ; set a,[deathAge]
+  sto a, [deathAge]
+  sub a, 10                         ; sub a,10
+  bcc hideGhosts                    ; ifn O,0
   rts                     ; set pc,pop
 
-  ;hide ghosts  
-  set [0x9052],0
-  set [0x9054],0
-  set [0x9056],0
-  set [0x9058],0
+hideGhosts:
+  ;hide ghosts
+  psh a
+  lod a, 0
+  sto a, [0x9052]                   ; set [0x9052],0
+  sto a, [0x9054]                   ; set [0x9054],0
+  sto a, [0x9056]                   ; set [0x9056],0
+  sto a, [0x9058]                   ; set [0x9058],0
+  pop a
 
   shr a,1
   ifg a,7 
@@ -204,9 +249,9 @@ startNewLevel:
   set b,mapend
   set c,0x8000
   jsr copyimage
-  
-  
+
   rts                     ; set pc,pop
+  
   
 resetlevel:
   set [playerX],39
@@ -220,6 +265,8 @@ resetlevel:
   set [a+1],38
   set [a+2],0
   set [a+3],0xffff
+  set [a+4],0x9052
+  set [a+5],0x0368
   set [a+6],0
   set [a+7],0
 
@@ -228,6 +275,8 @@ resetlevel:
   set [a+1],42
   set [a+2],1
   set [a+3],0
+  set [a+4],0x9054
+  set [a+5],0x0370
   set [a+6],0
   set [a+7],0
 
@@ -236,6 +285,8 @@ resetlevel:
   set [a+1],42
   set [a+2],0xffff
   set [a+3],0
+  set [a+4],0x9056
+  set [a+5],0x0378
   set [a+6],0
   set [a+7],0
 
@@ -244,6 +295,8 @@ resetlevel:
   set [a+1],42
   set [a+2],0
   set [a+3],1
+  set [a+4],0x9058
+  set [a+5],0x0380
   set [a+6],0
   set [a+7],0
   
@@ -350,7 +403,7 @@ eatPowerPill:
   rts                     ; set pc,pop
 
 flipGhost:
-  set [i+6],[powerPillStrength]
+  set [i+6],powerPillStrength
   set a,0
   sub a,[i+2]
   set [i+2],a
@@ -358,18 +411,6 @@ flipGhost:
   sub a,[i+3]
   set [i+3],a   
    rts                     ; set pc,pop
-
-powerPillStrength:
-  .dat16 128
-playerX:
-  .dat16 39
-playerY:
-  .dat16 69
-
-playerDx:
-  .dat16 0xffff
-playerDy:
-  .dat16 0
 
 moveGhosts:
   set a,ghost1
@@ -510,9 +551,6 @@ cellAlignedGhostCheck:
 ghostCanMove:
   rts                     ; set pc,pop
 
-:thisthat
-.dat16 0
-
 ghostTryTurning:
 ;a = current cell
 ;i = ghost ptr
@@ -531,6 +569,7 @@ ghostTryTurning:
   set b,0
   sub b,y
   set y,b
+  
 ghostTryTurning_checkway:
   set b,y
   mul b,42
@@ -556,23 +595,6 @@ ghostTryTurning_fail:
   set b,pop
 
   rts                     ; set pc,pop
-
-ghostdata:
-
-
-ghost1:
-  .dat16 39,38,0x0000,0xffff, 0x9052, 0x0368, 0, 0  ;  x,y,dx,dy, sprite address,spritedata,fear,  respawn counter   = need macro asm real soon
-ghost2 :
-  .dat16 36,42,0x0001,0x0000, 0x9054, 0x0370, 0, 0  
-ghost3 :
-  .dat16 45,42,0xffff,0x0000, 0x9056, 0x0378, 0, 0  
-ghost4 :
-  .dat16 39,42,0x0000,0x0001, 0x9058, 0x0380, 0, 0  
-
-blueghost:
- .dat16 0x0388
-whiteghost:
- .dat16 0x0390
 
 probeInput:
   set a,0
@@ -1001,4 +1023,4 @@ death7:
 .dat16 0xE00E, 0x00E0
 .dat16 0x0000, 0x0000
 
-spritesend:
+; sprites end
