@@ -57,9 +57,11 @@ namespace Ypsilon.Core.Graphics
             return new Texture2D(m_GraphicsDevice, width, height);
         }
 
-        public void Begin(Color clear)
+        public void Begin(Color? clear = null)
         {
-            m_GraphicsDevice.Clear(clear);
+            if (clear == null)
+                return;
+            m_GraphicsDevice.Clear(clear.Value);
         }
 
         public void End(Effects effect)
