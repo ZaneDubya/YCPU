@@ -343,7 +343,7 @@ namespace Ypsilon
                 return e.Message;
             }
 
-            return $"Test successful! {m_TestCount} tests completed.";
+            return $"Test successful! {m_TestCount} tests completed";
         }
 
         private static void Test(string asm, params ushort[] expected)
@@ -355,7 +355,7 @@ namespace Ypsilon
                 if (assembled == null)
                     throw new Exception(p.ErrorMsg);
                 if (assembled.Count != expected.Length * 2)
-                    throw new Exception("Failure to match: instruction {0} did not match expected bit length.");
+                    throw new Exception("Failure to match: instruction {0} did not match expected bit length");
                 for (int i = 0; i < expected.Length; i++)
                 {
                     if (((expected[i] & 0x00ff) != assembled[i * 2]) || ((expected[i] >> 8) != assembled[i * 2 + 1]))
@@ -371,7 +371,7 @@ namespace Ypsilon
                             if (j % 2 == 1)
                                 sbAssembled.Append(" ");
                         }
-                        throw new Exception(string.Format("Failure to match expected bit pattern.\n" + 
+                        throw new Exception(string.Format("Failure to match expected bit pattern\n" + 
                             "Expected: {1}\n" + "Actual:   {2}", 
                             asm, sbCode, sbAssembled));
                     }

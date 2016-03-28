@@ -39,14 +39,14 @@ namespace Ypsilon.Assembler
             {
                 if (!m_Global.AddLabel(label, address))
                 {
-                    throw new Exception($"Label '{label}' already exists within the global scope.");
+                    throw new Exception($"Label '{label}' already exists within the global scope");
                 }
                 return true;
             }
             if (!scope.AddLabel(label, address))
             {
                 throw new Exception(
-                    $"Label '{label}' already exists within the {((scope == m_Global) ? "global" : "current local")} scope.");
+                    $"Label '{label}' already exists within the {((scope == m_Global) ? "global" : "current local")} scope");
             }
             return true;
         }

@@ -89,7 +89,7 @@ public static class GraphicsDeviceX
         //give useful advice if game is in Reach mode, but trying to use the SaveScreenshotHiDef method
         if (device.GetRenderTargets().Length == 0 || device.GetRenderTargets()[0].RenderTarget == null)
         {
-            throw new Exception("It seems you didn't call the PrepareScreenShotReach() method before your spriteBatch.Begin().");
+            throw new Exception("It seems you didn't call the PrepareScreenShotReach() method before your spriteBatch.Begin()");
         }
 
         //get the current RenderTarget as a Texture2D
@@ -129,7 +129,7 @@ public static class GraphicsDeviceX
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex}'.");
+            throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex}'");
         }
     }
 

@@ -345,7 +345,7 @@ namespace Ypsilon.Core.Input
             InputEventKeyboard pressEvent = LastKeyPressEvent;
             if(pressEvent == null)
             {
-                throw new Exception("No corresponding KeyPress event for this WM_CHAR message.");
+                throw new Exception("No corresponding KeyPress event for this WM_CHAR message");
             }
             pressEvent.OverrideKeyChar(e.KeyCode);
         }

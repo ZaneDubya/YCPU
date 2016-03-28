@@ -64,7 +64,7 @@ namespace Ypsilon.Core.Graphics
             for (int i = 0; i < length; i++)
             {
                 if (m_WorldLines.Count >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit.");
+                    throw new Exception("Raster graphics count has exceeded limit");
 
                 m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
                 m_WorldLines.Vertices[m_WorldLines.Index++].Hue = color;
@@ -86,7 +86,7 @@ namespace Ypsilon.Core.Graphics
             for (int i = 0; i < length; i++)
             {
                 if (m_WorldLines.Count >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit.");
+                    throw new Exception("Raster graphics count has exceeded limit");
 
                 m_WorldLines.Vertices[m_WorldLines.Index] = polygon[i % polygon.Length];
                 m_WorldLines.Vertices[m_WorldLines.Index++].Position += translation;
@@ -108,7 +108,7 @@ namespace Ypsilon.Core.Graphics
             for (int i = 0; i < count; i++)
             {
                 if (m_WorldTris.Count >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit.");
+                    throw new Exception("Raster graphics count has exceeded limit");
 
                 m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3], matrix);
                 m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;

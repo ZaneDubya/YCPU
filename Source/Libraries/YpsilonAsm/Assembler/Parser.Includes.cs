@@ -17,14 +17,14 @@ namespace Ypsilon.Assembler
         private bool IncludeAsm(List<string> tokens, ParserState state)
         {
             if (tokens.Count == 1)
-                throw new Exception(string.Format("No file specified for .include pragma.", tokens[1]));
+                throw new Exception(string.Format("No file specified for .include pragma", tokens[1]));
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
             string pathToAsmFile = state.WorkingDirectory + @"\" + tokens[1];
 
             string asmFileContents = getFileContents(pathToAsmFile);
             if (asmFileContents == null)
-                throw new Exception($"Error loading file '{tokens[1]}'.");
+                throw new Exception($"Error loading file '{tokens[1]}'");
             List<string> includeLines = Common.SplitString(asmFileContents, "\n");
 
             m_Lines.InsertRange(m_CurrentLine, includeLines);
@@ -37,18 +37,18 @@ namespace Ypsilon.Assembler
         private bool IncludeBinary(List<string> tokens, ParserState state)
         {
             if (tokens.Count == 1)
-                throw new Exception(string.Format("No file specified for .incbin pragma.", tokens[1]));
+                throw new Exception(string.Format("No file specified for .incbin pragma", tokens[1]));
 
             tokens[1] = tokens[1].Replace("\"", string.Empty);
 
             byte[] data = GetBytesFromFile(state.WorkingDirectory + @"\" + tokens[1]);
             if (data == null)
-                throw new Exception($"Error loading file '{tokens[1]}'.");
+                throw new Exception($"Error loading file '{tokens[1]}'");
 
             int begin = 0, length = data.Length;
             if (tokens.Count >= 3)
                 if (!Int32.TryParse(tokens[2], out begin))
-                    throw new Exception("Third paramter for incbin must be numeric.");
+                    throw new Exception("Third paramter for incbin must be numeric");
 
             if (tokens.Count == 3)
             {
@@ -57,10 +57,10 @@ namespace Ypsilon.Assembler
 
             if (tokens.Count == 4)
                 if (!Int32.TryParse(tokens[3], out length))
-                    throw new Exception("Fourth paramter for incbin must be numeric.");
+                    throw new Exception("Fourth paramter for incbin must be numeric");
 
             if ((begin >= length) || (begin + length > data.Length))
-                throw new Exception("Out of bounds for incbin.");
+                throw new Exception("Out of bounds for incbin");
 
             for (int i = 0; i < length; i++)
                 state.Code.Add(data[i + begin]);

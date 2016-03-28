@@ -6,8 +6,8 @@ namespace YCPUXNA
     internal static class Program
     {
         private const string c_ErrNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
-            "    1. Assemble default 'testconsole.asm' file.\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
-            "    2. Run emulator!\n    3. Run assembly tests.\n    4. Exit.";
+            "    1. Assemble default 'testconsole.asm' file\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
+            "    2. Run emulator\n    3. Run assembly tests\n    4. Exit";
 
         // default entry point
         private static void Main(string[] args)
@@ -70,7 +70,7 @@ namespace YCPUXNA
                             disasm.TryDisassemble(args);
                             break;
                         case "-emu": // run emulator!
-                            StdConsole.StdOutWriteLine("Starting emulator...");
+                            StdConsole.StdOutWriteLine("Starting emulator... ");
                             Emu e = new Emu();
                             e.SetArgs(args);
                             StdConsole.HideConsoleWindow();

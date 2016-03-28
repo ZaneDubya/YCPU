@@ -93,16 +93,16 @@ namespace Ypsilon.Assembler
 
                 if (!Scopes.ContainsLabel(labelName, index))
                 {
-                    throw new Exception($"Unknown label reference '{labelName}'.");
+                    throw new Exception($"Unknown label reference '{labelName}'");
                 }
 
                 ushort label_address = (ushort)Scopes.LabelAddress(labelName, index);
                 int delta = label_address - index;
                 if ((delta & 0x00000001) != 00)
-                    throw new Exception($"Branch to label '{labelName}' is not word aligned.");
+                    throw new Exception($"Branch to label '{labelName}' is not word aligned");
                 delta /= 2;
                 if ((delta > sbyte.MaxValue) || (delta < sbyte.MinValue))
-                    throw new Exception("Branch operation out of range.");
+                    throw new Exception("Branch operation out of range");
                 Code[index + 1] = (byte)((sbyte)delta);
             }
         }

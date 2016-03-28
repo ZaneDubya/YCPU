@@ -13,7 +13,7 @@ namespace YCPUXNA
 
             if (m_Services.ContainsKey(type))
             {
-                // Tracer.Critical(string.Format("Attempted to register service of type {0} twice.", type.ToString()));
+                // Tracer.Critical(string.Format("Attempted to register service of type {0} twice", type.ToString()));
                 m_Services.Remove(type);
             }
 
@@ -50,7 +50,7 @@ namespace YCPUXNA
             {
                 return (T)m_Services[type];
             }
-            // Tracer.Critical(string.Format("Attempted to get service service of type {0}, but no service of this type is registered.", type.ToString()));
+            // Tracer.Critical(string.Format("Attempted to get service service of type {0}, but no service of this type is registered", type.ToString()));
             return default(T);
         }
     }
