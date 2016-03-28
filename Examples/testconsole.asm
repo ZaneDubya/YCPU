@@ -59,42 +59,50 @@ ResetInt:
         cmp     B, 3                
         bne     Update
         
-        jsr     PrintWordToTitle
-        
-        ; press event must be ascii to print.
-        lod     B, A
-        and     B, $8000            ; upper bit set = ascii
-        beq     Update
-        
-        ; get char only
-        and     A, $00ff
-        
-        ; compare with control codes.
-        cmp     A, $0008
-        beq     backSpace
-        cmp     A, $000D
-        beq     return
-        
-        orr     A, $8200            ; yellow on blue.
-        sto     A, ES[X]
-        adi     X, 2
+        jsr     PrintAscii
         baw     Update
-        
-        backSpace:
-            lod     A, $8220 ; wipe out char, if any.
-            sto     A, ES[X]
-            cmp     X, $0040
-            beq     Update
-            sbi     X, 2
-            lod     B, $8220
-            sto     B, ES[X]
-            baw     Update
-        return:
-            lod     A, $8220 ; wipe out char, if any.
-            sto     A, ES[X]
-            and     X, $ffc0
-            add     X, $0040
-            baw     Update
+
+}
+
+; === PrintAscii ===============================================================
+PrintAscii:
+{
+    ; press event must be ascii to print.
+    lod     B, A
+    and     B, $8000            ; upper bit set = ascii
+    beq     return
+    
+    ; get char only
+    and     A, $00ff
+    
+    ; compare with control codes.
+    cmp     A, $0008
+    beq     asciiBackSpace
+    cmp     A, $000D
+    beq     asciiReturn
+    
+    orr     A, $8200            ; yellow on blue.
+    sto     A, ES[X]
+    adi     X, 2
+    
+return:
+    rts
+    
+    asciiBackSpace:
+        lod     A, $8220 ; wipe out char, if any.
+        sto     A, ES[X]
+        cmp     X, $0040
+        beq     return
+        sbi     X, 2
+        lod     B, $8220
+        sto     B, ES[X]
+        baw     return
+    asciiReturn:
+        lod     A, $8220 ; wipe out char, if any.
+        sto     A, ES[X]
+        and     X, $ffc0
+        add     X, $0040
+        baw     return
 }
 
 ; === PrintWordToTitle =========================================================
