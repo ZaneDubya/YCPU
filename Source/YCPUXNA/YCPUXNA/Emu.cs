@@ -20,8 +20,8 @@ namespace YCPUXNA
             private set;
         }
 
-        private const int window_w = 640, window_h = 480;
-        private const int c_ConsoleWidth = 120;
+        private const int c_WindowW = 640, c_WindowH = 480;
+        private const int c_ConsoleWidth = 80;
         private const int c_ConsoleHeight = 40;
         private const int c_ConsoleUpdateMS = 50; // don't go lower than 50, max update rate is 16-33 ms.
         private string m_RomPath;
@@ -71,10 +71,10 @@ namespace YCPUXNA
             m_DisplayProvider = new DisplayProvider(m_SpriteBatch);
 
             m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
-            m_Curses = new Curses(GraphicsDevice, 80, c_ConsoleHeight, c_CursesFont, true);
+            m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont, true);
 
-            m_Graphics.PreferredBackBufferWidth = window_w * 2;
-            m_Graphics.PreferredBackBufferHeight = window_h;
+            m_Graphics.PreferredBackBufferWidth = c_WindowW * 2;
+            m_Graphics.PreferredBackBufferHeight = c_WindowH;
             m_Graphics.IsFullScreen = false;
             m_Graphics.ApplyChanges();
             IsMouseVisible = true;
@@ -127,23 +127,26 @@ namespace YCPUXNA
             // draw the debug console device
             m_SpriteBatch.DrawSprite(debug, 
                 Vector3.Zero, 
-                new Vector2(window_w, window_h), 
+                new Vector2(c_WindowW, c_WindowH), 
                 new Vector4(0, 0, 1, 1), 
                 new Color(64, 255, 64), 
-                new Vector4(window_w, window_h, 0, 0));
+                new Vector4(c_WindowW, c_WindowH, 0, 0));
 
             // render the devices
             m_DeviceTextures.Clear();
             m_Emulator.Draw(m_DeviceTextures);
             for (int i = 0; i < m_DeviceTextures.Count; i++)
             {
-                m_SpriteBatch.DrawSprite(
-                    (m_DeviceTextures[i] as YTexture).Texture,
-                    new Vector3(window_w, 0, 0),
-                    new Vector2(window_w, window_h),
+                YTexture texture = (m_DeviceTextures[i] as YTexture);
+                if (texture == null)
+                    continue;
+
+                m_SpriteBatch.DrawSprite(texture.Texture,
+                    new Vector3(c_WindowW, 0, 0),
+                    new Vector2(c_WindowW, c_WindowH),
                     new Vector4(0, 0, 1, 1),
                     Color.White,
-                    new Vector4(window_w, window_h, 0, 0));
+                    new Vector4(c_WindowW, c_WindowH, 0, 0));
             }
 
             // End the spritebatch.
