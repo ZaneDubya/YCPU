@@ -234,11 +234,11 @@ namespace YCPUXNA
 
             ConsoleWrite(53,  r_y + 16, "ps bits:");
             ConsoleWrite(53,  r_y + 17,
-                $"{(cpu.PS_S ? "S" : ".")}{(cpu.PS_M ? "M" : ".")}{(cpu.PS_H ? "H" : ".")}{(cpu.PS_I ? "I" : ".")} {(cpu.PS_Q ? "Q" : ".")}{(cpu.PS_U ? "U" : ".")}{(cpu.PS_V ? "V" : ".")}{(cpu.PS_W ? "W" : ".")}");
+                $"{(cpu.PS_S ? "S" : "-")}{(cpu.PS_M ? "M" : "-")}{(cpu.PS_H ? "H" : "-")}{(cpu.PS_I ? "I" : "-")} {(cpu.PS_Q ? "Q" : "-")}{(cpu.PS_U ? "U" : "-")}{(cpu.PS_V ? "V" : "-")}{(cpu.PS_W ? "W" : "-")}");
 
             ConsoleWrite(53,  r_y + 18, "fl bits:");
             ConsoleWrite(53,  r_y + 19,
-                $"{(cpu.FL_N ? "N" : ".")}{(cpu.FL_Z ? "Z" : ".")}{(cpu.FL_C ? "C" : ".")}{(cpu.FL_V ? "V" : ".")}");
+                $"{(cpu.FL_N ? "N" : "-")}{(cpu.FL_Z ? "Z" : "-")}{(cpu.FL_C ? "C" : "-")}{(cpu.FL_V ? "V" : "-")}");
 
             ConsoleWrite(53,  r_y + 25, "Segments:");
             ConsoleWrite(53,  r_y + 26, "CS " + ConsoleSegmentRegisterString(cpu.CS));
@@ -255,12 +255,12 @@ namespace YCPUXNA
             ConsoleWrite(1, 3, ">");
             ConsoleWrite(2, 25, $"{cpu.Cycles} Cycles total");
 
-            ConsoleWrite(2, 27, "Ctrl-L: Load debug console program.");
-            ConsoleWrite(2, 28, "Ctrl-R: Run at 10 khz.");
-            ConsoleWrite(2, 29, "Ctrl-B: Break.");
-            ConsoleWrite(2, 30, "Ctrl-N: Run one instruction.");
-            ConsoleWrite(2, 31, "Ctrl-M: Run approximately 100 million cycles.");
-            ConsoleWrite(2, 32, "Ctrl-T: Reset interrupt.");
+            ConsoleWrite(2, 27, "Ctrl-L: Load debug console program");
+            ConsoleWrite(2, 28, "Ctrl-R: Run at 10 khz");
+            ConsoleWrite(2, 29, "Ctrl-B: Break");
+            ConsoleWrite(2, 30, "Ctrl-N: Run one instruction");
+            ConsoleWrite(2, 31, "Ctrl-M: Run approximately 100 million cycles");
+            ConsoleWrite(2, 32, "Ctrl-T: Reset interrupt");
 
             if (m_MS != 0)
                 ConsoleWrite(2, 34, m_MS.ToString());

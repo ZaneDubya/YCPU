@@ -147,9 +147,9 @@ namespace Ypsilon.Assembler
 
             List<ushort> code = state.Parser.AssembleALU(0x0088, param[0], param[1], opcodeFlag, state);
             if ((code[0] & 0xF000) == 0x1000) // no sto register - should lod r0, r1, not sto r0, r1
-                throw new Exception("Store register instructions not supported.");
+                throw new Exception("Store register instructions not supported");
             if ((code[0] & 0xFE00) == 0x0000) // no sto immediate.
-                throw new Exception("Store immediate instructions not supported.");
+                throw new Exception("Store immediate instructions not supported");
             return code;
         }
         #endregion
@@ -522,11 +522,11 @@ namespace Ypsilon.Assembler
                     // special case: alu.8 immediate with value greater than $FF should raise a warning...
                     if (opcodeFlag == OpcodeFlag.BitWidth8 && p2.ImmediateWordShort >= 256)
                     {
-                        throw new Exception("8-bit load operation with an immediate value of greater than 8 bits.");
+                        throw new Exception("8-bit load operation with an immediate value of greater than 8 bits");
                     }
                     addressingmode = 0x0000;
                     if (p2.UsesExtraDataSegment)
-                        throw new Exception("Immediate addressing mode cannot use extra data segment.");
+                        throw new Exception("Immediate addressing mode cannot use extra data segment");
                     break;
                 case AddressingMode.Absolute:
                     // s000 001e               Absolute            LOD R0, [$1234]     +2m
@@ -538,9 +538,9 @@ namespace Ypsilon.Assembler
                     // .000 1ppp               Control register    LOD R0, PS             
                     // can't use eightbit mode with proc regs...
                     if (opcodeFlag.HasFlag(OpcodeFlag.BitWidth8))
-                        throw new Exception("ALU instructions with status register operands do not support 8-bit mode.");
+                        throw new Exception("ALU instructions with status register operands do not support 8-bit mode");
                     if (p2.UsesExtraDataSegment)
-                        throw new Exception("Control register addressing mode cannot use extra data segment.");
+                        throw new Exception("Control register addressing mode cannot use extra data segment");
                     addressingmode = (ushort)(0x0800 | ((p2.RegisterIndex & 0x0007) << 8));
                     p2.RegisterIndex = 0; // must wipe out control register index, as it is used later in this subroutine.
                     break;
@@ -548,7 +548,7 @@ namespace Ypsilon.Assembler
                     // .001 rrre               Register            LOD R0, r1            
                     addressingmode = 0x1000;
                     if (p2.UsesExtraDataSegment)
-                        throw new Exception("Register addressing mode cannot use extra data segment.");
+                        throw new Exception("Register addressing mode cannot use extra data segment");
                     break;
                 case AddressingMode.Indirect:
                     // s010 rrre               Indirect            LOD R0, [r1]        +1m
@@ -570,7 +570,7 @@ namespace Ypsilon.Assembler
                         addressingmode |= 0x8000;
                     break;
                 default:
-                    throw new Exception("Unknown addressing mode.");
+                    throw new Exception("Unknown addressing mode");
             }
 
             ushort bitwidth = 0x0000;
@@ -676,7 +676,7 @@ namespace Ypsilon.Assembler
                         v = true;
                         break;
                     default:
-                        throw new Exception("FLG instruction with non-existing flag.");
+                        throw new Exception("FLG instruction with non-existing flag");
                 }
             }
 
@@ -743,12 +743,12 @@ namespace Ypsilon.Assembler
                 ((opcode & 0x0100) == 0x0100))
             {
                 if (p2 == null)
-                    throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit.");
+                    throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit");
             }
             else
             {
                 if (p2 != null)
-                    throw new Exception("Only far jumps in immediate mode can have more than one parameter.");
+                    throw new Exception("Only far jumps in immediate mode can have more than one parameter");
             }
 
 
@@ -759,7 +759,7 @@ namespace Ypsilon.Assembler
                     return null;
                 case AddressingMode.Immediate:
                     if (p2 != null && p2.AddressingMode != AddressingMode.ImmediateBig)
-                        throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit.");
+                        throw new Exception("Immediate far jumps require two immedate parameters. The first should be 16-bit, the second, 32-bit");
                     addressingmode = 0x0000;
                     break;
                 case AddressingMode.Absolute:
@@ -787,7 +787,7 @@ namespace Ypsilon.Assembler
                         addressingmode |= 0x8000;
                     break;
                 default:
-                    throw new Exception("Addressing mode not usable with this instruction.");
+                    throw new Exception("Addressing mode not usable with this instruction");
             }
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | addressingmode | ((p1.RegisterIndex & 0x0007) << 9)));
@@ -805,9 +805,9 @@ namespace Ypsilon.Assembler
             if (p2 != null)
             {
                 if (p1.AddressingMode != AddressingMode.Immediate)
-                    throw new Exception("Only immediate far jumps can have a second operand.");
+                    throw new Exception("Only immediate far jumps can have a second operand");
                 if (p2.AddressingMode != AddressingMode.ImmediateBig)
-                    throw new Exception("The second operand in an immediate far jump must be 32-bit.");
+                    throw new Exception("The second operand in an immediate far jump must be 32-bit");
                 m_Code.Add((ushort)(p2.ImmediateWordLong & 0x0000ffff));
                 m_Code.Add((ushort)((p2.ImmediateWordLong & 0xffff0000) >> 16));
             }
@@ -820,7 +820,7 @@ namespace Ypsilon.Assembler
             Param p1 = ParseParam(param1);
 
             if (p1 == null || p1.AddressingMode != AddressingMode.SegmentRegister)
-                throw new Exception("Parameter of MMU instructions must be a single segment register.");
+                throw new Exception("Parameter of MMU instructions must be a single segment register");
 
             // Bit pattern is:
             // FEDC BA98 7654 3210
@@ -849,7 +849,7 @@ namespace Ypsilon.Assembler
             bool valueIsAllowed = TryGetSETValue(p2, out value, out alternateValueBit);
 
             if (!valueIsAllowed)
-                throw new Exception($"SET instruction with invalid value parameter: {p2.ImmediateWordShort}.");
+                throw new Exception($"SET instruction with invalid value parameter: {p2.ImmediateWordShort}");
 
             m_Code.Clear();
             m_Code.Add((ushort)(opcode | alternateValueBit | (value << 8) | ((p1.RegisterIndex & 0x0007) << 13)));
@@ -975,7 +975,7 @@ namespace Ypsilon.Assembler
                 Param op = ParseParam(p);
                 if (op == null || 
                     ((op.AddressingMode != AddressingMode.Register) && (op.AddressingMode != AddressingMode.ControlRegister)))
-                    throw new Exception($"STK operation with unknown register '{p}'.");
+                    throw new Exception($"STK operation with unknown register '{p}'");
                 if (op.AddressingMode == AddressingMode.Register)
                 {
                     flags0 |= (ushort)(1 << (op.RegisterIndex + 8));
@@ -1021,7 +1021,7 @@ namespace Ypsilon.Assembler
                     flag_type = 0x0003;
                     break;
                 default:
-                    throw new Exception("Bad SWO flag.");
+                    throw new Exception("Bad SWO flag");
             }
 
             if (p1.AddressingMode != AddressingMode.Register)

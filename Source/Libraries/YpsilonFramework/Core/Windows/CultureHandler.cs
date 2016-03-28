@@ -34,7 +34,7 @@ namespace Ypsilon.Core.Windows
         {
             Encoding encoding = Encoding.GetEncoding((int)NativeMethods.GetCurrentCodePage());
 
-            // Tracer.Debug("Keyboard: Using encoding {0} (Code page {1}).", encoding.EncodingName, encoding.CodePage);
+            // Tracer.Debug("Keyboard: Using encoding {0} (Code page {1})", encoding.EncodingName, encoding.CodePage);
 
             return encoding;
         }

@@ -65,7 +65,7 @@ namespace Ypsilon.Assembler
                     }
                     else
                     {
-                        throw new Exception("Illegal placement of backslash character.");
+                        throw new Exception("Illegal placement of backslash character");
                     }
                 }
                 else if (c == ',')
@@ -131,12 +131,12 @@ namespace Ypsilon.Assembler
                                     }
                                     else
                                     {
-                                        throw new Exception(x0 + x1 + " is not a hexidecimal character.");
+                                        throw new Exception(x0 + x1 + " is not a hexidecimal character");
                                     }
                                 }
                                 else
                                 {
-                                    throw new Exception("Insufficient line length to hold anticipated hex char.");
+                                    throw new Exception("Insufficient line length to hold anticipated hex char");
                                 }
                                 break;
                             default:
@@ -245,7 +245,7 @@ namespace Ypsilon.Assembler
                     {
                         val = Convert.ToUInt32(valField.Substring(1, valField.Length - 1), 16);
                     }
-                    else if (valField.Substring(0, 2) == "0x")
+                    else if (valField.Length >= 2 && valField.Substring(0, 2) == "0x")
                     {
                         val = Convert.ToUInt32(valField.Substring(2, valField.Length - 2), 16);
                     }
@@ -262,12 +262,12 @@ namespace Ypsilon.Assembler
                     {
                         case DataFieldTypes.Int8:
                             if (val > byte.MaxValue)
-                                throw new Exception($"Included byte value '{field}' cannot be expressed in an 8-bit value.");
+                                throw new Exception($"Included byte value '{field}' cannot be expressed in an 8-bit value");
                             state.Code.Add((byte)val);
                             break;
                         case DataFieldTypes.Int16:
                             if (val > ushort.MaxValue)
-                                throw new Exception($"Included ushort value '{field}' cannot be expressed in a 16-bit value.");
+                                throw new Exception($"Included ushort value '{field}' cannot be expressed in a 16-bit value");
                             state.Code.Add((byte)((ushort)val & 0x00ff));
                             state.Code.Add((byte)((ushort)(val & 0xff00) >> 8));
                             break;

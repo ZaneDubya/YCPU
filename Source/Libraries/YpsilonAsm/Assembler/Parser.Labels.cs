@@ -18,7 +18,7 @@ namespace Ypsilon.Assembler
             string labelName = line.Substring(0, colonPos);
 
             if (!state.Scopes.AddLabel(labelName.Trim().ToLowerInvariant(), state.Code.Count))
-                throw new Exception($"Error adding label '{labelName}'.");
+                throw new Exception($"Error adding label '{labelName}'");
             return colonPos + 1;
         }
     }

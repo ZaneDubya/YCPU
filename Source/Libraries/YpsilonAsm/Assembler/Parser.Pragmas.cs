@@ -36,19 +36,19 @@ namespace Ypsilon.Assembler
                 {
                     int value;
                     if (tokens.Count != 3)
-                        throw new Exception("alias pragma takes two parameters.");
+                        throw new Exception("alias pragma takes two parameters");
                     string alias = tokens[1];
                     if (!char.IsLetter(alias[0]))
-                        throw new Exception("alias must begin with a letter.");
+                        throw new Exception("alias must begin with a letter");
                     if (alias.Any(t => !char.IsLetterOrDigit(t)))
-                        throw new Exception("alias must be composed of letters and digits.");
+                        throw new Exception("alias must be composed of letters and digits");
 
                     tokens[2] = tokens[2].Replace("$", "0x");
                     object convertFromString = new Int32Converter().ConvertFromString(tokens[2]);
                     if (convertFromString != null)
                         value = (int)convertFromString;
                     else
-                        throw new Exception("alias pragma - ushort parameter must be an unsigned 16-bit integer.");
+                        throw new Exception("alias pragma - ushort parameter must be an unsigned 16-bit integer");
 
                     Scopes.Scope scope = state.Scopes.GetLastOpenScope();
                     scope.AddAlias(alias, (ushort)value);
@@ -59,11 +59,11 @@ namespace Ypsilon.Assembler
                 {
                     int value;
                     if (tokens.Count != 2)
-                        throw new Exception("alignglobals pragma takes a single parameter.");
+                        throw new Exception("alignglobals pragma takes a single parameter");
                     if (!int.TryParse(tokens[1], out value))
-                        throw new Exception("alignglobals pragma parameter must be an integer.");
+                        throw new Exception("alignglobals pragma parameter must be an integer");
                     if (value < 1 || value > 4)
-                        throw new Exception("alignglobals pragma parameter must be an integer between 1 and 4.");
+                        throw new Exception("alignglobals pragma parameter must be an integer between 1 and 4");
                     m_Alignment = value;
                     return true;
                 }

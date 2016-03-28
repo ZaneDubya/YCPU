@@ -54,7 +54,7 @@ namespace Ypsilon.Assembler
                     }
                     catch (Exception ex)
                     {
-                        AddMessageLine($"Line {m_CurrentLine}: {ex.Message}.");
+                        AddMessageLine($"Line {m_CurrentLine} ({m_Lines[m_CurrentLine].Trim()}): {ex.Message}");
                         ErrorLine = m_CurrentLine;
                         return null;
                     }
@@ -65,7 +65,7 @@ namespace Ypsilon.Assembler
             Scopes.Scope openScope;
             if (state.Scopes.TryGetOpenScope(out openScope))
             {
-                AddMessageLine($"Unclosed scope beginning at line {openScope.StartLine}.");
+                AddMessageLine($"Unclosed scope beginning at line {openScope.StartLine}");
                 ErrorLine = openScope.StartLine;
                 return null;
             }
@@ -144,7 +144,7 @@ namespace Ypsilon.Assembler
                 // opcode has a flag
                 string flag = opcode.Substring(opcode.IndexOf('.') + 1);
                 if (!ParseOpcodeFlag(flag, ref opcodeFlag))
-                    throw new Exception($"Unknown bit width flag '{flag}' for instruction '{line}'.");
+                    throw new Exception($"Unknown bit width flag '{flag}' for instruction '{line}'");
                 opcode = opcode.Substring(0, opcode.IndexOf('.'));
             }
 
@@ -156,7 +156,7 @@ namespace Ypsilon.Assembler
             }
             else
             {
-                throw new Exception($"Undefined command in line {line}");
+                throw new Exception($"Undefined instruction in line \"{line}\"");
             }
 
             // get the parameters

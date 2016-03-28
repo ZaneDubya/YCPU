@@ -78,7 +78,7 @@ namespace Ypsilon.Assembler
                         ushort reg_a = m_Registers[param0];
                         ushort reg_b = m_Registers[param1];
                         if (reg_a < 4 && reg_b < 4)
-                            throw new Exception("With indirect offset addressing, at least one register must be r4-r7.");
+                            throw new Exception("With indirect offset addressing, at least one register must be r4-r7");
                         if ((reg_b < reg_a) && (reg_b < 4))
                         {
                             ushort tmp = reg_a;
@@ -144,7 +144,7 @@ namespace Ypsilon.Assembler
                         break;
                     default:
                         throw new Exception(
-                            $"Cannot parse {originalParam}: use of extended segment not allowed with this addressing mode.");
+                            $"Cannot parse {originalParam}: use of extended segment not allowed with this addressing mode");
                 }
             }
 
