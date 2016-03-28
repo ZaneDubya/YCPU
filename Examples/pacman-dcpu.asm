@@ -26,12 +26,6 @@
 .alias  ghost4              $0050
 .alias  deathFrames         $0060 ; 8 x 16bit addresses.
 
-munchFrames:
-  .dat16 0x0300, 0x0320, 0x0328, 0x0330, 0x0328, 0x0320
-  .dat16 0x0300, 0x0308, 0x0310, 0x0318, 0x0310, 0x0308
-  .dat16 0x0300, 0x0338, 0x0340, 0x0348, 0x0340, 0x0338
-  .dat16 0x0300, 0x0350, 0x0358, 0x0360, 0x0358, 0x0350
-
 Reset:
   jsr init
   
@@ -71,10 +65,6 @@ completeLevel_Loop:
   jsr wipe                  ; jsr wipe
   jsr startNewLevel         ; jsr startNewLevel
   rts                       ; set pc,pop
-  
-
-
-
 
 init:
   jsr setDeathFrames
@@ -116,41 +106,19 @@ setDeathFrames:
   rts                           ; set pc,pop
 
 animate:
-   add [currentFrame],1
-   ifg [currentFrame],5
-   set [currentFrame],0
-
-   set a,[currentFrame]
-   set b,[Direction]
-   sub b,1
-   mul b,6
-   add a,b
-   set [0x9051],[munchFrames+a]
-
-   ;ifg [fear],0
-   ;set pc,fraidyghosts
-
-   ;set [0x9053],0x0368
-   ;set [0x9055],0x0370
-   ;set [0x9057],0x0378
-   ;set [0x9059],0x0380
-
-   rts                     ; set pc,pop
-fraidyghosts:
-   sub [fear],1
-   set a,blueghost          ; set a,blueghost
-   set b,[fear]
-   and b,2
-   ifg [fear],14  
-   set b,0
-   ife b,2
-   set a,whiteghost         ; set a,whiteghost
-   set [0x9053],a
-   set [0x9055],a
-   set [0x9057],a
-   set [0x9059],a
-   rts                     ; set pc,pop
-
+  lod a, [currentFrame]         ; add [currentFrame],1
+  adi a, 1
+  cmp a, 6                      ; ifg [currentFrame],5
+  bne displayPlayer
+  lod a, 0                      ; set [currentFrame],0
+displayPlayer:                  ; set a,[currentFrame] (a is already currentFrame)
+  sto a, [currentFrame]         
+  lod b, [Direction]            ; set b,[Direction]
+  sub b, 1                      ; sub b,1
+  mul b, 6                      ; mul b,6
+  add a, b                      ; add a,b
+  add a, munchFrames            ; set [0x9051],[munchFrames+a]
+  sto a, [0x9051]
 
 fraidyghost:
    sub [i+6],1
@@ -213,7 +181,7 @@ deathAction:
   sto a, [deathAge]
   sub a, 10                         ; sub a,10
   bcc hideGhosts                    ; ifn O,0
-  rts                     ; set pc,pop
+  rts                               ; set pc,pop
 
 hideGhosts:
   ;hide ghosts
@@ -1022,5 +990,11 @@ death7:
 .dat16 0x0E00, 0x0E00
 .dat16 0xE00E, 0x00E0
 .dat16 0x0000, 0x0000
+
+munchFrames:
+  .dat16 0x0300, 0x0320, 0x0328, 0x0330, 0x0328, 0x0320
+  .dat16 0x0300, 0x0308, 0x0310, 0x0318, 0x0310, 0x0308
+  .dat16 0x0300, 0x0338, 0x0340, 0x0348, 0x0340, 0x0338
+  .dat16 0x0300, 0x0350, 0x0358, 0x0360, 0x0358, 0x0350
 
 ; sprites end
