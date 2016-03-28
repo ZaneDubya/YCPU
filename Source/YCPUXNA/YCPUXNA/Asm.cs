@@ -6,48 +6,46 @@ namespace YCPUXNA
 {
     internal class Asm
     {
-        private const string errArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
-        private const string errParam = "yasm: Unknown parameter: {0}";
-        private const string errEmptyInput = "yasm: Input assembly file does not exist or is empty";
-        private const string errAssembling = "yasm: Error assembling input file: {0}";
-        private const string errWritingOutput = "yasm: Error writing machine code. Press any key to exit";
-        private const string descAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
-        private const string descSuccess = "yasm: Input file successfully assembled";
-        private const string descFileWrittenPressKey = "yasm: File written. Press any key to exit";
+        private const string c_ErrArguments = "yasm: Incorrect argument format. Stop.\n    {0}";
+        private const string c_ErrParam = "yasm: Unknown parameter: {0}";
+        private const string c_ErrEmptyInput = "yasm: Input assembly file does not exist or is empty";
+        private const string c_ErrAssembling = "yasm: Error assembling input file: {0}";
+        private const string c_ErrWritingOutput = "yasm: Error writing machine code";
+        private const string c_DescAssembler = "yasm: Assembles assembly code into binary code for YCPU.\n    in:  {0}\n    out: {1}";
+        private const string c_DescSuccess = "yasm: Input file successfully assembled";
+        private const string c_DescFileWrittenPressKey = "yasm: File written";
 
         public void AssembleFromArgs(string[] args)
         {
             string inPath, outPath, error;
             string[] options;
 
-            if (!tryReadArguments(args, out inPath, out outPath, out options, out error))
+            if (!TryReadArguments(args, out inPath, out outPath, out options, out error))
             {
-                StdConsole.StdOutWriteLine(string.Format(errArguments, error));
+                StdConsole.StdOutWriteLine(string.Format(c_ErrArguments, error));
                 return;
             }
 
-            StdConsole.StdOutWriteLine(string.Format(descAssembler, inPath, outPath));
+            StdConsole.StdOutWriteLine(string.Format(c_DescAssembler, inPath, outPath));
 
             List<byte> machineCode;
             string errorMessage;
 
             if (TryAssemble(inPath, out machineCode, out errorMessage))
             {
-                StdConsole.StdOutWriteLine(descSuccess);
+                StdConsole.StdOutWriteLine(c_DescSuccess);
                 if (TryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
-                    StdConsole.StdOutWriteLine(descFileWrittenPressKey);
+                    StdConsole.StdOutWriteLine(c_DescFileWrittenPressKey);
                 else
-                    StdConsole.StdOutWriteLine(errWritingOutput);
+                    StdConsole.StdOutWriteLine(c_ErrWritingOutput);
             }
             else
             {
-                StdConsole.StdOutWriteLine(string.Format(errAssembling, errorMessage));
+                StdConsole.StdOutWriteLine(string.Format(c_ErrAssembling, errorMessage));
             }
-
-            StdConsole.StdInReadKey();
         }
 
-        private bool tryReadArguments(string[] args, out string inPath, out string outPath, out string[] options, out string error)
+        private bool TryReadArguments(string[] args, out string inPath, out string outPath, out string[] options, out string error)
         {
             inPath = null;
             outPath = null;
@@ -73,7 +71,7 @@ namespace YCPUXNA
                         outPath = args[i];
                     else
                     {
-                        error = string.Format(errParam, args[i]);
+                        error = string.Format(c_ErrParam, args[i]);
                         return false;
                     }
                 }
@@ -114,7 +112,7 @@ namespace YCPUXNA
             string asmFileContents = getFileContents(pathToAsmFile);
             if (asmFileContents == null)
             {
-                errorMessage = errEmptyInput;
+                errorMessage = c_ErrEmptyInput;
                 return false;
             }
 
