@@ -2,7 +2,7 @@
 using Ypsilon.Core.Graphics;
 using Ypsilon.Emulation;
 
-namespace YCPUXNA.Providers
+namespace Ypsilon.Providers
 {
     public class DisplayProvider : IDisplayProvider
     {
@@ -47,66 +47,77 @@ namespace YCPUXNA.Providers
 
             if (doSprites)
             {
-                uint oamByte0 = 0x0E00;
-                uint oamByte1 = 0x0E10;
-                uint oamByte2 = 0x0E20;
-                uint oamByte3 = 0x0E30;
+                const uint oamByte0 = 0x0E00;
+                const uint oamByte1 = 0x0E10;
+                const uint oamByte2 = 0x0E20;
+                const uint oamByte3 = 0x0E30;
 
                 for (int oam = 0; oam < 16; oam++)
                 {
+                    const int width = 8, height = 8;
+
                     int y = devicemem[oamByte0 + oam];
-                    int baseSprite = 0x8000 + devicemem[oamByte1 + oam] * 32;
                     int attr = devicemem[oamByte2 + oam];
                     int x = devicemem[oamByte3 + oam];
-                    int width = 8, height = 8;
+                    bool highnibble = false;
+
                     bool hflip = (attr & 0x01) != 0;
                     bool vflip = (attr & 0x02) != 0;
 
-                    for (int iy = 0; iy < 8; iy++)
+                    for (int iy = 0; iy < height; iy++)
                     {
-                        int cy = iy + y;
+                        int screeny = iy + y;
 
                         // Y clipping
-                        if (cy < 0 || cy >= 127)
+                        if (screeny < 0 || screeny >= 96)
                             continue;
 
-                        int spritey = vflip ? (7 - iy) : iy;
-
-                        int baseInc = 1;
+                        int baseSprite = 0x8000 + devicemem[oamByte1 + oam] * 32 + (vflip ?(7 - iy) * (width / 2) : iy * (width / 2));
+                        int xInc = 1;
                         if (hflip)
                         {
-                            baseSprite += (width / 8) - 1;
-                            baseInc = -baseInc;
+                            baseSprite += (width / 2) - 1;
+                            xInc = -xInc;
+                            highnibble = true;
                         }
 
-                        // if ((attr0 & (1 << 13)) != 0)
-                        // always 32bit color, always blend
-                        for (int i = x; i < x + width; i++)
+                        for (int screenx = x; screenx < x + width; screenx++)
                         {
-                            if ((i & 0x1ff) < width && (m_ScanLineWindows[i & 0x1ff] & sprites_in_window) != 0)
+                            // X clipping
+                            if (screenx >= 0 && screenx < 128)
                             {
-                                int tx = (i - x) & 7;
-                                if (hflip)
-                                    tx = 7 - tx;
-                                int curIdx = baseSprite * 64 + ((spritey & 7) * 8) + tx;
-                                uint pixel = tileram[curIdx];
-                                // blend the pixel (if necessary) and write it the scanline.
-                                uint alpha = pixel & 0xFF000000;
-                                if (alpha == 0xFF000000)
+                                int sprdata = devicemem[baseSprite];
+                                int color = (highnibble) ? sprdata >> 4 : sprdata & 0x0f;
+                                //if (color != 0)
                                 {
-                                    m_ScanLinePixels[(i & 0x1ff)] = pixel;
-                                }
-                                else if (alpha != 0)
-                                {
-                                    alpha = alpha >> 24;
-                                    uint colora = m_ScanLinePixels[i]; // get the existing pixel
-                                    uint rb = ((0x100 - alpha) * (colora & 0x00FF00FF)) + (alpha * (pixel & 0x00FF00FF));
-                                    uint g = ((0x100 - alpha) * (colora & 0x0000FF00)) + (alpha * (pixel & 0x0000FF00));
-                                    m_ScanLinePixels[(i & 0x1ff)] = 0xFF000000 | (((rb & 0xFF00FF00) + (g & 0x00FF0000)) >> 8);
+                                    m_LEMData[screeny * 128 + screenx] = pal[color];
                                 }
                             }
-                            if (((i - x) & 7) == 7)
-                                baseSprite += baseInc;
+
+                            if (hflip)
+                            {
+                                if (highnibble)
+                                {
+                                    highnibble = false;
+                                }
+                                else
+                                {
+                                    highnibble = true;
+                                    baseSprite += xInc;
+                                }
+                            }
+                            else
+                            {
+                                if (highnibble)
+                                {
+                                    highnibble = false;
+                                    baseSprite += xInc;
+                                }
+                                else
+                                {
+                                    highnibble = true;
+                                }
+                            }
                         }
                     }
                 }

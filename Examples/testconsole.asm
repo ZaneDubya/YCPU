@@ -189,13 +189,13 @@ Setup:
     pop     D
     
     ; set up devices
-    lod     A, $0001    ; set graphics adapter to LEM mode, select page 0
-    lod     B, $0002
-    lod     C, $0002
+    lod     A, $0001    ; set graphics adapter 
+    lod     B, $0002    ; to LEM plus mode (b=2)
+    lod     C, $0000    ; select page 0 and disable sprites (c=0)
     hwq     $02
-    lod     A, $0002    ; reset keyboard, press events only, translate ascii
-    lod     B, $0000
-    lod     C, $0006
+    lod     A, $0002    ; reset keyboard
+    lod     B, $0000    ; enable features:
+    lod     C, $0006    ; press events only, translate ascii
     hwq     $02
     
     ; set up segment registers. (See 2.F.1.)
