@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using YCPUXNA.Providers;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
 using Ypsilon.Emulation;
 using Ypsilon.Emulation.Processor;
+using Ypsilon.Providers;
 
 namespace YCPUXNA
 {

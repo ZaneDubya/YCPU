@@ -4,7 +4,7 @@ using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
 using Ypsilon.Emulation;
 
-namespace YCPUXNA.Providers
+namespace Ypsilon.Providers
 {
     /// <summary>
     /// This is a front end to Ypsilon.Core.Input.InputManager that provides messages to
