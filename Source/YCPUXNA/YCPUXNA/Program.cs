@@ -3,11 +3,9 @@ using Ypsilon;
 
 namespace YCPUXNA
 {
-    internal class Program
+    internal static class Program
     {
-        private static string[] s_DefaultArgs = { "-emu", "../Examples/testconsole.asm" };
-
-        private const string errNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
+        private const string c_ErrNoArguments = "YCPUXNA: No input specified. Select an option:\n" +
             "    1. Assemble default 'testconsole.asm' file.\n" + /* 2. Disassemble default 'testconsole.asm.bin' file.\n" + */
             "    2. Run emulator!\n    3. Run assembly tests.\n    4. Exit.";
 
@@ -15,77 +13,81 @@ namespace YCPUXNA
         private static void Main(string[] args)
         {
             StdConsole.ShowConsoleWindow();
+            StdConsole.Clear();
 
-            if (args.Length == 0)
+            while (true)
             {
-                StdConsole.StdOutWriteLine(errNoArguments);
-                bool waitForKey = true;
-                while (waitForKey)
+
+                if (args == null || args.Length == 0)
                 {
-                    ConsoleKeyInfo cki = StdConsole.StdInReadKey();
-                    switch (cki.KeyChar)
+                    StdConsole.StdOutWriteLine(c_ErrNoArguments);
+                    bool waitForKey = true;
+                    while (waitForKey)
                     {
-                        case '1':
+                        ConsoleKeyInfo cki = StdConsole.StdInReadKey();
+                        switch (cki.KeyChar)
+                        {
+                            case '1':
 #if DEBUG
-                            args = new string[] { "-asm", "../../Examples/testconsole.asm" };
+                                args = new string[] {"-asm", "../../Examples/pacman-dcpu.asm"};
 #else
-                            args = new[] { "-asm", "../Examples/testconsole.asm" };
+                                args = new[] { "-asm", "../Examples/testconsole.asm" };
 #endif
-                            waitForKey = false;
-                            break;
-                        /*case '2':
+                                waitForKey = false;
+                                break;
+                            /*case '2':
                             args = new string[] { "-disasm", "../Examples/testconsole.asm.bin" };
                             waitForKey = false;
                             break;*/
-                        case '2':
+                            case '2':
 #if DEBUG
-                            args = new string[] { "-emu", "../../Examples/testconsole.asm.bin" };
+                                args = new string[] {"-emu", "../../Examples/testconsole.asm.bin"};
 #else
-                            args = new[] { "-emu", "../Examples/testconsole.asm.bin" };
+                                args = new[] { "-emu", "../Examples/testconsole.asm.bin" };
 #endif
-                            waitForKey = false;
-                            break;
-                        case '3':
-                            args = new[] { "-test" };
-                            waitForKey = false;
-                            break;
-                        case '4':
-                            waitForKey = false;
-                            break;
+                                waitForKey = false;
+                                break;
+                            case '3':
+                                args = new[] {"-test"};
+                                waitForKey = false;
+                                break;
+                            case '4':
+                                StdConsole.HideConsoleWindow();
+                                return;
+                        }
                     }
                 }
-            }
-
-            if (args.Length > 0)
-            {
-                switch (args[0])
+                else if (args.Length > 0)
                 {
-                    case "-asm": // run assembler
-                        Asm asm = new Asm();
-                        asm.AssembleFromArgs(args);
-                        break;
-                    case "-disasm": // run disassembler
-                        Dsm disasm = new Dsm();
-                        disasm.TryDisassemble(args);
-                        break;
-                    case "-emu": // run emulator!
-                        StdConsole.StdOutWriteLine("Starting emulator...");
-                        Emu e = new Emu();
-                        e.SetArgs(args);
-                        StdConsole.HideConsoleWindow();
-                        e.Run();
-                        break;
-                    case "-test": // run assembly tests
-                        StdConsole.StdOutWriteLine(Tests.Run());
-                        StdConsole.StdInReadKey();
-                        break;
-                    default:
-                        // do nothing;
-                        break;
+                    switch (args[0])
+                    {
+                        case "-asm": // run assembler
+                            Asm asm = new Asm();
+                            asm.AssembleFromArgs(args);
+                            break;
+                        case "-disasm": // run disassembler
+                            Dsm disasm = new Dsm();
+                            disasm.TryDisassemble(args);
+                            break;
+                        case "-emu": // run emulator!
+                            StdConsole.StdOutWriteLine("Starting emulator...");
+                            Emu e = new Emu();
+                            e.SetArgs(args);
+                            StdConsole.HideConsoleWindow();
+                            e.Run();
+                            break;
+                        case "-test": // run assembly tests
+                            StdConsole.StdOutWriteLine(Tests.Run());
+                            StdConsole.StdInReadKey();
+                            break;
+                        default:
+                            // do nothing;
+                            break;
+                    }
+                    args = null;
+                    StdConsole.Clear();
                 }
             }
-
-            StdConsole.HideConsoleWindow();
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Ypsilon.Assembler
                     }
                     catch (Exception ex)
                     {
-                        AddMessageLine($"Line {m_CurrentLine}: {ex.Message}.");
+                        AddMessageLine($"Line {m_CurrentLine} ({m_Lines[m_CurrentLine].Trim()}): {ex.Message}.");
                         ErrorLine = m_CurrentLine;
                         return null;
                     }
@@ -156,7 +156,7 @@ namespace Ypsilon.Assembler
             }
             else
             {
-                throw new Exception($"Undefined command in line {line}");
+                throw new Exception($"Undefined instruction in line \"{line}\"");
             }
 
             // get the parameters

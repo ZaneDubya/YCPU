@@ -245,7 +245,7 @@ namespace Ypsilon.Assembler
                     {
                         val = Convert.ToUInt32(valField.Substring(1, valField.Length - 1), 16);
                     }
-                    else if (valField.Substring(0, 2) == "0x")
+                    else if (valField.Length >= 2 && valField.Substring(0, 2) == "0x")
                     {
                         val = Convert.ToUInt32(valField.Substring(2, valField.Length - 2), 16);
                     }

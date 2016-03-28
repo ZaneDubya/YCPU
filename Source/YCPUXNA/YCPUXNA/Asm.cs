@@ -34,7 +34,7 @@ namespace YCPUXNA
             if (TryAssemble(inPath, out machineCode, out errorMessage))
             {
                 StdConsole.StdOutWriteLine(descSuccess);
-                if (tryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
+                if (TryWriteMachineCode(machineCode, Path.GetDirectoryName(inPath), outPath))
                     StdConsole.StdOutWriteLine(descFileWrittenPressKey);
                 else
                     StdConsole.StdOutWriteLine(errWritingOutput);
@@ -95,18 +95,18 @@ namespace YCPUXNA
                 return null;
             }
 
-            string in_code = null;
+            string inCode;
             using (StreamReader sr = new StreamReader(in_path))
             {
-                in_code = sr.ReadToEnd().Trim();
+                inCode = sr.ReadToEnd().Trim();
             }
 
-            if (in_code == string.Empty)
+            if (inCode == string.Empty)
                 return null;
-            return in_code;
+            return inCode;
         }
 
-        public bool TryAssemble(string pathToAsmFile, out List<byte> machineCode, out string errorMessage)
+        private bool TryAssemble(string pathToAsmFile, out List<byte> machineCode, out string errorMessage)
         {
             machineCode = null;
             errorMessage = null;
@@ -130,7 +130,7 @@ namespace YCPUXNA
             return true;
         }
 
-        private bool tryWriteMachineCode(List<byte> machineCode, string directory, string filename)
+        private bool TryWriteMachineCode(IEnumerable<byte> machineCode, string directory, string filename)
         {
             // if filename is null or empty, default to "out.bin"
             filename = (filename == null || (filename.Trim() == string.Empty)) ?

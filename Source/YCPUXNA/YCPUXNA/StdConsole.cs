@@ -47,5 +47,10 @@ namespace YCPUXNA
 
         private const int SW_HIDE = 0;
         private const int SW_SHOW = 5;
+
+        public static void Clear()
+        {
+            Console.Clear();
+        }
     }
 }
