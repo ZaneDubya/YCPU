@@ -76,6 +76,7 @@
     <Compile Include="Providers\GraphicsProvider.cs" />
     <Compile Include="Providers\InputProvider.cs" />
     <Compile Include="Providers\YTexture.cs" />
+    <Compile Include="TitleSafe.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\BIOS8x14.png">

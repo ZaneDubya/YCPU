@@ -1,4 +1,5 @@
-﻿
+﻿using Microsoft.Xna.Framework;
+
 namespace Ypsilon.Core.Patterns.MVC
 {
     /// <summary>
@@ -6,14 +7,14 @@ namespace Ypsilon.Core.Patterns.MVC
     /// </summary>
     public abstract class AView
     {
-        protected AModel Model;
+        protected readonly AModel Model;
 
-        public AView(AModel parent_model)
+        public AView(AModel parentModel)
         {
-            Model = parent_model;
+            Model = parentModel;
         }
 
-        public virtual void Draw(float frameSeconds)
+        public virtual void Draw(Vector2 offset, float frameSeconds)
         {
 
         }
