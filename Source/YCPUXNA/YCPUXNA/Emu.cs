@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Ypsilon;
 using Ypsilon.Core.Graphics;
 using Ypsilon.Core.Input;
 using Ypsilon.Core.Windows;
@@ -70,7 +71,8 @@ namespace YCPUXNA
             m_InputProvider = new InputProvider(m_InputManager);
             m_DisplayProvider = new DisplayProvider(m_SpriteBatch);
 
-            m_Emulator = new Emulator(m_DisplayProvider, m_InputProvider);
+            m_Emulator = new Emulator();
+            m_Emulator.Initialize(m_DisplayProvider, m_InputProvider);
             m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont, true);
 
             m_Graphics.PreferredBackBufferWidth = c_WindowW * 2;
@@ -98,7 +100,7 @@ namespace YCPUXNA
             m_InputManager.Update(totalSeconds, frameSeconds);
             m_InputProvider.Update(totalSeconds, frameSeconds);
 
-            UpdateEmulator(gameTime.ElapsedGameTime.TotalMilliseconds);
+            UpdateEmulator((float)gameTime.ElapsedGameTime.TotalMilliseconds);
 
             base.Update(gameTime);
         }
@@ -159,7 +161,7 @@ namespace YCPUXNA
             }
         }
 
-        private void UpdateEmulator(double frameMS)
+        private void UpdateEmulator(float frameMS)
         {
             m_LastConsoleUpdate += frameMS;
             if (m_LastConsoleUpdate > c_ConsoleUpdateMS)
@@ -174,11 +176,11 @@ namespace YCPUXNA
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.R, false, false, true))
             {
-                m_Emulator.StartCPU();
+                m_Emulator.Start();
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.B, false, false, true))
             {
-                m_Emulator.StopCPU();
+                m_Emulator.Stop();
             }
             else if (m_InputProvider.HandleKeyboardEvent(KeyboardEvent.Press, WinKeys.N, false, false, true))
             {

@@ -6,7 +6,7 @@ using Ypsilon.Emulation.Processor;
 
 namespace Ypsilon.Emulation
 {
-    public class Emulator
+    public class Emulator : IEmulator
     {
         public YCPU CPU
         {
@@ -15,7 +15,7 @@ namespace Ypsilon.Emulation
 
         private bool m_Running;
 
-        public Emulator(IDisplayProvider display, IInputProvider input)
+        public Emulator()
         {
             CPU = new YCPU();
             CPU.BUS.Reset();
@@ -23,18 +23,33 @@ namespace Ypsilon.Emulation
             CPU.BUS.AddDevice(new KeyboardDevice(CPU.BUS), 2);
             CPU.BUS.SetRAM(0x20000);
             CPU.BUS.SetROM(0x04000);
-            CPU.BUS.SetProviders(display, input);
             CPU.Interrupt_Reset();
         }
 
-        public void Update(double frameMS)
+        public void Initialize(IDisplayProvider display, IInputProvider input)
         {
-            if (m_Running)
-            {
-                CPU.Run((int)(YCPU.ClockRateHz * (frameMS / 1000d)));
-                CPU.BUS.Update();
-            }
-            
+            CPU.BUS.SetProviders(display, input);
+        }
+
+        public void Start()
+        {
+            Stop();
+            m_Running = true;
+        }
+
+        public void Stop()
+        {
+            if (CPU.Running)
+                CPU.Pause();
+            m_Running = false;
+        }
+
+        public void Update(float frameMS)
+        {
+            if (!m_Running)
+                return;
+            CPU.Run((int)(YCPU.ClockRateHz * (frameMS / 1000d)));
+            CPU.BUS.Update();
         }
 
         public void Draw(List<ITexture> textures)
@@ -42,44 +57,21 @@ namespace Ypsilon.Emulation
             CPU.BUS.Display(textures);
         }
 
-        public void RunCPU(int cycles)
-        {
-            StopCPU();
-            m_Running = true;
-            CPU.Run(cycles);
-            StopCPU();
-        }
-
         public void RunOneInstruction()
         {
-            StopCPU();
+            Stop();
             CPU.RunOneInstruction();
         }
 
         public void RunCycles(int cycleCount)
         {
-            StopCPU();
+            Stop();
             CPU.Run(cycleCount);
-        }
-
-        public void StartCPU()
-        {
-            StopCPU();
-            m_Running = true;
-        }
-
-        public void StopCPU()
-        {
-            if (CPU.Running)
-            {
-                CPU.Pause();
-            }
-            m_Running = false;
         }
 
         public void LoadBinaryToROM(string path)
         {
-            StopCPU();
+            Stop();
 
             byte[] data = getBytesFromFile(path);
             if (data != null)
