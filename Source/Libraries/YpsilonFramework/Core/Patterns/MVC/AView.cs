@@ -14,7 +14,6 @@ namespace Ypsilon.Core.Patterns.MVC
             Model = parentModel;
         }
 
-        public virtual void Draw(Vector2 offset, float frameSeconds)
         {
 
         }
