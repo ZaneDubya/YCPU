@@ -15,16 +15,13 @@
     
     HWQ $02 Message is used for Mode Selection. See 'Mode Selection' below.
     
-    If bit 15 of R1 is clear, set adapter state based on R1. Other options may
-    be defined in R2. See 'Mode Selection' below. Following the hardware query,
-    R0 is set as follows:
+    The output mode of the adapter is set based on R1, with aditional parameters
+    in R2. For more information, see 'Mode Selection' below. Following the
+    hardware query, R0 is set as follows:
                 
         $0000   ERROR_NOT_VALID  Mode in R1 was not a valid mode.
         $0001   MSG_ACK          Mode set based on R1.
         $FFFF   ERROR_BROKEN     Display failure, broken, no output.
-        
-    If bit 15 of R1 is set, the adapter will write 32 bytes of undefined values
-    to Data Segment at the address in R2.
     
     
 === Mode Selection =============================================================
