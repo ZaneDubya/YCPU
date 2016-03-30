@@ -7,16 +7,18 @@ namespace Ypsilon.Core.Graphics
 {
     public class Curses
     {
-        private Texture2D m_Texture;
-        private byte[] m_CharBuffer; // buffer of screen contents
+        private readonly Texture2D m_Texture;
+        private readonly byte[] m_CharBuffer; // buffer of screen contents
+        private readonly bool m_AdditionalHorizSpacingPixel;
 
-        public int ScreenWidth, ScreenHeight;
-        public int CharWidth, CharHeight;
-        private bool m_AdditionalHorizSpacingPixel;
+        public readonly int CharsWide;
+        public readonly int CharsHigh;
+        public readonly int OneCharWidth;
+        public readonly int OneCharHeight;
 
-        public int DisplayWidth => ScreenWidth * (CharWidth + (m_AdditionalHorizSpacingPixel ? 1 : 0));
+        public int DisplayWidth => CharsWide * (OneCharWidth + (m_AdditionalHorizSpacingPixel ? 1 : 0));
 
-        public int DisplayHeight => ScreenHeight * CharHeight;
+        public int DisplayHeight => CharsHigh * OneCharHeight;
 
         /*public Color[] Colors = new Color[16] {
             new Color(0, 0, 0),
@@ -42,13 +44,13 @@ namespace Ypsilon.Core.Graphics
         /// </summary>
         public Curses(GraphicsDevice graphics, int width, int height, string font, bool useHorizSpacingPixel)
         {
-            ScreenWidth = width;
-            ScreenHeight = height;
-            m_CharBuffer = new byte[ScreenWidth * ScreenHeight];
+            CharsWide = width;
+            CharsHigh = height;
+            m_CharBuffer = new byte[CharsWide * CharsHigh];
 
             m_Texture = Texture2D.FromStream(graphics, new FileStream(font, FileMode.Open));
-            CharWidth = m_Texture.Width / 16;
-            CharHeight = m_Texture.Height / 16;
+            OneCharWidth = m_Texture.Width / 16;
+            OneCharHeight = m_Texture.Height / 16;
             m_AdditionalHorizSpacingPixel = useHorizSpacingPixel;
         }
 
@@ -69,7 +71,7 @@ namespace Ypsilon.Core.Graphics
 
         public void WriteString(int x, int y, string s)
         {
-            int begin = y * ScreenWidth + x;
+            int begin = y * CharsWide + x;
             if (begin >= m_CharBuffer.Length)
                 return;
             if (begin + s.Length >= m_CharBuffer.Length)
@@ -112,19 +114,19 @@ namespace Ypsilon.Core.Graphics
 
                     if (breakHere)
                     {
-                        bool trailingSpace = (c == ' ') ? true : false;
+                        bool trailingSpace = (c == ' ');
                         int length = (i - last) + (trailingSpace ? 0 : 1);
-                        string word = s.Substring(last, length);
+                        // string word = s.Substring(last, length);
 
                         if (x0 + length > x + width)
                         {
                             x0 = x;
                             y0 += 1;
-                            if (y0 >= ScreenHeight)
+                            if (y0 >= CharsHigh)
                                 return;
                         }
 
-                        int begin = y0 * ScreenWidth + x0;
+                        int begin = y0 * CharsWide + x0;
                         for (int j = 0; j < length; j++)
                         {
                             m_CharBuffer[begin + j] = (byte)s[last + j];
@@ -154,55 +156,55 @@ namespace Ypsilon.Core.Graphics
                     break;
             }
 
-            m_CharBuffer[x + y * ScreenWidth] = deco[0];
-            m_CharBuffer[(x + w) + y * ScreenWidth] = deco[2];
-            m_CharBuffer[x + (y + h) * ScreenWidth] = deco[6];
-            m_CharBuffer[(x + w) + (y + h) * ScreenWidth] = deco[8];
+            m_CharBuffer[x + y * CharsWide] = deco[0];
+            m_CharBuffer[(x + w) + y * CharsWide] = deco[2];
+            m_CharBuffer[x + (y + h) * CharsWide] = deco[6];
+            m_CharBuffer[(x + w) + (y + h) * CharsWide] = deco[8];
 
             for (int i = 1; i < w; i++)
             {
-                m_CharBuffer[(x + i) + y * ScreenWidth] = deco[1];
-                m_CharBuffer[(x + i) + (y + h) * ScreenWidth] = deco[7];
+                m_CharBuffer[(x + i) + y * CharsWide] = deco[1];
+                m_CharBuffer[(x + i) + (y + h) * CharsWide] = deco[7];
             }
 
             for (int i = 1; i < h; i++)
             {
-                m_CharBuffer[(x) + (y + i) * ScreenWidth] = deco[3];
-                m_CharBuffer[(x + w) + (y + i) * ScreenWidth] = deco[5];
+                m_CharBuffer[(x) + (y + i) * CharsWide] = deco[3];
+                m_CharBuffer[(x + w) + (y + i) * CharsWide] = deco[5];
             }
         }
 
         public void Render(SpriteBatchExtended spriteBatch, Vector2 offset)
         {
-            float sixteenth = (1 / 16f);
+            const float sixteenth = (1 / 16f);
             float horizSpacer = m_AdditionalHorizSpacingPixel ? 1f : 0f;
 
-            for (int y = 0; y < ScreenHeight; y++)
+            for (int y = 0; y < CharsHigh; y++)
             {
-                for (int x = 0; x < ScreenWidth; x++)
+                for (int x = 0; x < CharsWide; x++)
                 {
-                    byte ch = m_CharBuffer[x + y * ScreenWidth];
+                    byte ch = m_CharBuffer[x + y * CharsWide];
                     if (ch == 0)
                         continue;
                     float u = (ch % 16) * sixteenth;
                     float v = (ch / 16) * sixteenth;
 
                     spriteBatch.DrawSprite(m_Texture,
-                        new Vector3(offset.X + x * (CharWidth + horizSpacer), offset.Y + y * CharHeight, 0),
-                        new Vector2(CharWidth, CharHeight),
+                        new Vector3(offset.X + x * (OneCharWidth + horizSpacer), offset.Y + y * OneCharHeight, 0),
+                        new Vector2(OneCharWidth, OneCharHeight),
                         new Vector4(u, v, u + sixteenth, v + sixteenth),
                         Color.LightGray);
                 }
             }
         }
 
-        private byte[] m_CurseDecorationDoubleLine = new byte[9] {
+        private readonly byte[] m_CurseDecorationDoubleLine = {
             0xC9, 0xCD, 0xBB,
             0xBA, 0x00, 0xBA,
             0xC8, 0xCD, 0xBC
         };
 
-        private byte[] m_CurseDecorationBlock = new byte[9] {
+        private readonly byte[] m_CurseDecorationBlock = {
             0xDB, 0xDB, 0xDB,
             0xDB, 0x00, 0xDB,
             0xDB, 0xDB, 0xDB

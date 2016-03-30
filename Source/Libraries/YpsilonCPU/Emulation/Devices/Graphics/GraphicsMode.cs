@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Ypsilon.Emulation.Devices.Graphics
 {
-    enum GraphicsMode
+    public enum GraphicsMode
     {
         None,
-        LEM180c,
+        LEM180C,
         LEM180Plus
     }
 }
