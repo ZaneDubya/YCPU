@@ -48,7 +48,10 @@ namespace Ypsilon.Core.Graphics
             CharsHigh = height;
             m_CharBuffer = new byte[CharsWide * CharsHigh];
 
-            m_Texture = Texture2D.FromStream(graphics, new FileStream(font, FileMode.Open));
+            using (FileStream fs = new FileStream(font, FileMode.Open))
+            {
+                m_Texture = Texture2D.FromStream(graphics, fs);
+            }
             OneCharWidth = m_Texture.Width / 16;
             OneCharHeight = m_Texture.Height / 16;
             m_AdditionalHorizSpacingPixel = useHorizSpacingPixel;
