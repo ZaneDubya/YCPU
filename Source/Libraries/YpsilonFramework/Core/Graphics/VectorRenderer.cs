@@ -120,6 +120,30 @@ namespace Ypsilon.Core.Graphics
             }
         }
 
+        /// <summary>
+        /// Draws the given tri list.
+        /// </summary>
+        public void DrawTris(Vector3[] polygon, ushort[] indexes, Matrix matrix, Color color)
+        {
+            if (polygon == null)
+                return;
+
+            int count = indexes.Length / 3;
+            for (int i = 0; i < count; i++)
+            {
+                if (m_WorldTris.Count >= c_MaxPrimitives)
+                    throw new Exception("Raster graphics count has exceeded limit");
+
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 0]], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 1]], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 2]], matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
+                m_WorldTris.Count++;
+            }
+        }
+
         public void Render(Matrix projection, Matrix view, Matrix world, Texture2D texture)
         {
             m_Graphics.BlendState = BlendState.AlphaBlend;
