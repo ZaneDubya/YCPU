@@ -55,29 +55,7 @@ namespace Ypsilon.Core.Graphics
         /// <summary>
         /// Draws the given poly line (wireframe).
         /// </summary>
-        public void DrawLines(Vector3[] polygon, Matrix matrix, Color color, bool closePolygon)
-        {
-            if (polygon == null)
-                return;
-
-            int length = polygon.Length - (closePolygon ? 0 : 1);
-            for (int i = 0; i < length; i++)
-            {
-                if (m_WorldLines.Count >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit");
-
-                m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[i % polygon.Length], matrix);
-                m_WorldLines.Vertices[m_WorldLines.Index++].Hue = color;
-                m_WorldLines.Vertices[m_WorldLines.Index].Position = Vector3.Transform(polygon[(i + 1) % polygon.Length], matrix);
-                m_WorldLines.Vertices[m_WorldLines.Index++].Hue = color;
-                m_WorldLines.Count++;
-            }
-        }
-
-        /// <summary>
-        /// Draws the given poly line (wireframe).
-        /// </summary>
-        public void DrawLines(VertexPositionTextureDataColor[] polygon, Vector3 translation, bool closePolygon)
+        public void DrawLines(VertexPositionTextureDataColor[] polygon, Matrix matrix, Color hue, bool closePolygon)
         {
             if (polygon == null)
                 return;
@@ -89,41 +67,48 @@ namespace Ypsilon.Core.Graphics
                     throw new Exception("Raster graphics count has exceeded limit");
 
                 m_WorldLines.Vertices[m_WorldLines.Index] = polygon[i % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index].Data = Vector4.Zero;
+                m_WorldLines.Vertices[m_WorldLines.Index].Hue = hue;
+                m_WorldLines.Vertices[m_WorldLines.Index++].Position += Vector3.Transform(polygon[i % polygon.Length].Position, matrix);
+                m_WorldLines.Vertices[m_WorldLines.Index] = polygon[(i + 1) % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index].Data = Vector4.Zero;
+                m_WorldLines.Vertices[m_WorldLines.Index].Hue = hue;
+                m_WorldLines.Vertices[m_WorldLines.Index++].Position += Vector3.Transform(polygon[(i + 1) % polygon.Length].Position, matrix);
+
+                m_WorldLines.Count++;
+            }
+        }
+
+        /// <summary>
+        /// Draws the given poly line (wireframe).
+        /// </summary>
+        public void DrawLines(VertexPositionTextureDataColor[] polygon, Vector3 translation, Color hue, bool closePolygon)
+        {
+            if (polygon == null)
+                return;
+
+            int length = polygon.Length - (closePolygon ? 0 : 1);
+            for (int i = 0; i < length; i++)
+            {
+                if (m_WorldLines.Count >= c_MaxPrimitives)
+                    throw new Exception("Raster graphics count has exceeded limit");
+
+                m_WorldLines.Vertices[m_WorldLines.Index] = polygon[i % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index].Data = Vector4.Zero;
+                m_WorldLines.Vertices[m_WorldLines.Index].Hue = hue;
                 m_WorldLines.Vertices[m_WorldLines.Index++].Position += translation;
                 m_WorldLines.Vertices[m_WorldLines.Index] = polygon[(i + 1) % polygon.Length];
+                m_WorldLines.Vertices[m_WorldLines.Index].Data = Vector4.Zero;
+                m_WorldLines.Vertices[m_WorldLines.Index].Hue = hue;
                 m_WorldLines.Vertices[m_WorldLines.Index++].Position += translation;
                 m_WorldLines.Count++;
             }
         }
 
         /// <summary>
-        /// Draws the given tri list.
+        /// Draws the given tri list. This can be massively optimized, I'm sure.
         /// </summary>
-        public void DrawTris(Vector3[] polygon, Matrix matrix, Color color)
-        {
-            if (polygon == null)
-                return;
-
-            int count = polygon.Length / 3;
-            for (int i = 0; i < count; i++)
-            {
-                if (m_WorldTris.Count >= c_MaxPrimitives)
-                    throw new Exception("Raster graphics count has exceeded limit");
-
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 1], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[i * 3 + 2], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
-                m_WorldTris.Count++;
-            }
-        }
-
-        /// <summary>
-        /// Draws the given tri list.
-        /// </summary>
-        public void DrawTris(Vector3[] polygon, ushort[] indexes, Matrix matrix, Color color)
+        public void DrawTris(VertexPositionTextureDataColor[] polygon, ushort[] indexes, Matrix matrix, Color color, Vector4 data)
         {
             if (polygon == null)
                 return;
@@ -134,12 +119,18 @@ namespace Ypsilon.Core.Graphics
                 if (m_WorldTris.Count >= c_MaxPrimitives)
                     throw new Exception("Raster graphics count has exceeded limit");
 
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 0]], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 1]], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index].Position = Vector3.Transform(polygon[indexes[i * 3 + 2]], matrix);
-                m_WorldTris.Vertices[m_WorldTris.Index++].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 0]];
+                m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 0]].Position, matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 1]];
+                m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 1]].Position, matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 2]];
+                m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
+                m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 2]].Position, matrix);
                 m_WorldTris.Count++;
             }
         }

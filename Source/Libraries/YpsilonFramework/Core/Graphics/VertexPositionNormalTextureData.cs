@@ -10,7 +10,7 @@ namespace Ypsilon.Core.Graphics
         public Vector4 Data;
         public Color Hue;
 
-        public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration
+        public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration
         (
             new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0), // position
             new VertexElement(sizeof(float) * 3, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0), // tex coord
