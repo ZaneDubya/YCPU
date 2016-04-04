@@ -19,5 +19,10 @@ namespace Ypsilon.Core.Graphics
                 return s_ZOffset;
             }
         }
+
+        public static void IncrementBy1000()
+        {
+            s_ZOffset.Z += 1000;
+        }
     }
 }
