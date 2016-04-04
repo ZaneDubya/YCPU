@@ -27,18 +27,7 @@ namespace Ypsilon.Core.Graphics
             m_TriIndices = CreateTriBuffer(c_MaxPrimitives);
         }
 
-        private short[] CreateLineBuffer(int primitiveCount)
-        {
-            short[] indices = new short[primitiveCount * 2];
-            for (int i = 0; i < primitiveCount; i++)
-            {
-                indices[i * 2] = (short)(i * 2);
-                indices[i * 2 + 1] = (short)(i * 2 + 1);
-            }
-            return indices;
-        }
-
-        private short[] CreateTriBuffer(int primitiveCount)
+        private static short[] CreateTriBuffer(int primitiveCount)
         {
             short[] indices = new short[primitiveCount * 3];
             for (int i = 0; i < primitiveCount; i++)
@@ -59,6 +48,7 @@ namespace Ypsilon.Core.Graphics
                 return;
 
             int count = indexes.Length / 3;
+            Vector3 z = Depth.NextZ;
             for (int i = 0; i < count; i++)
             {
                 if (m_WorldTris.Count >= c_MaxPrimitives)
@@ -67,15 +57,15 @@ namespace Ypsilon.Core.Graphics
                 m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 0]];
                 m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
                 m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 0]].Position, matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 0]].Position, matrix) + z;
                 m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 1]];
                 m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
                 m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 1]].Position, matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 1]].Position, matrix) + z;
                 m_WorldTris.Vertices[m_WorldTris.Index] = polygon[indexes[i * 3 + 2]];
                 m_WorldTris.Vertices[m_WorldTris.Index].Data = data;
                 m_WorldTris.Vertices[m_WorldTris.Index].Hue = color;
-                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 2]].Position, matrix);
+                m_WorldTris.Vertices[m_WorldTris.Index++].Position = Vector3.Transform(polygon[indexes[i * 3 + 2]].Position, matrix) + z;
                 m_WorldTris.Count++;
             }
         }

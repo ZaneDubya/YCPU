@@ -6,19 +6,16 @@ namespace Ypsilon.Core.Graphics
 {
     public class SpriteBatchExtended
     {
-        private Game m_Game;
+        public GraphicsDevice Graphics => m_GraphicsDevice;
+
+        private readonly Game m_Game;
         private GraphicsDevice m_GraphicsDevice;
         private Effect m_BasicEffect, m_CRTEffect;
         private Texture2D m_Pixel;
 
-        private Dictionary<Texture2D, List<VertexPositionTextureDataColor>> m_drawQueue;
-        private Queue<List<VertexPositionTextureDataColor>> m_vertexListQueue;
-        private short[] m_indexBuffer;
-
-        private Vector3 m_zOffset;
-        public float ZOffset { set { m_zOffset = new Vector3(0, 0, value); } }
-
-        public GraphicsDevice Graphics => m_GraphicsDevice;
+        private Dictionary<Texture2D, List<VertexPositionTextureDataColor>> m_DrawQueue;
+        private Queue<List<VertexPositionTextureDataColor>> m_VertexListQueue;
+        private short[] m_IndexBuffer;
 
         public SpriteBatchExtended(Game game)
         {
@@ -30,12 +27,12 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice = m_Game.GraphicsDevice;
             m_BasicEffect = m_Game.Content.Load<Effect>("BasicEffect");
             m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
-            m_drawQueue = new Dictionary<Texture2D, List<VertexPositionTextureDataColor>>(256);
-            m_indexBuffer = createIndexBuffer(0x2000);
-            m_vertexListQueue = new Queue<List<VertexPositionTextureDataColor>>(256);
+            m_DrawQueue = new Dictionary<Texture2D, List<VertexPositionTextureDataColor>>(256);
+            m_IndexBuffer = CreateIndexBuffer(0x2000);
+            m_VertexListQueue = new Queue<List<VertexPositionTextureDataColor>>(256);
         }
 
-        private short[] createIndexBuffer(int primitiveCount)
+        private static short[] CreateIndexBuffer(int primitiveCount)
         {
             short[] indices = new short[primitiveCount * 6];
 
@@ -88,10 +85,7 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice.SamplerStates[0] = sample;
             m_GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-            Texture2D iTexture;
-            List<VertexPositionTextureDataColor> iVertexList;
-
-            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_drawQueue.GetEnumerator();
+            IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_DrawQueue.GetEnumerator();
 
             fx.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(m_GraphicsDevice));
             fx.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
@@ -102,16 +96,15 @@ namespace Ypsilon.Core.Graphics
 
             while (keyValuePairs.MoveNext())
             {
-                iTexture = keyValuePairs.Current.Key;
-                iVertexList = keyValuePairs.Current.Value;
-                m_GraphicsDevice.Textures[0] = iTexture;
+                List<VertexPositionTextureDataColor> iVertexList = keyValuePairs.Current.Value;
+                m_GraphicsDevice.Textures[0] = keyValuePairs.Current.Key;
                 m_GraphicsDevice.DrawUserIndexedPrimitives(
-                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, m_indexBuffer, 0, iVertexList.Count / 2);
+                    PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, m_IndexBuffer, 0, iVertexList.Count / 2);
                 iVertexList.Clear();
-                m_vertexListQueue.Enqueue(iVertexList);
+                m_VertexListQueue.Enqueue(iVertexList);
             }
 
-            m_drawQueue.Clear();
+            m_DrawQueue.Clear();
             m_GraphicsDevice.Textures[0] = null;
         }
 
@@ -137,15 +130,15 @@ namespace Ypsilon.Core.Graphics
         {
             List<VertexPositionTextureDataColor> vertexList;
 
-            if (m_drawQueue.ContainsKey(texture))
+            if (m_DrawQueue.ContainsKey(texture))
             {
-                vertexList = m_drawQueue[texture];
+                vertexList = m_DrawQueue[texture];
             }
             else
             {
-                if (m_vertexListQueue.Count > 0)
+                if (m_VertexListQueue.Count > 0)
                 {
-                    vertexList = m_vertexListQueue.Dequeue();
+                    vertexList = m_VertexListQueue.Dequeue();
 
                     vertexList.Clear();
                 }
@@ -154,10 +147,10 @@ namespace Ypsilon.Core.Graphics
                     vertexList = new List<VertexPositionTextureDataColor>(1024);
                 }
 
-                m_drawQueue.Add(texture, vertexList);
+                m_DrawQueue.Add(texture, vertexList);
             }
 
-            position += m_zOffset;
+            position += Depth.NextZ;
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue, data);
 
@@ -171,7 +164,7 @@ namespace Ypsilon.Core.Graphics
 
         public void DrawRectangle(Vector3 position, Vector2 area, Color hue)
         {
-            position += m_zOffset;
+            position += Depth.NextZ;
 
             DrawFilledRectangle(position, new Vector2(area.X, 1), hue);
             DrawFilledRectangle(position + new Vector3(0, area.Y - 1, 0), new Vector2(area.X, 1), hue);
