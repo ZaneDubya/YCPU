@@ -54,6 +54,13 @@ namespace Ypsilon.Core.Graphics
             return new Texture2D(m_GraphicsDevice, width, height);
         }
 
+        public void SetScissorRect(Rectangle? r)
+        {
+            if (r == null)
+                r = m_GraphicsDevice.Viewport.Bounds;
+            m_GraphicsDevice.ScissorRectangle = r.Value;
+        }
+
         public void Begin(Color? clear = null)
         {
             if (clear == null)
@@ -83,7 +90,11 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice.BlendState = BlendState.AlphaBlend;
             m_GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             m_GraphicsDevice.SamplerStates[0] = sample;
-            m_GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            m_GraphicsDevice.RasterizerState = new RasterizerState
+            {
+                ScissorTestEnable = true,
+                CullMode = CullMode.None
+            }; // RasterizerState.CullNone;
 
             IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_DrawQueue.GetEnumerator();
 

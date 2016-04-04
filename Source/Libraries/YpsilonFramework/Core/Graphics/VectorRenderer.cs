@@ -76,7 +76,11 @@ namespace Ypsilon.Core.Graphics
             m_Graphics.BlendState = BlendState.AlphaBlend;
             m_Graphics.DepthStencilState = DepthStencilState.Default;
             m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
-            m_Graphics.RasterizerState = RasterizerState.CullNone;
+            m_Graphics.RasterizerState = new RasterizerState
+            {
+                ScissorTestEnable = true,
+                CullMode = CullMode.None
+            }; // RasterizerState.CullNone;
             m_Graphics.Textures[0] = texture;
             // set up effect state
             m_Effect.Parameters["ProjectionMatrix"].SetValue(projection);
