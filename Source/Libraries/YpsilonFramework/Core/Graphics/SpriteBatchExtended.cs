@@ -190,7 +190,7 @@ namespace Ypsilon.Core.Graphics
             if (m_Pixel == null)
             {
                 m_Pixel = new Texture2D(m_GraphicsDevice, 1, 1);
-                m_Pixel.SetData(new Color[] { Color.White });
+                m_Pixel.SetData(new[] { Color.White });
             }
             DrawSprite(m_Pixel, position, area, hue);
         }

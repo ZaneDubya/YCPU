@@ -18,7 +18,7 @@ namespace Ypsilon.Core.Windows
     [StructLayout(LayoutKind.Sequential)]
     public struct Message
     {
-        public UInt32 Id;
+        public readonly uint Id;
         public IntPtr WParam;
         public IntPtr LParam;
         public Point Point;

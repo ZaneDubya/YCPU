@@ -9,8 +9,11 @@
  *
  ***************************************************************************/
 
+using System;
+
 namespace Ypsilon.Core.Windows
 {
+    [Flags]
     public enum WinMouseButtons
     {
         Left = 0x100000,
