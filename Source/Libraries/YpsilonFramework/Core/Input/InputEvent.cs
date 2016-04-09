@@ -15,23 +15,23 @@ namespace Ypsilon.Core.Input
 {
     public class InputEvent
     {
-        protected readonly WinKeys m_modifiers;
+        protected readonly WinKeys Modifiers;
         protected bool m_handled;
 
-        public virtual bool Alt => ((m_modifiers & WinKeys.Alt) == WinKeys.Alt);
+        public virtual bool Alt => ((Modifiers & WinKeys.Alt) == WinKeys.Alt);
 
-        public bool Control => ((m_modifiers & WinKeys.Control) == WinKeys.Control);
+        public bool Control => ((Modifiers & WinKeys.Control) == WinKeys.Control);
 
-        public virtual bool Shift => ((m_modifiers & WinKeys.Shift) == WinKeys.Shift);
+        public virtual bool Shift => ((Modifiers & WinKeys.Shift) == WinKeys.Shift);
 
         public InputEvent(WinKeys modifiers)
         {
-            m_modifiers = modifiers;
+            Modifiers = modifiers;
         }
 
         protected InputEvent(InputEvent parent)
         {
-            m_modifiers = parent.m_modifiers;
+            Modifiers = parent.Modifiers;
         }
 
         public bool Handled

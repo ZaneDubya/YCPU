@@ -9,10 +9,10 @@ namespace Ypsilon.Core.Graphics
 
         public PreTransformedQuad(Vector3 position, Vector2 area, Vector4 uv, Color hue, Vector4 data)
         {
-            resize(position, area, uv, data, hue);
+            Resize(position, area, uv, data, hue);
         }
 
-        private void resize(Vector3 position, Vector2 area, Vector4 uv, Vector4 data, Color hue)
+        private void Resize(Vector3 position, Vector2 area, Vector4 uv, Vector4 data, Color hue)
         {
             Vector2 texelPixelOffset = new Vector2(); // new Vector2(0.5f / device.Viewport.Width, 0.5f / device.Viewport.Height);
 

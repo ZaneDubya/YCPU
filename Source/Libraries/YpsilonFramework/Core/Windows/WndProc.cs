@@ -23,10 +23,10 @@ namespace Ypsilon.Core.Windows
     /// </summary>
     public class WndProc : MessageHook
     {
-        private const bool WP_PASSTHROUGH = true;
-        private const bool WP_NOPASSTHROUGH = false;
+        private const bool c_WpPassthrough = true;
+        private const bool c_WpNopassthrough = false;
 
-        public override int HookType => NativeConstants.WH_CALLWNDPROC;
+        public override int HookType => NativeConstants.WhCallwndproc;
 
         public WndProc(IntPtr hWnd)
             : base(hWnd)
@@ -88,7 +88,7 @@ namespace Ypsilon.Core.Windows
         protected override IntPtr WndProcHook(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             Message message = new Message(msg, wParam, lParam);
-            if (WndPrc(ref message) == WP_NOPASSTHROUGH)
+            if (WndPrc(ref message) == c_WpNopassthrough)
                 return IntPtr.Zero;
             return base.WndProcHook(hWnd, msg, wParam, lParam);
         }
@@ -99,102 +99,102 @@ namespace Ypsilon.Core.Windows
             {
                 switch (message.Id)
                 {
-                    case NativeConstants.WM_DEADCHAR:
+                    case NativeConstants.WmDeadchar:
                         {
                             break;
                         }
-                    case NativeConstants.WM_KEYDOWN:
-                    case NativeConstants.WM_KEYUP:
-                    case NativeConstants.WM_CHAR:
+                    case NativeConstants.WmKeydown:
+                    case NativeConstants.WmKeyup:
+                    case NativeConstants.WmChar:
                         {
                             
                             WmKeyEvent(ref message);
                             
                             break;
                         }
-                    case NativeConstants.WM_UNICHAR:
+                    case NativeConstants.WmUnichar:
                         break;
-                    case NativeConstants.WM_SYSKEYDOWN:
-                    case NativeConstants.WM_SYSKEYUP:
-                    case NativeConstants.WM_SYSCHAR:
+                    case NativeConstants.WmSyskeydown:
+                    case NativeConstants.WmSyskeyup:
+                    case NativeConstants.WmSyschar:
                         {
                             NativeMethods.TranslateMessage(ref message);
                             WmKeyEvent(ref message);
-                            return WP_NOPASSTHROUGH;
+                            return c_WpNopassthrough;
                         }
-                    case NativeConstants.WM_SYSCOMMAND:
+                    case NativeConstants.WmSyscommand:
                         {
                             break;
                         }
-                    case NativeConstants.WM_MOUSEMOVE:
+                    case NativeConstants.WmMousemove:
                         {
                             WmMouseMove(ref message);
                             break;
                         }
-                    case NativeConstants.WM_LBUTTONDOWN:
+                    case NativeConstants.WmLbuttondown:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Left, 1);
                             break;
                         }
-                    case NativeConstants.WM_RBUTTONDOWN:
+                    case NativeConstants.WmRbuttondown:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Right, 1);
                             break;
                         }
-                    case NativeConstants.WM_MBUTTONDOWN:
+                    case NativeConstants.WmMbuttondown:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Middle, 1);
                             break;
                         }
-                    case NativeConstants.WM_LBUTTONUP:
+                    case NativeConstants.WmLbuttonup:
                         {
                             WmMouseUp(ref message, WinMouseButtons.Left, 1);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_RBUTTONUP:
+                    case NativeConstants.WmRbuttonup:
                         {
                             WmMouseUp(ref message, WinMouseButtons.Right, 1);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_MBUTTONUP:
+                    case NativeConstants.WmMbuttonup:
                         {
                             WmMouseUp(ref message, WinMouseButtons.Middle, 1);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_LBUTTONDBLCLK:
+                    case NativeConstants.WmLbuttondblclk:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Left, 2);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_RBUTTONDBLCLK:
+                    case NativeConstants.WmRbuttondblclk:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Right, 2);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_MBUTTONDBLCLK:
+                    case NativeConstants.WmMbuttondblclk:
                         {
                             WmMouseDown(ref message, WinMouseButtons.Middle, 2);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_MOUSEWHEEL:
+                    case NativeConstants.WmMousewheel:
                         {
                             WmMouseWheel(ref message);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_XBUTTONDOWN:
+                    case NativeConstants.WmXbuttondown:
                         {
                             WmMouseDown(ref message, GetXButton(Message.HighWord(message.WParam)), 1);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_XBUTTONUP:
+                    case NativeConstants.WmXbuttonup:
                         {
                             WmMouseUp(ref message, GetXButton(Message.HighWord(message.WParam)), 1);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
-                    case NativeConstants.WM_XBUTTONDBLCLK:
+                    case NativeConstants.WmXbuttondblclk:
                         {
                             WmMouseDown(ref message, GetXButton(Message.HighWord(message.WParam)), 2);
-                            return WP_PASSTHROUGH;
+                            return c_WpPassthrough;
                         }
                 }
             }
@@ -203,10 +203,10 @@ namespace Ypsilon.Core.Windows
                 //TODO: log...crash...what?
             }
 
-            return WP_PASSTHROUGH;
+            return c_WpPassthrough;
         }
 
-        private WinMouseButtons translateWParamIntoMouseButtons(int wParam)
+        private WinMouseButtons TranslateWParamIntoMouseButtons(int wParam)
         {
             WinMouseButtons mb = WinMouseButtons.None;
             if ((wParam & 0x0001) == 0x0001)
@@ -244,8 +244,8 @@ namespace Ypsilon.Core.Windows
         /// <param name="message">The Message to parse</param>
         private void WmMouseWheel(ref Message message)
         {
-            invokeMouseWheel(new InputEventMouse(MouseEvent.WheelScroll,
-                translateWParamIntoMouseButtons(Message.SignedLowWord(message.WParam)),
+            InvokeMouseWheel(new InputEventMouse(MouseEvent.WheelScroll,
+                TranslateWParamIntoMouseButtons(Message.SignedLowWord(message.WParam)),
                 Message.SignedHighWord(message.WParam), 
                 Message.SignedLowWord(message.LParam), 
                 Message.SignedHighWord(message.LParam),
@@ -260,8 +260,8 @@ namespace Ypsilon.Core.Windows
         /// <param name="message">The Message to parse</param>
         private void WmMouseMove(ref Message message)
         {
-            invokeMouseMove(new InputEventMouse(MouseEvent.Move,
-                translateWParamIntoMouseButtons(Message.SignedLowWord(message.WParam)),
+            InvokeMouseMove(new InputEventMouse(MouseEvent.Move,
+                TranslateWParamIntoMouseButtons(Message.SignedLowWord(message.WParam)),
                 0, 
                 message.Point.X, 
                 message.Point.Y,
@@ -279,7 +279,7 @@ namespace Ypsilon.Core.Windows
         private void WmMouseDown(ref Message message, WinMouseButtons button, int clicks)
         {
             // HandleMouseBindings();
-            invokeMouseDown(new InputEventMouse(MouseEvent.Down,
+            InvokeMouseDown(new InputEventMouse(MouseEvent.Down,
                 button, 
                 clicks, 
                 Message.SignedLowWord(message.LParam), 
@@ -298,7 +298,7 @@ namespace Ypsilon.Core.Windows
         private void WmMouseUp(ref Message message, WinMouseButtons button, int clicks)
         {
             // HandleMouseBindings();
-            invokeMouseUp(new InputEventMouse(MouseEvent.Up,
+            InvokeMouseUp(new InputEventMouse(MouseEvent.Up,
                 button, 
                 clicks, 
                 Message.SignedLowWord(message.LParam), 
@@ -318,7 +318,7 @@ namespace Ypsilon.Core.Windows
             // HandleKeyBindings();
             // KeyPressEventArgs keyPressEventArgs = null;
 
-            if ((message.Id == NativeConstants.WM_CHAR) || (message.Id == NativeConstants.WM_SYSCHAR))
+            if ((message.Id == NativeConstants.WmChar) || (message.Id == NativeConstants.WmSyschar))
             {
                 // Is this extra information necessary?
                 // wm_(sys)char: http://msdn.microsoft.com/en-us/library/ms646276(VS.85).aspx
@@ -329,30 +329,30 @@ namespace Ypsilon.Core.Windows
                     ModifierKeys
                     );
                 IntPtr zero = (IntPtr)0;
-                invokeChar(e);
+                InvokeChar(e);
             }
             else
             {
                 // wm_(sys)keydown: http://msdn.microsoft.com/en-us/library/ms912654.aspx
                 // wm_(sys)keyup: http://msdn.microsoft.com/en-us/library/ms646281(VS.85).aspx
 
-                if ((message.Id == NativeConstants.WM_KEYDOWN) || (message.Id == NativeConstants.WM_SYSKEYDOWN))
+                if ((message.Id == NativeConstants.WmKeydown) || (message.Id == NativeConstants.WmSyskeydown))
                 {
                     InputEventKeyboard e = new InputEventKeyboard(KeyboardEvent.Down,
                         (WinKeys)(int)(long)message.WParam,
                         (int)(long)message.LParam,
                         ModifierKeys
                         );
-                    invokeKeyDown(e);
+                    InvokeKeyDown(e);
                 }
-                else if ((message.Id == NativeConstants.WM_KEYUP) || (message.Id == NativeConstants.WM_SYSKEYUP))
+                else if ((message.Id == NativeConstants.WmKeyup) || (message.Id == NativeConstants.WmSyskeyup))
                 {
                     InputEventKeyboard e = new InputEventKeyboard(KeyboardEvent.Up,
                         (WinKeys)(int)(long)message.WParam,
                         (int)(long)message.LParam,
                         ModifierKeys
                         );
-                    invokeKeyUp(e);
+                    InvokeKeyUp(e);
                 }
             }
         }
@@ -364,7 +364,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the MouseWheel event. Override this method to add code to handle when a mouse wheel is turned
         /// </summary>
         /// <param name="e">InputEventCM for the MouseWheel event</param>
-        private void invokeMouseWheel(InputEventMouse e)
+        private void InvokeMouseWheel(InputEventMouse e)
         {
             if (MouseWheel != null)
                 MouseWheel(e);
@@ -374,7 +374,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the MouseMove event. Override this method to add code to handle when the mouse is moved
         /// </summary>
         /// <param name="e">InputEventCM for the MouseMove event</param>
-        private void invokeMouseMove(InputEventMouse e)
+        private void InvokeMouseMove(InputEventMouse e)
         {
             if (MouseMove != null)
                 MouseMove(e);
@@ -384,7 +384,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the MouseDown event. Override this method to add code to handle when a mouse button is pressed
         /// </summary>
         /// <param name="e">InputEventCM for the MouseDown event</param>
-        private void invokeMouseDown(InputEventMouse e)
+        private void InvokeMouseDown(InputEventMouse e)
         {
             if (MouseDown != null)
                 MouseDown(e);
@@ -394,7 +394,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the MouseUp event. Override this method to add code to handle when a mouse button is released
         /// </summary>
         /// <param name="e">InputEventCM for the MouseUp event</param>
-        private void invokeMouseUp(InputEventMouse e)
+        private void InvokeMouseUp(InputEventMouse e)
         {
             if (MouseUp != null)
                 MouseUp(e);
@@ -404,7 +404,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the KeyUp event. Override this method to add code to handle when a key is released
         /// </summary>
         /// <param name="e">KeyboardPressEventArgs for the KeyUp event</param>
-        private void invokeKeyUp(InputEventKeyboard e)
+        private void InvokeKeyUp(InputEventKeyboard e)
         {
             if (KeyUp != null)
                 KeyUp(e);
@@ -414,7 +414,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the KeyDown event. Override this method to add code to handle when a key is pressed
         /// </summary>
         /// <param name="e">InputEventCKB for the KeyDown event</param>
-        private void invokeKeyDown(InputEventKeyboard e)
+        private void InvokeKeyDown(InputEventKeyboard e)
         {
             if (KeyDown != null)
                 KeyDown(e);
@@ -424,7 +424,7 @@ namespace Ypsilon.Core.Windows
         /// Raises the OnChar event. Override this method to add code to handle when a WM_CHAR message is received
         /// </summary>
         /// <param name="e">InputEventCKB for the OnChar event</param>
-        private void invokeChar(InputEventKeyboard e)
+        private void InvokeChar(InputEventKeyboard e)
         {
             if (KeyChar != null)
                 KeyChar(e);

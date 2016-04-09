@@ -23,66 +23,66 @@ namespace Ypsilon.Core.Input
             return false;
         }
 
-        private readonly MouseEvent m_eventType;
-        public MouseEvent EventType => m_eventType;
+        private readonly MouseEvent m_EventType;
+        public MouseEvent EventType => m_EventType;
 
-        private const int WHEEL_DELTA = 120;
-        public int WheelValue => (m_clicks / WHEEL_DELTA);
+        private const int c_WheelDelta = 120;
+        public int WheelValue => (m_Clicks / c_WheelDelta);
 
-        private readonly WinMouseButtons m_button;
-        private readonly int m_clicks;
-        private readonly int m_mouseData;
-        private readonly int m_x;
-        private readonly int m_y;
+        private readonly WinMouseButtons m_Button;
+        private readonly int m_Clicks;
+        private readonly int m_MouseData;
+        private readonly int m_X;
+        private readonly int m_Y;
 
         public MouseButton Button
         {
             get
             {
-                if ((m_button & WinMouseButtons.Left) == WinMouseButtons.Left)
+                if ((m_Button & WinMouseButtons.Left) == WinMouseButtons.Left)
                     return MouseButton.Left;
-                if ((m_button & WinMouseButtons.Right) == WinMouseButtons.Right)
+                if ((m_Button & WinMouseButtons.Right) == WinMouseButtons.Right)
                     return MouseButton.Right;
-                if ((m_button & WinMouseButtons.Middle) == WinMouseButtons.Middle)
+                if ((m_Button & WinMouseButtons.Middle) == WinMouseButtons.Middle)
                     return MouseButton.Middle;
-                if ((m_button & WinMouseButtons.XButton1) == WinMouseButtons.XButton1)
+                if ((m_Button & WinMouseButtons.XButton1) == WinMouseButtons.XButton1)
                     return MouseButton.XButton1;
-                if ((m_button & WinMouseButtons.XButton2) == WinMouseButtons.XButton2)
+                if ((m_Button & WinMouseButtons.XButton2) == WinMouseButtons.XButton2)
                     return MouseButton.XButton2;
                 return MouseButton.None;
             }
         }
 
-        public int MouseData => m_mouseData;
+        public int MouseData => m_MouseData;
 
-        public int X => m_x;
+        public int X => m_X;
 
-        public int Y => m_y;
+        public int Y => m_Y;
 
-        public Point Position => new Point(m_x, m_y);
+        public Point Position => new Point(m_X, m_Y);
 
         public InputEventMouse(MouseEvent eventType, WinMouseButtons button, int clicks, int x, int y, int mouseData, WinKeys modifiers)
             : base(modifiers)
         {
             Vector2 dpi = DpiManager.GetSystemDpiScalar();
 
-            m_eventType = eventType;
-            m_button = button;
-            m_clicks = clicks;
-            m_x = (int)(x / dpi.X);
-            m_y = (int)(y / dpi.Y);
-            m_mouseData = mouseData;
+            m_EventType = eventType;
+            m_Button = button;
+            m_Clicks = clicks;
+            m_X = (int)(x / dpi.X);
+            m_Y = (int)(y / dpi.Y);
+            m_MouseData = mouseData;
         }
 
         public InputEventMouse(MouseEvent eventType, InputEventMouse parent)
             : base(parent)
         {
-            m_eventType = eventType;
-            m_button = parent.m_button;
-            m_clicks = parent.m_clicks;
-            m_x = parent.m_x;
-            m_y = parent.m_y;
-            m_mouseData = parent.m_mouseData;
+            m_EventType = eventType;
+            m_Button = parent.m_Button;
+            m_Clicks = parent.m_Clicks;
+            m_X = parent.m_X;
+            m_Y = parent.m_Y;
+            m_MouseData = parent.m_MouseData;
         }
     }
 }

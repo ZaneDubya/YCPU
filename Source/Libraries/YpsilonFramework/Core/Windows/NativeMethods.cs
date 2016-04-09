@@ -34,16 +34,16 @@ namespace Ypsilon.Core.Windows
         internal static extern IntPtr ImmGetContext(IntPtr hWnd);
 
         [DllImport("Imm32.dll")]
-        internal static extern IntPtr ImmAssociateContext(IntPtr hWnd, IntPtr hIMC);
+        internal static extern IntPtr ImmAssociateContext(IntPtr hWnd, IntPtr hImc);
 
         [DllImport("user32.dll")]
-        internal static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        internal static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
-        internal static extern int MultiByteToWideChar(int CodePage, int dwFlags, byte[] lpMultiByteStr, int cchMultiByte, char[] lpWideCharStr, int cchWideChar);
+        internal static extern int MultiByteToWideChar(int codePage, int dwFlags, byte[] lpMultiByteStr, int cchMultiByte, char[] lpWideCharStr, int cchWideChar);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         internal static extern short GetKeyState(int keyCode);
@@ -74,23 +74,23 @@ namespace Ypsilon.Core.Windows
         [DllImport("user32.dll")]
         internal static extern uint GetWindowThreadProcessId(IntPtr window, IntPtr module);
 
-        internal static int LOWORD(IntPtr val)
+        internal static int Loword(IntPtr val)
         {
             return (unchecked((int)(long)val)) & 0xFFFF;
         }
 
-        internal static int MAKELCID(int languageID, int sortID)
+        internal static int Makelcid(int languageId, int sortId)
         {
-            return ((0xFFFF & languageID) | (((0x000F) & sortID) << 16));
+            return ((0xFFFF & languageId) | (((0x000F) & sortId) << 16));
         }
 
-        internal static int MAKELANGID(int primaryLang, int subLang)
+        internal static int Makelangid(int primaryLang, int subLang)
         {
             return ((((ushort)(subLang)) << 10) | (ushort)(primaryLang));
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern int GetLocaleInfo(int locale, int lcType, out uint lpLCData, int cchData);
+        internal static extern int GetLocaleInfo(int locale, int lcType, out uint lpLcData, int cchData);
 
         [DllImport("user32.dll")]
         internal static extern IntPtr GetKeyboardLayout(uint idThread);
@@ -101,13 +101,13 @@ namespace Ypsilon.Core.Windows
             IntPtr keybdLayout = GetKeyboardLayout(0);
 
             // Extract the language ID from it, contained in its low-order word.
-            int langID = LOWORD(keybdLayout);
+            int langId = Loword(keybdLayout);
 
             // Call the GetLocaleInfo function to retrieve the default ANSI code page
             // associated with that language ID.
             uint codePage = 0;
-            GetLocaleInfo(MAKELCID(langID, NativeConstants.SORT_DEFAULT),
-                           NativeConstants.LOCALE_IDEFAULTANSICODEPAGE | NativeConstants.LOCALE_RETURN_NUMBER,
+            GetLocaleInfo(Makelcid(langId, NativeConstants.SortDefault),
+                           NativeConstants.LocaleIdefaultansicodepage | NativeConstants.LocaleReturnNumber,
                            out codePage,
                            Marshal.SizeOf(codePage));
             return codePage;

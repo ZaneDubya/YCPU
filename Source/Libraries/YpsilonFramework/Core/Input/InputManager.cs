@@ -36,8 +36,8 @@ namespace Ypsilon.Core.Input
         private bool m_EventsAccumulatingUseAlternate;
 
         // Mouse dragging support
-        private const int MouseDragBeginDistance = 2;
-        private const int MouseClickMaxDelta = 2;
+        private const int c_MouseDragBeginDistance = 2;
+        private const int c_MouseClickMaxDelta = 2;
         private InputEventMouse m_LastMouseClick;
         private float m_LastMouseClickTime;
         private InputEventMouse m_LastMouseDown;
@@ -47,29 +47,29 @@ namespace Ypsilon.Core.Input
         private MouseState m_MouseStateThisFrame;
         private float m_TheTime = -1f;
 
-        private float m_mouseStationarySeconds;
+        private float m_MouseStationarySeconds;
 
         public InputManager(IntPtr handle)
         {
             m_WndProc = new WndProc(handle);
-            m_WndProc.MouseWheel += onMouseWheel;
-            m_WndProc.MouseMove += onMouseMove;
-            m_WndProc.MouseUp += onMouseUp;
-            m_WndProc.MouseDown += onMouseDown;
-            m_WndProc.KeyDown += onKeyDown;
-            m_WndProc.KeyUp += onKeyUp;
-            m_WndProc.KeyChar += onKeyChar;
+            m_WndProc.MouseWheel += OnMouseWheel;
+            m_WndProc.MouseMove += OnMouseMove;
+            m_WndProc.MouseUp += OnMouseUp;
+            m_WndProc.MouseDown += OnMouseDown;
+            m_WndProc.KeyDown += OnKeyDown;
+            m_WndProc.KeyUp += OnKeyUp;
+            m_WndProc.KeyChar += OnKeyChar;
         }
 
         public void Dispose()
         {
-            m_WndProc.MouseWheel -= onMouseWheel;
-            m_WndProc.MouseMove -= onMouseMove;
-            m_WndProc.MouseUp -= onMouseUp;
-            m_WndProc.MouseDown -= onMouseDown;
-            m_WndProc.KeyDown -= onKeyDown;
-            m_WndProc.KeyUp -= onKeyUp;
-            m_WndProc.KeyChar -= onKeyChar;
+            m_WndProc.MouseWheel -= OnMouseWheel;
+            m_WndProc.MouseMove -= OnMouseMove;
+            m_WndProc.MouseUp -= OnMouseUp;
+            m_WndProc.MouseDown -= OnMouseDown;
+            m_WndProc.KeyDown -= OnKeyDown;
+            m_WndProc.KeyUp -= OnKeyUp;
+            m_WndProc.KeyChar -= OnKeyChar;
             m_WndProc.Dispose();
             m_WndProc = null;
         }
@@ -110,7 +110,7 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        public int MouseStationarySeconds => (int)m_mouseStationarySeconds;
+        public int MouseStationarySeconds => (int)m_MouseStationarySeconds;
 
         public Point MousePosition
         {
@@ -123,7 +123,7 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        private bool hasMouseBeenStationarySinceLastUpdate
+        private bool HasMouseBeenStationarySinceLastUpdate
         {
             get
             {
@@ -202,16 +202,16 @@ namespace Ypsilon.Core.Input
             m_MouseStateThisFrame = CreateMouseState(m_WndProc.MouseState);
 
             // update mouse stationary business
-            if(hasMouseBeenStationarySinceLastUpdate)
+            if(HasMouseBeenStationarySinceLastUpdate)
             {
-                m_mouseStationarySeconds += frameSeconds;
+                m_MouseStationarySeconds += frameSeconds;
             }
             else
             {
-                m_mouseStationarySeconds = 0;
+                m_MouseStationarySeconds = 0;
             }
 
-            copyEvents();
+            CopyEvents();
         }
 
         public MouseState CreateMouseState(MouseState state)
@@ -260,36 +260,36 @@ namespace Ypsilon.Core.Input
             return false;
         }
 
-        private void onMouseWheel(InputEventMouse e)
+        private void OnMouseWheel(InputEventMouse e)
         {
-            addEvent(e);
+            AddEvent(e);
         }
 
-        private void onMouseDown(InputEventMouse e)
+        private void OnMouseDown(InputEventMouse e)
         {
             m_LastMouseDown = e;
             m_LastMouseDownTime = m_TheTime;
-            addEvent(m_LastMouseDown);
+            AddEvent(m_LastMouseDown);
         }
 
-        private void onMouseUp(InputEventMouse e)
+        private void OnMouseUp(InputEventMouse e)
         {
             if(m_MouseIsDragging)
             {
-                addEvent(new InputEventMouse(MouseEvent.DragEnd, e));
+                AddEvent(new InputEventMouse(MouseEvent.DragEnd, e));
                 m_MouseIsDragging = false;
             }
             else
             {
-                if(!DistanceBetweenPoints(m_LastMouseDown.Position, e.Position, MouseClickMaxDelta))
+                if(!DistanceBetweenPoints(m_LastMouseDown.Position, e.Position, c_MouseClickMaxDelta))
                 {
-                    addEvent(new InputEventMouse(MouseEvent.Click, e));
+                    AddEvent(new InputEventMouse(MouseEvent.Click, e));
 
                     if((m_TheTime - m_LastMouseClickTime <= DoubleClickSeconds) &&
-                       !DistanceBetweenPoints(m_LastMouseClick.Position, e.Position, MouseClickMaxDelta))
+                       !DistanceBetweenPoints(m_LastMouseClick.Position, e.Position, c_MouseClickMaxDelta))
                     {
                         m_LastMouseClickTime = 0f;
-                        addEvent(new InputEventMouse(MouseEvent.DoubleClick, e));
+                        AddEvent(new InputEventMouse(MouseEvent.DoubleClick, e));
                     }
                     else
                     {
@@ -298,43 +298,43 @@ namespace Ypsilon.Core.Input
                     }
                 }
             }
-            addEvent(new InputEventMouse(MouseEvent.Up, e));
+            AddEvent(new InputEventMouse(MouseEvent.Up, e));
             m_LastMouseDown = null;
         }
 
-        private void onMouseMove(InputEventMouse e)
+        private void OnMouseMove(InputEventMouse e)
         {
-            addEvent(new InputEventMouse(MouseEvent.Move, e));
+            AddEvent(new InputEventMouse(MouseEvent.Move, e));
             if(!m_MouseIsDragging && m_LastMouseDown != null)
             {
-                if(DistanceBetweenPoints(m_LastMouseDown.Position, e.Position, MouseDragBeginDistance))
+                if(DistanceBetweenPoints(m_LastMouseDown.Position, e.Position, c_MouseDragBeginDistance))
                 {
-                    addEvent(new InputEventMouse(MouseEvent.DragBegin, e));
+                    AddEvent(new InputEventMouse(MouseEvent.DragBegin, e));
                     m_MouseIsDragging = true;
                 }
             }
         }
 
-        private void onKeyDown(InputEventKeyboard e)
+        private void OnKeyDown(InputEventKeyboard e)
         {
             // handle the initial key down
-            if(e.Data_PreviousState == 0)
+            if(e.DataPreviousState == 0)
             {
-                addEvent(new InputEventKeyboard(KeyboardEvent.Down, e));
+                AddEvent(new InputEventKeyboard(KeyboardEvent.Down, e));
             }
             // handle the key presses. Possibly multiple per keydown message.
-            for(int i = 0; i < e.Data_RepeatCount; i++)
+            for(int i = 0; i < e.DataRepeatCount; i++)
             {
-                addEvent(new InputEventKeyboard(KeyboardEvent.Press, e));
+                AddEvent(new InputEventKeyboard(KeyboardEvent.Press, e));
             }
         }
 
-        private void onKeyUp(InputEventKeyboard e)
+        private void OnKeyUp(InputEventKeyboard e)
         {
-            addEvent(new InputEventKeyboard(KeyboardEvent.Up, e));
+            AddEvent(new InputEventKeyboard(KeyboardEvent.Up, e));
         }
 
-        private void onKeyChar(InputEventKeyboard e)
+        private void OnKeyChar(InputEventKeyboard e)
         {
             // Control key sends a strange wm_char message ...
             if(e.Control && !e.Alt)
@@ -350,7 +350,7 @@ namespace Ypsilon.Core.Input
             pressEvent.OverrideKeyChar(e.KeyCode);
         }
 
-        private void copyEvents()
+        private void CopyEvents()
         {
             // use alternate events list while we copy the accumulated events to the events list for this frame.
             m_EventsAccumulatingUseAlternate = true;
@@ -374,7 +374,7 @@ namespace Ypsilon.Core.Input
             m_EventsAccumulatingAlternate.Clear();
         }
 
-        private void addEvent(InputEvent e)
+        private void AddEvent(InputEvent e)
         {
             List<InputEvent> list = (m_EventsAccumulatingUseAlternate) ? m_EventsAccumulatingAlternate : m_EventsAccumulating;
             list.Add(e);

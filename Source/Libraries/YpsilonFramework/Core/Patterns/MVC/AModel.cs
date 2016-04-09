@@ -5,20 +5,20 @@
     /// </summary>
     public abstract class AModel
     {
-        protected AView m_View;
+        protected AView View;
         public AView GetView()
         {
-            if (m_View == null)
-                    m_View = CreateView();
-            return m_View;
+            if (View == null)
+                    View = CreateView();
+            return View;
         }
 
-        protected AController m_Controller;
+        protected AController Controller;
         public AController GetController()
         {
-            if (m_Controller == null)
-                m_Controller = CreateController();
-            return m_Controller;
+            if (Controller == null)
+                Controller = CreateController();
+            return Controller;
         }
 
         public abstract void Initialize();

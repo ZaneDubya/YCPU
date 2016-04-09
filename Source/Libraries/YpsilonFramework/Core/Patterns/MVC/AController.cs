@@ -9,9 +9,9 @@ namespace Ypsilon.Core.Patterns.MVC
     {
         protected AModel Model;
 
-        public AController(AModel parent_model)
+        public AController(AModel parentModel)
         {
-            Model = parent_model;
+            Model = parentModel;
         }
 
         public virtual void Update(float frameSeconds, InputManager input)

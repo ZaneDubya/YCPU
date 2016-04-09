@@ -19,21 +19,21 @@ namespace Ypsilon.Core.Windows
     {
         public abstract int HookType { get; }
 
-        private IntPtr m_hWnd;
+        private IntPtr m_HWnd;
         private WndProcHandler m_Hook;
-        private IntPtr m_prevWndProc;
-        private IntPtr m_hIMC;
+        private IntPtr m_PrevWndProc;
+        private IntPtr m_HImc;
 
-        public IntPtr HWnd => m_hWnd;
+        public IntPtr HWnd => m_HWnd;
 
         public MessageHook(IntPtr hWnd)
         {
-            m_hWnd = hWnd;
+            m_HWnd = hWnd;
             m_Hook = WndProcHook;
-            m_prevWndProc = (IntPtr)NativeMethods.SetWindowLong(
+            m_PrevWndProc = (IntPtr)NativeMethods.SetWindowLong(
                 hWnd,
-                NativeConstants.GWL_WNDPROC, (int)Marshal.GetFunctionPointerForDelegate(m_Hook));
-            m_hIMC = NativeMethods.ImmGetContext(m_hWnd);
+                NativeConstants.GwlWndproc, (int)Marshal.GetFunctionPointerForDelegate(m_Hook));
+            m_HImc = NativeMethods.ImmGetContext(m_HWnd);
             new InputMessageFilter(m_Hook);
         }
 
@@ -46,20 +46,20 @@ namespace Ypsilon.Core.Windows
         {
             switch (msg)
             {
-                case NativeConstants.WM_GETDLGCODE:
-                    return (IntPtr)(NativeConstants.DLGC_WANTALLKEYS);
-               case NativeConstants.WM_IME_SETCONTEXT:
+                case NativeConstants.WmGetdlgcode:
+                    return (IntPtr)(NativeConstants.DlgcWantallkeys);
+               case NativeConstants.WmIMESetcontext:
                     if ((int)wParam == 1)
-                        NativeMethods.ImmAssociateContext(hWnd, m_hIMC);
+                        NativeMethods.ImmAssociateContext(hWnd, m_HImc);
                     break;
-                case NativeConstants.WM_INPUTLANGCHANGE:
-                    int rrr = (int)NativeMethods.CallWindowProc(m_prevWndProc, hWnd, msg, wParam, lParam);
-                    NativeMethods.ImmAssociateContext(hWnd, m_hIMC);
+                case NativeConstants.WmInputlangchange:
+                    int rrr = (int)NativeMethods.CallWindowProc(m_PrevWndProc, hWnd, msg, wParam, lParam);
+                    NativeMethods.ImmAssociateContext(hWnd, m_HImc);
                     
                     return (IntPtr)1;
             }
 
-            return NativeMethods.CallWindowProc(m_prevWndProc, hWnd, msg, wParam, lParam);
+            return NativeMethods.CallWindowProc(m_PrevWndProc, hWnd, msg, wParam, lParam);
         }
 
         public void Dispose()
@@ -91,32 +91,32 @@ namespace Ypsilon.Core.Windows
         {
             switch (m.Msg)
             {
-                case NativeConstants.WM_SYSKEYDOWN:
-                case NativeConstants.WM_SYSKEYUP:
+                case NativeConstants.WmSyskeydown:
+                case NativeConstants.WmSyskeyup:
                     {
                         bool b = m_TranslateMessage(ref m);
                         m_Hook(m.HWnd, (uint)m.Msg, m.WParam, m.LParam);
                         return true;
                     }
 
-                case NativeConstants.WM_SYSCHAR:
+                case NativeConstants.WmSyschar:
                     {
                         m_Hook(m.HWnd, (uint)m.Msg, m.WParam, m.LParam);
                         return true;
                     }
-                case NativeConstants.WM_KEYDOWN:
-                case NativeConstants.WM_KEYUP:
+                case NativeConstants.WmKeydown:
+                case NativeConstants.WmKeyup:
                     {
                         bool b = m_TranslateMessage(ref m);
                         m_Hook(m.HWnd, (uint)m.Msg, m.WParam, m.LParam);
                         return true;
                     }
-                case NativeConstants.WM_CHAR:
+                case NativeConstants.WmChar:
                     {
                         m_Hook(m.HWnd, (uint)m.Msg, m.WParam, m.LParam);
                         return true;
                     }
-                case NativeConstants.WM_DEADCHAR:
+                case NativeConstants.WmDeadchar:
                     {
                         m_Hook(m.HWnd, (uint)m.Msg, m.WParam, m.LParam);
                         return true;
