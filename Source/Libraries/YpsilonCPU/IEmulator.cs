@@ -5,10 +5,9 @@ namespace Ypsilon
 {
     public interface IEmulator
     {
-        void Initialize(IDisplayProvider display, IInputProvider input);
         void Start();
         void Stop();
-        void Update(float frameMS);
+        void Update(float frameSeconds);
         void Draw(List<ITexture> textures);
         void LoadBinaryToROM(string path);
     }
