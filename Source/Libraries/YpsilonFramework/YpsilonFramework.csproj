@@ -49,6 +49,7 @@
     <Compile Include="Core\Graphics\VertexPositionNormalTextureData.cs" />
     <Compile Include="Core\Patterns\ECS\ComponentCollection.cs" />
     <Compile Include="Extensions\PointX.cs" />
+    <Compile Include="Extensions\StringX.cs" />
     <Compile Include="GraphicsUtility.cs" />
     <Compile Include="Core\Graphics\SpriteBatchExtended.cs" />
     <Compile Include="Core\Graphics\VectorRenderer.cs" />
