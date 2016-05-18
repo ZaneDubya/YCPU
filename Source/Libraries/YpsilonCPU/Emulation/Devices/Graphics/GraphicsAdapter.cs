@@ -2,44 +2,34 @@
 using System.Collections.Generic;
 using Ypsilon.Emulation.Processor;
 
-namespace Ypsilon.Emulation.Devices.Graphics
-{
+namespace Ypsilon.Emulation.Devices.Graphics {
     /// <summary>
     /// Implements the YPSILONTECH Graphics Adapter
     /// </summary>
-    public class GraphicsAdapter : ADevice, IMemoryInterface
-    {
+    public class GraphicsAdapter : ADevice, IMemoryInterface {
+        private byte[] m_VRAM = new byte[0x02000]; // 8192 b
 
         // ========================================================================================
         // Implementation of memory interface.
-        // ========================================================================================
-
-        private byte[] m_Bank = new byte[0x20000];
-
-        public byte this[uint address]
-        {
-            get
-            {
-                if (address >= m_Bank.Length)
+        public byte this[uint address] {
+            get {
+                if (address >= m_VRAM.Length)
                     return 0x0000;
-                return m_Bank[address];
+                return m_VRAM[address];
             }
 
-            set
-            {
-                if (address >= m_Bank.Length)
+            set {
+                if (address >= m_VRAM.Length)
                     return;
-                m_Bank[address] = value;
+                m_VRAM[address] = value;
 
-                if (m_GraphicsMode == GraphicsMode.LEM180C || m_GraphicsMode == GraphicsMode.LEM180Plus)
-                {
+                if (m_GraphicsMode == GraphicsMode.LEM180C || m_GraphicsMode == GraphicsMode.LEM180Plus) {
                     if (address >= 0x0800 && address <= 0x09FF)
                         m_LEMChrramChanged = true;
                     if (address >= 0x0C00 && address <= 0x0C1F)
                         m_LEMPalramChanged = true;
                 }
-                else
-                {
+                else {
                     // no other modes written yet
                 }
             }
@@ -47,38 +37,28 @@ namespace Ypsilon.Emulation.Devices.Graphics
 
         // ========================================================================================
         // Implementation of ADevice.
-        // ========================================================================================
-
         protected override ushort DeviceType => DeviceTypeGraphicsAdapter;
         protected override ushort ManufacturerID => 0x0000;
         protected override ushort DeviceID => 0x0000;
         protected override ushort DeviceRevision => 0x0001;
 
         public GraphicsAdapter(YBUS bus)
-            : base(bus)
-        {
+            : base(bus) {}
 
-        }
-
-        protected override void Initialize()
-        {
+        protected override void Initialize() {
             SetMode_None();
         }
 
-        public override void Dispose()
-        {
-            m_Bank = null;
+        public override void Dispose() {
+            m_VRAM = null;
         }
 
-        public override IMemoryInterface GetMemoryInterface()
-        {
+        public override IMemoryInterface GetMemoryInterface() {
             return this;
         }
 
-        protected override ushort ReceiveMessage(ushort param0, ushort param1)
-        {
-            switch (param0)
-            {
+        protected override ushort ReceiveMessage(ushort param0, ushort param1) {
+            switch (param0) {
                 case 0x0000:
                     SetMode_None();
                     return MSG_ACK;
@@ -92,17 +72,15 @@ namespace Ypsilon.Emulation.Devices.Graphics
             return MSG_NO_DEVICE;
         }
 
-        public override void Display(int busIndex, List<ITexture> textures, IDisplayProvider renderer)
-        {
-            switch (m_GraphicsMode)
-            {
+        public override void Display(int busIndex, List<ITexture> textures, IDisplayProvider renderer) {
+            switch (m_GraphicsMode) {
                 case GraphicsMode.None:
                     // do nothing;
                     return;
                 case GraphicsMode.LEM180C:
                 case GraphicsMode.LEM180Plus:
                     Update_LEM();
-                    ITexture texture = renderer.RenderLEM(m_Bank, m_LEMChrRam, m_LEMPalRam, m_LEMSelectPage1, m_LEMSpritesEnabled);
+                    ITexture texture = renderer.RenderLEM(busIndex, 32, 12, m_VRAM, m_LEMChrRam, m_LEMPalRam, m_LEMSelectPage1, m_LEMSpritesEnabled);
                     if (texture == null)
                         return;
 
@@ -114,12 +92,9 @@ namespace Ypsilon.Emulation.Devices.Graphics
 
         // ========================================================================================
         // Internal variables and routines
-        // ========================================================================================
-
         private GraphicsMode m_GraphicsMode = GraphicsMode.None;
 
-        private void SetMode_None()
-        {
+        private void SetMode_None() {
             m_GraphicsMode = GraphicsMode.None;
         }
 
@@ -131,8 +106,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
         private bool m_LEMChrramChanged;
         private bool m_LEMPalramChanged;
 
-        private void SetMode_LEM(GraphicsMode mode, ushort param1)
-        {
+        private void SetMode_LEM(GraphicsMode mode, ushort param1) {
             m_LEMSelectPage1 = (param1 & 0x0001) != 0;
             m_LEMSpritesEnabled = (param1 & 0x0002) != 0;
 
@@ -140,32 +114,28 @@ namespace Ypsilon.Emulation.Devices.Graphics
                 return;
 
             for (uint i = 0; i < 512; i += 1)
-                m_Bank[0x0800 + i] = s_DefaultCharset[i];
+                m_VRAM[0x0800 + i] = s_DefaultCharset[i];
             for (uint i = 0; i < 32; i += 1)
-                m_Bank[0x0C00 + i] = s_DefaultPalette[i];
+                m_VRAM[0x0C00 + i] = s_DefaultPalette[i];
 
             m_GraphicsMode = mode;
             m_LEMChrramChanged = true;
             m_LEMPalramChanged = true;
         }
 
-        private void Update_LEM()
-        {
-            if (m_LEMChrramChanged)
-            {
+        private void Update_LEM() {
+            if (m_LEMChrramChanged) {
                 Update_LEM_CHRRAM();
                 m_LEMChrramChanged = false;
             }
 
-            if (m_LEMPalramChanged)
-            {
+            if (m_LEMPalramChanged) {
                 Update_LEM_PALRAM();
                 m_LEMPalramChanged = false;
             }
         }
 
-        private void Update_LEM_CHRRAM()
-        {
+        private void Update_LEM_CHRRAM() {
             // Assume CHRRAM format is Color (ARGB8888)
             // Each character is 4x8 pixels at 1 bit depth, 4 bytes total.
             // byte 0, bit 0-3: 3210
@@ -173,22 +143,21 @@ namespace Ypsilon.Emulation.Devices.Graphics
             // byte 1, bit 0-3: 3210
             // byte 1, bit 4-7: 7654
             // ... same for bytes 2 and 3.
-            Buffer.BlockCopy(m_Bank, 0x0800, m_LEMChrRam, 0, 512);
+            Buffer.BlockCopy(m_VRAM, 0x0800, m_LEMChrRam, 0, 512);
         }
 
-        private void Update_LEM_PALRAM()
-        {
+        private void Update_LEM_PALRAM() {
             // Assume PALRAM format is Color (ARGB8888)
-            for (uint i = 0; i < 0x10; i += 1)
-            {
-                ushort color = (ushort)(m_Bank[0x0C00 + i * 2] + (m_Bank[0x0C00 + i * 2 + 1] << 8));
+            for (uint i = 0; i < 0x10; i += 1) {
+                ushort color = (ushort)(m_VRAM[0x0C00 + i * 2] + (m_VRAM[0x0C00 + i * 2 + 1] << 8));
                 m_LEMPalRam[i] = 0xFF000000 | ((uint)(color & 0x0F00) << 12) | ((uint)(color & 0x00F0) << 8) | ((uint)(color & 0x000F) << 4);
             }
         }
 
         private static readonly byte[] s_DefaultPalette = {
-            0x00, 0x00, 0xDA, 0x0F, 0x90, 0x0F, 0x50, 0x08, 0x21, 0x03, 0xD8, 0x01, 0x90, 0x01, 0x42, 0x04, 
-            0xEF, 0x06, 0x8F, 0x00, 0x6A, 0x00, 0x34, 0x02, 0x5F, 0x08, 0x0D, 0x01, 0xFF, 0x0F, 0x99, 0x09 };
+            0x00, 0x00, 0xDA, 0x0F, 0x90, 0x0F, 0x50, 0x08, 0x21, 0x03, 0xD8, 0x01, 0x90, 0x01, 0x42, 0x04,
+            0xEF, 0x06, 0x8F, 0x00, 0x6A, 0x00, 0x34, 0x02, 0x5F, 0x08, 0x0D, 0x01, 0xFF, 0x0F, 0x99, 0x09
+        };
 
         private static readonly byte[] s_DefaultCharset = {
             0x22, 0xE2, 0x00, 0x00, 0x22, 0xF2, 0x00, 0x00, 0x00, 0xF0, 0x22, 0x22, 0x22, 0xE2, 0x22, 0x22,
@@ -222,6 +191,7 @@ namespace Ypsilon.Emulation.Devices.Graphics
             0x00, 0x53, 0x13, 0x01, 0x00, 0x56, 0x46, 0x04, 0x00, 0x53, 0x11, 0x01, 0x00, 0x16, 0x42, 0x03,
             0x20, 0x27, 0x22, 0x04, 0x00, 0x55, 0x55, 0x06, 0x00, 0x55, 0x25, 0x02, 0x00, 0x55, 0x77, 0x05,
             0x00, 0x55, 0x52, 0x05, 0x00, 0x55, 0x46, 0x03, 0x00, 0x47, 0x12, 0x07, 0x24, 0x12, 0x22, 0x04,
-            0x22, 0x02, 0x22, 0x02, 0x21, 0x42, 0x22, 0x01, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x22, 0x55, 0x07 };
+            0x22, 0x02, 0x22, 0x02, 0x21, 0x42, 0x22, 0x01, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x22, 0x55, 0x07
+        };
     }
 }

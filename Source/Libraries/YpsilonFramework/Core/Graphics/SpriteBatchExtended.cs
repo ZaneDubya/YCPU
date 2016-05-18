@@ -2,10 +2,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ypsilon.Core.Graphics
-{
-    public class SpriteBatchExtended
-    {
+namespace Ypsilon.Core.Graphics {
+    public class SpriteBatchExtended {
         public GraphicsDevice Graphics => m_GraphicsDevice;
 
         private readonly Game m_Game;
@@ -17,13 +15,11 @@ namespace Ypsilon.Core.Graphics
         private Queue<List<VertexPositionTextureDataColor>> m_VertexListQueue;
         private short[] m_IndexBuffer;
 
-        public SpriteBatchExtended(Game game)
-        {
+        public SpriteBatchExtended(Game game) {
             m_Game = game;
         }
 
-        public void Initialize()
-        {
+        public void Initialize() {
             m_GraphicsDevice = m_Game.GraphicsDevice;
             m_BasicEffect = m_Game.Content.Load<Effect>("BasicEffect");
             m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
@@ -32,12 +28,10 @@ namespace Ypsilon.Core.Graphics
             m_VertexListQueue = new Queue<List<VertexPositionTextureDataColor>>(256);
         }
 
-        private static short[] CreateIndexBuffer(int primitiveCount)
-        {
+        private static short[] CreateIndexBuffer(int primitiveCount) {
             short[] indices = new short[primitiveCount * 6];
 
-            for (int i = 0; i < primitiveCount; i++)
-            {
+            for (int i = 0; i < primitiveCount; i++) {
                 indices[i * 6] = (short)(i * 4);
                 indices[i * 6 + 1] = (short)(i * 4 + 1);
                 indices[i * 6 + 2] = (short)(i * 4 + 2);
@@ -49,32 +43,27 @@ namespace Ypsilon.Core.Graphics
             return indices;
         }
 
-        public Texture2D NewTexture(int width, int height)
-        {
+        public Texture2D NewTexture(int width, int height) {
             return new Texture2D(m_GraphicsDevice, width, height);
         }
 
-        public void SetScissorRect(Rectangle? r)
-        {
+        public void SetScissorRect(Rectangle? r) {
             if (r == null)
                 r = m_GraphicsDevice.Viewport.Bounds;
             m_GraphicsDevice.ScissorRectangle = r.Value;
         }
 
-        public void Begin(Color? clear = null)
-        {
+        public void Begin(Color? clear = null) {
             if (clear == null)
                 return;
             m_GraphicsDevice.Clear(clear.Value);
         }
 
-        public void End(Effects effect)
-        {
+        public void End(Effects effect) {
             Effect fx;
             SamplerState sample;
 
-            switch (effect)
-            {
+            switch (effect) {
                 case Effects.Basic:
                     fx = m_BasicEffect;
                     sample = SamplerState.LinearClamp;
@@ -90,8 +79,7 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice.BlendState = BlendState.AlphaBlend;
             m_GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             m_GraphicsDevice.SamplerStates[0] = sample;
-            m_GraphicsDevice.RasterizerState = new RasterizerState
-            {
+            m_GraphicsDevice.RasterizerState = new RasterizerState {
                 ScissorTestEnable = true,
                 CullMode = CullMode.None
             }; // RasterizerState.CullNone;
@@ -105,8 +93,7 @@ namespace Ypsilon.Core.Graphics
 
             fx.CurrentTechnique.Passes[0].Apply();
 
-            while (keyValuePairs.MoveNext())
-            {
+            while (keyValuePairs.MoveNext()) {
                 List<VertexPositionTextureDataColor> iVertexList = keyValuePairs.Current.Value;
                 m_GraphicsDevice.Textures[0] = keyValuePairs.Current.Key;
                 m_GraphicsDevice.DrawUserIndexedPrimitives(
@@ -119,42 +106,34 @@ namespace Ypsilon.Core.Graphics
             m_GraphicsDevice.Textures[0] = null;
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             m_BasicEffect.Dispose();
             m_CRTEffect.Dispose();
             m_Pixel.Dispose();
         }
 
 
-        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue)
-        {
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Color hue) {
             return DrawSprite(texture, position, area, new Vector4(0, 0, 1, 1), hue, Vector4.Zero);
         }
 
-        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue)
-        {
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue) {
             return DrawSprite(texture, position, area, uv, hue, Vector4.Zero);
         }
 
-        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue, Vector4 data)
-        {
+        public bool DrawSprite(Texture2D texture, Vector3 position, Vector2 area, Vector4 uv, Color hue, Vector4 data) {
             List<VertexPositionTextureDataColor> vertexList;
 
-            if (m_DrawQueue.ContainsKey(texture))
-            {
+            if (m_DrawQueue.ContainsKey(texture)) {
                 vertexList = m_DrawQueue[texture];
             }
-            else
-            {
-                if (m_VertexListQueue.Count > 0)
-                {
+            else {
+                if (m_VertexListQueue.Count > 0) {
                     vertexList = m_VertexListQueue.Dequeue();
 
                     vertexList.Clear();
                 }
-                else
-                {
+                else {
                     vertexList = new List<VertexPositionTextureDataColor>(1024);
                 }
 
@@ -165,16 +144,14 @@ namespace Ypsilon.Core.Graphics
 
             PreTransformedQuad q = new PreTransformedQuad(position, area, uv, hue, data);
 
-            for (int i = 0; i < q.Vertices.Length; i++)
-            {
+            for (int i = 0; i < q.Vertices.Length; i++) {
                 vertexList.Add(q.Vertices[i]);
             }
 
             return true;
         }
 
-        public void DrawRectangle(Vector3 position, Vector2 area, Color hue)
-        {
+        public void DrawRectangle(Vector3 position, Vector2 area, Color hue) {
             position += Depth.NextZ;
 
             DrawFilledRectangle(position, new Vector2(area.X, 1), hue);
@@ -189,14 +166,20 @@ namespace Ypsilon.Core.Graphics
                 position + new Vector3(0, area.Y - 1, 0) }, true), hue);*/
         }
 
-        public void DrawFilledRectangle(Vector3 position, Vector2 area, Color hue)
-        {
-            if (m_Pixel == null)
-            {
+        public void DrawFilledRectangle(Vector3 position, Vector2 area, Color hue) {
+            if (m_Pixel == null) {
                 m_Pixel = new Texture2D(m_GraphicsDevice, 1, 1);
-                m_Pixel.SetData(new[] { Color.White });
+                m_Pixel.SetData(new[] {Color.White});
             }
             DrawSprite(m_Pixel, position, area, hue);
+        }
+
+        public void DrawFilledRectangle(Vector4 xywh, Color hue) {
+            if (m_Pixel == null) {
+                m_Pixel = new Texture2D(m_GraphicsDevice, 1, 1);
+                m_Pixel.SetData(new[] {Color.White});
+            }
+            DrawSprite(m_Pixel, new Vector3(xywh.X, xywh.Y, 0), new Vector2(xywh.Z, xywh.W), hue);
         }
     }
 }
