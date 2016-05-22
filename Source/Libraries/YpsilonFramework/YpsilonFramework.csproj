@@ -47,6 +47,9 @@
     <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
     <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="Core\Graphics\VertexPositionNormalTextureData.cs" />
+    <Compile Include="Core\IO\BinaryFileReader.cs" />
+    <Compile Include="Core\IO\BinaryFileWriter.cs" />
+    <Compile Include="Core\IO\Compression.cs" />
     <Compile Include="Core\Patterns\ECS\ComponentCollection.cs" />
     <Compile Include="Extensions\PointX.cs" />
     <Compile Include="Extensions\StringX.cs" />
