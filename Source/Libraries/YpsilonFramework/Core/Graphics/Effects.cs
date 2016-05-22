@@ -1,7 +1,5 @@
-﻿namespace Ypsilon.Core.Graphics
-{
-    public enum Effects
-    {
+﻿namespace Ypsilon.Core.Graphics {
+    public enum Effects {
         Basic,
         CRT
     }

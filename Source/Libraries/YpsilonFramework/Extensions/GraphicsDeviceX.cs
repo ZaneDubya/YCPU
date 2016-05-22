@@ -6,21 +6,17 @@ using Microsoft.Xna.Framework.Graphics;
 // Gang of Penguins_01 and Michael Leone
 // Conversion to extensionmethods by Jakob "xnafan" Krarup (www.xnafan.net)
 
-namespace Ypsilon.Extensions
-{
+namespace Ypsilon.Extensions {
     /// <summary>
     /// Class with extensionmethods for GraphicsDevice.
     /// </summary>
-    public static class GraphicsDeviceX
-    {
-
+    public static class GraphicsDeviceX {
         #region Constants
 
         //the format of the screenshots' filename (with three digits to make many screenshots sort properly alphabetically)
         private const string ScreenshotFormat = "ScreenShot_{0:000}.png";
 
         #endregion
-
 
         #region public Screenshot code
 
@@ -30,10 +26,8 @@ namespace Ypsilon.Extensions
         /// and the SaveScreenshot() method should be called after spriteBatch.End()
         /// </summary>
         /// <param name="device">The GraphicsDevice to use</param>
-        public static void PrepareScreenShot(this GraphicsDevice device)
-        {
-            if (device.GraphicsProfile == GraphicsProfile.Reach)
-            {
+        public static void PrepareScreenShot(this GraphicsDevice device) {
+            if (device.GraphicsProfile == GraphicsProfile.Reach) {
                 //sets the rendertarget to a new RenderTarget2D for this Draw()
                 device.SetRenderTarget(new RenderTarget2D(device,
                     device.PresentationParameters.BackBufferWidth,
@@ -46,10 +40,8 @@ namespace Ypsilon.Extensions
         /// </summary>
         /// <param name="device">The GraphicsDevice to use</param>
         /// <param name="fileName">The filename to save to. If fileName is null - a "ScreenShot_[number].png" format is used and the screenshot is saved to the game's running directory (where the EXE is)</param>
-        public static void SaveScreenshot(this GraphicsDevice device, string fileName = null)
-        {
-            switch (device.GraphicsProfile)
-            {
+        public static void SaveScreenshot(this GraphicsDevice device, string fileName = null) {
+            switch (device.GraphicsProfile) {
                 case GraphicsProfile.Reach:
                     device.SaveScreenShotReach(fileName);
                     break;
@@ -61,12 +53,10 @@ namespace Ypsilon.Extensions
 
         #endregion
 
-
         #region Internal screenshot code
 
         //saves a screenshot from the GPU to disk - HiDef only!
-        internal static void SaveScreenshotHiDef(this GraphicsDevice device, string fileName = null)
-        {
+        internal static void SaveScreenshotHiDef(this GraphicsDevice device, string fileName = null) {
             //for storing the imagedata
             byte[] screenData = new byte[device.PresentationParameters.BackBufferWidth * device.PresentationParameters.BackBufferHeight * 4];
 
@@ -74,8 +64,7 @@ namespace Ypsilon.Extensions
             device.GetBackBufferData(screenData);
 
             //use "using" to ensure .Dispose() is called
-            using (Texture2D texture = new Texture2D(device, device.PresentationParameters.BackBufferWidth, device.PresentationParameters.BackBufferHeight, false, device.PresentationParameters.BackBufferFormat))
-            {
+            using (Texture2D texture = new Texture2D(device, device.PresentationParameters.BackBufferWidth, device.PresentationParameters.BackBufferHeight, false, device.PresentationParameters.BackBufferFormat)) {
                 //insert the imagedata in the Texture2D
                 texture.SetData(screenData);
 
@@ -84,13 +73,10 @@ namespace Ypsilon.Extensions
             }
         }
 
-
         // Creates a screenshot of the current screen in Reach mode
-        internal static void SaveScreenShotReach(this GraphicsDevice device, string fileName = null)
-        {
+        internal static void SaveScreenShotReach(this GraphicsDevice device, string fileName = null) {
             //give useful advice if game is in Reach mode, but trying to use the SaveScreenshotHiDef method
-            if (device.GetRenderTargets().Length == 0 || device.GetRenderTargets()[0].RenderTarget == null)
-            {
+            if (device.GetRenderTargets().Length == 0 || device.GetRenderTargets()[0].RenderTarget == null) {
                 throw new Exception("It seems you didn't call the PrepareScreenShotReach() method before your spriteBatch.Begin()");
             }
 
@@ -106,52 +92,40 @@ namespace Ypsilon.Extensions
 
         #endregion
 
-
         #region Helpermethods
 
         //saves the texture
-        private static void SaveTexture(Texture2D texture, string fileName)
-        {
-
+        private static void SaveTexture(Texture2D texture, string fileName) {
             //if we need to generate a filename - find an available one
-            if (fileName == null)
-            {
+            if (fileName == null) {
                 fileName = GetUnusedFileName();
             }
 
             //try saving the texture
-            try
-            {
-
+            try {
                 //use "using" to ensure proper closing even if exceptions occur
-                using (Stream st = new FileStream(fileName, FileMode.Create))
-                {
+                using (Stream st = new FileStream(fileName, FileMode.Create)) {
                     texture.SaveAsPng(st, texture.Width, texture.Height);
                 }
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 throw new Exception($"Error trying to save texture to '{fileName}'. Error is '{ex}'");
             }
         }
 
         //gives you an unused filename
-        private static string GetUnusedFileName()
-        {
+        private static string GetUnusedFileName() {
             int i = 0;
             string fileName;
-            do
-            {
+            do {
                 //increment filenumber
                 i++;
                 //generate filename for testing
                 fileName = string.Format(ScreenshotFormat, i);
             } while (File.Exists(fileName)); //keep incrementing filenumber till we find an unused name
-
             return fileName;
         }
 
         #endregion
-
     }
 }

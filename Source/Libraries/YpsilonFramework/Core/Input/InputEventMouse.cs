@@ -12,33 +12,15 @@
 using Microsoft.Xna.Framework;
 using Ypsilon.Core.Windows;
 
-namespace Ypsilon.Core.Input
-{
-    public class InputEventMouse : InputEvent
-    {
-        public bool IsEvent(MouseEvent e, MouseButton b)
-        {
-            if (e == EventType && b == Button)
-                return true;
-            return false;
-        }
-
-        private readonly MouseEvent m_EventType;
-        public MouseEvent EventType => m_EventType;
-
+namespace Ypsilon.Core.Input {
+    public class InputEventMouse : InputEvent {
         private const int c_WheelDelta = 120;
-        public int WheelValue => (m_Clicks / c_WheelDelta);
 
         private readonly WinMouseButtons m_Button;
         private readonly int m_Clicks;
-        private readonly int m_MouseData;
-        private readonly int m_X;
-        private readonly int m_Y;
 
-        public MouseButton Button
-        {
-            get
-            {
+        public MouseButton Button {
+            get {
                 if ((m_Button & WinMouseButtons.Left) == WinMouseButtons.Left)
                     return MouseButton.Left;
                 if ((m_Button & WinMouseButtons.Right) == WinMouseButtons.Right)
@@ -53,36 +35,42 @@ namespace Ypsilon.Core.Input
             }
         }
 
-        public int MouseData => m_MouseData;
+        public MouseEvent EventType { get; }
 
-        public int X => m_X;
+        public int MouseData { get; }
 
-        public int Y => m_Y;
+        public Point Position => new Point(X, Y);
+        public int WheelValue => m_Clicks / c_WheelDelta;
 
-        public Point Position => new Point(m_X, m_Y);
+        public int X { get; }
+
+        public int Y { get; }
 
         public InputEventMouse(MouseEvent eventType, WinMouseButtons button, int clicks, int x, int y, int mouseData, WinKeys modifiers)
-            : base(modifiers)
-        {
+            : base(modifiers) {
             Vector2 dpi = DpiManager.GetSystemDpiScalar();
-
-            m_EventType = eventType;
+            EventType = eventType;
             m_Button = button;
             m_Clicks = clicks;
-            m_X = (int)(x / dpi.X);
-            m_Y = (int)(y / dpi.Y);
-            m_MouseData = mouseData;
+            X = (int)(x / dpi.X);
+            Y = (int)(y / dpi.Y);
+            MouseData = mouseData;
         }
 
         public InputEventMouse(MouseEvent eventType, InputEventMouse parent)
-            : base(parent)
-        {
-            m_EventType = eventType;
+            : base(parent) {
+            EventType = eventType;
             m_Button = parent.m_Button;
             m_Clicks = parent.m_Clicks;
-            m_X = parent.m_X;
-            m_Y = parent.m_Y;
-            m_MouseData = parent.m_MouseData;
+            X = parent.X;
+            Y = parent.Y;
+            MouseData = parent.MouseData;
+        }
+
+        public bool IsEvent(MouseEvent e, MouseButton b) {
+            if (e == EventType && b == Button)
+                return true;
+            return false;
         }
     }
 }

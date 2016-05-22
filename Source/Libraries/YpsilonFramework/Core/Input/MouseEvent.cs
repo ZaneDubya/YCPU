@@ -1,7 +1,5 @@
-﻿namespace Ypsilon.Core.Input
-{
-    public enum MouseEvent
-    {
+﻿namespace Ypsilon.Core.Input {
+    public enum MouseEvent {
         Move,
         Down,
         Up,

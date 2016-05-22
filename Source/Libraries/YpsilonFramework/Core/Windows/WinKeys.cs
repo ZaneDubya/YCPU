@@ -10,14 +10,12 @@
 
 using System;
 
-namespace Ypsilon.Core.Windows
-{
+namespace Ypsilon.Core.Windows {
     /// <summary>
     /// Keyboard constants. Refer to https://msdn.microsoft.com/en-us/library/system.windows.forms.keys(v=vs.110).aspx for descriptions.
     /// </summary>
     [Flags]
-    public enum WinKeys
-    {
+    public enum WinKeys {
         Modifiers = -65536,
         None = 0,
         LButton = 1,

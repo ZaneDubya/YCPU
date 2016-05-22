@@ -11,37 +11,31 @@
 
 using Ypsilon.Core.Windows;
 
-namespace Ypsilon.Core.Input
-{
-    public class InputEvent
-    {
-        protected readonly WinKeys Modifiers;
+namespace Ypsilon.Core.Input {
+    public class InputEvent {
         protected bool m_handled;
+        protected readonly WinKeys Modifiers;
 
-        public virtual bool Alt => ((Modifiers & WinKeys.Alt) == WinKeys.Alt);
+        public virtual bool Alt => (Modifiers & WinKeys.Alt) == WinKeys.Alt;
 
-        public bool Control => ((Modifiers & WinKeys.Control) == WinKeys.Control);
+        public bool Control => (Modifiers & WinKeys.Control) == WinKeys.Control;
 
-        public virtual bool Shift => ((Modifiers & WinKeys.Shift) == WinKeys.Shift);
-
-        public InputEvent(WinKeys modifiers)
-        {
-            Modifiers = modifiers;
-        }
-
-        protected InputEvent(InputEvent parent)
-        {
-            Modifiers = parent.Modifiers;
-        }
-
-        public bool Handled
-        {
+        public bool Handled {
             get { return m_handled; }
             set { m_handled = value; }
         }
 
-        public void SuppressEvent()
-        {
+        public virtual bool Shift => (Modifiers & WinKeys.Shift) == WinKeys.Shift;
+
+        public InputEvent(WinKeys modifiers) {
+            Modifiers = modifiers;
+        }
+
+        protected InputEvent(InputEvent parent) {
+            Modifiers = parent.Modifiers;
+        }
+
+        public void SuppressEvent() {
             m_handled = true;
         }
     }

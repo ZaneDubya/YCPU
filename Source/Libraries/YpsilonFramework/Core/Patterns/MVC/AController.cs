@@ -1,22 +1,16 @@
 ﻿using Ypsilon.Core.Input;
 
-namespace Ypsilon.Core.Patterns.MVC
-{
+namespace Ypsilon.Core.Patterns.MVC {
     /// <summary>
     /// Abstract Controller - receives input, interacts with state of model.
     /// </summary>
-    public abstract class AController
-    {
+    public abstract class AController {
         protected AModel Model;
 
-        public AController(AModel parentModel)
-        {
+        public AController(AModel parentModel) {
             Model = parentModel;
         }
 
-        public virtual void Update(float frameSeconds, InputManager input)
-        {
-
-        }
+        public virtual void Update(float frameSeconds, InputManager input) {}
     }
 }

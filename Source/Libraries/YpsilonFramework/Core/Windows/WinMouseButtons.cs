@@ -11,11 +11,9 @@
 
 using System;
 
-namespace Ypsilon.Core.Windows
-{
+namespace Ypsilon.Core.Windows {
     [Flags]
-    public enum WinMouseButtons
-    {
+    public enum WinMouseButtons {
         Left = 0x100000,
         Middle = 0x400000,
         None = 0,

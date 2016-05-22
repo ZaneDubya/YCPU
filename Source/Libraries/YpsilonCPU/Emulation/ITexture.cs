@@ -1,9 +1,7 @@
-﻿namespace Ypsilon.Emulation
-{
-    public interface ITexture
-    {
-        int Width { get; }
+﻿namespace Ypsilon.Emulation {
+    public interface ITexture {
+        int DeviceBusIndex { get; set; }
         int Height { get; }
-        int DeviceBusIndex { get; set;  }
+        int Width { get; }
     }
 }
