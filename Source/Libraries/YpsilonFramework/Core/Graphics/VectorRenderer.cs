@@ -27,6 +27,7 @@ namespace Ypsilon.Core.Graphics {
         /// Draws the given tri list. This can be massively optimized, I'm sure.
         /// </summary>
         public void DrawTris(VertexPositionTextureDataColor[] polygon, ushort[] indexes, Matrix matrix, Color color, Vector4 data) {
+            return;
             if (polygon == null)
                 return;
             int count = indexes.Length / 3;

@@ -6,7 +6,7 @@ namespace Ypsilon.Core.Graphics {
 
         public static Vector3 NextZ {
             get {
-                s_ZOffset.Z++;
+                s_ZOffset.Z += 1;
                 return s_ZOffset;
             }
         }

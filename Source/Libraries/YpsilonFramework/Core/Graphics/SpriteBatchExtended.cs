@@ -90,7 +90,7 @@ namespace Ypsilon.Core.Graphics {
             return true;
         }
 
-        public void End(Effects effect) {
+        public void End(Effects effect, Matrix projection, Matrix view, Matrix world) {
             Effect fx;
             SamplerState sample;
             switch (effect) {
@@ -113,9 +113,9 @@ namespace Ypsilon.Core.Graphics {
                 CullMode = CullMode.None
             }; // RasterizerState.CullNone;
             IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_DrawQueue.GetEnumerator();
-            fx.Parameters["ProjectionMatrix"].SetValue(GraphicsUtility.CreateProjectionMatrixScreenOffset(Graphics));
-            fx.Parameters["ViewMatrix"].SetValue(Matrix.Identity);
-            fx.Parameters["WorldMatrix"].SetValue(Matrix.Identity);
+            fx.Parameters["ProjectionMatrix"].SetValue(projection);
+            fx.Parameters["ViewMatrix"].SetValue(view);
+            fx.Parameters["WorldMatrix"].SetValue(world);
             fx.Parameters["Viewport"].SetValue(new Vector2(Graphics.Viewport.Width, Graphics.Viewport.Height));
             fx.CurrentTechnique.Passes[0].Apply();
             while (keyValuePairs.MoveNext()) {
