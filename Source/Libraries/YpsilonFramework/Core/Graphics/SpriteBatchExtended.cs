@@ -4,8 +4,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Ypsilon.Core.Graphics {
     public class SpriteBatchExtended {
-        private Effect m_BasicEffect, m_CRTEffect;
-
         private Dictionary<Texture2D, List<VertexPositionTextureDataColor>> m_DrawQueue;
 
         private readonly Game m_Game;
@@ -25,8 +23,6 @@ namespace Ypsilon.Core.Graphics {
         }
 
         public void Dispose() {
-            m_BasicEffect.Dispose();
-            m_CRTEffect.Dispose();
             m_Pixel.Dispose();
         }
 
@@ -95,7 +91,7 @@ namespace Ypsilon.Core.Graphics {
             SamplerState sample;
             switch (effect) {
                 case Effects.Basic:
-                    fx = m_BasicEffect;
+                    fx = m_SpriteEffect;
                     sample = SamplerState.LinearClamp;
                     break;
                 case Effects.CRT:
@@ -132,7 +128,7 @@ namespace Ypsilon.Core.Graphics {
 
         public void Initialize() {
             Graphics = m_Game.GraphicsDevice;
-            m_BasicEffect = m_Game.Content.Load<Effect>("BasicEffect");
+            m_SpriteEffect = m_Game.Content.Load<Effect>("SpriteEffect");
             m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
             m_DrawQueue = new Dictionary<Texture2D, List<VertexPositionTextureDataColor>>(256);
             m_IndexBuffer = CreateIndexBuffer(0x2000);

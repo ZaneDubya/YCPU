@@ -16,7 +16,7 @@ namespace Ypsilon.Core.Graphics {
 
         public VectorRenderer(GraphicsDevice g, ContentManager c) {
             m_Graphics = g;
-            m_Effect = c.Load<Effect>("BasicEffect");
+            m_Effect = c.Load<Effect>("SpriteEffect");
 
             // create vertex and index collections
             m_WorldTris = new VertexList(c_MaxPrimitives, 3);
