@@ -16,6 +16,11 @@ namespace Ypsilon.Core.Graphics {
             m_Game = game;
         }
 
+        public Effect LoadEffect(string contentName)
+        {
+            return m_Game.Content.Load<Effect>(contentName);
+        }
+
         public void Begin(Color? clear = null) {
             if (clear == null)
                 return;
@@ -86,34 +91,20 @@ namespace Ypsilon.Core.Graphics {
             return true;
         }
 
-        public void End(Effects effect, Matrix projection, Matrix view, Matrix world) {
-            Effect fx;
-            SamplerState sample;
-            switch (effect) {
-                case Effects.Basic:
-                    fx = m_SpriteEffect;
-                    sample = SamplerState.LinearClamp;
-                    break;
-                case Effects.CRT:
-                    fx = m_CRTEffect;
-                    sample = SamplerState.AnisotropicClamp;
-                    break;
-                default:
-                    return;
-            }
+        public void End(EffectState effect, Matrix projection, Matrix view, Matrix world) {
             Graphics.BlendState = BlendState.AlphaBlend;
             Graphics.DepthStencilState = DepthStencilState.Default;
-            Graphics.SamplerStates[0] = sample;
+            Graphics.SamplerStates[0] = effect.Sampler;
             Graphics.RasterizerState = new RasterizerState {
                 ScissorTestEnable = true,
                 CullMode = CullMode.None
             }; // RasterizerState.CullNone;
             IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> keyValuePairs = m_DrawQueue.GetEnumerator();
-            fx.Parameters["ProjectionMatrix"].SetValue(projection);
-            fx.Parameters["ViewMatrix"].SetValue(view);
-            fx.Parameters["WorldMatrix"].SetValue(world);
-            fx.Parameters["Viewport"].SetValue(new Vector2(Graphics.Viewport.Width, Graphics.Viewport.Height));
-            fx.CurrentTechnique.Passes[0].Apply();
+            effect.Effect.Parameters["ProjectionMatrix"].SetValue(projection);
+            effect.Effect.Parameters["ViewMatrix"].SetValue(view);
+            effect.Effect.Parameters["WorldMatrix"].SetValue(world);
+            effect.Effect.Parameters["Viewport"].SetValue(new Vector2(Graphics.Viewport.Width, Graphics.Viewport.Height));
+            effect.Effect.CurrentTechnique.Passes[0].Apply();
             while (keyValuePairs.MoveNext()) {
                 List<VertexPositionTextureDataColor> iVertexList = keyValuePairs.Current.Value;
                 Graphics.Textures[0] = keyValuePairs.Current.Key;
@@ -128,8 +119,6 @@ namespace Ypsilon.Core.Graphics {
 
         public void Initialize() {
             Graphics = m_Game.GraphicsDevice;
-            m_SpriteEffect = m_Game.Content.Load<Effect>("SpriteEffect");
-            m_CRTEffect = m_Game.Content.Load<Effect>("CRTEffect");
             m_DrawQueue = new Dictionary<Texture2D, List<VertexPositionTextureDataColor>>(256);
             m_IndexBuffer = CreateIndexBuffer(0x2000);
             m_VertexListQueue = new Queue<List<VertexPositionTextureDataColor>>(256);

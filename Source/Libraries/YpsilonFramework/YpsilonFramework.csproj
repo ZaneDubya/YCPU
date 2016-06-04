@@ -48,7 +48,7 @@
     <Compile Include="Core\FSM\StateMachine.cs" />
     <Compile Include="Core\FSM\StateMapping.cs" />
     <Compile Include="Core\Graphics\Depth.cs" />
-    <Compile Include="Core\Graphics\Effects.cs" />
+    <Compile Include="Core\Graphics\EffectState.cs" />
     <Compile Include="Core\Graphics\PreTransformedQuad.cs" />
     <Compile Include="Core\Graphics\VertexList.cs" />
     <Compile Include="Core\Graphics\VertexPositionNormalTextureData.cs" />
