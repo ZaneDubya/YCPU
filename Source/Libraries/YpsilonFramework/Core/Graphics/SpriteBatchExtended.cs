@@ -40,11 +40,20 @@ namespace Ypsilon.Core.Graphics {
         }
 
         public void End(Matrix projection, Matrix view, Matrix world) {
+            Graphics.DepthStencilState = DepthStencilState.Default;
+            EndUnderlying(projection, view, world, false);
+            Graphics.DepthStencilState = DepthStencilState.DepthRead;
+            EndUnderlying(projection, view, world, true);
+            EndClearAllVertexLists();
+            Graphics.Textures[0] = null;
+        }
+
+        private void EndUnderlying(Matrix projection, Matrix view, Matrix world, bool drawTransparent)
+        {
             foreach (EffectState effect in m_DrawCommands.Keys)
             {
                 Dictionary<Texture2D, List<VertexPositionTextureDataColor>> vls = m_DrawCommands[effect];
                 Graphics.BlendState = BlendState.AlphaBlend;
-                Graphics.DepthStencilState = DepthStencilState.Default;
                 Graphics.SamplerStates[0] = effect.Sampler;
                 Graphics.RasterizerState = new RasterizerState
                 {
@@ -56,6 +65,7 @@ namespace Ypsilon.Core.Graphics {
                 effect.Effect.Parameters["ViewMatrix"].SetValue(view);
                 effect.Effect.Parameters["WorldMatrix"].SetValue(world);
                 effect.Effect.Parameters["Viewport"].SetValue(new Vector2(Graphics.Viewport.Width, Graphics.Viewport.Height));
+                effect.Effect.Parameters["DrawTransparentPixels"].SetValue(drawTransparent);
                 effect.Effect.CurrentTechnique.Passes[0].Apply();
                 while (vlKeyIsTexture.MoveNext())
                 {
@@ -63,12 +73,24 @@ namespace Ypsilon.Core.Graphics {
                     Graphics.Textures[0] = vlKeyIsTexture.Current.Key;
                     Graphics.DrawUserIndexedPrimitives(
                         PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, m_IndexBuffer, 0, iVertexList.Count / 2);
+                }
+            }
+        }
+
+        private void EndClearAllVertexLists()
+        {
+            foreach (EffectState effect in m_DrawCommands.Keys)
+            {
+                Dictionary<Texture2D, List<VertexPositionTextureDataColor>> vls = m_DrawCommands[effect];
+                IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> vlKeyIsTexture = vls.GetEnumerator();
+                while (vlKeyIsTexture.MoveNext())
+                {
+                    List<VertexPositionTextureDataColor> iVertexList = vlKeyIsTexture.Current.Value;
                     iVertexList.Clear();
                     m_QueuedVertexLists.Enqueue(iVertexList);
                 }
                 vls.Clear();
             }
-            Graphics.Textures[0] = null;
         }
 
         public bool DrawSprite(EffectState effect, Texture2D texture, Vector3 position, Vector2 area, Color hue)
