@@ -28,9 +28,14 @@ namespace Ypsilon.Core.Graphics {
 
         }
 
-        public Effect LoadEffect(string contentName)
+        public Effect LoadEffectContent(string contentName)
         {
             return m_Game.Content.Load<Effect>(contentName);
+        }
+
+        public Texture2D LoadTextureContent(string contentName)
+        {
+            return m_Game.Content.Load<Texture2D>(contentName);
         }
 
         public void Begin(Color? clear = null) {

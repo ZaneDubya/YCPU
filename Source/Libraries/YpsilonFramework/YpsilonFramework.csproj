@@ -55,7 +55,10 @@
     <Compile Include="Core\IO\BinaryFileReader.cs" />
     <Compile Include="Core\IO\BinaryFileWriter.cs" />
     <Compile Include="Core\IO\Compression.cs" />
+    <Compile Include="Core\Localization.cs" />
+    <Compile Include="Core\ModeManager.cs" />
     <Compile Include="Core\Patterns\ECS\ComponentCollection.cs" />
+    <Compile Include="Core\ServiceRegistry.cs" />
     <Compile Include="Extensions\PointX.cs" />
     <Compile Include="Extensions\StringX.cs" />
     <Compile Include="GraphicsUtility.cs" />
