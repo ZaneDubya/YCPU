@@ -10,6 +10,7 @@ namespace Ypsilon.Core.Graphics {
         private short[] m_IndexBuffer;
         private Dictionary<EffectState, Dictionary<Texture2D, List<VertexPositionTextureDataColor>>> m_DrawCommands;
         private Queue<List<VertexPositionTextureDataColor>> m_QueuedVertexLists;
+        private Texture2D m_Pixel;
 
         public SpriteBatchExtended(Game game) {
             m_Game = game;
@@ -21,6 +22,8 @@ namespace Ypsilon.Core.Graphics {
             m_DrawCommands = new Dictionary<EffectState, Dictionary<Texture2D, List<VertexPositionTextureDataColor>>>();
             m_IndexBuffer = CreateIndexBuffer(0x2000);
             m_QueuedVertexLists = new Queue<List<VertexPositionTextureDataColor>>(256);
+            m_Pixel = new Texture2D(Graphics, 1, 1);
+            m_Pixel.SetData(new Color[1] { Color.White });
         }
 
         public void Dispose()
@@ -47,7 +50,7 @@ namespace Ypsilon.Core.Graphics {
         public void End(Matrix projection, Matrix view, Matrix world) {
             Graphics.DepthStencilState = DepthStencilState.Default;
             EndUnderlying(projection, view, world, false);
-            Graphics.DepthStencilState = DepthStencilState.DepthRead;
+            Graphics.DepthStencilState = DepthStencilState.Default;
             EndUnderlying(projection, view, world, true);
             EndClearAllVertexLists();
             Graphics.Textures[0] = null;
@@ -60,11 +63,7 @@ namespace Ypsilon.Core.Graphics {
                 Dictionary<Texture2D, List<VertexPositionTextureDataColor>> vls = m_DrawCommands[effect];
                 Graphics.BlendState = BlendState.AlphaBlend;
                 Graphics.SamplerStates[0] = effect.Sampler;
-                Graphics.RasterizerState = new RasterizerState
-                {
-                    ScissorTestEnable = true,
-                    CullMode = CullMode.None
-                };
+                Graphics.RasterizerState = effect.Raster;
                 IEnumerator<KeyValuePair<Texture2D, List<VertexPositionTextureDataColor>>> vlKeyIsTexture = vls.GetEnumerator();
                 effect.Effect.Parameters["ProjectionMatrix"].SetValue(projection);
                 effect.Effect.Parameters["ViewMatrix"].SetValue(view);
@@ -75,7 +74,7 @@ namespace Ypsilon.Core.Graphics {
                 while (vlKeyIsTexture.MoveNext())
                 {
                     List<VertexPositionTextureDataColor> iVertexList = vlKeyIsTexture.Current.Value;
-                    Graphics.Textures[0] = vlKeyIsTexture.Current.Key;
+                    Graphics.Textures[0] = effect.TextureOverride ? m_Pixel : vlKeyIsTexture.Current.Key;
                     Graphics.DrawUserIndexedPrimitives(
                         PrimitiveType.TriangleList, iVertexList.ToArray(), 0, iVertexList.Count, m_IndexBuffer, 0, iVertexList.Count / 2);
                 }

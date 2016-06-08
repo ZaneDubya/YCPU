@@ -1,8 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Ypsilon.Core.Graphics
 {
@@ -10,11 +6,28 @@ namespace Ypsilon.Core.Graphics
     {
         public readonly Effect Effect;
         public readonly SamplerState Sampler;
+        public readonly RasterizerState Raster;
+        public readonly bool TextureOverride;
+        public readonly DepthStencilState stencil;
 
-        public EffectState(Effect effect, SamplerState sampler)
+        public EffectState(Effect effect, SamplerState sampler, RasterizerState raster, DepthStencilState stencil, bool texture)
         {
             Effect = effect;
             Sampler = sampler;
+            Raster = raster;
+            TextureOverride = texture;
+        }
+
+        public EffectState(Effect effect, SamplerState sampler, RasterizerState raster)
+            : this(effect, sampler, raster, DepthStencilState.Default, false)
+        {
+
+        }
+
+        public EffectState(Effect effect, SamplerState sample)
+            : this(effect, sample, RasterizerState.CullNone, DepthStencilState.Default, false)
+        {
+
         }
     }
 }

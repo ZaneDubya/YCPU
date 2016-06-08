@@ -9,7 +9,6 @@ namespace Ypsilon.Core.Graphics {
     /// </summary>
     public class VectorRenderer {
         private const int c_MaxPrimitives = 0x1000;
-        private readonly EffectState m_Effect;
         private readonly GraphicsDevice m_Graphics;
         private readonly short[] m_TriIndices;
         private readonly VertexList m_WorldTris;
