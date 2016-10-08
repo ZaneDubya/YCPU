@@ -2,6 +2,7 @@ float4x4 ProjectionMatrix;
 float4x4 WorldMatrix;
 float4x4 ViewMatrix;
 float2 Viewport;
+bool DrawTransparentPixels;
 
 sampler Texture;
 

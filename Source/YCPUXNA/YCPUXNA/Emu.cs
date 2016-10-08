@@ -10,6 +10,7 @@ using Ypsilon.Core.Windows;
 using Ypsilon.Emulation;
 using Ypsilon.Emulation.Processor;
 using Ypsilon.Providers;
+using Ypsilon.Extensions;
 
 namespace YCPUXNA
 {
@@ -32,6 +33,7 @@ namespace YCPUXNA
         private GraphicsDeviceManager m_Graphics;
         private SpriteBatchExtended m_SpriteBatch;
         private List<ITexture> m_DeviceTextures = new List<ITexture>();
+        private EffectState m_Effect, m_EffectCRT;
         
         private InputManager m_InputManager;
         private InputProvider m_InputProvider;
@@ -74,6 +76,8 @@ namespace YCPUXNA
             m_Emulator = new Emulator();
             m_Emulator.Initialize(m_DisplayProvider, m_InputProvider);
             m_Curses = new Curses(GraphicsDevice, c_ConsoleWidth, c_ConsoleHeight, c_CursesFont, true);
+            m_Effect = new EffectState(m_SpriteBatch.LoadEffectContent("BasicEffect"), SamplerState.PointClamp);
+            m_EffectCRT = new EffectState(m_SpriteBatch.LoadEffectContent("CRTEffect"), SamplerState.AnisotropicClamp);
 
             m_Graphics.PreferredBackBufferWidth = c_WindowW * 2;
             m_Graphics.PreferredBackBufferHeight = c_WindowH;
@@ -110,12 +114,13 @@ namespace YCPUXNA
         protected override void Draw(GameTime gameTime)
         {
             // render the debug console contents to a RenderTarget
+            Depth.ResetZ();
             if (debug == null)
                 debug = new RenderTarget2D(GraphicsDevice, m_Curses.DisplayWidth, m_Curses.DisplayHeight);
             GraphicsDevice.SetRenderTarget(debug);
             m_SpriteBatch.Begin(new Color(0, 0, 0, 255));
-            m_Curses.Render(m_SpriteBatch, Vector2.Zero);
-            m_SpriteBatch.End(Effects.Basic);
+            m_Curses.Render(m_SpriteBatch, m_Effect, Vector2.Zero);
+            m_SpriteBatch.End(GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.Graphics), Matrix.Identity, Matrix.Identity);
             GraphicsDevice.SetRenderTarget(null);
 
             if (m_DoScreenshot)
@@ -124,10 +129,13 @@ namespace YCPUXNA
             }
 
             // clear the screen:
+            Depth.ResetZ();
             m_SpriteBatch.Begin(new Color(32, 32, 32, 255));
 
             // draw the debug console device
-            m_SpriteBatch.DrawSprite(debug, 
+            m_SpriteBatch.DrawSprite(
+                m_EffectCRT,
+                debug, 
                 Vector3.Zero, 
                 new Vector2(c_WindowW, c_WindowH), 
                 new Vector4(0, 0, 1, 1), 
@@ -143,7 +151,9 @@ namespace YCPUXNA
                 if (texture == null)
                     continue;
 
-                m_SpriteBatch.DrawSprite(texture.Texture,
+                m_SpriteBatch.DrawSprite(
+                    m_EffectCRT,
+                    texture.Texture,
                     new Vector3(c_WindowW, 0, 0),
                     new Vector2(c_WindowW, c_WindowH),
                     new Vector4(0, 0, 1, 1),
@@ -152,7 +162,7 @@ namespace YCPUXNA
             }
 
             // End the spritebatch.
-            m_SpriteBatch.End(Effects.CRT);
+            m_SpriteBatch.End(GraphicsUtility.CreateProjectionMatrixScreenOffset(m_SpriteBatch.Graphics), Matrix.Identity, Matrix.Identity);
 
             if (m_DoScreenshot)
             {
