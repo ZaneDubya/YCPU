@@ -9,16 +9,12 @@ namespace Ypsilon.Core.Graphics {
     /// </summary>
     public class VectorRenderer {
         private const int c_MaxPrimitives = 0x1000;
-        private readonly Effect m_Effect;
         private readonly GraphicsDevice m_Graphics;
         private readonly short[] m_TriIndices;
         private readonly VertexList m_WorldTris;
 
         public VectorRenderer(GraphicsDevice g, ContentManager c) {
             m_Graphics = g;
-            m_Effect = c.Load<Effect>("BasicEffect");
-
-            // create vertex and index collections
             m_WorldTris = new VertexList(c_MaxPrimitives, 3);
             m_TriIndices = CreateTriBuffer(c_MaxPrimitives);
         }
@@ -50,22 +46,22 @@ namespace Ypsilon.Core.Graphics {
             }
         }
 
-        public void Render(Matrix projection, Matrix view, Matrix world, Texture2D texture) {
+        public void Render(EffectState effect, Matrix projection, Matrix view, Matrix world, Texture2D texture) {
             // set up graphics state
             m_Graphics.BlendState = BlendState.AlphaBlend;
             m_Graphics.DepthStencilState = DepthStencilState.Default;
-            m_Graphics.SamplerStates[0] = SamplerState.PointClamp;
+            m_Graphics.SamplerStates[0] = effect.Sampler;
             m_Graphics.RasterizerState = new RasterizerState {
                 ScissorTestEnable = true,
                 CullMode = CullMode.None
             }; // RasterizerState.CullNone;
             m_Graphics.Textures[0] = texture;
             // set up effect state
-            m_Effect.Parameters["ProjectionMatrix"].SetValue(projection);
-            m_Effect.Parameters["ViewMatrix"].SetValue(view);
-            m_Effect.Parameters["WorldMatrix"].SetValue(world);
-            m_Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
-            m_Effect.CurrentTechnique.Passes[0].Apply();
+            effect.Effect.Parameters["ProjectionMatrix"].SetValue(projection);
+            effect.Effect.Parameters["ViewMatrix"].SetValue(view);
+            effect.Effect.Parameters["WorldMatrix"].SetValue(world);
+            effect.Effect.Parameters["Viewport"].SetValue(new Vector2(m_Graphics.Viewport.Width, m_Graphics.Viewport.Height));
+            effect.Effect.CurrentTechnique.Passes[0].Apply();
             if (m_WorldTris.Count <= 0)
                 return;
             m_Graphics.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, m_WorldTris.Vertices, 0, m_WorldTris.Index, m_TriIndices, 0, m_WorldTris.Count);

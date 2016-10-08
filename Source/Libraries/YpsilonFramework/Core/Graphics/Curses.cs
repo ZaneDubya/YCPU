@@ -83,7 +83,7 @@ namespace Ypsilon.Core.Graphics {
                 m_CharBuffer[i] = (byte)rand.Next(255);
         }
 
-        public void Render(SpriteBatchExtended spriteBatch, Vector2 offset) {
+        public void Render(SpriteBatchExtended spriteBatch, EffectState effect, Vector2 offset) {
             const float sixteenth = 1 / 16f;
             float horizSpacer = m_AdditionalHorizSpacingPixel ? 1f : 0f;
             for (int y = 0; y < CharsHigh; y++) {
@@ -93,7 +93,7 @@ namespace Ypsilon.Core.Graphics {
                         continue;
                     float u = ch % 16 * sixteenth;
                     float v = ch / 16 * sixteenth;
-                    spriteBatch.DrawSprite(m_Texture,
+                    spriteBatch.DrawSprite(effect, m_Texture,
                         new Vector3(offset.X + x * (OneCharWidth + horizSpacer), offset.Y + y * OneCharHeight, 0),
                         new Vector2(OneCharWidth, OneCharHeight),
                         new Vector4(u, v, u + sixteenth, v + sixteenth),
