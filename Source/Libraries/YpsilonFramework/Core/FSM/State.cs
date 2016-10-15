@@ -90,9 +90,9 @@ namespace Ypsilon.Core.FSM {
 
         public StateMapping CurrentStateMap { get; private set; }
 
-        public void Update(float frameSeconds) {
+        public void Update(float updateSeconds) {
             IState fsm = this;
-            fsm.CurrentStateMap?.Update(frameSeconds);
+            fsm.CurrentStateMap?.Update(updateSeconds);
         }
 
         public void ChangeState(T newState) {

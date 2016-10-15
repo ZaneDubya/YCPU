@@ -11,7 +11,11 @@ namespace Ypsilon {
         }
 
         public static Matrix CreateProjectionMatrixScreenOffset(GraphicsDevice graphics) {
-            return Matrix.CreateOrthographicOffCenter(0, graphics.Viewport.Width, graphics.Viewport.Height, 0, short.MinValue, 0);//short.MaxValue);
+            return CreateProjectionMatrixScreenOffset(graphics.Viewport.Width, graphics.Viewport.Height);
+        }
+
+        public static Matrix CreateProjectionMatrixScreenOffset(int w, int h) {
+            return Matrix.CreateOrthographicOffCenter(0, w, h, 0, short.MinValue, 0);//short.MaxValue);
         }
     }
 }
