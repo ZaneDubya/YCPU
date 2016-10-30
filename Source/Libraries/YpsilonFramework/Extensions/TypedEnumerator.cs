@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Ypsilon.Extensions {
     public class TypedEnumerator<T> where T : class {
-        private IEnumerator m_Enumerator;
+        IEnumerator m_Enumerator;
 
         public TypedEnumerator(IEnumerator enumerator) {
             m_Enumerator = enumerator;
@@ -20,7 +20,7 @@ namespace Ypsilon.Extensions {
             }
         }
 
-        private bool CheckCurrentIsT() {
+        bool CheckCurrentIsT() {
             if (!(m_Enumerator.Current is T))
                 while (!(m_Enumerator.Current is T))
                     if (!m_Enumerator.MoveNext())
