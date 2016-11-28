@@ -799,7 +799,8 @@ regardless of whether the processor was in user mode when the original interrupt
 occured.
 
 If the processor fails to load the DoubleFault interrupt handler, it will enter
-a TripleFault state and reset one clock cycle later. There is no function to
+a "TripleFault" state and reset one clock cycle later. Note that "TripleFault" is
+not an interrupt that can be handled by the programmer. There is no function to
 recover from a TripleFault.
 
     
