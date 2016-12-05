@@ -1232,27 +1232,27 @@ Attempted execution of a program word that does not have a defined 8-bit low
 octet will raise the 'undefined' interrupt.
 
 LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
-0000 0RRR   CMP                 ALU             Compare R and M, sets FL      1
-0000 1RRR   NEG                 ALU             R = 0 - R (two's complement)  1
-0001 0RRR   ADD                 ALU             R = R + M                     1
-0001 1RRR   SUB                 ALU             R = R - M                     1  
-0010 0RRR   ADC                 ALU             R = R + M + C                 1  
-0010 1RRR   SBC                 ALU             R = R - M - (1 - C)           1  
-0011 0RRR   MUL                 ALU             R = R * M (16x16=32b)         8   
-0011 1RRR   DIV                 ALU             R = R / M                    48 
-0100 0RRR   MLI                 ALU             R = R * M (signed 16x16=32b)  8 
-0100 1RRR   DVI                 ALU             R = R / M (signed)           48 
-0101 0RRR   MOD                 ALU             R = R % M (modulus)          48 
-0101 1RRR   MDI                 ALU             R = R % M (modulus, signed)  48 
-0110 0RRR   AND                 ALU             Bitwise and                   1 
-0110 1RRR   ORR                 ALU             Bitwise or                    1 
-0111 0RRR   EOR                 ALU             Bitwise exclusive or          1   
-0111 1RRR   NOT                 ALU             Bitwise not                   1 
+0000 0...   CMP                 ALU             Compare R and M, sets FL      1
+0000 1...   NEG                 ALU             R = 0 - R (two's complement)  1
+0001 0...   ADD                 ALU             R = R + M                     1
+0001 1...   SUB                 ALU             R = R - M                     1  
+0010 0...   ADC                 ALU             R = R + M + C                 1  
+0010 1...   SBC                 ALU             R = R - M - (1 - C)           1  
+0011 0...   MUL                 ALU             R = R * M (16x16=32b)         8   
+0011 1...   DIV                 ALU             R = R / M                    48 
+0100 0...   MLI                 ALU             R = R * M (signed 16x16=32b)  8 
+0100 1...   DVI                 ALU             R = R / M (signed)           48 
+0101 0...   MOD                 ALU             R = R % M (modulus)          48 
+0101 1...   MDI                 ALU             R = R % M (modulus, signed)  48 
+0110 0...   AND                 ALU             Bitwise and                   1 
+0110 1...   ORR                 ALU             Bitwise or                    1 
+0111 0...   EOR                 ALU             Bitwise exclusive or          1   
+0111 1...   NOT                 ALU             Bitwise not                   1 
 
-1000 0RRR   LOD                 ALU             Load                          1 
-1000 1RRR   STO                 ALU             Store                         1 
-1001 0bbb   Bxx                 BRA             Branch instructions           1
-1001 1bbb   Bxx                 BRA             Branch instructions           1
+1000 0...   LOD                 ALU             Load                          1 
+1000 1...   STO                 ALU             Store                         1 
+1001 0...   Bxx                 BRA             Branch instructions           1
+1001 1...   Bxx                 BRA             Branch instructions           1
 1010 0000   ASL                 SHF             Arithmetic Shift left         4
 1010 0001   LSL                 SHF             Logical Shift Left            4
 1010 0010   ROL                 SHF             Rotate Through-Carry Left     2
@@ -1265,11 +1265,11 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1010 1001   BTX                 BTI             Test a bit and change it      2
 1010 1010   BTC                 BTI             Test a bit and clear it       2
 1010 1011   BTS                 BTI             Test a bit and set it         2
-1010 110x   SET                 SEI             Set register to value         1
+1010 110.   SET                 SEI             Set register to value         1
 1010 1110   SEF                 FLG             Set flag bit                  1
 1010 1111   CLF                 FLG             Clear flag bit                1
-1011 000x   PSH                 STK             Push to stack                 1 
-1011 001x   POP                 STK             Pop from stack                1 
+1011 000.   PSH                 STK             Push to stack                 1 
+1011 001.   POP                 STK             Pop from stack                1 
 1011 0100   xxx         /       PRX             Processor functions           *
 1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    4
 1011 0110   ADI                 IMM             Increment by value            1
@@ -1278,8 +1278,8 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
 1011 1011   STX         X       STX             Stack Immediate               1
-1011 11xx   ---                 ---             UNDEFINED (4 opcodes)         - 
-11xx xxxx   ---                 ---             UNDEFINED (64 opcodes)        -
+1011 11..   ---                 ---             UNDEFINED (4 opcodes)         - 
+11.. ....   ---                 ---             UNDEFINED (64 opcodes)        -
 
 
 === 4.A. Bit Patterns ==========================================================
