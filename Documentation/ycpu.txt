@@ -31,20 +31,26 @@ Version 0.9 RELEASE CANDIDATE
 
 ### 1. Introduction ############################################################
 
-The YCPU Specification describes a processor that is easy to write software for
-without compromising on features. It features:
+The YCPU Specification describes a 16-bit processor architecture with a
+comprehensive instruction set and features. These features include:
 
   * eight general purpose 16-bit data/address registers;
   * user/supervisor modes with different privileges and stack pointers;
   * memory segmentation with resizable segments for code, stack, interrupts,
-    and two segments for data;
+    and two data segments;
   * memory protection with not-present/read-only attributes;
   * 28 bits of address space for memory access;
   * real time clock with a programmable timer that raises interrupts;
   * hardware bus that supports up to 15 devices with 24 bits of address space
     each.
     
-Section 2 gives you a broad overview of the 58 instructions that you can use to
+This document is made up of four sections. Each section describes the YCPU
+Specification in increasing detail. This first section includes a brief overview
+of the document and the public domain dedication. In brief, the specification
+document is released to the public domain, and anyone may use it for any purpose
+without permission or attribution.
+
+Section 2 gives a broad overview of the 58 instructions that you can use to
 write programs for the YCPU. The instructions are divided by function into
 groups: math (2.A.), increment (2.B.), bit-shifting (2.C.), bit-testing (2.D.),
 branch (2.E.), jump (2.F.), stack (2.G.), and processor function (2.H.).
