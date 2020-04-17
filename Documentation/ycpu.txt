@@ -1585,7 +1585,7 @@ If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 of Rx is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
-    V [Overflow] Set if 0x8000 / 0xFFFF is attempted, Rx = 0x8000
+    V [Overflow] Set if $8000 / $FFFF is attempted, Rx = $8000
 
 EOR         Bitwise Exclusive OR of register with value
 Operation:  Rx ^ M -> Rx
@@ -1649,9 +1649,9 @@ Operation:  NEG(M) -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not effected.
-    V [Overflow] Set if input value is 0x8000, Rx = 0x8000;
+    V [Overflow] Set if input value is $8000, Rx = $8000;
     
-    NOTE: Negate 0x8000 == 0x8000
+    NOTE: The result of Negate $8000 is $8000
 
 
 NOT         Bitwise NOT of value, stores result in Source Reg.
@@ -1710,7 +1710,7 @@ positions to shift. When specified as a register:
     2. If the register value is between 1 and 15, a shift occurs with that
        number of bits.
     3. If the register value is greater than 15, a shift of
-       (register value & 0x000F) bits occurs.
+       (register value & $000F) bits occurs.
 
 
 ASL         Arithmetic Shift Left
@@ -1720,7 +1720,7 @@ result is that Rx is multiplied by 2^X, treating Rx as an unsigned word, and
 setting the carry flag if the result does not fit in 16 bits.
 Syntax:
     ASL R0, 8       ; Arithmetic Shift Left of R0 by 8 bits.
-    ASL R0, R1      ; Arithmetic Shift Left of R0 by (R1 & 0x000F) bits.
+    ASL R0, R1      ; Arithmetic Shift Left of R0 by (R1 & $000F) bits.
 Operation:  
     N [Negative]    Set if bit 15 of the result is set.
     Z [Zero]        Set if Rx == 0.
