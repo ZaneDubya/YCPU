@@ -1947,7 +1947,7 @@ JSR         Unconditional Jump, saving return address.
 === 4.H. Stack Instructions ====================================================
 
 The following registers can be specified for Stack Instructions:
-R0-R7, A-C, I-J, X-Z, FL, PC, PS, SP, USP. Specifying a register
+R0-R7, A-D, W-Z, FL, PC, PS, SP, USP. Specifying a register
 twice (ex. R0 and A) will result in only one value popped to or pushed from
 that register.
 
