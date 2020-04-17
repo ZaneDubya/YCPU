@@ -974,7 +974,7 @@ Each segment register is 32 bits in size:
 
 --- 3.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
 
-When the M status bit is in PC clear, the MMU is disabled, and the segment
+When the M status bit is in PS clear, the MMU is disabled, and the segment
 registers are not used for memory access. Accesses to memory occur as if the
 segments were set to these values:
     
@@ -986,7 +986,7 @@ segments were set to these values:
 
 --- 3.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
-While the M status bit in PC is set, the MMU is enabled, and will translate
+Whem the M status bit in PS is set, the MMU is enabled, and will translate
 memory references to physical addresses using the contents of the segment
 registers. This is done by adding the segment base address to the address of
 the specified reference. The translation is as follows:
@@ -997,7 +997,7 @@ index equals 0, then the memory access is to on-board read only memory.
     1. The low 16-bit 'base address' portion of the segment register is
        shifted left by 8 (multiplied by 256).
     2. The logical address of the instruction is added to the base address.
-    3. The combined value is the physical address.
+    3. The combined value is the physical address. An example follows:
        
        Logical address      $----1234
        Segment device index $-D------
