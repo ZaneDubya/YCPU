@@ -1314,7 +1314,7 @@ ALU Bit Pattern
                                         of immediate value are ignored.
                 LOD.8   R0, $1234       LOD R0 = $34, 8-bit operation. Hi-8 bits
                                         of immediate value are ignored.              
-                STO.8   R0, [R1,R2]     STO R0 = [R1,R2], 8-bit operation.
+                STO.8   R0, [R1,R4]     STO R0 = [R1,R4], 8-bit operation.
                 
             The ALU operating in 8-bit mode has the following modified behavior:
             1.  Only the low 8-bits of the input registers are used.
