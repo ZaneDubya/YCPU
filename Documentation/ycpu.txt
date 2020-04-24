@@ -141,7 +141,7 @@ The math instructions are:
     MOD     R = R % M   Unsigned moduls.
     MUL     R = R * M   Unsigned multiply. As with MLI, the high 16-bits of the
                         the result are stored in R0, and may be overwritten.
-    NEG     R = 0 - R   Bitwise negation.
+    NEG     R = 0 - M   Bitwise negation.
     NOT     R = !M      Bitwise NOT.
     ORR     R = R | M   Bitwise OR.
     STO     M = R       Sets M equal to R.
@@ -1232,7 +1232,7 @@ octet will raise the 'undefined' interrupt.
 
 LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 0000 0...   CMP                 ALU             Compare R and M, sets FL      1
-0000 1...   NEG                 ALU             R = 0 - R (two's complement)  1
+0000 1...   NEG                 ALU             R = 0 - M (two's complement)  1
 0001 0...   ADD                 ALU             R = R + M                     1
 0001 1...   SUB                 ALU             R = R - M                     1  
 0010 0...   ADC                 ALU             R = R + M + C                 1  
@@ -1646,7 +1646,7 @@ R0 is set to the high 16-bits of the result before Rx is set with the low
 
 
 NEG         Changes the sign of a value, stores result in Source Reg.
-Operation:  NEG(R) -> Rx
+Operation:  NEG(M) -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not affected.
@@ -1655,9 +1655,9 @@ Operation:  NEG(R) -> Rx
     
     Note 1: The result of NEG Rx where Rx = $8000 = $8000
     
-    Note 2: NEG.8 treats the input register as a 8-bit value. 
-            This ignores the high 8 bits of the input register.
-            The result of NEG.8 clears the high 8 bits of Rx. 
+    Note 2: NEG.8 treats the input value as a 8-bit value. 
+            This ignores the high 8 bits of the input value.
+            The result of NEG.8 clears the high 8 bits of the input value. 
 
 
 NOT         Bitwise NOT of value, stores result in Source Reg.
