@@ -286,8 +286,7 @@ The format of jump instructions is:
         call can be to a near address or far address. The default address type
         is near. You can specify a far address by adding the text ".f" to
         the end of XXX (ex. "JMP.F").
-        destination of the result of the math instruction.
-    M   is a the value that PC will be set to when this instruction is executed.
+    M   is the value that PC will be set to when this instruction is executed.
         Jump instructions use the same addressing modes as math instructions:
         
             Addressing Mode     Syntax      Value is...
@@ -464,7 +463,7 @@ query operation, see 3.C.1.
     register, the segment used during Interrupts. For more information,
     see 3.F. Memory Management. The segment registers are:
     CS: Code Segment. One for Supervisor (CSS), one for user mode (CSU).
-    DS: Data segment. One for Supervisor (CSS), one for user mode (CSU).
+    DS: Data segment. One for Supervisor (DSS), one for user mode (DSU).
     ES: Extra Data segment. One for Supervisor (ESS), one for user mode (ESU).
     SS: Stack segment. One for Supervisor (SSS), one for user mode (SSU).
     IS: Interrupt segment. Used in place of CS when bits I and M in PS are set.
@@ -974,7 +973,7 @@ Each segment register is 32 bits in size:
 
 --- 3.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
 
-When the M status bit is in PS clear, the MMU is disabled, and the segment
+When the M status bit in PS is clear, the MMU is disabled and the segment
 registers are not used for memory access. Accesses to memory occur as if the
 segments were set to these values:
     
@@ -1043,7 +1042,7 @@ will reference.
 An example of a far jump with immediate addressing will help illustrate how this
 works. Note that 'immediate addressing' indicates that the processor uses the
 next word following the current instruction as the new value of the new PC. With
-a far jump, the processor will us two words immediately following the first
+a far jump, the processor will use two words immediately following the first
 operand as the second operand, least significant byte first, as follows:
 
     JMP.F   $FF06, $83600008
@@ -1406,7 +1405,7 @@ IMM Bit Pattern
     
 JMI Bit Pattern
     FEDC BA98 7654 3210                             
-    sAAA rrrE OOOO OOOO
+    sAAA rrrF OOOO OOOO
         R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
@@ -1430,7 +1429,7 @@ JMI Bit Pattern
                 When the 'F' bit is set, the jump is 'far', and will not only
                 change the PC, but will also change the logical memory space
                 within the bank of the upper address. This process is detailed
-                in 3.F.5.
+                in 3.F.4.
                 Far jumps are only available in Supervisor mode.
                 Far jumps cannot use Register addressing.
                 
@@ -1558,8 +1557,8 @@ AND         Bitwise AND register with value
 Operation:  Rx & M -> M
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 CMP         Compares register with value and sets appropriate flags
@@ -1567,7 +1566,7 @@ Operation:  Z,C,N,V = Rx - M
     N [Negative] Set if Rx >= M (signed)
     Z [Zero] Set if Rx == M.
     C [Carry] Set if Rx >= M (unsigned)
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
     
     
 DIV         Unsigned Divide register by value
@@ -1575,8 +1574,8 @@ Operation:  Rx / M -> Rx
 If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Always cleared.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 DVI         Signed divide of register by value
@@ -1584,23 +1583,23 @@ Operation:  Rx / M -> Rx
 If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 of Rx is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
+    C [Carry] Not affected.
     V [Overflow] Set if $8000 / $FFFF is attempted, Rx = $8000
 
 EOR         Bitwise Exclusive OR of register with value
 Operation:  Rx ^ M -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
     
     
 LOD         Loads a value into a specified register
 Operation:  M -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
     
 MDI         Signed modulus of register by value.
@@ -1609,8 +1608,8 @@ Sign of the result is the same as the sign of the dividend.
 If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 MLI         Signed 16b register X 16b value with 32b result.
@@ -1621,7 +1620,7 @@ R0 is set to the high 16-bits of the result before Rx is set with the low
     N [Negative] Set if bit 15 of the high 16-bits is set.
     Z [Zero] Set if both the high 16-bits and Rx == 0.
     C [Carry] Set if high 16-bits != 0.
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
 
 
 MOD         Modulus of register by value.
@@ -1629,8 +1628,8 @@ Operation:  Rx % M -> Rx
 If divide by 0 is attempted, DivZeroFault interrupt is raised, Rx is unchanged.
     N [Negative] Set if bit 15 of Rx is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 MUL         Unsigned 16b register X 16b value with 32b result.
@@ -1641,14 +1640,14 @@ R0 is set to the high 16-bits of the result before Rx is set with the low
     N [Negative] Always cleared.
     Z [Zero] Set if the high 16-bits and Rx == 0.
     C [Carry] Set if high 16-bits != 0.
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
 
 
 NEG         Changes the sign of a value, stores result in Source Reg.
 Operation:  NEG(M) -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
+    C [Carry] Not affected.
     V [Overflow] Set if input value is $8000, Rx = $8000;
     
     NOTE: The result of Negate $8000 is $8000
@@ -1658,16 +1657,16 @@ NOT         Bitwise NOT of value, stores result in Source Reg.
 Operation:  !M -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 ORR         Bitwise OR of register with value.
 Operation:  Rx | M -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
     
     
 SBC         Subtract value from register, with carry.
@@ -1684,10 +1683,10 @@ NOTE:   Immediate and Register addressing is not available with STO opcodes.
         Thus the two opcodes that would code for STO with these addressing
         modes are UNDEFINED and will raise the raise the 'undefined' interrupt
         on execution.
-    N [Negative] Not effected.
-    Z [Zero] Not effected.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    N [Negative] Not affected.
+    Z [Zero] Not affected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
     
     
 SUB         Subtract value from register, ignoring carry.
@@ -1706,7 +1705,7 @@ number can be specified as an immediate constant from 1-16, or taken from a
 register. When specified as a constant, the number is the number of bit
 positions to shift. When specified as a register:
     1. If the register value is equal to zero, no shift occurs. Flags are still
-       effected.
+       affected.
     2. If the register value is between 1 and 15, a shift occurs with that
        number of bits.
     3. If the register value is greater than 15, a shift of
@@ -1726,7 +1725,7 @@ Operation:
     Z [Zero]        Set if Rx == 0.
     C [Carry]       Set if any bits shifted out were 1, otherwise clear.
                     Clear on shift zero.
-    V [Overflow]    Not effected.
+    V [Overflow]    Not affected.
     
     
 ASR         Arithmetic Shift Right
@@ -1751,7 +1750,7 @@ Operation:
     Z [Zero]        Set if Rx == 0.
     C [Carry]       Set if any bits shifted out were 1, otherwise clear.
                     Clear on shift zero.
-    V [Overflow]    Not effected.
+    V [Overflow]    Not affected.
     
     
 LSR         Logical Shift Right
@@ -1764,7 +1763,7 @@ Operation:
     Z [Zero]        Set if Rx == 0.
     C [Carry]       Set if any bits shifted out were 1, otherwise clear.
                     Clear on shift zero.
-    V [Overflow]    Not effected.
+    V [Overflow]    Not affected.
     
     
 RNL         Rotate No-Carry Left
@@ -1772,8 +1771,8 @@ Rotate all of the bits in Rx X bits to the left, without using the carry bit.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
-    C [Carry]       Not effected.
-    V [Overflow]    Not effected.
+    C [Carry]       Not affected.
+    V [Overflow]    Not affected.
     
     
 RNR         Rotate No-Carry Right
@@ -1781,8 +1780,8 @@ Rotate all of the bits in Rx X bits to the right, without using the carry bit.
 Operation:  
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
-    C [Carry]       Not effected.
-    V [Overflow]    Not effected.
+    C [Carry]       Not affected.
+    V [Overflow]    Not affected.
     
     
 ROL         Rotate Through-Carry Left
@@ -1791,8 +1790,8 @@ Operation:
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
     C [Carry]       Set to the contents of the old bit (16-X).
-                    Not effected on shift of zero.
-    V [Overflow]    Not effected.
+                    Not affected on shift of zero.
+    V [Overflow]    Not affected.
     
     
 ROR         Rotate Through-Carry Right
@@ -1801,42 +1800,42 @@ Operation:
     N [Negative]    Set if bit 15 is set.
     Z [Zero]        Set if Rx == 0.
     C [Carry]       Set to the contents of the old bit (X-1).
-                    Not effected on shift of zero.
-    V [Overflow]    Not effected.
+                    Not affected on shift of zero.
+    V [Overflow]    Not affected.
   
   
 === 4.D. Bit Testing Instructions ==============================================
 
 BTT         Test a bit
 Operation:  Rx{B} -> Z, C
-    N [Negative] Not effected.
+    N [Negative] Not affected.
     Z [Zero] Set if Rx{B} is clear, clear otherwise.
-    C [Carry] Not effected.
-    V [Overflow] Not effected.
+    C [Carry] Not affected.
+    V [Overflow] Not affected.
 
 
 BTX         Test a bit and change it
 Operation:  !Rx{B} -> Rx{B}, Z, C
-    N [Negative] Not effected.
+    N [Negative] Not affected.
     Z [Zero] Set if old Rx{B} was clear, clear otherwise.
     C [Carry] Set if new Rx{B} is set.
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
 
     
 BTC         Test a bit and clear it
 Operation:  Rx{B} -> Rx{B}, Z, C
-    N [Negative] Not effected.
+    N [Negative] Not affected.
     Z [Zero] Set if old Rx{B} was clear, clear otherwise.
     C [Carry] Set if old Rx{B} != new Rx{B}.
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
 
     
 BTS         Test a bit and set it
 Operation:  !Rx{B} -> Rx{B}, Z, C
-    N [Negative] Not effected.
+    N [Negative] Not affected.
     Z [Zero] Set if old Rx{B} was clear, clear otherwise.
     C [Carry] Set if old Rx{B} != new Rx{B}.
-    V [Overflow] Not effected.
+    V [Overflow] Not affected.
     
   
 === 4.E. Branch Instructions ===================================================
