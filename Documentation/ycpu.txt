@@ -1374,8 +1374,10 @@ BTI Bit Pattern
     rrrR ssss OOOO OOOO
         O = Opcode
         r = register to test
-        R = 0: test bit with value = s ($0 - $f)
-            1: test bit with value = (Rx & $0F), (ssss used as .rrr)
+        R = 0: test bit with index in immediate value 's' ($0 - $f)
+            1: test bit with index in lower four bits of register 'Rs'.
+               'Rs' register is R0-R7, picked by lower three bits of 's' value. (s & $07)
+               index of bit to check = (Rs & $000F).
         
 
 FLG Bit Pattern
@@ -1407,7 +1409,6 @@ IMM Bit Pattern
 JMI Bit Pattern
     FEDC BA98 7654 3210                             
     sAAA rrrE OOOO OOOO
-        R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
         r = Second Operand Register.
@@ -1415,7 +1416,7 @@ JMI Bit Pattern
         s = Extra Data Segment select. See ALU Bit Pattern Note 2.
         i = Index Register. See ALU Bit Pattern Note 3.
     
-    sAAA rrre OOOO ORRR     Addressing Mode     Example Syntax      Cycles
+    sAAA rrre OOOO OOOO     Addressing Mode     Example Syntax      Cycles
     .000 000F               Immediate           LOD R0, $1234       +1m
     s000 001F               Absolute            LOD R0, [$1234]     +2m     
     .001 rrr.               Register            LOD R0, r1             
