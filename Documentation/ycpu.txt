@@ -1650,9 +1650,14 @@ Operation:  NEG(R) -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not affected.
-    V [Overflow] Set if input value is $8000, Rx = $8000;
+    V [Overflow] In 16-bit mode, set if input value is $8000, and Rx = $8000.
+                 In 8-bit mode, set if input is $..80, and Rx = $0080.
     
-    NOTE: The result of Negate $8000 is $8000
+    Note 1: The result of NEG Rx where Rx = $8000 = $8000
+    
+    Note 2: NEG.8 treats the input register as a 8-bit value. 
+            This ignores the high 8 bits of the input register.
+            The result of NEG.8 clears the high 8 bits of Rx. 
 
 
 NOT         Bitwise NOT of value, stores result in Source Reg.
