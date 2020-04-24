@@ -141,7 +141,7 @@ The math instructions are:
     MOD     R = R % M   Unsigned moduls.
     MUL     R = R * M   Unsigned multiply. As with MLI, the high 16-bits of the
                         the result are stored in R0, and may be overwritten.
-    NEG     R = 0 - M   Bitwise negation.
+    NEG     R = 0 - R   Bitwise negation.
     NOT     R = !M      Bitwise NOT.
     ORR     R = R | M   Bitwise OR.
     STO     M = R       Sets M equal to R.
@@ -1646,7 +1646,7 @@ R0 is set to the high 16-bits of the result before Rx is set with the low
 
 
 NEG         Changes the sign of a value, stores result in Source Reg.
-Operation:  NEG(M) -> Rx
+Operation:  NEG(R) -> Rx
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
     C [Carry] Not affected.
