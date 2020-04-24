@@ -1807,7 +1807,7 @@ Operation:
 === 4.D. Bit Testing Instructions ==============================================
 
 BTT         Test a bit
-Operation:  Rx{B} -> Z, C
+Operation:  Rx{B} -> Z
     N [Negative] Not affected.
     Z [Zero] Set if Rx{B} is clear, clear otherwise.
     C [Carry] Not affected.
