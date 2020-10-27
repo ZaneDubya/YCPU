@@ -259,14 +259,14 @@ The format of Branch instructions is:
         
 The branch instructions are:
 
-    BCC     Branch on unsigned fewer than - if carry flag in PS is clear.
-    BCS     Branch on unsigned higher than or same - if carry flag in PS is set.
-    BNE     Branch on not equal - if zero flag in PS is clear.
-    BEQ     Branch on equal - if zero flag in PS is set.
-    BPL     Branch on signed fewer than - if negative flag in PS is clear.
-    BMI     Branch on signed higher than or same - if negative flag in PS set.
-    BVC     Branch on no overflow - if overflow flag in PS is clear.
-    BVS     Branch on overflow - if overflow flag in PS is set.
+    BCC     Branch on unsigned fewer than - if carry flag in FL is clear.
+    BCS     Branch on unsigned higher than or same - if carry flag in FL is set.
+    BNE     Branch on not equal - if zero flag in FL is clear.
+    BEQ     Branch on equal - if zero flag in FL is set.
+    BPL     Branch on signed fewer than - if negative flag in FL is clear.
+    BMI     Branch on signed higher than or same - if negative flag in FL set.
+    BVC     Branch on no overflow - if overflow flag in FL is clear.
+    BVS     Branch on overflow - if overflow flag in FL is set.
     BUG     Branch on unsigned greater than - if zero flag and carry flag set.
     BSG     Branch on signed greater than - if negative flag and carry flag set.
     BAW     Branch always.
