@@ -977,11 +977,11 @@ When the M status bit in PS is clear, the MMU is disabled and the segment
 registers are not used for memory access. Accesses to memory occur as if the
 segments were set to these values:
     
-    CS: $8000 0000   ; CS in ROM, base = $00000000, size = $10000
-    DS: $0000 0000   ; DS in RAM, base = $00000000, size = $10000
-    ES: $0000 0000   ; ES in RAM, base = $00000000, size = $10000
-    SS: $0000 0000   ; SS in RAM, base = $00000000, size = $10000
-    IS: $8000 0000   ; IS in ROM, base = $00000000, size = $10000
+    CS: $8FF0 0000   ; CS in ROM, base = $00000000, size = $10000
+    DS: $0FF0 0000   ; DS in RAM, base = $00000000, size = $10000
+    ES: $0FF0 0000   ; ES in RAM, base = $00000000, size = $10000
+    SS: $0FF0 0000   ; SS in RAM, base = $00000000, size = $10000
+    IS: $8FF0 0000   ; IS in ROM, base = $00000000, size = $10000
 
 --- 3.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
