@@ -94,7 +94,7 @@ registers, which are named r0, r1, r2, r3, r4, r5, r6, and r7. Assemblers should
 also accept the names A, B, C, D, W, X, Y, and Z for these registers.
 
 
-=== 2.A. Math instructions  ====================================================
+=== 2.A. Math Instructions  ====================================================
 
 At its heart, the YCPU is a fast math processor. It handles both signed and
 unsigned multiply and divide instructions, and has a carry flag so that you can
@@ -149,7 +149,7 @@ The math instructions are:
     SUB     R = R - M   Subtracts M from R, ignoring carry.
 
 
-=== 2.B. Increment instructions  ===============================================
+=== 2.B. Increment Instructions  ===============================================
 
 Increment instructions allow you to add or subtract small values from the
 registers. These instructions are faster and smaller than math instructions.
@@ -174,7 +174,7 @@ NOTE: You can use "INC RX" as a subtitute for "ADI RX, 1", and "DEC RX" as a
       substitute for "SBI RX, 1".
 
 
-=== 2.C. Bit-shifting instructions  ============================================
+=== 2.C. Bit-shifting Instructions  ============================================
 
 The YCPU can shift bits in a register left or right. For more information about
 bit-shifting instructions, reference 4.C.
@@ -210,7 +210,7 @@ NOTE: If you noticed that ASL and LSL are mathmatically equivalent, nice catch!
       identically.
 
 
-=== 2.D. Bit-testing instructions  =============================================
+=== 2.D. Bit-testing Instructions  =============================================
 
 The YCPU can test and effect single bits in a register. For more information
 about bit-testing instructions, reference 4.D.
@@ -240,7 +240,7 @@ The bit-testing instructions are:
             it was set, it will be cleared).
             
 
-=== 2.E. Branch instructions  ==================================================
+=== 2.E. Branch Instructions  ==================================================
 
 The YCPU can use branch instructions to move around in the code based on the
 condition of the flags in the flag register (FL). These flags are set by
@@ -556,7 +556,7 @@ In Supervisor mode, the processor:
 In User mode, the processor:
     * Raises an 'Unprivileged Opcode' interrupt on executing privileged opcodes.
     * Cannot set or clear any bits in the process status register.
-    * Cannot write to any processor control registers, but can read from them.
+    * Cannot write to PS, but can read from it.
     * Cannot directly access the hardware bus.
     * Uses the User Stack Pointer (USP) for stack instructions.
     * Uses the User segment registers.
@@ -693,7 +693,7 @@ $2  DivZeroFault    Raised when the processor executes a division or modulus
                     opcode where the operand containing the denominator is zero.
                     
 $3  DoubleFault     Raised when the processor faults while attempting to access
-                    an interrupt handler (See 3.D.8.).
+                    an interrupt handler (See 3.D.6.).
 
 $4  StackFault      Raised when the processor executes a POP or PSH instruction
                     that would access an address outside of the stack segment.
@@ -787,7 +787,7 @@ operation that caused the segment fault:
         1 1     UNDEFINED.
         
 Note that writes to ROM memory will fail silently unless the MMU is enabled and
-the write-protect bit is set, which will result in a segment fault with v = 0
+the write-protect bit is set, which will result in a segment fault with V = 0
 and W = 1.
 
 --- 3.D.6. FAULTS WHILE LOADING AN INTERRUPT HANDLER ---------------------------
@@ -961,14 +961,14 @@ Each segment register is 32 bits in size:
     b - When Hardware device flag bit 'D' is clear:
         These bits determine the base address of the memory that is mapped to
         this segment within virtual address space. The base address is left
-        shifted by 8 for a range of 0 - 2^28-256. See 3.F.4.
+        shifted by 8 for a range of 0 - 2^28-256. See 3.F.3.
         
         When Hardware device flag bit 'D' is set:
         The upper four 'b' bits indicate the device the segment is addressing
         (note that the YCPU's ROM is indicated by setting the high 'b' bits to
         device 0). The lower sixteen 'b' bits determine the base address of the
         memory that is mapped to the segment. This base address is left shifted
-        by 8 for a range of 0 - 2^24-256. See 3.F.4.
+        by 8 for a range of 0 - 2^24-256. See 3.F.3.
     
 
 --- 3.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
@@ -985,7 +985,7 @@ segments were set to these values:
 
 --- 3.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED ------------------------
 
-Whem the M status bit in PS is set, the MMU is enabled, and will translate
+When the M status bit in PS is set, the MMU is enabled, and will translate
 memory references to physical addresses using the contents of the segment
 registers. This is done by adding the segment base address to the address of
 the specified reference. The translation is as follows:
@@ -1120,7 +1120,7 @@ The clock provides time data with the following precision:
 This data is loaded to R0-R3 upon calling HWQ $80, in this format:
 
                                                     FEDC BA98 7654 3210
-                    R0: 8 bits Year, 4 bits Month   .YYY YYYY .... MMMM
+                    R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
                     R1: 5 bits Day, 5 bits Hour     ...D DDDD ...h hhhh
                     R2: 6 bits Min, 6 bits Second   ..mm mmmm ..ss ssss
                     R3: 16 bits Tick                tttt tttt tttt tttt
@@ -1174,7 +1174,7 @@ bit set (for MMU active). Then, to switch to the user context:
        example, these stacks are stored as 8 16-bits words on the stack).
     2. Pop R0-R7 from the stack.
     3. Pop FL, USP.
-    4. Use RTI to pop PS, PC from the stack (PC should have S bit cleared).
+    4. Use RTI to pop PS, PC from the stack (PS should have S bit cleared).
     5. Execution will continue in the User mode context.
             
             LSG USS
@@ -1270,7 +1270,7 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 000.   PSH                 STK             Push to stack                 1 
 1011 001.   POP                 STK             Pop from stack                1 
 1011 0100   xxx         /       PRX             Processor functions           *
-1011 0101   LSG/SSG     X       MMU             Load / Save Stack Register    4
+1011 0101   LSG/SSG     X       MMU             Load / Save Segment Register  4
 1011 0110   ADI                 IMM             Increment by value            1
 1011 0111   SBI                 IMM             Decrement by value            1
 1011 1000   JMP         /       JMI             Jump                          2
@@ -1408,15 +1408,14 @@ IMM Bit Pattern
 JMI Bit Pattern
     FEDC BA98 7654 3210
     sAAA rrrF OOOO OOOO
-        R = Destination/Source Register
         O = Opcode
         A = Addressing Mode
-        r = Second Operand Register.
+        r = Operand Register.
         F = Far Mode. See Note 1.
         s = Extra Data Segment select. See ALU Bit Pattern Note 2.
         i = Index Register. See ALU Bit Pattern Note 3.
     
-    sAAA rrre OOOO OOOO     Addressing Mode     Example Syntax      Cycles
+    sAAA rrrF OOOO OOOO     Addressing Mode     Example Syntax      Cycles
     .000 000F               Immediate           LOD R0, $1234       +1m
     s000 001F               Absolute            LOD R0, [$1234]     +2m     
     .001 rrr.               Register            LOD R0, r1             
@@ -1873,8 +1872,8 @@ shifted left by 1 (multiplied by 2) to allow for an effective range of -128 to
       110 = BVC, Branch if overflow clear                                   ...0
       111 = BVS, Branch if overflow set                                     ...1
 1001 1ccc   BXX 
-      000 = BUG, Branch if Unsigned Greater than                            .11.
-      001 = BSG, Branch if Signed Greater than                              11..
+      000 = BUG, Branch if Unsigned Greater than                            .01.
+      001 = BSG, Branch if Signed Greater than                              10..
       010 = Undefined                                                       ....
       011 = Undefined                                                       ....
       100 = Undefined                                                       ....
