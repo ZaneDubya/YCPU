@@ -267,8 +267,8 @@ The branch instructions are:
     BMI     Branch on signed higher than or same - if negative flag in FL set.
     BVC     Branch on no overflow - if overflow flag in FL is clear.
     BVS     Branch on overflow - if overflow flag in FL is set.
-    BUG     Branch on unsigned greater than - if zero flag and carry flag set.
-    BSG     Branch on signed greater than - if negative flag and carry flag set.
+    BUG     Branch on unsigned greater than - if zero flag clear & carry set.
+    BSG     Branch on signed greater than - if zero flag clear & negative set.
     BAW     Branch always.
     
     
