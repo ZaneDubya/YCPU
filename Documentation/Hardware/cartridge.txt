@@ -1,62 +1,70 @@
 
-                         YPSILONTECH's CRW200
-                         A data cartridge for
+                        YPSILONTECH's CRW600
+                      A data cartridge drive for
                         all your storage needs
 
     Shipping manifests. Asteroid field navigation maps. The latest software. At
     YPSILONTECH, we know you need storage that is portable and reliable. That's
-    why you need the CRW200 - the revolutionary solid state storage device that
-    is readable, writable, and hardened against anomolous bit flips.
+    why you need the CRW600 - the revolutionary solid state storage device that
+    is readable, writable, and semi-hardened against anomolous bit flips.
 
-=== On-board Buffer ============================================================
+=== Drive hardware =============================================================
 
-    The CRW200 drive unit has an on-board 512b buffer. This buffer can be made
-    accessible to the YCPU bus by using the MMU. Note that the CRW200 has only
-    a single bank, and this bank is only 512b; this 512b of memory is mirrored
-    throughout the 16kb bank address space.
+    At the heart of the CRW600 is an electromechanical mechanism which can read
+    and write data to and from a compatible cartridge. The key components of the
+    EM device include a spindle motor, read/write heads, head actuator assembly,
+    and an interface for data and control signals. The spindle motor accesses
+    the cartridge medium at a constant angular velocity, typically 600 RPM
+    (10 revolutions per second). The read/write heads, mounted on the head
+    actuator assembly, are positioned close to the cartridge medium, with the
+    assembly driven by a stepper motor or a voice coil actuator to enable
+    precise movement across the disk surface.
+
+=== Cartridges =================================================================
+
+    A standardized cartridge is composed of a 90.0 mm × 94.0 mm rectangular,
+    rigid plastic casing with a central aperture that exposes the cartridge
+    medium. The geomtry of the medium is that of a two dimensional disc 90 mm
+    in diameter. The medium is composed of a highly oriented polymer film coated
+    with a high-coercivity magnetic material. A protective anti-static liner
+    between the casing and medium minimizes friction and dust accumulation.
+    Additionally, the casing incorporates a spring-loaded metal slider, which
+    retracts to expose the medium when inserted into the CRW600 drive.
+
+    The magnetic medium can be described as containing a number of cylinders,
+    with each cylinder composed of 256 sectors, each sector comprised of 512
+    bytes.
     
-    Note also that when the drive is busy, the buffer is taken off the bus.
-    Attempting to write to the buffer while the drive is busy will fail
-    silently. Attempting to read from the buffer while the drive is busy will
-    return garbage data.
-
-=== Drive speed ================================================================
-
-    The drive can read a single 512b sector from a cartridge to its buffer in 
-    approximately 1ms.
-    
-    The drive can write a single 512b sector from its buffer to a cartridge in
-    approximately 2ms.
-
-=== Cartridge size =============================================================
-
-    The CRW200 accepts a standard cartridge with 4096 sectors. Each cartridge
-    sector holds 512 bytes. Thus, the total data capacity of a single CRW200
-    cartridge is 2,097,152 bytes, or 2 mega-bytes.
+    The programmer must query the drive when a cartridge is inserted to determine
+    how many cylinders the cartridge contains and thus the total storage capacity
+    of the cartridge. For example, a cartridge with 128 cylinders will have a
+    total storage of 128 cylinders x 256 sectors x 512 bytes = 16,777,216 bytes.
 
 === Interfacing details ========================================================
 
     DeviceType:     0x0003 (Storage, removable)
     ManufacturerID: 0x0000 (Ypsilon)
     DeviceID:       0x0200
-    DeviceRevision: 0x0009
+    DeviceRevision: 0x000A
     
     HWQ $02 Message:
     
     R1      Message
     $00     Query state. R0 is set to state bitfield:
             fedcba98 76543210
-            eib..... ......pm
+            eib..... .....pwm
             e = error code nonzero.
             i = interrupt enabled.
             b = drive is busy.
-            p = cartridge is write protected.
+            p = drive motor engaged and ready.
+            w = cartridge is write protected.
             m = cartridge present in drive.
             
             R2 is used to set/disable interrupt. If R2 is 0, interrupt is
             disabled. If R2 is nonzero, interrupt is enabled. While interrupt
             is enabled, drive will cause hardware interrupt when:
             * Error bit goes from 0 -> 1,
+            * Drive motor ready bit goes from 0 -> 1,
             * Busy bit goes from 1 -> 0, or 
             * MediaPresent bit changes.
             
@@ -70,12 +78,41 @@
             0x0005 ERROR_BAD_SECTOR Requested sector is bad, data on it is lost.
             0xffff ERROR_BROKEN     Attempted read/write failed due to hardware.
     
-    $02     Read sector. Begin read sector index in R2 to buffer.
+    $02     Engage drive motor. Accuates the physical mechanism which allows the
+            cartridge to access data from the cartridge medium. It takes
+            approximately 25 ms for the drive to reach the angular velocity necessary
+            to access the medium. When the drive motor has reached the appropriate
+            angular speed, the 'drive motor ready' bit will be set.
+            
+            The drive motor will be automatically disengaged approximately 10 
+            seconds after the last command to the drive has completed. It takes 
+            approximately 75 ms to spin down the motor. The 'drive motor ready'
+            bit will be cleared immediately when the drive motor begins to spin
+            down.
+    
+    $03     Seek to cylinder. Move cartridge reader head to cylinder in R0.
+            The drive will immediately set 'drive busy' in its state bitfield.
+            When the reader head has moved to the appropriate cylinder, the 'drive
+            busy' bit will be cleared. If the reader head is already located 
+            on the correct cylinder, this operation will end after approximately
+            0.5ms. Otherwise, a period of 1-32 ms of seek time will transpire before
+            the 'drive busy' bit is cleared.
+    
+    $04     Read sector. Begin read of a sector of index R2 on the current cylinder.
+            The contents of the sector will be read to memory address ES:R3.
             R0 is set to 0 if reading is possible and started, else set to 1 and
             internal error code set. Reading is only possible if media is present,
-            and the drive is not busy.
+            and the drive is not busy. If reading is possible and no errors are
+            encountered, the drive will complete reading the sector in 1-101 ms.
+            When the read is in progress, the 'drive busy' bit will be set.
+            When the read is complete, the 'drive busy' will be cleared.
             
-    $03     Write sector. Write buffer to sector index R2.
-            R0 is set to 0 if writing is possible and started, else set to 1 and
-            internal error code set. Writing is only possible if media is present,
-            media is not write-protected, and the drive is not busy.
+    $05     Write sector. Begin write of data in memory to a sector of index R2
+            on the current cylinder. R0 is set to 0 if writing is possible and
+            started, else set to 1 and internal error code set. Writing is only
+            possible if media is present, the media is not write-protected, and
+            the drive is not busy. If writing is possible and no errors are
+            encountered, the drive will commence writing the 512 bytes in memory
+            at ES:R3 to the sector. Writing takes a duration of 1-101 ms.
+            When the write is in progress, the 'drive busy' bit will be set.
+            When the write is complete, the 'drive busy' will be cleared.
