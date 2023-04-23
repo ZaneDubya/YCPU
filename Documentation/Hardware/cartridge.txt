@@ -6,39 +6,73 @@
     Shipping manifests. Asteroid field navigation maps. The latest software. At
     YPSILONTECH, we know you need storage that is portable and reliable. That's
     why you need the CRW600 - the revolutionary solid state storage device that
-    is readable, writable, and semi-hardened against anomolous bit flips.
-
-=== Drive hardware =============================================================
-
-    At the heart of the CRW600 is an electromechanical mechanism which can read
-    and write data to and from a compatible cartridge. The key components of the
-    EM device include a spindle motor, read/write heads, head actuator assembly,
-    and an interface for data and control signals. The spindle motor accesses
-    the cartridge medium at a constant angular velocity, typically 600 RPM
-    (10 revolutions per second). The read/write heads, mounted on the head
-    actuator assembly, are positioned close to the cartridge medium, with the
-    assembly driven by a stepper motor or a voice coil actuator to enable
-    precise movement across the disk surface.
+    is readable, writable, and hardened against anomolous bit flips.
 
 === Cartridges =================================================================
+    
+    A standard cartridge is composed of a protective casing with a central
+    aperture that exposes the cartridge medium contained within. The medium is
+    a highly oriented polymer substrate. An anti-static liner is placed between
+    the medium and protective casing, which minimizes friction and dust
+    accumulation that might otherwise occur during use. When not placed within
+    the CRW600 drive, a spring-loaded slider covers the aperture, protecting the
+    medium. When the cartridge is inserted into the drive, the slider retracts,
+    exposing the medium through the aperture.
 
-    A standardized cartridge is composed of a 90.0 mm × 94.0 mm rectangular,
-    rigid plastic casing with a central aperture that exposes the cartridge
-    medium. The geomtry of the medium is that of a two dimensional disc 90 mm
-    in diameter. The medium is composed of a highly oriented polymer film coated
-    with a high-coercivity magnetic material. A protective anti-static liner
-    between the casing and medium minimizes friction and dust accumulation.
-    Additionally, the casing incorporates a spring-loaded metal slider, which
-    retracts to expose the medium when inserted into the CRW600 drive.
-
-    The magnetic medium can be described as containing a number of cylinders,
-    with each cylinder composed of 256 sectors, each sector comprised of 512
-    bytes.
+    The cartridge medium is uniformly coated with a high-coercivity magnetic
+    material. The read/write head contains an electromagnet that can precisely
+    interact with this magnetic material.
+    
+    Each data sector contains 4096 magnetic bits.
+    
+    Each data cylinder contains 256 data sectors. 
     
     The programmer must query the drive when a cartridge is inserted to determine
     how many cylinders the cartridge contains and thus the total storage capacity
     of the cartridge. For example, a cartridge with 128 cylinders will have a
     total storage of 128 cylinders x 256 sectors x 512 bytes = 16,777,216 bytes.
+
+=== Drive mechanism =============================================================
+
+    At the heart of the CRW600 is an electromechanical mechanism which can read
+    and write data to and from a compatible cartridge. The key components of the
+    mechanism are a spindle motor, read/write head assembly, and data/control
+    interface. When a cartridge is inserted into the mechanism, the spindle motor
+    engages with the cartridge medium and spins it at 600 RPM. The read/write
+    head, mounted on an actuator assembly, is moved close to the cartridge
+    medium. A stepper motor maneuvers the read/write head across the surface of
+    the medium, allowing exact interaction between the heads and data stored
+    within the cartridge.
+    
+    In write mode, the digital data to be written is passed to the data/control
+    interface, converting the data into electrical current pulses. These pulses
+    are conveyed to the read/write head's electromagnet, creating a magnetic
+    field that changes polarity according to the binary data (0's or 1's). The
+    magnetic field alters the magnetization of the medium as it passes over it,
+    writing the data in the form of magnetic patterns.
+    
+    In read mode, the read/write head detects changes in the magnetic field
+    caused by the magnetized areas on the disk's surface. These areas represent
+    binary data (0's and 1's). The head converts these magnetic field changes
+    into electrical signals, which are then amplified and processed by the
+    data/control interface to reconstruct the original digital data.
+    
+    It is the precise engineering of the motors supoporting the eletromagnet
+    that allows storage of data in the unifom magnetic medium. The read/write
+    head is driven by a stepper motor, which allows for precise linear movement
+    across the radius of the cartridge medium. Each individual step of the motor
+    places the read/write head in a position to interact with a specific 
+    concentric circle of the cartridge medium. Each circle is referred to as a
+    data cylinder. Each data cylinder is divided into data sectors, which are the
+    smallest unit of data that is addressable by devices that are connected
+    to the drive through the data/control interface.
+    
+    To access a particular data cylinder and sector, the stepper motor moves the
+    read/write head to the appropriate linear position over the magnetic medium.
+    With the read/write head positioned over the correct data cylinder, the 
+    rotation of the cartridge medium, caused by engagement with the drive's spindle
+    motor, will inevitably bring the desired data sector under the head. The head
+    will then read or write data as it passes over the data sector.
 
 === Interfacing details ========================================================
 
@@ -78,17 +112,21 @@
             0x0005 ERROR_BAD_SECTOR Requested sector is bad, data on it is lost.
             0xffff ERROR_BROKEN     Attempted read/write failed due to hardware.
     
-    $02     Engage drive motor. Accuates the physical mechanism which allows the
-            cartridge to access data from the cartridge medium. It takes
-            approximately 25 ms for the drive to reach the angular velocity necessary
-            to access the medium. When the drive motor has reached the appropriate
-            angular speed, the 'drive motor ready' bit will be set.
+    $02     Engage drive motor. The spindle motor contacts the cartridge medium and
+            begins to spin. It takes approximately 25 ms for the drive to reach the
+            angular velocity necessary to access the medium. When the drive motor has
+            reached the appropriate angular speed, the 'drive motor ready' bit will be set.
+            
+            If the drive motor is already engaged, the drive motor read bit will 
+            already be set, and this command will have no effect.
             
             The drive motor will be automatically disengaged approximately 10 
             seconds after the last command to the drive has completed. It takes 
             approximately 75 ms to spin down the motor. The 'drive motor ready'
             bit will be cleared immediately when the drive motor begins to spin
-            down.
+            down. If an 'engage drive motor' command is received while the drive
+            is spinning down, the drive will complete the spin down process and
+            then immediately spin up again.
     
     $03     Seek to cylinder. Move cartridge reader head to cylinder in R0.
             The drive will immediately set 'drive busy' in its state bitfield.
