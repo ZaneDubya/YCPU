@@ -1,4 +1,7 @@
-================================[ 4. History ]==================================
+YCPU Specification
+Version 1.0 FINAL
+History of Specification
+
 0.1a 03/07/2014
     Initial specification
 0.1b 03/08/2014
@@ -219,3 +222,7 @@
 0.9     3/16/16
   * RELEASE CANDIDATE.
   * New STX instruction - allows modifying stack pointer.
+1.0     4/24/23
+  * FINAL
+  * Changed DWPA bits in memory segment register. Allows better emulator.
+
