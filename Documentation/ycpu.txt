@@ -26,7 +26,6 @@ Version 1.0 FINAL
         4.G.        Jump & Call Instructions
         4.H.        Stack Instructions
         4.I.        Processor Function Instructions
-        5.      History
 
 
 ### 1. Introduction ###
@@ -2100,3 +2099,4 @@ should be stored using the mnemonic seen in the LSG instruction description.
 SWI         Call Software Interrupt
 Raises SOFTWARE INTERRUPT.
 See 3.D.3. for a description of this opcode's function.
+
