@@ -13,24 +13,26 @@
     A standard cartridge is composed of a protective casing with a central
     aperture that exposes the cartridge medium contained within. The medium is
     a highly oriented polymer substrate. An anti-static liner is placed between
-    the medium and protective casing, which minimizes friction and dust
-    accumulation that might otherwise occur during use. When not placed within
-    the CRW600 drive, a spring-loaded slider covers the aperture, protecting the
+    the medium and protective casing, minimizing friction and dust accumulation
+    that might otherwise occur during use. When not placed within the CRW600
+    drive, a spring-loaded slider covers the central aperture, protecting the
     medium. When the cartridge is inserted into the drive, the slider retracts,
-    exposing the medium through the aperture.
+    exposing the medium through the central aperture.
 
     The cartridge medium is uniformly coated with a high-coercivity magnetic
-    material. The read/write head contains an electromagnet that can precisely
-    interact with this magnetic material.
+    material. The CRW600 drive contains an electromagnet that interacts with
+    this magnetic material to read and write binary data. Although the magnetic
+    medium is a standard size, different magnetic materials allow storage 
+    of more or less data. The CRW600 drive detects how much storage the 
+    medium is rated for, and then precisely operates its motors to read and 
+    write binary data at the appropriate magnetic density.
+
+    Organizationally, a standard data cartridge will contain a number of data
+    cylinders, with each data cylinder containing 128 data sectors. A data
+    sector will always contain a standard 4,096 binary bits (512 bytes).
     
-    Each data sector contains 4096 magnetic bits.
-    
-    Each data cylinder contains 256 data sectors. 
-    
-    The programmer must query the drive when a cartridge is inserted to determine
-    how many cylinders the cartridge contains and thus the total storage capacity
-    of the cartridge. For example, a cartridge with 128 cylinders will have a
-    total storage of 128 cylinders x 256 sectors x 512 bytes = 16,777,216 bytes.
+    For example, a cartridge with 128 cylinders will have a total data storage
+    size of 128 cylinders x 128 sectors x 512 bytes = 8,388,608 bytes.
 
 === Drive mechanism =============================================================
 
@@ -104,6 +106,7 @@
             
     $01     Query error code. Last error code is returned in R0. Error status
             cleared on read.
+
             0x0000 ERROR_NONE       No error since last query.
             0x0001 ERROR_BUSY       Attempted read/write while drive busy.
             0x0002 ERROR_NO_MEDIA   Attempted read/write without cartridge present.
@@ -116,11 +119,13 @@
             begins to spin. It takes approximately 25 ms for the drive to reach the
             angular velocity necessary to access the medium. When the drive motor has
             reached the appropriate angular speed, the 'drive motor ready' bit will be set.
+            If interrupts are enabled, the drive will issue a hardware interrupt 
+            when the drive motor is ready.
             
             If the drive motor is already engaged, the drive motor read bit will 
             already be set, and this command will have no effect.
             
-            The drive motor will be automatically disengaged approximately 10 
+            The drive motor will be automatically disengage approximately 10 
             seconds after the last command to the drive has completed. It takes 
             approximately 75 ms to spin down the motor. The 'drive motor ready'
             bit will be cleared immediately when the drive motor begins to spin
@@ -131,10 +136,13 @@
     $03     Seek to cylinder. Move cartridge reader head to cylinder in R0.
             The drive will immediately set 'drive busy' in its state bitfield.
             When the reader head has moved to the appropriate cylinder, the 'drive
-            busy' bit will be cleared. If the reader head is already located 
-            on the correct cylinder, this operation will end after approximately
-            0.5ms. Otherwise, a period of 1-32 ms of seek time will transpire before
-            the 'drive busy' bit is cleared.
+            busy' bit will be cleared. If interrupts are enabled, the drive
+            will issue a hardware interrupt when the drive is ready.
+            
+            If the reader head is already located on the correct cylinder, this
+            operation will end after approximately 0.5ms. Otherwise, a period
+            of 1-32 ms of seek time will transpire before the 'drive busy' bit
+            is cleared. 
     
     $04     Read sector. Begin read of a sector of index R2 on the current cylinder.
             The contents of the sector will be read to memory address ES:R3.
@@ -154,3 +162,14 @@
             at ES:R3 to the sector. Writing takes a duration of 1-101 ms.
             When the write is in progress, the 'drive busy' bit will be set.
             When the write is complete, the 'drive busy' will be cleared.
+    
+    $06     Read multiple sectors. Begin read of sectors starting at index R2 on
+            the current cylinder, for R3 number of cylinders. Generally, this 
+            proceeds as command $04. The first sector will be read after 1-101
+            ms, and each subsequent sector will be read in approximately 1 ms.
+            
+            
+    $07     Read multiple sectors. Begin write of sectors starting at index R2 on
+            the current cylinder, for R3 number of cylinders. Generally, this 
+            proceeds as command $05. The first sector will be written after 1-101
+            ms, and each subsequent sector will be written in approximately 1 ms.
