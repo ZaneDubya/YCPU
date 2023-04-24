@@ -935,7 +935,7 @@ Each segment register is 32 bits in size:
 
     $03       $02           $01       $00
     FEDC BA98 7654 3210     FEDC BA98 7654 3210
-    DWPA ssss ssss bbbb     bbbb bbbb bbbb bbbb
+    ssss ssss AWPD bbbb     bbbb bbbb bbbb bbbb
 
     D - Hardware device flag:
         0:  Accesses to this segment will come from main memory.
@@ -957,18 +957,32 @@ Each segment register is 32 bits in size:
         
     s - These bits determine the size of the segment. This value is left shifted
         by 8 and incremented by 256 for a range of 256 - 2^16.
+        Examples:
+            s: $00      size = ($00 << 8 + $100); $00100 or 256 bytes
+            s: $7F      size = ($7f << 8 + $100); $08000 or 32,768 bytes
+            s: $ff      size = ($ff << 8 + $100); $10000 or 65,536 bytes
         
-    b - When Hardware device flag bit 'D' is clear:
-        These bits determine the base address of the memory that is mapped to
-        this segment within virtual address space. The base address is left
+    b - When segment hardware device flag bit 'D' is clear:
+        These 20 bits determine the base address of the memory that is mapped
+        to this segment within virtual address space. The base address is left
         shifted by 8 for a range of 0 - 2^28-256. See 3.F.3.
-        
-        When Hardware device flag bit 'D' is set:
+        The highest addressable byte of memory address space is at $1000FEFF.
+        Examples:
+            b: $00000  base addr = ($00000 << 8); $00000000 or           0
+            b: $04000  base addr = ($04000 << 8); $04000000 or  67,108,864
+            b: $fffff  base addr = ($fffff << 8); $0FFFFF00 or 268,435,200
+
+        When segment hardware device flag bit 'D' is set:
         The upper four 'b' bits indicate the device the segment is addressing
         (note that the YCPU's ROM is indicated by setting the high 'b' bits to
         device 0). The lower sixteen 'b' bits determine the base address of the
         memory that is mapped to the segment. This base address is left shifted
         by 8 for a range of 0 - 2^24-256. See 3.F.3.
+        The highest addressable byte of device address space is at $100FEFF.
+        Examples:
+            b: $0000  base addr = ($0000 << 8); $00000000 or           0
+            b: $4000  base addr = ($4000 << 8); $00400000 or   4,194,304
+            b: $ffff  base addr = ($ffff << 8); $00FFFF00 or  16,776,960
     
 
 --- 3.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
@@ -1894,7 +1908,7 @@ M is a 5-bit value + 1, for a range of ($01-$20).
 
 
 DEC         Decrement register by 1.
-Operation:  Rx + M -> Rx, C
+Operation:  Rx - 1 -> Rx, C
 This operation is an assembler macro for SBI Rx, $01
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
@@ -1903,7 +1917,7 @@ This operation is an assembler macro for SBI Rx, $01
     
     
 INC         Increment register by 1.
-Operation:  Rx + M -> Rx, C
+Operation:  Rx + 1 -> Rx, C
 This operation is an assembler macro for ADI Rx, $01
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
@@ -1912,7 +1926,7 @@ This operation is an assembler macro for ADI Rx, $01
     
     
 SBI         Subtract immediate value from register, carry is ignored.
-Operation:  Rx + M -> Rx, C
+Operation:  Rx - M -> Rx, C
 M is a 5-bit value + 1, for a range of ($01-$20).
     N [Negative] Set if bit 15 is set.
     Z [Zero] Set if Rx == 0.
