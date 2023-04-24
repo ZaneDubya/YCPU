@@ -1065,13 +1065,13 @@ operand as the second operand, least significant byte first, as follows:
     sets of data:
     
     $07_____ $06_____ $05_____ $04_____ $03_____ $02_____ $01_____ $00_____
-    DWPAssss ssssbbbb bbbbbbbb bbbbbbbb aaaaaaaa aaaaaaaa OOOOOOOO OOOOOOOO
+    ssssssss AWPDbbbb bbbbbbbb bbbbbbbb aaaaaaaa aaaaaaaa OOOOOOOO OOOOOOOO
     
     O = 16-bit opcode, indicating a 'far jump immediate' instruction.
     a = the address of the PC within the new segment.
-    b = the base address of the new segment
+    b = the base address of the new segment.
+    AWPD = protection bits of the new segment.
     s = the size of the new segment.
-    DWPA = protection bits of the new segment.
     
 Following the operation, the PC will be set to $FF06, and CS will be set to 
 $80000008, indicating that the code segment points to ROM ('D'evice bit set,
