@@ -225,4 +225,12 @@ History of Specification
 1.0     4/24/23
   * FINAL
   * Changed DWPA bits in memory segment register. Allows better emulator.
-
+1.1     10/26/23
+  * FL register removed. Flag bits moved from FL to PS.
+  * Clarified inconsistency: RTC reports time in ticks, not milliseconds.
+  * CLOCK interrupt specified in ticks, not hz.
+  * FLG bit pattern changed.
+  * STK<2/2> bit pattern changed
+  * Clarified Branch instruction: offset relative to address of branch,
+    instructions always 16-bit words, not 16-bit aligned (though they should be
+    16-bit aligned!).
