@@ -1352,8 +1352,8 @@ LOW OCTET   Mnemonic    Priv?   Bit Pattern     Description               Cycles
 1011 1001   JSR         /       JMI             Jump to Subroutine            4
 1011 1010   HWQ         X       HWI             Hardware Bus Query            4
 1011 1011   STX         X       STX             Stack Immediate               1
-1011 11..   ...                 ...             UNDEFINED (4 opcodes)         - 
-11.. ....   ...                 ...             UNDEFINED (64 opcodes)        -
+1011 11..   ...                 ...             UNDEFINED (4*256 opcodes)     -
+11.. ....   ...                 ...             UNDEFINED (64*256 opcodes)    -
 
 
 === 4.A. Bit Patterns ==========================================================
