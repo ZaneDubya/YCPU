@@ -13,40 +13,34 @@
     DeviceID:       $0000
     DeviceRevision: $0001
     
-    HWQ $02 Message is used for Mode Selection. See 'Mode Selection' below.
     
-    The output mode of the adapter is set based on R1, with aditional parameters
-    in R2. For more information, see 'Mode Selection' below. Following the
-    hardware query, R0 is set as follows:
+=== Mode Selection =============================================================
+    
+    The programmer selects a display mode and queries display modes via HWQ $02.
+    For more information about HWQ $02, see YCPU documentation 3.C.1.
+    
+    Following the query, R0 is set as follows:
                 
         $0000   ERROR_NOT_VALID  Mode in R1 was not a valid mode.
         $0001   MSG_ACK          Mode set based on R1.
         $FFFF   ERROR_BROKEN     Display failure, broken, no output.
     
-    
-=== Mode Selection =============================================================
-
-    The programmer selects a display mode and queries display modes via HWQ $02.
-    For more information about HWQ $02, see YCPU documentation 3.C.1.
-    
-    The value in R1 is used to determine the display adapter's action. The high
-    4 bits of R1 should be clear.The low 12 bits of R1 are an index that defines
-    the mode that is selected by this instruction:
+    The value in R1 determines the display adapter's action. The high 4 bits of
+    R1 should be clear.The low 12 bits of R1 are an index that defines the mode
+    that is selected by this instruction:
     
     R1      Notes
     $000    Display inactivated. No signal will be output.
     
-    $001    LEM180c compatability mode. Character based, 16 color. Outputs a
-            display of 128x96 pixels, made up of 32x12 characters, each 4 pixels
-            wide and 8 pixels high. Each character is defined by a 16-bit word
-            in video memory, with its own foreground and background color out of
-            a palette of 16 colors.
-            
-    $002    LEM180c plus. As mode $001, with page selection and sprites.
+    $001    LEM180c compatability mode.
+            Outputs a display of 128x96 pixels, made up of 32x12 characters,
+            each 4 pixels wide and 8 pixels high. Each character is defined by
+            a 16-bit word in video memory, with  foreground background color
+            out of a palette of 16 colors.
     
     
 === Mode $001: LEM180c Compatability ===========================================
-
+    
     The LEM180c is a 128x96 pixel color display adapter. The output display of
     the adapter is made up of 32x12 tiles, each 4 pixels in width by 8 pixels in
     height. Each tile displays one monochrome characters out of 128, based on
