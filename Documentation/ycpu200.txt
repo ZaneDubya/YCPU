@@ -1,0 +1,134 @@
+PRIVILEGED - FOR INTERNAL DISCUSSION ONLY
+NEXT GEN YCPU200
+
+Team - after careful consideration of the market, we are finally ready to
+discuss the second generation YCPU, model number 200. This is a generally
+source compatible, not binary compatible and not memory model compatible
+model. After the various person loss incidents with the original YCPU timer
+bugs, we are hoping this new model will revive our company fortune and fame.
+Please review and bring back comments at our check-in on Thursday. This one
+will go long.
+
+### 4. Instruction Set Description #############################################
+
+The YCPU's instruction set is comprised of 45 unique instructions. All
+instructions are comprised of single 16-bit program words. Instructions are
+defined by the high bit pattern of the program word. Attempted execution of a
+program word with a reserved high bit pattern will raise a 'undefined
+instruction' interrupt.
+
+Ins HI_OCTET LO_OCTET Priv   Bit Pattern     Description              Cycles
+ADD 000000.. ........        ALU             D = M + N [+ C]               1 OOOOOOon nnmmmddd, D=Rd, M=Rm, N=Rn, o=1: use carry (ALU always set flags)
+SUB 000001.. ........        ALU             D = M - N [- (1 - C)]         1 OOOOOOon nnmmmddd, D=Rd, M=Rm, N=Rn, o=1: use carry (ALU always set flags)
+MUL 0000100. ........        ALM             D = M * N (16x16=32b)         8 OOOOOOOn nnmmmddo, D=Rd, M=Rm, N=Rn, Rd+1=high 16bits, o=0 unsigned, o=1 signed. Rd must be even, odd encodings not possible.
+DIV 0000101. ........        ALM             D = M / N                    48 OOOOOOOn nnmmmddo, D=Rd, M=Rm, N=Rn, Rd+1=modulus, o=0 unsigned, o=1 signed. Rd must be even, odd encodings not possible.
+BTT 00001100 ........        BTI             Test a bit                    2 OOOOOOOO oiiiiddd, Bit test, o=0: register=Rd, bit=imm4, o=1: atmoic memory [Rd], bit=imm4
+BTX 00001101 ........        BTI             Test a bit and change it      2 OOOOOOOO oiiiiddd, register or atomic memory change
+BTC 00001110 ........        BTI             Test a bit and clear it       2 OOOOOOOO oiiiiddd, register or atomic memory change
+BTS 00001111 ........        BTI             Test a bit and set it         2 OOOOOOOO oiiiiddd, register or atomic memory change
+MVI 0001.... ........        IMM             Set register to value         1 OOOOoiii iiiiiddd, o=0: Rd:0-7 = i, o=1: Rd:15-8 = i. Does not zero out other bits!
+LOD 0010.... ........        LOD             Load                          1 OOOOtton nnmmmddd, Rd = [address] based on tt: 00: load byte zero extended, o=0: [Rm + Rn], o=1: [Rm + imm3]
+                                                                                                                            01: load halfword, o=0: [Rm + Rn], o=1: [Rm + imm3 << 1]
+                                                                                                                            10: reserved future load 32-bit
+                                                                                                                            11: load from pc/sp, o=0: [-64 to +63 words from PC + 2], o=1: [-64 to +63 words from SP].
+STO 0011.... ........        LOD             Store                         1 OOOOtton nnmmmddd, [address] = Rd based on tt: 00: store byte, o=0: [Rm + Rn], o=1: [Rm + imm3]
+                                                                                                                            01: store halfword, o=0: [Rm + Rn], o=1: [Rm + imm3 << 1]
+                                                                                                                            10: reserved future store 32-bit
+                                                                                                                            11: o=0: reserved, o=1: [-64 to +63 words from SP].
+LSL 01000000 0.......        SHF             Logical Shift left            4 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+ROL 01000000 1.......        SHF             Rotate Through-Carry Left     2 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+RNL 01000001 0.......        SHF             Rotate No-Carry Left          2 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+ASR 01000001 1.......        SHF             Arithmetic Shift Right        4 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+LSR 01000010 0.......        SHF             Logical Shift Right           4 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+ROR 01000010 1.......        SHF             Rotate Through-Carry Right    2 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+RNR 01000011 0.......        SHF             Rotate No-Carry Right         2 OOOOOOOO Oommmddd, o=0: Rd = Rd shift Rm, o=1: Rd = Rd shift imm3 (m as imm3 encoded as 1-8)
+CMP 01000011 1.......        ALU             Compare M and N, sets PS      1 OOOOOOOO Oommmnnn, M=Rm, o=0: N=Rn, o=1: N=imm3
+ADI 0100010. ........        ALU             D = D + I [+ C]               1 OOOOOOOo iiiiiddd, D = Rd, I = imm5, o=1: use carry (ALU always set flags)
+SBI 0100011. ........        ALU             D = D - I [- (1 - C)]         1 OOOOOOOo iiiiiddd, D = Rd, I = imm5, o=1: use carry (ALU always set flags)
+MOV 01001000 00......        ALU             D = M                         1 OOOOOOOO OOmmmddd, Rd = Rm
+NEG 01001000 01......        ALU             D = 0 - M                     1 OOOOOOOO OOmmmddd, D=Rd, M=Rm
+SEX 01001000 100.....        SEX             Sign/Zero Extend              1 OOOOOOOO OOOooddd, Rd = sign/zero extend, o=00: extend sign byte, o=01: extend zero byte, o=10 and o=11 reserved (future extend low halfword)
+REV 01001000 101.....        REV             Reverse bytes                 1 OOOOOOOO OOOooddd, o=00: Rd = Rd but bytes are reversed, o=01: bits are reversed, o=10 reserved, future reverse bytes within halfword, o=11 reserved, future
+NOT 01001000 11......        BIT             Bitwise not                   1 OOOOOOOO OOmmmddd, Rd = NOT Rm
+AND 0100101. ........        BIT             Bitwise and                   1 OOOOOOOn nnmmmddd, Rd = Rm AND Rn
+ORR 0100110. ........        BIT             Bitwise or                    1 OOOOOOOn nnmmmddd, Rd = Rm OR Rn
+EOR 0100111. ........        BIT             Bitwise exclusive or          1 OOOOOOOn nnmmmddd, Rd = Rm XOR Rn
+STS 01010000 00......        STK             Stack Stash                   * OOOOOOOO OOoorrrr, Stack stash by bitmask, o=00: reg indexes r0-r3, o=01: reg indexes r4-r7, o=10: PC, PS, USP, SSP, o=11: reserved. 
+STR 01010000 01......        STK             Stack Restore                 * OOOOOOOO OOoorrrr, Stack restore by bitmask
+BRK 01010000 10......        PRX             Breakpoint, imm6              * OOOOOOOO OOiiiiii
+xxx 01010000 11...... /      PRX             Processor functions           * OOOOOOOO OOiiiiii, imm6 = processor function index:
+                                                                                      i=$00: RTS       Return from subroutine, return address in R7
+                                                                                      i=$01: RTI       Return from interrupt, restoring PC and PS from stack.
+                                                                                      i=$02: SWI       Raise SoftWare Interrupt.
+                                                                                      i=$03: SLP       Sleep until Interrupt.
+                                                                                      i=$04: HWQ       Query hardware, message type R0
+                                                                                      i=$05: NOP       No op, one cycle
+                                                                                      i=$06: ...       (reserved for future data memory barrier)
+                                                                                      i=$07: ...       (reserved for future instruction sync barrier)
+                                                                                      i=$08: Set flag V
+                                                                                      i=$09: Clear flag V
+                                                                                      i=$0A: Set flag C
+                                                                                      i=$0B: Clear flag C
+                                                                                      i=$0C: Set flag Z
+                                                                                      i=$0D: Clear flag Z
+                                                                                      i=$0E: Set flag N
+                                                                                      i=$0F: Clear flag N
+                                                                                      Others:Undefined.
+MRS 01010001 ........        MRS                                           - OOOOOOOO mmmmmddd, Rd = special register #m
+MSR 01010010 ........        MRS                                           - OOOOOOOO mmmmmddd, special register #m = Rd
+JMP 01010011 ........ /      JMP             Jump                          2 OOOOOOOO snnnnmmm, PC = Rm + imm4 << 1, if s=1 this is a subroutine call, save return address (PC+2) in R7
+xxx 010101.. ........        ...             RESERVED                      - Reserved for future expansion.
+xxx 01011... ........        ...             RESERVED                      - Reserved for future expansion.
+Bxx 0110.... ........        BRA             Branch instructions           1 OOOOccco oooooooo, c is condition type, o is 9-bit branch offset, -256 to +255 words from PC+2. Branches: BEQ, BNE, BCS, BCC, BMI, BPL, BVS, BVC.
+BRA 0111.... ........        BRA             Branch Always                 1 OOOOoooo oooooooo, o is 12-bit branch offset, -2048 to +2047 words from PC+2.
+xxx 1....... ........        ...             RESERVED                      - Reserved for future 32-bit expansion.
+
+Special Registers:
+PC - 16 bits. Program Counter.
+SU - 16 bits. Stack Pointer for User.
+SS - 16 bits. Stack Pointer for Supervisor.
+PS - 16 bits. Processor Status.
+        FEDC BA98 7654 3210
+        PPMI ...T LLLL NZCV
+            [P] - Privilege level. 00=user, 01=supervisor, 10=reserved (hypervisor, future), 11=reserved (monitor, future).
+            [M] - Memory paging enabled.
+            [I] - In interrupt mode.
+            [T] - Trace enabled (seperate from IM.E). Trace breaks after each instruction.
+            [LLLL] - Current interrupt priority level. 0000=not in interrupt, 1111=highest priority.
+            [N] - Last ALU instruction result was negative.
+            [Z] - Last ALU instruction result was Zero
+            [C] - Last ALU instruction result was Carry
+            [V] - Last ALU instruction result was Overflow
+            Note: 3 bits spare in this register.
+IM - 16 bits. Interrupt Mask.
+        FEDC BA98 7654 3210
+        .... .... .... .HKE
+            [E] - All interrupted enabled/disabled (except for T).
+            [K] - Clock interrupt enabled (frequency on KF register).
+            [H] - Hardware interrupt enabled.
+IC - 16 bits. Interrupt Cause.
+        FEDC BA98 7654 3210
+        TTTT TTTT AAAA AAAA
+            [T] - Type of interrupt (as defined in interrupt type table).
+            [A] - Explanation of interrupt. (e.g. this is the hardware index that faulted).
+                  Example on hardware interrupt:
+                  .... IIII where I is index of the hardware device causing the interrupt.
+                 [I] - Index of hardware device causing interrupt.
+                  Example on page fault:
+                  ...A EWPU
+                 [U] - Fault in User mode.
+                 [P] - Page was not present.
+                 [W] - Fault on Write (either not present 'P' or not writable).
+                 [E] - Fault on Execute (either not present 'P' or not executable).
+                 [A] - Access privilege issue (access to page not marked used accessible 'U' in User mode).
+ID - 32 bits. Processor features. Bit0 always 1, indicating that this is a conforming implementation of this ISA. Otherwise, all zeroes for now because the rev 1 processor has no 'new' features!
+FA – 32 bits. Page Fault Address Register. Holds the faulting virtual address on any page fault. Written by hardware before entering the fault handler.
+TU - 32 bits. Page table base for user. Physical address. Format: aaaaaaaa aaaaaaaa aaaaaaaa aa...sss, s is 'size', s=0:64kb with 16 pages, s=6: = 4mb with 1024 pages, 7 = Page Dictionary; a = base address of page table/dictionary. Must be aligned with size of table; when s=0 must be aligned to 64byte address, when s=6 or s=7, must be aligned to 4096byte address.
+TS - 32 bits. Page table base for supervisor. Physical address. Same format as TU.
+KL - 32 bits. Cycle counter low 32 bits. Increments each cycle.
+KH - 32 bits. Cycle counter high 32 bits. Increments each cycle.
+KT - 32 bits. Increments once a second
+KF - 32 bits. If clock interrupt is enabled, this is the number of cycles between timer interrupts.
+
+Page Table: each page table is made up of 32bit page descriptors.
+Each page descriptor is 12 bits flags and 20 bits address_hi: P(resent), W(ritable), E(xecutable), D(irty), A(ccessed), U(ser accessible), Reserved(6-9), SW0, SW1, physical address hi (12-32).
