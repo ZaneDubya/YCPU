@@ -1,0 +1,4739 @@
+YCPU2 Programmer's Reference and Processor Specification
+Version 2.0.0 (Alpha)
+
+TODO:
+[X] Get all content in.
+[X] Finish instruction operation reference
+[X] First pass on text.
+[X] Replace all kilobyte (KB) references with "KiB", same for megabyte "MiB".
+[X] Check for TODOs.
+[X] Double check all headers.
+[X] Double check all references.
+[X] Second pass on text.
+[X] Third pass on text.
+[X] Fourth pass on text.
+[X] Fifth pass on text.
+[ ] Final(?) check. <--- Current stage
+
+### Table of Contents ##########################################################
+
+        1.      Introduction
+        1.A.        Public Domain Dedication
+        1.B.        Designer's Perspective
+        2.      Instruction Set Overview
+        2.A.        Load/Store Instructions
+        2.B.        Move Instructions
+        2.C.        General Math Instructions
+        2.D.        Immediate Math Instructions
+        2.E.        Register Manipulation Instructions
+        2.F.        Binary Logic Instructions
+        2.G.        Bit-shifting Instructions
+        2.H.        Bit-testing Instructions
+        2.I.        Stack Instructions
+        2.J.        Jump Instructions
+        2.K.        Branch Instructions
+        2.L.        Processor Control Functions
+        3.      Hardware Information
+        3.A.        Data and Addressing Model
+        3.B.        Registers
+        3.C.        Supervisor and User Modes
+        3.D.        Hardware Devices
+        3.E.        Interrupts
+        3.F.        Memory Management
+        3.G.        Boot/Reset Sequence
+        3.H.        Switching Context
+        4.      Instruction Encoding
+        4.A.        Encoding of Instructions, Sequential
+        4.B.        Encoding of Instructions by Family
+        5.      Instruction Operation Reference
+
+
+### 1. Introduction ############################################################
+
+The YCPU2 processor is a general-purpose microprocessor, designed for computing
+in embedded systems, personal computers, and multi-user software. The YCPU2's
+instruction encoding, addressing modes, and bus interface are structured to be
+scalable, forming the basis for future compatible processors.
+
+The features of the YCPU2 include:
+  * comprehensive instruction set optimizing for systems programming and
+    application code;
+  * eight 16-bit general purpose data/address registers;
+  * user/supervisor modes with different privileges and stack pointers;
+  * paging memory architecture capable of addressing a 32-bit address space;
+  * memory protection and isolation;
+  * real time clock with a programmable timer that raises interrupts;
+  * system bus controller, that interfaces to an external bus.
+    
+This document is made up of five sections. Each Section describes the YCPU2
+Specification in increasing detail.
+
+Section 1, this Section, includes a brief overview of the document, a copyright
+dedication to the public domain, and a designer's perspective on the changes
+made from the YCPU1 to the YCPU2.
+
+Section 2 is the programmer's reference, which gives a broad overview of the
+instruction set that a programmer uses to write programs for the YCPU2.
+The instructions are divided by function into groups.
+
+Section 3 is the processor specification, describing the internal function of
+the processor and how the state of the processor changes as it processes
+instructions.
+
+Section 4 details how instructions are encoded into 16-bit program words.
+
+Section 5 describes the exact function of every instruction, including how
+execution of instructions effect processor state, memory, and flags.
+
+Terminology in this Document:
+
+In this document, the unit symbol for 1024 bytes is KiB, and the unit symbol for
+1024 KiB is MiB.
+
+This document uses a syntax for a reference assembler that encodes instructions
+and data for the YCPU2. This syntax is used for example purposes only, and might
+be different depending on the assembler used by the programmer. These precepts
+are followed to describe the reference assembler syntax:
+
+    - Decimal numbers are indicated using numbers, and may be preceded by a
+      dash "-", which indicate a negative decimal number.
+    - Hexadecimal numbers are indicated by a prefix dollar sign character "$".
+    - Immediate numbers are prefixed by #.
+    - Immediate hexadecimal numbers are prefixed by #$.
+    - The general purpose registers are named R0-R7.
+    - Some instructions can be postfixed with flags to indicate modal
+      functions. For example, the MVI instruction can be used to move an
+      immediate byte value into the high octet of a general purpose register
+      with the flag "MVI.H", or move an immediate byte value into the low
+      octet of a general purpose register with the flag "MVI.L".
+
+
+=== 1.A. Public Domain Dedication ==============================================
+
+This document is dedicated to the public domain under the terms of the Creative
+Commons Zero (CC0) waiver. All rights have been waived with regard to
+copyright law, including all related and neighboring rights, to the extent
+allowed by law.
+
+You can copy, modify, and distribute this document, and use it to create
+derivative works, even for commercial purposes, all without asking permission.
+
+More information about CC0 waiver is available online at: 
+http://creativecommons.org/about/cc0
+
+
+=== 1.B. Designer's Perspective ================================================
+
+Although the YCPU2 continues the evolution of the earlier YCPU architecture, it
+is not object-code compatible with that earlier processor. Programs written for
+the YCPU1 must be re-assembled or re-compiled to target the new instruction set
+and execution model. Source-level migration is supported by the YCPU2’s familiar
+operations and programming conventions, but the underlying encoding and machine
+model have been deliberately redesigned.
+
+When we designed the original YCPU1, our goal was to build a compact yet
+"full-featured" systems processor: segmented memory, separate user and
+supervisor stacks, rich addressing modes, 8- and 16-bit operation on the same
+register file, and a generous set of control and MMU-adjacent instructions. The
+architecture achieved that goal. This made the YCPU1 an excellent platform for
+exploring operating system concepts, memory management, and low-level
+programming techniques.
+
+As use of the YCPU1 increased, challenges became apparent. The instruction
+encodings, which had grown organically during design, were highly irregular.
+Each instruction family defines its own bit layout, its own special cases, and
+its own rules for how additional words are fetched. Variable instruction timing,
+multiword control transfers, segment-dependent addressing, and a dual-width ALU
+mode all interact in ways that complicate implementation, verification, and
+performance increases. Furthermore, looking forward to the future, we saw that
+our original design had hamstrung future development paths.
+
+The YCPU2 is our response to these lessons. It retains the spirit of the YCPU1:
+small, orthogonal, and suitable for both systems and application code. However,
+this new processor reorganizes the architecture around a regular instruction set
+and a scalable memory model. All instructions are 16 bits wide, and the major
+instruction classes share consistent field layouts. This simplifies decoding,
+enables efficient pipelining, and makes formal specification and verification
+significantly easier, while providing the arithmetic, logical, control-flow,
+and bit-manipulation operations expected from a modern general-purpose CPU.
+
+In defining the YCPU2, we also rebalanced the architecture around a more
+conventional load/store model and a flatter view of memory access. Addressing
+modes are simpler and more uniform, favoring register-based addressing with
+small immediates and PC-relative forms. System state—such as processor status,
+special registers, and memory translation or protection controls—is still
+accessible, but through a more compact and orthogonal set of instructions. The
+privilege model, stacks, and interrupt/exception mechanisms remain first-class
+concepts, but are expressed in ways that are easier to implement correctly
+and efficiently.
+
+Where YCPU1 used segmentation as its primary memory-management mechanism, YCPU2
+adopts a paged memory model designed to grow with future implementations. The
+initial YCPU2 configuration uses a 16-entry page table to map a 64 KiB virtual
+address space, appropriate for the home systems of today. This paging system
+has been forward-designed to scale to much larger memory spaces. This approach
+allows future YCPU2-compatible implementations to expand address space and
+translation sophistication without revisiting the core ISA or breaking existing
+supervisor code.
+
+At the programming model level, we have retained much that will be familiar to
+YCPU1 programmers: a small bank of general-purpose registers, condition flags
+with similar meanings, explicit stack manipulation, supervisor/user split, and
+a clear division between application and system state. Many instruction
+mnemonics and conventions have been carried forward, and typical calling
+conventions and control-flow patterns can be mapped directly to the new
+instruction set. The intent is that existing YCPU1 source code, especially that
+written in assembly or compiled from higher-level languages, can be brought
+forward with modest changes.
+
+In summary, the YCPU2 should be understood not as a minor revision of the YCPU1,
+but as a successor that takes the architectural ideas of the original processor
+and recasts them in a more coherent design intended for modern software, better
+tool support, and future expansion.
+
+
+### 2. Instruction Set Overview ################################################
+
+This Section contains a brief overview of all instructions that can be used when
+programming the YCPU2. For more information about specific processor functions,
+reference Section 3., Hardware Information. For detailed information on how
+these instructions are encoded, reference Section 4. Instruction Encoding.
+
+These instructions often change the value of the eight general purpose
+registers. The reference assembler names for the general purpose registers are:
+R0, R1, R2, R3, R4, R5, R6, and R7.
+
+Some instructions operate on 32-bit values using an implicit register pair. In
+these cases, the destination (base) register must be an even-indexed register:
+R0, R2, R4, or R6. After the instruction executes, the even register will hold
+the low 16 bits of the result, and the next register (R1, R3, R5, or R7) holds
+the high 16 bits. The valid register pairs are: (R0, R1), (R2, R3), (R4, R5), 
+and (R6, R7).
+
+Any instruction that produces or consumes a 32-bit result uses one of these
+pairs and requires the even register of the pair to be used as the destination
+register of the instruction. An odd register as the destination register will
+raise UndefFault, and should be rejected by assemblers.
+
+=== 2.A. Load/Store Instructions  ==============================================
+
+Load/Store instructions allow the programmer to Load values from memory into
+registers, and Store values from registers into memory. Addressing modes allow
+the programmer to load/store to addresses based on a base register and an 
+offset value.
+
+The base register can be a general purpose register. In this case, the address
+of the memory referenced is the value of the base register offset by either a
+small constant (0-7), or the value of a second general purpose register.
+
+When the base register is a general purpose register, the default mode of the
+instruction references a 16-bit word. If the offset is a second register, the
+address of the 16-bit word is at [Rm + Rn]. If the offset is a small constant,
+the address of the 16-bit word is at [Rm + constant * 2] (with the constant
+selecting word offsets, not byte offsets).
+
+Alternately, when the base register is a general purpose register, the
+programmer may reference an 8-bit byte. In this 8-bit mode, if the offset is a
+second register, the address of the 8-bit byte is at [Rm + Rn]. If the offset
+is a small constant, the address of the 8-bit byte is at [Rm + constant].
+
+The base register can alternately be either of the control registers PC or SP
+(where SP is the stack pointer for the current mode, either SU or SS). This
+permits referencing a constant value from instruction memory, or a value from
+the stack. In this case, the instruction always references a 16-bit word, and
+the address of the memory referenced is the value of the base register offset
+by a constant value from -32 to +31 words. Referencing an 8-bit byte when the
+base register is a control register is not possible.
+
+The format of the Load/Store instructions is:
+
+    XXX     Rd, Rm, N
+
+    XXX is the three-letter instruction code ("LOD" or "STO"). When the base
+        register is a general purpose register, you may select the 8-bit mode
+        by adding the flag ".B" to the end of XXX (ex. "LOD.B   Rd, Rm, V").
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the destination of a Load instruction or the source of a
+        Store instruction.
+    Rm  is the base register. Rm can be a general purpose register (R0-R7),
+        or the control register PC, or the current stack pointer SP.
+    N   is the offset value. When Rm is a general purpose register, N can be
+        a second general purpose register or a small constant value 0-7. When
+        Rm is a control register, N is always a constant value -32 to +31.
+                                            
+The Load/Store instructions are:
+
+    LOD     Rd, Rm, N     Sets Rd equal to value of the memory at [Rm + N]
+    STO     Rd, Rm, N     Sets memory at [Rm + N] equal to Rd.
+
+Notes:
+Loads of 8-bit bytes do not need to be aligned to 16-bit addresses, and do not
+raise Align faults. Other loads must be aligned to 16-bit addresses.
+
+
+=== 2.B. Move Instructions  ====================================================
+
+Move instructions allow the programmer to copy registers into other registers,
+and move constant values into registers.
+
+There are two Move instructions: MOV copies a value from a source register to a
+destination register, while MVI copies a constant 8-bit value into the high
+or low 8-bits of a destination register.
+
+The format of the MOV instruction is:
+
+    MOV     Rd, Rm
+
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the destination of the result of the Move instruction.
+    Rm  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rm
+        designates the source of the Move instruction.
+
+The format of the MVI instruction is:
+
+    MVI.F   Rd, M
+
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the destination of the result of the Move instruction.
+    M   is a constant value from 0 to 255.
+    F   is a flag value that is either "L" or "H".
+        "MVI.L" copies M into the low 8-bits of Rd; high 8-bits are unchanged.
+        "MVI.H" copies M into the high 8-bits of Rd; low 8-bits are unchanged.
+
+
+=== 2.C. General Math Instructions  ============================================
+
+At its heart, the YCPU2 is a fast math processor. It handles addition and
+subtraction and has a carry flag so the programmer can chain 16-bit additions
+and subtractions. It also has signed and unsigned multiply and divide with 
+modulus instructions. To learn more about these instructions, including when
+flags are set, reference Section 5.
+
+The assembler format of math instructions is:
+
+    XXX     Rd, Rm, Rn
+
+    XXX is the three-letter instruction code (ex. "ADC" or "MUL").
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the destination of the result of the math instruction.
+        MUL, MLI, DIV, and DVI require two output registers, and thus Rd must
+        be an even numbered register (R0, R2, R4, or R6) that is the low half
+        of a register pair (Rd, Rd+1). The instruction writes the low 16 bits
+        of the result into Rd and the high 16 bits (for MUL/MLI) or the
+        remainder/modulus (for DIV/DVI) into Rd+1.
+    Rm  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7.
+        This is the first operand of the math operation.
+    Rn  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7.
+        This is the second operand of the math operation.
+                                            
+The math instructions are:
+
+    ADD     Rd = Rm + Rn   Adds Rm to Rn.
+    ADC     Rd = Rm + Rn   Adds Rm to Rn with carry. If carry flag is set, add 1.
+    DIV     Rd = Rm / Rn   Unsigned division and modulus. Rd must be an even-
+                           numbered register, and will hold the result. Rd+1 will
+                           hold the modulus value of the result.
+    DVI     Rd = Rm / Rn   Signed division and modulus. Rd must be an even-
+                           numbered register, and will hold the result. Rd+1 will
+                           hold the modulus value of the result.
+    MLI     Rd = Rm * Rn   Signed multiply 32-bit result. Rd must be an even-
+                           numbered register, and will hold the low 16-bits of the
+                           result. The high 16-bits of the result are held in Rd+1.
+    MUL     Rd = Rm * Rn   Unsigned multiply 32-bit result. Rd must be an even-
+                           numbered register, and will hold the low 16-bits of the
+                           result. The high 16-bits of the result are held in Rd+1.
+    SUB     Rd = Rm - Rn   Subtracts Rn from Rm.
+    SBC     Rd = Rm - Rn   Subtracts Rn from Rm with carry. Following common
+                           conventions, if carry flag is not set, subtract 1. If
+                           carry flag is set, this is equivalent to SUB.
+
+
+=== 2.D. Immediate Math Instructions  ==========================================
+
+Immediate Math instructions allow you to add or subtract small constant values
+from registers.
+
+The format of Immediate Math instructions is:
+
+    XXX     Rd, V
+
+    XXX is the three-letter instruction code (e.g. "ADD" or "ADC").
+    Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the first operand of the math instruction, and is also the
+        destination of the result of the math instruction.
+    V   is a constant value from 1 to 32.
+    
+The Immediate Math instructions are:
+
+    ADD     Rd = Rd + V   Adds V to Rd.
+    ADC     Rd = Rd + V   Adds V to Rd with carry. If carry flag is set, add 1.
+    SUB     Rd = Rd - V   Subtracts V from Rd.
+    SBC     Rd = Rd - V   Subtracts V from Rd with carry. If carry flag is not
+                          set, subtract 1. If carry flag is set, this is
+                          equivalent to SUB.
+
+=== 2.E. Register Manipulation Instructions  ===================================
+
+Register Manipulation instructions allow you to modify the value of the general
+purpose registers. There are two Register Manipulation instructions: Register
+Extend (REX) and Register Reverse (REV). 
+
+Register Manipulation instructions operate on a single register operand and do
+not require a separate source register. They change the bit pattern of the
+register in place.
+
+There are two REX variants: one sign-extends the low 8 bits of a register to
+fill the full 16-bit register, and one zero-extends the low 8 bits. The format
+of the REX instruction is:
+
+    REX.F   Rd
+
+    Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+    designates both the source and destination of the Extend operation.
+    F   is a flag value that selects the extend behavior:
+        - "REX.SB" sign-extends the low 8-bits of Rd into bits 15–8.
+          Bit 7 is copied into bits 8–15; bits 7–0 are unchanged.
+        - "REX.UB" zero-extends the low 8-bits of Rd into bits 15–8.
+          Bits 15–8 are set to 0; bits 7–0 are unchanged.
+
+There are two REV variants: one reverses the byte order of the 16-bit register
+(swapping the high and low byte), and one reverses all 16 bits within the
+register (bit 0 becomes bit 15, bit 1 becomes bit 14, and so on). The format of
+the REV instruction is:
+
+    REV.F   Rd
+
+    Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates both the source and destination of the Reverse operation.
+    F   is a flag value that selects the reverse behavior:
+        - "REV.B" reverses the bytes of Rd. The low byte and high byte are
+          swapped: Rd[15:8] and Rd[7:0] exchange positions.
+        - "REV.T" reverses the bits of Rd. Bit 0 becomes bit 15, bit 1 becomes
+           bit 14, and so on, completely reversing bit order.
+
+
+=== 2.F. Binary Logic Instructions  ============================================
+
+Binary Logic instructions perform bitwise manipulation of register operands. The
+programmer uses these instructions to manipulate and test bits within registers.
+
+The format of the Binary Logic instructions is:
+
+    AND     Rd, Rm, Rn   Bitwise AND:                 Rd = Rm & Rn
+    CMP     Rm, Rn       Compares Rm and Rn and sets flags.
+    CMP     Rm, Imm3     Compares Rm and small immediate (0-7) and sets flags.
+    EOR     Rd, Rm, Rn   Bitwise Exclusive OR:        Rd = Rm ^ Rn
+    NEG     Rd, Rm       Two's complement negate:     Rd = 0 - Rm
+    NOT     Rd, Rm       Bitwise Complement:          Rd = !Rm
+    ORR     Rd, Rm, Rn   Bitwise OR:                  Rd = Rm | Rn
+
+
+=== 2.G. Bit-shifting Instructions  ============================================
+
+Bit-shifting instructions shift and rotate the bits that make up a value in a
+general purpose register. Bits may be shifted or rotated left or right.
+
+The format of Bit-shifting instructions is:
+
+    XXX     Rd, M
+    
+    XXX is the three-letter instruction code (ex. "ASL" or "ROL").
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd is
+        the register that will be shifted.
+    M   is the amount that the register will be shifted. M can be a constant
+        value in the range of 1-8, or a register with the value of R0, R1, R2,
+        R3, R4, R5, R6, or R7. M is clamped to 0-15 before the shift.
+        
+The bit-shifting instructions are:
+
+    ASR     Shifts all bits in Rd by M bits to the right.
+            Vacated bits on the left are set to original value of bit 15.
+    LSL     Shifts all bits in Rd by M bits to the left.
+            Vacated bits on the right are set to 0.
+    LSR     Shifts all bits in Rd by M bits to the right.
+            Vacated bits on the left are set to 0.
+    RNL     Rotates all bits in Rd by M bits to the left, not using carry bit.
+    RNR     Rotates all bits in Rd by M bits to the right, not using carry bit.
+    ROL     Rotates all bits in Rd by M bits to the left, through the carry bit.
+    ROR     Rotates all bits in Rd by M bits to the right, through the carry bit.
+
+
+=== 2.H. Bit-testing Instructions  =============================================
+
+Bit-testing instructions test and change single bits in a general purpose
+register or in memory.
+
+The format of Bit-testing instructions is:
+
+    XXX     Rd, Imm
+    XXX.M   Rd, Imm
+    
+    XXX is the three-letter instruction code (ex. "BTT" or "BTX").
+    Rd  is the general purpose register that is used as either the value to be
+        tested or the address of a 16-bit word in memory that will be tested. Rd
+        has the value of R0, R1, R2, R3, R4, R5, R6, or R7. When the programmer
+        omits the ".M" flag, this instruction addresses the value of the
+        register. When the programmer appends the ".M" flag, the instruction
+        will test the value of a 16-bit word in memory at the address of Rd.
+    Imm is a number from 0-15, the index of the bit that will be tested and,
+        depending on the instruction, changed.
+        
+The bit-testing instructions are:
+
+    BTT     Tests bit B in the value V.
+            Zero flag is set if the bit is clear; else zero flag is clear.
+
+    BTC     Tests bit B in the value V, and clears it.
+            Zero flag is set if the bit was clear; else zero flag is clear.
+            Carry flag is set if the bit value changed.
+
+    BTS     Tests bit B in the value V, and sets it.
+            Zero flag is set if the bit was clear; else zero flag is clear.
+            Carry flag is set if the bit value changed.
+
+    BTX     Tests bit B in the value V, and changes it. 
+            Zero flag is set if the bit was clear; else zero flag is clear.
+            Carry flag is set if the bit is now set; else carry flag is clear.
+    
+
+=== 2.I. Stack Instructions ====================================================
+
+Stack instructions push values from registers to the stack, pop values from the
+stack to registers, and manipulate the stack pointer.
+
+--- 2.I.1. Stack Data-Movement -------------------------------------------------
+
+The format of stack data-movement instructions is:
+
+    XXX     Rx{, Rx, Rx...}
+    
+    XXX is the three-letter instruction code ("STS" or "STR").
+    Rx  is either one register or a list of registers separated by commas.
+        The processor sequentially accesses the stack to push or pop each 
+        specified register.
+        The order of access for STS is ascending, and the order of access for
+        STR is descending. See Section 5 for details.
+        
+The stack data-movement instructions are:
+
+    STR     "Restore" (pop) values from the stack into registers.
+    STS     "Stash" (push) values of registers onto the stack.
+
+While STS and STR may be used to stash or restore a single register at a time,
+the intended use of STS and STR is to stash up to four registers at a time from
+a given "stash register group". There are three stash register groups:
+
+    Group 0: R0, R1, R2, R3
+    Group 1: R4, R5, R6, R7
+    Group 2: PC, PS, SU, SS
+
+The programmer may reference any number of registers from a stash register group
+with a single instruction. The exact push/pop order for each group is documented
+in Section 5.
+
+An instruction which references registers from different groups within a single
+instruction is not possible, and should be rejected by assemblers.
+
+Note that STS/STR on PS/SS in User Mode are limited to protect privilege. See
+Section 5 for details.
+
+--- 2.I.2. Stack Pointer Adjustment --------------------------------------------
+
+The STX instruction directly adjusts SP (where SP is the stack pointer for the
+current mode, either SU or SS) by Imm * 2 bytes (Imm is a signed word count
+from -128 to +127). The format of the STX instruction is:
+
+    STX     V
+
+    V   is an immediate value in the range -128 to 127.
+
+A negative V reserves space on the stack (the stack grows downward), and a
+positive V releases space (the stack shrinks upward). STX does not push or
+pop any values and does not modify the NZCV flags; it only changes SP.
+
+
+=== 2.J. Jump Instructions  ====================================================
+
+Jump instructions change the address of the next instruction to be executed 
+to a new value.
+
+The format of jump instructions is:
+
+    XXX     Rd
+
+    XXX is the three-letter instruction code ("JMP" or "JSR").
+    Rd  is a general purpose register R0, R1, R2, R3, R4, R5, R6, or R7. The PC
+        will  be set to the value of this register when this instruction is
+        executed.
+                                            
+The jump instructions are:
+    
+    JMP     Unconditional jump to new address.
+    JSR     Unconditional jump to new address, saving the return address to the
+            current stack. The return address is the pre-jump PC + 2.
+            
+
+=== 2.K. Branch Instructions  ==================================================
+
+Branch instructions change the address of the next instruction to be executed,
+based on the condition of the flag bits in the processor status register (PS).
+These flags are set by instructions as a result of executing an ALU, increment,
+bit shifting, or bit testing instruction.
+
+Each branch instruction defines a condition and an instruction offset. When a
+branch instruction is executed, the processor checks the status of the flag bits
+in PS. If the flag bits match the required condition of the branch instruction,
+the processor will adjust its program counter (PC) register by the number of
+16-bit words indicated in the instruction offset. 
+
+The format of Branch instructions is:
+
+    XXX     V
+    
+    XXX is the three-letter instruction code (ex. "BCC" or "BUF").
+    V   is a constant value from -256 to +255. This is the number of 16-bit
+        words that the PC register will be changed by.
+        Special case: for BRA (branch always), V is a constant value
+        from -2048 to +2047.
+        
+The branch instructions are:
+    BVC     Branch on no overflow - if overflow flag in PS is clear.
+    BVS     Branch on overflow - if overflow flag in PS is set.
+    BCC     Branch on unsigned fewer than - if carry flag in PS is clear.
+    BCS     Branch on unsigned higher than or same - if carry flag in PS is set.
+    BEQ     Branch on equal - if zero flag in PS is set.
+    BNE     Branch on not equal - if zero flag in PS is clear.
+    BPL     Branch on signed positive - if negative flag in PS is clear.
+    BMI     Branch on signed negative - if negative flag in PS set.
+    BRA     Branch always (unconditional). 
+
+
+=== 2.L. Processor Control Functions  ==========================================
+
+In addition to the many instructions outlined above, the processor has
+instructions that control the state of the processor. 
+These are described in brief here, and in detail throughout Section 3.
+
+The Processor Control instructions are:
+
+
+2.L.1. Breakpoint (BRK)
+
+   The BRK instruction inserts a software breakpoint and raises a breakpoint
+   exception, transferring control to the breakpoint/exception handler. This
+   instruction carries a 6-bit immediate value that can be used by a debugger
+   to distinguish different breakpoint sites or breakpoint types.
+
+   The format of the BRK instruction is:
+   BRK     I
+
+   I   is a constant value from 0 to 63. I is encoded as a 6-bit immediate
+       and is made available to the breakpoint handler in the interrupt
+       cause register.
+
+
+2.L.2.  Move From Special Register (MRS) and Move To Special Register (MSR)
+
+    The MRS instruction copies the contents of a special register into a general
+    purpose register. This instruction is used to read processor state such as
+    PC, PS, stack pointers, page table base registers, counters, and other
+    control registers.
+
+    The format of the MRS instruction is:
+    MRS     Rd, S
+
+    Rd  is a general purpose register that is the destination of the move.
+        If S is a 16-bit special register, Rd may be any register. If S is a
+        32-bit special register, Rd must be even and will hold the low 16-bits of
+        the special register, and Rd+1 will hold the high 16-bits.
+    S   is a special register name representing the index of a special register
+        to read. The mapping from S to a specific special register is defined in
+        Section 3.
+
+    The MSR instruction copies the contents of a general purpose register into a
+    special register. Writing certain special registers (such as PS, TU, TS, or
+    timer registers) may have immediate effects on execution, interrupt
+    handling, or paging. These effects are described in detail in Section 3.
+
+    The format of the MSR instruction is:
+    MSR     S, Rd
+
+    S   is a special register name representing the index of a special register
+        that will be written to.
+    Rd  is a general purpose register that is the source of the move. If S is a
+        16-bit special register, Rd may be any register. If S is a 32-bit special
+        register, Rd must be even and will hold the low 16-bits of the special
+        register, and Rd+1 will hold the high 16-bits.
+
+
+2.L.3.  Page Table Load (PTL) and Page Table Store (PTS)
+
+    The Page Table instructions provide a direct way to load or store a Page
+    Table Entry associated with a virtual address. PTL and PTS operate on the
+    page table whose base is held in the TU (User Page Table) register.
+
+    PTL/PTS do not operate on TS. To modify the Supervisor Page Table, use
+    standard memory operations; or store TS into TU, and then use PTL/PTS.
+
+    The format of the PTL/PTS instruction is:
+    XXX.F   Rd, Rm
+
+    Rd  is a general purpose register with the value of R0, R2, R4, or R6.
+        Rd and Rd+1 together hold the Page Table Entry value on load or store.
+    Rm  indicates which Page Table Entry should be operated on. Depending on the
+        F flag, Rm provides either a virtual address or the index of the entry. 
+    F   is either ".V" or ".I".
+        ".V" indicates that Rm contains a full virtual address. The instruction
+             uses this virtual address to locate the page table entry that
+             translates the address. Specifically, the upper four bits of Rm will
+             select one of the sixteen page table entries.
+        ".I" indicates that Rm contains the 16-bit index of the page table entry
+             to be operated on.
+
+    Important: TU must be a valid encoding, and Rm must be within the range of
+    0-15. If, for example, TU.s != 00, or RM == 16, the processor will raise
+    PageFault on PTL/PTS.
+
+
+2.L.4.  Hardware Query (HWQ)
+
+    The Hardware Query instruction sends a command to the System Bus Controller.
+    It is described in Section 3.D.2.
+
+
+2.L.5.  Monadic Processor Control Instructions
+
+    RTS     Return from subroutine. PC is restored from the stack.
+
+    RTI     Return from interrupt. PC, PS, IC are restored from the supervisor stack.
+
+    SWI     Software interrupt. Traps to the software interrupt handler.
+
+    SLP     Sleep until Interrupt. The processor enters a low power state until
+            an interrupt occurs.
+
+    NOP     No operation. The instruction completes in one cycle without
+            changing the state of the processor.
+
+    SFV     Set the V (overflow) flag in PS.
+
+    CFV     Clear the V (overflow) flag in PS.
+
+    SFC     Set the C (carry) flag in PS.
+
+    CFC     Clear the C (carry) flag in PS.
+
+    SFZ     Set the Z (zero) flag in PS.
+
+    CFZ     Clear the Z (zero) flag in PS.
+
+    SFN     Set the N (negative) flag in PS.
+
+    CFN     Clear the N (negative) flag in PS.
+    
+
+### 3. Hardware Information ####################################################
+
+The YCPU2 is a 16-bit processor designed to be powerful without being complex. A
+hobbyist can begin programming software knowing only the syntax of their
+assembler of choice and the way the RESET interrupt functions. Experts and
+developers of operating systems will enjoy the processor's many features and the
+easy transfer between supervisor and user modes.
+
+This Section describes the processor's functions in detail. We begin with a
+description of the processor's 16-bit nature and how this affects data,
+addressing, and instruction encoding.
+
+
+=== 3.A. Data and Addressing Model =============================================
+
+The YCPU2 has eight general purpose data/address registers, each 16 bits wide.
+A single register can therefore represent unsigned values from 0 to 65,535 and
+signed values from –32,768 to 32,767. Some instructions (such as multiplication
+and division) produce 32-bit results from 16-bit operands. In these cases the
+32-bit result is split across two registers: if the destination register is
+Rd, the low 16 bits of the result are written to Rd, and the high 16 bits are
+written to the next register Rd+1. The destination register must be an even
+register index.
+
+With respect to memory addressing, the 16-bit register size means that any
+instruction can form a 16-bit address, providing a 64 KiB address space. When
+the YCPU2 memory management unit (MMU) is disabled, these 16-bit addresses are
+used directly as physical addresses.
+
+When the MMU is enabled, the 16-bit address used by instructions is treated as
+a virtual address. The MMU translates this 16-bit virtual address into a
+32-bit physical address in the processor’s 4 gigabyte physical address space.
+The MMU uses a page table model with a fixed page size of 4 KiB. The 16-bit
+virtual address space is divided into 16 pages of 4 KiB each; each virtual page
+is mapped, via the page table, to a 4 KiB physical page.
+
+All encoded instructions are single words, exactly 16 bits in size, and operate
+on 16-bit registers. There are no multi-word encodings. Immediates, when
+present, are encoded within these 16-bit instruction words.
+
+The YCPU2 stores all multi-byte values in little-endian form. For any 16-bit
+word located at address A, the low byte (bits 7–0) resides at address A and the
+high byte (bits 15–8) resides at address A+1. An 8-bit load or store at an odd
+address therefore accesses the high byte of the containing word, and an 8-bit
+load or store at an even address accesses the low byte.
+
+
+--- 3.A.1. 8-BIT OPERATIONS ----------------------------------------------------
+
+For most instructions, the natural unit of operation is a 16-bit word. The
+LOD and STO instructions also support 8-bit byte accesses. For an 8-bit STO
+operation, the processor writes only one byte; the other byte in the containing
+16-bit word in memory is not modified. For an 8-bit LOD operation, the
+processor reads the addressed byte and clears the upper 8 bits of the
+destination register.
+
+The REX and REV instructions operate on 8-bit subfields within 16-bit
+registers, providing byte-oriented sign/zero extension and byte/bit reversal
+operations. All other instructions operate on full 16-bit register values at
+all times.
+
+--- 3.A.2. MEMORY ALIGNMENT ----------------------------------------------------
+
+All accesses to memory (with only one exception discussed immediately below),
+must be aligned to 16-bit memory addresses. Any read or write to memory at an
+address that is not aligned to a 16-bit address will raise the AlignFault
+interrupt. This includes reads of program words: PC must always be 16-bit
+aligned.
+
+The one exception to this rule is Load and Store instructions that reference an
+8-bit byte, as described in Section 5. In this one case, the processor will
+access the 16-bit word at memory address [address & $fffe], and load or store
+the high or low byte as indicated by the low bit of the address, and will not
+raise the AlignFault exception.
+
+
+=== 3.B. Registers =============================================================
+
+The processor uses eight general purpose registers for most instructions. In
+this document, these registers are named R0, R1, R2, R3, R4, R5, R6, and R7.
+For more information, see 3.B.1.
+    
+The processor also has control registers. These change the flow of the program
+being executed for the processor. For more information, see 3.B.2.
+
+
+--- 3.B.1. GENERAL PURPOSE REGISTERS -------------------------------------------
+
+The processor has 8 general purpose 16-bit registers, R0–R7. These registers are
+used as both data and address registers and are generally interchangeable and
+orthogonal: most instructions may use any of R0–R7 as operands.
+
+Some instructions operate on 32-bit values using an implicit register pair. For
+these instructions, the processor treats an even-numbered register R (R0, R2,
+R4, or R6) as the low half of a 32-bit value and the next register R+1 (R1, R3,
+R5, or R7) as the high half. For such instructions, the destination/source
+register must be even; an odd register will raise an exception. Assemblers
+should reject encodings that use an odd-numbered register where a register pair
+is required.
+
+
+--- 3.B.2. PROCESSOR CONTROL REGISTERS -----------------------------------------
+
+The processor has many control registers. Unlike the general purpose registers,
+these are not accessible by most instructions. However, the control registers
+drive the essential state of the operation of the processor. The programmer can
+access and change the state of the control registers using the MSR/MRS
+instructions, which transfer a control register to a general purpose register
+based on the special register index. Other operations cause some control
+registers to be pushed to the stack.
+
+    PC: Program Counter (16-bit). Index: $00. User/Supervisor.
+        Contains the address of the next program word to execute. It is
+        increased by 2 after executing an instruction. Writing and reading PC
+        with MRS/MSR is not privileged.
+
+    PS: Processor Status (16-bit). Index: $01. User/Supervisor.
+        Contains the state of the processor and ALU flags. Writing and reading
+        PS is not privileged, but in User mode, reads from PS will only return
+        the flags NZCV and all other bits will be masked to zero, and writes to
+        PS will only write to the flags NZCV, ignoring all other bits in the
+        source value.
+
+        The bits of PS are:
+        FEDC BA98 7654 3210
+        PPMI .... .LLL NZCV
+        [PP] - Privilege level. 00=user, 01=supervisor, 10/11=reserved.
+        [M] - Memory paging status (1 = paging on, 0 = off).
+        [I] - Maskable Interrupts status (1 = enabled, 0 = disabled).
+        [LLL] - Current interrupt level. 0: not in interrupt, higher values
+                indicate higher priority. 7 is the highest level for YCPU2.
+        [N] - 'Negative': set by instruction operation in Section 5.
+        [Z] - 'Zero': set by instruction operation in Section 5.
+        [C] - 'Carry': set by instruction operation in Section 5.
+        [V] - 'Overflow': set by instruction operation in Section 5.
+
+    SU: Stack Pointer for User (16-bit). Index: $02. User/Supervisor.
+    SS: Stack Pointer for Supervisor (16-bit). Index: $03. Supervisor only.
+        The processor has two different stack pointers - the Supervisor Stack
+        Pointer (SS), is used while the processor is in Supervisor mode, and
+        the User Stack Pointer (SU), is used while the processor is not in
+        Supervisor mode. SU is not privileged and may be accessed with MRS/MSR
+        in User mode. SS is privileged any may only be accessed with MRS/MSR in
+        Supervisor mode.
+        This document uses the mnemoric "SP" to indicate the stack pointer for
+        the current mode, SU in User mode, and SP in Supervisor mode.
+        The Stack Pointer is the address of the first full stack space. It is
+        decremented before a stack value is pushed onto the stack, and is
+        incremented after a stack value is popped from the stack. The stack
+        grows downward from its initial address, and should be initialized to
+        an address at (Stack Bottom + 2). The stack pointer will roll over 
+        at the top/bottom of the address space.
+        Example: SP is set to $0000. The processor executes a push to stack. The
+        stack pointer is decremented before the value is written. The pushed
+        value will be stored at $fffe, and the stack pointer after the push
+        will be $fffe.
+        Example: SP is set to $0000. The processor executes a pull from stack.
+        The processor reads the value at the address of the stack pointer, and 
+        then increments the stack pointer. The value will be read from $0000,
+        and the stack pointer after the pull will be $0002.
+
+    VB: Interrupt vector base (16-bit). Index: $04. Supervisor only.
+        Virtual address of interrupt vector table in supervisor address space.
+        For an interrupt with vector index N, the processor reads the handler
+        address from [VB + 2*N] and loads PC with that value.
+
+    IM: Interrupt control (16-bit). MSR Index: $05. Supervisor only.
+        Flags to enable maskable interrupts. Bits are:
+        FEDC BA98 7654 3210
+        .... .... .... ..HC
+        [H] - Hardware interrupt enabled.
+        [C] - Clock interrupt enabled. When PS.I = 1, IM.C = 1, and CL >= CC,
+              the clock interrupt vector is fired and IM.C is cleared to 0.
+
+    IC: Interrupt cause (16-bit). Index: $06. Supervisor only.
+        Contains data describing the current interrupt. On interrupt entry, the
+        current IC (in addition to PC, PS) is pushed to the Supervisor stack,
+        and then IC bits are set by the interrupt process, as described in
+        Section 3.E.
+
+    FA: Fault address (16-bit). Index: $07. Supervisor only.
+        Holds the faulting virtual address on any page fault.
+        Written by hardware before entering the fault handler.
+
+    TU: Page Table User (32-bit). Index: $08. Supervisor only.
+        Page table base for user. Bits are:
+        FEDCBA98 76543210 FEDCBA98 76543210 
+        aaaaaaaa aaaaaaaa aaaaaaaa aa....ss
+        [a] - Base physical address of page table/dictionary.
+              Must be aligned with tablesize.
+        [s] - Tablesize.
+              s=00: 'a' encodes the address of a page table 64 bytes in size,
+                    comprised of 16 x 4 byte page table entries, creating an
+                    address space of 64 KiB.
+              s=01/10/11: reserved, will raise PageFault, see 3.E.1.
+
+        [ N.B.For the YCPU2, only s=00 is implemented. These values are        ]
+        [     proposed for future implementation.                              ]
+        [     s=01: 'a' encodes the address of a page table 4 KiB in size,     ]
+        [           comprised of 1024 x 4 byte page table entries, creating an ]
+        [           address space of 4 MiB.                                    ]
+        [     s=10: 'a' encodes the address of a page dictionary 4 KiB in size,]
+        [           comprised of 1024 x 4 byte page dictionary entries. Each   ]
+        [           dictionary entry points to a 1024-enry page table, creating]
+        [           a total address space of 4 GiB.                            ]
+        [     s=11: 'a' encodes the address of a future structure that creates ]
+        [           an address space of more than 4 GiB.                       ]
+
+    TS: Page Table Supervisor (32-bit). Index: $09. Supervisor only.
+        Page table base for supervisor. Same format as TU.
+
+    CL: Clock Counter (32-bit). Index: $0A. Supervisor only.
+        Free running, increments each cycle, wraps at 2^32 to 0.
+
+    CC: Clock compare (32-bit). Index: $0B. Supervisor only.
+        When timer is enabled (PS.I = 1 and IM.C = 1), when CL >= CC, the clock
+        interrupt will fire, and IM.C will be reset to 0.
+
+    PF: Processor features/ID (32-bit). Index: $0C. Supervisor only.
+        Identifies the processor implementation and supported features.
+        In this revision of the YCPU2, PF is always 0x00000001 (bit 0 set,
+        all other bits zero). Future implementations may define additional
+        feature bits.
+
+
+=== 3.C. Supervisor and User Modes =============================================
+
+The processor has two privilege levels: User mode and Supervisor mode.
+
+The processor powers up in Supervisor mode. Interrupts and exceptions are
+also handled in Supervisor mode. All code that configures paging, handles
+interrupts, or manages device drivers and low-level resources must run in
+Supervisor mode; user mode is restricted to the unprivileged subset of the
+instruction set and control registers.
+
+The current mode is encoded in the P field of PS (Processor Status):
+    PP=00: User mode.
+    PP=01: Supervisor mode.
+    PP=10/11: Reserved.
+
+In Supervisor mode, the processor:
+    * May execute all instructions, including privileged instructions.
+    * May read/write to all bits of PS with MRS/MSR.
+    * May read and write all processor control registers.
+    * Uses the Supervisor Stack Pointer (SS) for all stack operations.
+    * Uses the Supervisor page table base (TS) when paging is enabled.
+
+In User mode, the processor:
+    * Raises UnprivFault if a privileged instruction is executed, or if MSR is
+      used to write a privileged control register, or if MRS is used to read a
+      privileged control register.
+    * May read/write to NZCV bits of PS with MRS/MSR, other bits masked to zero.
+    * Uses the User Stack Pointer (SU) for all stack operations.
+    * Uses the User page table base (TU) when paging is enabled; accesses
+      to pages that are not user-accessible (i.e., U=0) cause a page fault.
+
+
+=== 3.D. Hardware Devices ======================================================
+
+The YCPU2 does not talk directly to individual hardware devices. Instead, it
+connects to a System Bus managed by a System Bus Controller (SBC). Hardware
+devices are attached to the System Bus. The SBC provides a uniform interface for
+discovering these devices, configuring their address windows and interrupt
+priorities, and querying basic hardware information such as installed memory and
+real-time clock (RTC) time.
+
+The SBC organizes devices into a finite set of numbered slots. Slot indices are
+consecutive integers starting at 0. Slot 0 represents the SBC itself and can
+be queried to report memory configuration and other present features.
+
+The programmer discovers and configures devices by executing a Hardware Query
+instruction (See 3.D.2.). The programmer can address memory exposed by a device
+by configuring the MMU to reference device address space (See 3.F.1.). Devices
+can request the programmer's attention by raising a hardware interrupt (See 
+3.D.2.).
+
+Connected Hardware Devices may include input (keyboard, mouse, touch), output
+(character and bitmap based displays, printers, dials, readouts), storage (disk,
+hard drive), networking, additional memory, and interfaces for hardware not
+directly connected to the System Bus.
+
+
+--- 3.D.1. SYSTEM BUS CONTROLLER -----------------------------------------------
+
+The System Bus Controller is directly interfaced with the YCPU2, and is
+responsible for:
+
+* Enumerating devices attached to the System Bus.
+* Exposing identification and capability information for each device.
+* Assigning per-device physical address windows.
+* Managing per-device interrupt enable and priority.
+* Selecting which pending device interrupt is presented to the CPU as HWI.
+* Reporting total RAM and ROM amounts visible to the system.
+* Providing access to a real-time clock (RTC), if present.
+* Providing access to non-volatile memory (NVRAM), if present.
+
+Software never accesses SBC registers directly. Instead, the programmer uses the
+HWQ instruction, which is forwarded to the SBC along with the contents of
+certain general-purpose registers. The SBC executes the requested operation and
+returns results in registers as defined below. This is how the SBC abstracts
+platform details and provides information to the programmer.
+
+
+--- 3.D.2. INTERACTING WITH HARDWARE WITH HWQ ----------------------------------
+
+HWQ (Hardware Query) is a privileged instruction that sends a command to the
+System Bus Controller and returns any results in general-purpose registers.
+Executing HWQ in User mode always raises UnprivFault.
+
+The exact opcode encoding of HWQ is described in the instruction set
+reference. Conceptually, HWQ takes a 6-bit immediate operation index and uses
+general purpose registers as input and output parameters. Unless otherwise
+noted, register values not described for a specific operation are preserved.
+HWQ instructions executed with an undefined operation index raise UndefFault,
+and should be rejected by assemblers. Note that in User mode, a HWQ
+instruction with an undefined index raises UnprivFault.
+
+The following HWQ operation indices are defined in this revision:
+
+    HWQ Index  Description
+    $00        Query number of devices
+    $01        Query total RAM and ROM
+    $02        Query device description for a slot
+    $03        Send control message to a device
+    $10        Read device address window
+    $11        Write device address window
+    $12        Read device interrupt configuration
+    $13        Write device interrupt configuration
+    $20        Read RTC time
+    $21        Query NVRAM size.
+    $22        Write byte to NVRAM.
+    $23        Read byte from NVRAM.
+
+
+3.D.2.1. HWQ $00 – Query Number of Devices
+This operation queries the SBC for the number of configured device slots.
+Input:  #imm6 = $00
+Output: R0: number of slots that may contain devices (slot 0 is SBC). Slots are
+            indexed 0 through R0–1. Slots beyond this count are 'absent';
+            querying them with HWQ $02 will return “no device”.
+
+
+3.D.2.2. HWQ $01 – Query Total RAM and ROM
+This operation reports the total amount of RAM and ROM visible to the System.
+Input:  #imm6 = $01
+Output: R0/R1 = total RAM size in bytes:
+            R0 = low 16 bits
+            R1 = high 16 bits
+            If no RAM exists, both R0 and R1 are set to NO_MEMORY ($FFFF).
+        R2/R3 = total ROM size in bytes:
+            R2 = low 16 bits
+            R3 = high 16 bits
+            If no ROM exists, both R2 and R3 are set to NO_MEMORY ($FFFF).
+
+This call does not describe where RAM and ROM are placed in the physical
+address space; it only reports total amounts. The reset-time placement of RAM
+and ROM in the low 64 KiB is defined in Section 3.F.2., and placement when the
+MMU is enabled is controlled by the page tables referenced by the MMU.
+
+
+3.D.2.3. HWQ $02 – Query Device Description for a Slot
+This operation returns identification information for the device in a slot.
+Input: #imm6 = $02
+       R0 = slot index to query
+Output: If no device is present in the slot:
+            R1: ERR_NO_DEVICE ($FFFF)
+            R2, R3, R4: Undefined.
+        If a device is present:
+            R1: Device Type
+            R2: Manufacturer ID
+            R3: Device ID
+            R4: Device Flags
+
+The exact encoding of type, manufacturer, device ID, and flags is implementation
+and platform-specific, but should be stable within a given system so that
+operating systems and drivers can identify devices reliably.
+
+
+3.D.2.4. HWQ $03 – Send Control Message to a Device
+This operation sends a control message to the device in a given slot. Not all
+devices support HWQ messaging; devices that do not support it ignore the message
+and the response will be MSG_ERROR.
+Input:  #imm6 = $03
+        R0 = slot index to query
+        R2 = message word 0
+        R3 = message word 1
+Output: R1 = result code:
+            MSG_ACK ($0001) – device accepted and completed the operation.
+            MSG_WAIT ($0002) – device accepted the operation but will respond
+            later (typically by raising HWI when complete).
+            MSG_ERROR ($FFFF) – device rejected the operation, or encountered an
+            error, or is not present.
+        The meaning of the message words is device-specific and is described by
+        each device’s programming manual. HWQ messaging is optional and is
+        intended for control and configuration operations, not bulk data transfer.
+
+
+3.D.2.5. HWQ $10 – Read Device Address Window
+Each device slot may be assigned a physical address window, defined by a 32-bit
+Base Address Register (BAR) and a size code. The SBC uses this information to
+route memory accesses in that physical range to the given device.
+
+Input:  #imm6 = $10
+        R0 = slot index to query
+Output: R1 = result code:
+            MSG_ACK ($0001) – device accepted and completed the operation.
+            MSG_ERROR ($FFFF) – device rejected the operation or encountered an
+            error, or is not present.
+        R2 = BAR low 16 bits (address[15:0]), size code S in bits [3:0]
+        R3 = BAR high 16 bits (address[31:16])
+        
+The size code S in R2[3:0] defines the window size in bytes as:
+window_size = 2^(11 + S). A size code of zero indicates no address window
+handled by device. Otherwise:
+        S=01: 4 KiB
+        S=02: 8 KiB
+        S=03:16 KiB
+        S=04:32 KiB
+        S=05:64 KiB
+        ...
+        S=15:64 MiB
+
+
+3.D.2.6. HWQ $11 – Write Device Address Window
+This operation programs the physical address window for a device slot.
+
+Input:  #imm6 = $11
+        R0 = slot index to query
+        R2 = BAR low 16 bits, size code S in bits [3:0] (as 3.D.2.5)
+        R3 = BAR high 16 bits
+Output: R1 = result code:
+            MSG_ACK ($0001) – address window successfully updated.
+            MSG_ERROR ($FFFF) – invalid parameters (misaligned BAR) or
+            device not present.
+
+The BAR must be aligned to the device window size: BAR must be a multiple of
+window_size = 2^(11 + S). If the BAR is not properly aligned, or S is not
+supported by the platform, the SBC leaves the previous configuration in place
+and returns MSG_ERROR. After a device has an assigned physical address window,
+software can create page table entries that map virtual addresses to that
+window and use LOD and STO instructions to interact with the device’s memory
+space and any device registers.
+
+
+3.D.2.7. HWQ $12 – Read Device Interrupt Configuration
+Each device slot has an associated interrupt configuration word maintained by
+the SBC. This configuration controls whether the device may raise the CPU’s HWI
+interrupt and what relative priority it has compared to other devices.
+Input:  #imm6 = $12
+        R0 = slot index to query
+Output: R1 = interrupt configuration word:
+            bit 0: EN – enable interrupt (1 = enabled, 0 = disabled)
+            bits 3:1: PRI – priority level for this device (0–7; higher values
+                   are higher priority).
+            bits 15:4: reserved, read as zero
+
+The meaning of priority levels relative to other interrupt sources (such as
+the timer or faults) is described in the interrupt and PS/IM sections.
+Devices with EN = 0 do not generate HWI signals. If the device in slot R0
+is not present, R1 will be MSG_ERROR ($FFFF).
+
+
+3.D.2.8. HWQ $13 – Write Device Interrupt Configuration
+This operation updates the interrupt configuration for a device slot.
+Input:  #imm6 = $13
+        R0 = slot index to query
+        R2 = desired configuration word:
+            bit 0: EN
+            bits 3:1: PRI
+            bits 15:4: must be written as zero
+Output: R1 = result code:
+            MSG_ACK ($0001) – configuration successfully updated.
+            MSG_ERROR ($FFFF) – invalid slot or unsupported configuration.
+
+When a device asserts its interrupt line, the SBC checks the device's
+interrupt configuration. If EN = 1 for that slot, and the device’s priority
+is highest relative to other pending devices, the SBC asserts the CPU’s HWI
+input. If multiple devices are pending, the SBC selects the device with the
+highest PRI to present to the CPU. If multiple pending devices have the same
+PRI, the SBC will select the device with the lowest slot index.
+
+On HWI entry, the processor sets IC to the slot index of the device raising
+the interrupt, and the interrupt handler can read IC to determine which device
+this is. For information about possible values of IC, see Section 3.E.1.
+
+
+3.D.2.9. HWQ $20 – Read RTC Time
+This operation reads the current time from the Real-Time Clock (RTC), if
+present. The RTC is part of or managed by the System Bus Controller.
+Input:  #imm6 = $20
+Output: R0/R1/R2 as data described in Section 3.D.3.
+
+
+3.D.2.10. HWQ $21 – Query NVRAM Size
+Some systems provide a small non-volatile memory (NVRAM) region for storing
+configuration data and or other persistent information. This operation queries
+the total NVRAM size in bytes.
+Input:  #imm6 = $21
+Output: R1 = result code:
+            MSG_ACK ($0001) – NVRAM present; size returned.
+            MSG_ERROR ($FFFF) – NVRAM not present.
+        On MSG_ACK:
+            R2/R3 = total NVRAM size in bytes:
+            R2 = low 16 bits
+            R3 = high 16 bits
+
+If MSG_ERROR is returned, the contents of R2–R3 are undefined and software must
+not attempt to use HWQ $22/$23.
+
+
+3.D.2.11. HWQ $22 – Write Byte to NVRAM
+This operation writes a single byte to the NVRAM region at a given byte offset.
+Input:  #imm6 = $22
+        R2/R3 = NVRAM byte offset:
+            R2 = low 16 bits
+            R3 = high 16 bits
+        R0 = value to write (low 8 bits are used; upper bits ignored).
+Output: R1 = result code:
+            MSG_ACK ($0001) – byte successfully written.
+            MSG_ERROR ($FFFF) – NVRAM not present, offset out of range,
+            or write failed.
+
+The offset must be less than the NVRAM size returned by HWQ $21. Writing beyond
+the reported size, or writing when NVRAM is not present or write-protected,
+will result in a return of MSG_ERROR.
+
+Note: The write may be slower than a normal memory access; implementations may
+buffer or coalesce writes internally, but from the programmer’s perspective the
+byte is committed when MSG_ACK is returned.
+
+
+3.D.2.12. HWQ $23 – Read Byte from NVRAM
+This operation reads a single byte from the NVRAM region at a given byte offset.
+Input:  #imm6 = $23
+        R2/R3 = NVRAM byte offset:
+            R2 = low 16 bits
+            R3 = high 16 bits
+Output: R1 = result code:
+            MSG_ACK ($0001) – byte successfully read.
+            MSG_ERROR ($FFFF) – NVRAM not present or offset out of range.
+        On MSG_ACK:
+            R0 = byte value read (returned in the low 8 bits; upper bits zero).
+        On MSG_ERROR:
+            R0 is undefined.
+
+The offset must be less than the NVRAM size returned by HWQ $21. Reading beyond
+reported size, or reading when NVRAM is not present, causes MSG_ERROR to be
+returned.
+
+--- 3.D.3. The Real Time Clock -------------------------------------------------
+
+The System Bus Controller contains an integrated Real Time Clock (RTC). The RTC
+maintains and updates its internal time data indefinitely, even when the
+processor is powered down. The processor can query the RTC for the current time.
+
+The clock provides time data with the following precision:
+    Year:    8 bits (0-255) in R0[15:8]; Year 0 = 1900
+    Month:   4 bits (0-11) in R0[3:0]; Month 0 = January
+    Day:     5 bits (0-30) in R1[12:8]; Day 0 = 1st day of the month
+    Hour:    5 bits (0-23) in R1[4:0]
+    Minute:  6 bits (0-59) in R2[13:8]
+    Second:  6 bits (0-59) in R2[5:0]
+    
+This data is loaded to R0, R1, and R2 upon calling HWQ $20, in this format:
+
+                                                    FEDC BA98 7654 3210
+                    R0: 8 bits Year, 4 bits Month   YYYY YYYY .... MMMM
+                    R1: 5 bits Day, 5 bits Hour     ...D DDDD ...h hhhh
+                    R2: 6 bits Min, 6 bits Second   ..mm mmmm ..ss ssss
+
+The original epoch for this device is 1 January 1900 at Midnight.
+
+        [ N.B.The RTC in the SBC is largely retained from the YCPU1 and thus   ]
+        [     retains the 'roll over' behaviour at 1 January 2156. YpsilonTech ]
+        [     offers technical assistance at exceptionally reasonable rates to ]
+        [     companies who wish their software to gracefully handle this      ]
+        [     future condition.                                                ]
+        [     YpsilonTech accepts no responsibility for software written       ]
+        [     without this assistance, and thus may experience a "Y2156" bug.  ]
+
+
+=== 3.E. Interrupts ============================================================
+
+An interrupt is a signal that indicates that an event requires immediate
+attention. Interrupts can be triggered by a hardware device, by software using
+the SWI opcode, or when the processor encounters a fault state. Interrupts are
+identified by an index from 0 to 15.
+
+When an interrupt occurs, the processor saves the state of a few registers,
+then changes the PC to the address of the interrupt handler for the index of
+the interrupt which was raised. This address is taken from the interrupt vector
+table, which is a list of 16 16-bit addresses located at the address in the
+vector table base special register (VB). The processor then begins executing
+instructions at this address.
+
+
+--- 3.E.1. THE INTERRUPT VECTOR TABLE ------------------------------------------
+
+There are 16 interrupts in the Interrupt Vector Table. The software interrupt
+is raised by the instruction SWI, and the Hardware Interrupt is raised by a 
+hardware that asserts an interrupt request. All other interrupts are raised
+by the processor itself on specified error states. The 16 interrupts are:
+
+Idx Name            Description
+$00 Reset           Raised when the processor's RESET line is pulled high.
+                    The processor will follow the boot sequence (See 3.G.).
+                    Class: Hardware.
+                    IC = $0000
+                    
+$01 Timer           Raised when CL >= CC and the timer interrupt is enabled.
+                    Class: Asynchronous, maskable.
+                    IC = $0000
+
+$02 UnprivFault     Raised when a privileged instruction or MSR/MRS to a
+                    privileged register is executed in user mode.
+                    Class: First-level Fault.
+                    IC[0] = Fault in User mode
+
+$03 UndefFault      Raised when the instruction decoder encounters an undefined
+                    or reserved opcode encoding.
+                    Class: First-level Fault.
+                    IC[0] = Fault in User mode
+
+$04 PageFault       Raised on any memory access that attempts to access a non-
+                    present page, or user access to supervisor page, or write
+                    to a read-only page, or execution of a non-execute page, 
+                    or a similar paging issue.
+                    Class: First-level Fault.
+                    IC[0] = Fault in User mode
+                    IC[1] = Page was not present
+                    IC[2] = Fault on Write (not present or not writable)
+                    IC[3] = Fault on Execute (not present or not executable)
+                    IC[4] = Access privilege issue (access to page not marked
+                            user accessible, in User mode)
+                    IC[5] = Page Table Base Register incorrect format, e.g.
+                            TU.s[1:0] != 00 or TS.s[1:0] != 00.
+                    
+$05 DivZeroFault    Raised when the processor executes a division or modulus
+                    opcode where the operand containing the denominator is zero.
+                    Class: First-level Fault.
+                    IC[0] = Fault in User mode
+
+$06 AlignFault      Raised on unaligned memory accesses (e.g. halfword access
+                    to an odd address) when not explicitly allowed.
+                    Class: First-level Fault.
+                    IC[0] = Fault in User mode
+                    
+$07 DoubleFault     Raised when the processor faults while in a fault-class
+                    interrupt handler. See 3.E.6. and 3.E.9.
+                    Class: Second-level Fault.
+                    IC[0] = 0 (DoubleFault is only raised from supervisor mode,
+                             and thus IC[0] will always be 0)
+
+$08 HWI             A device on the System Bus has requested an interrupt.
+                    Class: Asynchronous, maskable.
+                    IC = device slot index
+                    
+$09 SWI             Raised by the SWI opcode.
+                    Class: Synchronous, non-maskable trap.
+                    IC[0] = SWI raised in User mode
+
+$0A Breakpoint      Raised by the BRK instruction.
+                    Class: Synchronous, non-maskable trap.
+                    IC[0] = BRK raised in User mode
+                    IC[2:7] = Break offset from program word immediate, 0-63
+
+$0B DebugQuery      Raised when the processor's DEBUG line is pulled high.
+                    Class: Asynchronous, non-maskable trap.
+                    IC = $0000
+
+$0C-$0F             Reserved for future use.
+
+        [ N.B.All versions of the YCPU2 will have only 16 interrupt vectors.   ]
+        [     Future versions of the YCPU may have more than 16 interrupt      ]
+        [     vectors.                                                         ]
+
+
+--- 3.E.2. HARDWARE INTERRUPTS -------------------------------------------------
+
+A device on the CPU's System Bus may request the CPU's attention by asserting an
+interrupt request (IRQ). The SBC receives this interrupt request, and asserts
+the YCPU2's HWI line. If a device requests an interrupt while another device is
+already being serviced (or if two devices request interrupts at the same time),
+the SBC determines which device should be serviced first.
+
+On HWI, the CPU pushes PC, PS, and IC to the supervisor stack. Then the HWI
+interrupt is serviced, which will include setting IC as indicated in 3.E.1.
+
+HWI is only raised when PS.I = 1 and IM.H = 1, and SBC has at least one enabled
+pending device interrupt.
+
+Priority among devices comes from the priority set in each device's interrupt
+configuration; devices with equal priority are serviced in the order of the 
+lowest to highest slot index.
+
+
+--- 3.E.3. SOFTWARE INTERRUPTS -------------------------------------------------
+
+An interrupt may also be triggered by the SWI opcode. In this case, the
+processor will raise the 'software interrupt' interrupt vector, and the code
+at that interrupt must determine what function has been requested, based on the
+contents of the registers.
+
+Unlike hardware interrupts, software interrupts will be acknowledged
+regardless of the status of the interrupt enabled mask.
+    
+
+--- 3.E.4. FAULT INTERRUPTS ----------------------------------------------------
+
+For interrupts caused by an error condition, the IC[0] bit will be set if the
+processor was in user mode when the fault occurred, or clear if the processor was
+in supervisor mode when the fault occurred.
+
+Interrupts designated as 'Faults' are:
+    - UnprivFault    ($02),
+    - UndefFault     ($03),
+    - PageFault      ($04),
+    - DivZeroFault   ($05), 
+    - AlignFault     ($06), and 
+    - DoubleFault    ($07). 
+
+
+--- 3.E.5. PAGE FAULTS ---------------------------------------------------------
+
+When a page fault is raised, the processor's IC special register will describe
+the operation that caused the page fault as described in 3.E.1., and the FA
+special register will be equal to the virtual address that failed translation
+(instruction or data). For other faults, FA is either unchanged or undefined.
+        
+Note that writes to ROM memory will fail silently unless the MMU is enabled and
+the write-protect bit is set, which will result in a page fault with IC[2] = 1.
+
+--- 3.E.6. FAULTS WHILE LOADING AN INTERRUPT HANDLER ---------------------------
+
+It is possible that the processor may fault when attempting to execute the code
+of a fault-class interrupt handler. This could happen if the handler of a
+fault-class interrupt accesses a memory page that is not present. When this
+occurs, the processor will raise a DoubleFault interrupt.
+
+Note that because the DoubleFault interrupt will only occur when the processor
+is already handling a fault-class interrupt and will thus be in Supervisor
+mode, the IC[0] bit indicating that the fault occurred in user mode will always
+be clear regardless of whether the processor was in user mode when the original
+interrupt occurred.
+
+If the processor fails whil in the DoubleFault interrupt handler, it will enter
+a "TripleFault" state, and RESET one clock cycle later. Note that "TripleFault"
+is not an interrupt that can be handled by the programmer. There is no function
+to recover from a TripleFault.
+
+    
+--- 3.E.7. THE INTERRUPT SEQUENCE ----------------------------------------------
+
+An interrupt or exception causes the processor to suspend the currently
+executing instruction stream and begin executing an interrupt handler in
+Supervisor mode:
+
+    1.  Determine interrupt vector index N.
+        The source of the interrupt selects a specific vector. The mapping from
+        source to vector index is defined in the interrupt vector table
+        (Section 3.E.1)
+
+    2.  Capture current PS.
+        The processor copies the current value PS into an internal temporary
+        register. This is the value of PS when the interrupt was fired.
+
+    3.  If this interrupt is a Fault, write the fault address.
+        If this is Fault interrupt (See 3.E.4. for a list of fault interrupts),
+        write the faulting virtual address to FA (Fault Address).
+
+    4.  Switch to Supervisor mode and set interrupt priority level.
+        PS.P is set to 01 (Supervisor). PS.L (interrupt priority level) is
+        updated to the priority associated with vector N, following the rules
+        in 3.E.9. The modified PS value is now considered the “current” PS.
+        The original interrupted PS value remains in the temporary copy.
+
+    5.  Save the saved context in the Supervisor stack.
+        Using the Supervisor stack as referenced by SS, the processor pushes
+        a three-word interrupt frame in the following order: PC, PS (from the
+        internal temporary register), IC. The top of the Supervisor stack holds,
+        from top to bottom, the pre-interrupt values of IC, PS, and PC.
+
+    6.  Write the new IC for this interrupt. The processor constructs a new IC
+        word describing the interrupt. The IC special register is updated with 
+        this new value.
+
+    7.  Load the handler address from the vector table.
+        The processor reads a 16-bit handler address from Supervisor virtual
+        memory at [VB + 2*N]. This 16-bit value is loaded into PC. Any page
+        faults encountered while reading this vector entry or fetching the first
+        instruction of the handler are treated as a DoubleFault (Section 3.E.6.).
+
+    8.  Begin executing the handler.
+        Execution continues at the address loaded into PC, using the new PS and
+        IC.
+
+
+--- 3.E.8. RETURNING FROM AN INTERRUPT -----------------------------------------
+
+When an interrupt handler ends, it should call RTI, which restores the values of
+PS, PC, and IC from the supervisor stack. Prior to calling RTI, the interrupt
+handler must restore the MMU state and any general purpose registers that would
+be relied upon by the restored program.
+
+The RTI instruction follows this sequence:
+
+    1.  Pop IC, PS, and PC from the Stack, restoring the value they had prior
+        to the interrupt.
+    
+    2.  Execution Continues.
+
+--- 3.E.9. INTERRUPT PRIORITY LEVELS -------------------------------------------
+
+The YCPU2 uses the 3-bit L field of the PS register to record the priority level
+of the current interrupt. A value of zero indicates normal execution (no
+interrupt handler is active); non-zero values indicate that an interrupt handler
+is running at the given level. Higher numeric values always represent higher
+priority.
+
+3.E.9.1 Priority assignment
+
+Each interrupt vector is associated with an interrupt priority level (IPL),
+although this can be overridden as indicated 3.E.9.2. On entry to an interrupt
+handler, the hardware pushes the previous PS, saving the old PS.L, and then sets
+the new PS.L following the rules in 3.E.9.2. The IPL for each interrupt (which,
+again, can be overriden in some cases) are:
+
+    Level 0 – Not in an interrupt (normal program execution).
+    Level 1 – Hardware Interrupt (HWI), vector $08.
+    Level 2 – Timer Interrupt, vector $01.
+    Level 3 – Software Interrupt (SWI instruction), vector $09.
+    Level 4 – Breakpoint (BRK instruction), vector $0A.
+    Level 5 – DebugQuery (DEBUG line), vector $0B.
+    Level 6 – First-level fault vectors:
+              Unprivileged Fault (vector $02)
+              Undefined Fault (vector $03)
+              Page Fault (vector $04)
+              Alignment Fault (vector $05)
+              Divide-by-zero Fault (vector $06)
+    Level 7 – DoubleFault, vector $07.
+
+If a DoubleFault handler itself faults, the processor enters the "TripleFault"
+condition, which immediately forces Reset. TripleFault does not have an
+associated interrupt priority level, is not delivered as a normal interrupt, and
+cannot be interrupted.
+
+Reset also does not have an associated interrupt priority level. Reset cancels
+all in-flight processor state including a current interrupt, discards any
+pending interrupts, and restarts execution from the reset vector with PS.L = 0.
+
+Device-level priority (PRI) fields are set using the system bus controller, and
+used by the system bus controller to arbitrate among multiple devices. These
+affect only which device is selected to generate a single HWI event; they do not
+change the CPU’s priority level for HWI, which is always IPL = 1 regardless of
+device PRI.
+
+3.E.9.2 Preemption rules
+
+The processor has an interrupt priority manager, which checks PS.L and the 
+class and interrupt priority level of newly raised interrupts to determine which
+interrupts are allowed to preempt the currently running handler. The rules of
+this interrupt priority manager are detailed below:
+
+    1. Asynchronous, maskable interrupts
+       The Timer interrupt and HWI are asynchronous sources controlled by PS.I
+       and by the interrupt mask register (IM). An asynchronous interrupt of
+       type Timer or HWI, with associated interrupt level P_new, is taken only
+       if all of the following are true at the time of the interrupt.
+       (a) its source is enabled (PS.I = 1 and corresponding IM bit is set), and
+       (b) P_new > PS.L at the time the interrupt is recognized.
+       If P_new <= PS.L, the interrupt does not preempt the current handler.
+       However, both Timer or HWI remain pending and will be taken later, after
+       PS.L is lowered (typically by RTI) and the usual enable conditions are
+       met. Note that two equal-priority asynchronous interrupts never preempt
+       each other.
+
+    2. Synchronous, non-maskable trap interrupts (SWI and Breakpoint)
+       SWI and Breakpoint are synchronous interrupts generated by the operation
+       of instructions. They are not masked by PS.I, IM, or filtered by PS.L.
+       When a SWI or BRK instruction is executed, the processor always takes
+       the standard interrupt entry sequence to the associated vector, even if
+       another handler is already running.
+       If the current PS.L is higher than the associated interrupt priority 
+       level (IPL) for the SWI or BRK interrupt, this is not overwritten. On
+       the other hand, if the current PS.L is lower than the IPL associated
+       with SWI or BRK, PS.L will be set to this new IPL. The result of this
+       operation is that SWI/BRK handlers are never interrupted by HWI or
+       Timer interrupts, which have a lower IPL.
+
+    3. Asynchronous, non-maskable trap interrupt (DebugQuery)
+       DebugQuery is generated asynchronously by assertion of the DEBUG line. It
+       is not maskable by PS.I or IM, and is not filtered by PS.L. Like SWI and 
+       Breakpoint, DebugQuery is always taken, even if another handler is already
+       in progress (although not in TripleFault).
+       If the current PS.L is higher than the associated interrupt priority level
+       (IPL) for the DebugQuery interrupt, this is not overwritten. On the other
+       hand, if the current PS.L is lower than the IPL associated with DebugQuery,
+       PS.L will be set to this new IPL. The result of this operation is that
+       DebugQuery handlers are never interrupted by HWI or Timer interrupts, which
+       have a lower IPL.
+
+    4. First-level fault-class interrupts.
+       The first-level fault-class interrupts are Unprivileged Fault, Undefined 
+       Fault, Page Fault, Alignment Fault, and Divide-by-zero Fault (vectors
+       $02–$06).
+       Fault-class exceptions are synchronous: they occur as a direct result of
+       instruction execution or during the interrupt entry sequence. They are
+       not suppressed by PS.I, IM, or PS.L.
+       All first-level fault-class interrupts have an IPL of 6. When the
+       processor handles these fault conditions, it first checks PS.L. If
+       IPL is less than 6, the IPL is set to 6 and the processor proceeds in
+       taking the exception handler for the fault. If the IPL is already 6
+       when a first-level fault-class interrupt occurs, the processor instead
+       enters the DoubleFault exception handler (setting IPL to 7). If the IPL
+       is already 7 when a first-level fault-class interrupt occurs, indicating
+       an existing DoubleFault condition, the processor enters the TripleFault
+       exception and subsequently resets.
+
+    5. The DoubleFault interrupt
+       DoubleFault itself is not treated as a fault-class exception for the
+       purposes of further escalation; it is the last architecturally visible
+       level before TripleFault and Reset.
+
+    6. The TripleFault interrupt
+       TripleFault is not handled by software, but rather, one cycle after
+       being raised, raises the RESET handler.
+
+
+=== 3.F. Memory Management =====================================================
+
+Because the processor has a 16-bit logical address space, it can only address
+$10000 (65,536) bytes of linear address space at a time. This limited address
+space is augmented by the processor's integrated Memory Management Unit (MMU)
+that, when enabled, implements paged memory and virtual address translation.
+
+
+--- 3.F.1. PAGED MEMORY WITH THE MMU -------------------------------------------
+
+When PS.M = 1, the processor's Memory Management Unit (MMU) is enabled, and the
+processor virtually divides the 16-bit logical address space that is addressable
+by the programmer into "pages" of 4 KiB in size. These pages can be physically
+located anywhere in physical memory. The MMU virtually places them in a linear
+block of logical memory that is visible to the programmer in the addressable
+memory space. After the pages are assigned, the programmer does not need to
+think about where the pages are located physically.
+
+Because the processor has a 16-bit logical memory space, the programmer can
+access only 16 pages at a time (16 pages x 4 KiB page size = 64 KiB). It is
+conceivable, however, that a programmer could manipulate the MMU registers
+to change the pages of memory at runtime. Furthermore, a memory management
+kernel program, such as might be included in an operating system, could
+provide this functionality to both itself and the running user programs.
+
+The pages are located in a data structure called the "Page Table". The Page
+Table is located at the address in physical memory indicated by a page table
+address register. The processor has two of these registers: TU, the Page Table
+Address for User Mode, and TS, the Page Table Address for Supervisor Mode.
+
+The Page Table Address registers, TU and TS, are 32-bits in size. The format 
+of the Page Table Address registers is described in Section 3.B.2.
+
+Page Tables are comprised of "Page Table Entries". Each Page Table Entry is 4
+bytes in size, and has this format:
+
+    $03      $02      $01      $00
+    FEDCBA98 76543210 FEDCBA98 76543210
+    aaaaaaaa aaaaaaaa aaaaSS.. ..UADEWP
+
+    a - Page Table Entry Address.
+        20 bits indicating the high bits of an address within this table.
+        For more information, see 3.F.3.
+
+    S - Software Bits.
+        Two bits used by the programmer to store data about the Page Table Entry.
+
+    U - User Accessible.
+        0: This page may only be accessed by a program in Supervisor mode. Accesses
+           by programs in User mode will fail and cause a PageFault exception.
+        1: This page is accessible by a program regardless of User/Supervisor mode.
+
+    A - Accessed.
+        This bit is set when the program accesses it. It may be reset to zero by
+        the programmer.
+
+    D - Dirty.
+        This bit is set when the program writes to it. It may be reset to zero by
+        the programmer.
+
+    E - Executable.
+        0: This page is not executable. If the processor proceeds with execution
+           while PC is within this page, the process will raise a PageFault.
+        1: This page is executable.
+
+    W - Writable.
+        0: This page is not writable. If the processor attempts to write to this
+           page, the process will raise a PageFault.
+        1: This page is writable.
+
+    P - Present.
+        0: This page is not present. If the processor attempts to access this page,
+           either to read memory or to execute a program, the processor will raise
+           a PageFault.
+        1: This page is present and accessible.
+    
+
+--- 3.F.2. ADDRESS TRANSLATION WHEN THE MMU IS DISABLED ------------------------
+
+When the M status bit in PS is clear, the MMU is disabled, the Page Table
+Address registers are not referenced, and the Page Table is not used to
+translate memory accesses. In this state, the 16-bit logical address space is
+set up such that:
+                
+    $0000-$7FFF     First 32 KiB of RAM.
+    $8000-$BFFF     Space reserved for device mapping.
+    $C000-$FFFF     Last 16 KiB of ROM.
+
+
+--- 3.F.3. ADDRESS TRANSLATION WHEN THE MMU IS ENABLED -------------------------
+
+When the M status bit in PS is set, the MMU is enabled, and will translate
+memory references to physical addresses using the contents of the Page Table
+Entries as pointed to by the Page Table Address register (either TU or TS,
+depending on whether the Processor is in User or Supervisor mode). The
+translation is as follows:
+
+When an address within a page is accessed, the MMU translates the address by
+selecting the Page Table Entry at the index equal to the high four bits of the
+address, and then, if the page is present and accessible to the program,
+translating the address to a  physical address with the low 12 bits chosen by
+the input address, and the high 20 bits indicated by the Page Table Entry:
+        
+                $03      $02      $01      $00
+                FEDCBA98 76543210 FEDCBA98 76543210
+        Input:  ........ ........ bbbbAAAA AAAAAAAA
+                b: upper four bits of the register holding the address
+                A: lower twelve bits of the register holding the address
+        Output: aaaaaaaa aaaaaaaa aaaaAAAA AAAAAAAA
+                a: high bits of address from selected page table entry
+                A: lower twelve bits of the register holding the address
+
+
+--- 3.F.4. ACCESSES TO MEMORY --------------------------------------------------
+
+Any memory accesses to pages that are not loaded (Present 'P' bit in page table
+entry) will result in a page fault. 
+
+Any reads from addresses that are mapped with a Present page but are not
+connected to real memory will result in a return of all bits clear: $0000.
+
+Any writes to addresses that are mapped with a Present page but are not
+connected to real memory will fail silently.
+
+
+=== 3.G. Boot/Reset Sequence ===================================================
+
+At initial power on, the state of all memory, registers, and cache is unknown.
+The processor raises the RESET interrupt at power on, placing the processor
+in the following known state:
+
+    PS <- $4000                     ; Supervisor mode is enabled, all other
+                                    ; processor features are disabled.
+                                    ; Because the MMU is disabled, memory 
+                                    ; accesses will be translated as per 3.F.2.
+    VB <- $FFE0                     ; Interrupt vector table at $FFE0.
+    PC <- [VB + $00]                ; Raise 'RESET' interrupt. PC is set to the
+                                    ; value of the first word in the Interrupt
+                                    ; Vector Table, the address of the RESET
+                                    ; interrupt handler, and execution begins.
+
+
+=== 3.H. Switching Context =====================================================
+
+This section provides an overview of switching the processor's context. Context
+switching is a crucial component for multitasking and is essential for the
+proper execution of programs, especially in an operating system environment.
+It allows the CPU to save the state of a currently executing context and restore
+the state of another, thereby providing the illusion of simultaneous execution
+of multiple processes or threads.
+
+
+--- 3.H.1. Switching from Supervisor Context to User Context -------------------
+
+This subsection focuses on how to switch from a Supervisor context to a User
+context. The necessity for this kind of switch usually arises in an operating
+system when a transition from higher-privileged tasks (like system calls) to
+lower-privileged tasks (user-level applications) is required.
+
+When the MMU is enabled, the layout of memory is different in Supervisor and
+User modes. Thus, as long as the MMU's User mode memory has been set ahead of
+time, the RTI instruction can be used to switch the context of a running
+program.
+
+To change context from supervisor to user mode, TU should point to a page 
+table that is correctly configured and pointing to pages in memory, and the
+stack should be loaded with user-mode values. PC, PS, and IC for the user
+context are already on the supervisor stack as part of the interrupt frame,
+and only SU and R0–R7 need to be explicitly saved/restored by software.
+The PS register value in the stack should be set with the PP bit clear
+(for user mode), and the M status bit set (for MMU active).
+
+    1. Load the page table entries with the appropriate data for the memory
+       space for the new user process.
+    2. Load TU with the address of the page table entries set in step 1.
+    3. Use STR to restore R0, R1, R2, R3.
+    4. Use STR to restore R4, R5, R6, R7.
+    5. Use STR to restore SU (PS should have P bits clear).
+    6. Use RTI to restore PS, PC, IC.
+    7. Execution will continue in the User mode context.
+
+To save the same context (when responding to an interrupt from user mode):
+
+Note that upon entering the interrupt, the stack looks like this:
+
+                            [ ... ]
+                            [ PC  ]
+                            [ PS  ]
+                    SS -->  [ IC  ]
+
+The programmer should then save the user context:
+
+    1. Push SU to the stack.
+    2. Push R4, R5, R6, R7 to the stack.
+    3. Push R0, R1, R2, R3 to the stack.
+
+            STS SU
+            STS R4, R5, R6, R7
+            STS R0, R1, R2, R3
+
+
+--- 3.H.2. Switching Context while in Supervisor Mode --------------------------
+
+This subsection briefly discusses context switching while operating in
+Supervisor Mode. This is particularly relevant for system-level programs, such
+as schedulers or device drivers.
+
+Switching context from supervisor to supervisor is complicated when the MMU is
+active, as modifying the page table entries for the supervisor mode may change
+the program that PC is pointing to, and thus the next instruction that the
+processor will execute. These methods of changing context from supervisor to
+supervisor are proposed to alleviate this issue:
+
+    1. Use the software interrupt to initiate the context switch, and keep 
+       the context switch in a page that is always present;
+    2. Disable the MMU as part of the context switching operation; or
+    3. Organize memory pages such that when changing pages, the program managing
+       the context switch is interrupted (i.e. use the same context switch code
+       at the same place in paged memory for all processes).
+
+
+### 4. Instruction Encoding ####################################################
+
+The processor's instruction set is comprised of instructions. Each instruction
+is encoded by a single 16-bit program word. Instructions are defined by the
+high bit pattern of the program word.
+
+Some bit patterns remain reserved. Attempted execution of a reserved program
+word with a reserved high bit pattern will raise UndefFault.
+
+The encodings for immediate values (e.g. "imm6" or "imm9s") are described in
+Section 5's preface, "Immediate Value Encodings".
+
+References to SP indicate stack pointer for the current mode, either SU or SS.
+
+
+=== 4.A. Encoding of Instructions, Sequential ===================================
+
+The high bits of each program word inherently define the operation of the
+encoded instruction.
+
+This section lists the high bits of each instruction, and the corresponding named
+Bit Pattern used to interpret a program word. Reference these Bit Patterns by
+name in Section 4.B. to review the encoding of the lower bits of the program
+words.
+
+
+Ins HI_OCTET LO_OCTET  Bit Pattern     Description
+ADD 0000000. ........  BP_ALA          Rd = Rm + Rn
+ADC 0000001. ........  BP_ALA          Rd = Rm + Rn + C
+SUB 0000010. ........  BP_ALA          Rd = Rm - Rn
+SBC 0000011. ........  BP_ALA          Rd = Rm - Rn - (1 - C)
+MUL 0000100. .......0  BP_ALM          Rd = Rm * Rn (16x16=32b)
+MLI 0000100. .......1  BP_ALM          Rd = Rm * Rn (16x16=32b) (signed)
+DIV 0000101. .......0  BP_ALM          Rd = Rm / Rn (mod in D+1)
+DVI 0000101. .......1  BP_ALM          Rd = Rm / Rn (mod in D+1) (signed)
+BTT 00001100 ........  BP_BTI          Test bit / atomic memory
+BTX 00001101 ........  BP_BTI          Test bit / atomic memory and change
+BTC 00001110 ........  BP_BTI           Test bit / atomic memory and clear
+BTS 00001111 ........  BP_BTI          Test bit / atomic memory and set
+MVI 00010... ........  BP_IMM          Rd[0:7] = imm8
+MVI 00011... ........  BP_IMM          Rd[8:15] = imm8
+LOD 0010000. ........  BP_MEM          Rd[0:7] = [Rm + Rn], Rd[8:15] = 0
+LOD 0010001. ........  BP_MEM          Rd[0:7] = [Rm + imm3], Rd[8:15] = 0
+LOD 0010010. ........  BP_MEM          Rd = [Rm + Rn]
+LOD 0010011. ........  BP_MEM          Rd = [Rm + imm3 * 2]
+--- 001010.. ........  ---             RESERVED
+LOD 0010110. ........  BP_MEM          Rd = [PC + (imm6s * 2)]
+LOD 0010111. ........  BP_MEM          Rd = [SP + (imm6s * 2)]
+STO 0011000. ........  BP_MEM          [Rm + Rn] = Rd[0:7]
+STO 0011001. ........  BP_MEM          [Rm + imm3] = Rd[0:7]
+STO 0011010. ........  BP_MEM          [Rm + Rn] = Rd
+STO 0011011. ........  BP_MEM          [Rm + imm3 * 2] = Rd
+--- 001110.. ........  ---             RESERVED
+STO 0011110. ........  BP_MEM          [PC + (imm6s * 2)] = Rd
+STO 0011111. ........  BP_MEM          [SP + (imm6s * 2)] = Rd
+LSL 01000000 00......  BP_SHF          Logical Shift Left: Rd << Rm
+LSL 01000000 01......  BP_SHF          Logical Shift Left: Rd << {1-8}
+ROL 01000000 10......  BP_SHF          Rotate Through-Carry Left: Rd << Rm
+ROL 01000000 11......  BP_SHF          Rotate Through-Carry Left: Rd << {1-8}
+RNL 01000001 00......  BP_SHF          Rotate No-Carry Left: Rd << Rm
+RNL 01000001 01......  BP_SHF          Rotate No-Carry Left: Rd << {1-8}
+ASR 01000001 10......  BP_SHF          Arithmetic Shift Right: Rd >> Rm
+ASR 01000001 11......  BP_SHF          Arithmetic Shift Right: Rd >> {1-8}
+LSR 01000010 00......  BP_SHF          Logical Shift Right: Rd >> Rm
+LSR 01000010 01......  BP_SHF          Logical Shift Right: Rd >> {1-8}
+ROR 01000010 10......  BP_SHF          Rotate Through-Carry Right: Rd >> Rm
+ROR 01000010 11......  BP_SHF          Rotate Through-Carry Right: Rd >> {1-8}
+RNR 01000011 00......  BP_SHF          Rotate No-Carry Right: Rd >> Rm
+RNR 01000011 01......  BP_SHF          Rotate No-Carry Right: Rd >> {1-8}
+CMP 01000011 10......  BP_ALC          Compare Rm and Rn, sets PS Flags
+CMP 01000011 11......  BP_ALC          Compare Rm and imm3, sets PS Flags
+ADD 01000100 ........  BP_ALI          Rd = Rd + imm5i
+ADC 01000101 ........  BP_ALI          Rd = Rd + imm5i + C
+SUB 01000110 ........  BP_ALI          Rd = Rd - imm5i
+SBC 01000111 ........  BP_ALI          Rd = Rd - imm5i - (1 - C)
+MOV 01001000 00......  BP_ALN          Rd = Rm
+NEG 01001000 01......  BP_ALN          Rd = 0 - Rm
+REX 01001000 10000...  BP_REX          Rd = sign extend Rd[0:7]
+REX 01001000 10001...  BP_REX          Rd = zero extend Rd[0:7]
+--- 01001000 1001....  ---             RESERVED
+REV 01001000 10100...  BP_REV          Rd = Rd (Bytes reversed)
+REV 01001000 10101...  BP_REV          Rd = Rd (Bits reversed)
+--- 01001000 1011....  ---             RESERVED
+NOT 01001000 11......  BP_BIN          Rd = NOT Rm
+AND 0100101. ........  BP_BIT          Rd = Rm AND Rn
+ORR 0100110. ........  BP_BIT          Rd = Rm OR Rn
+EOR 0100111. ........  BP_BIT          Rd = Rm XOR Rn
+STS 01010000 00......  BP_STK          Stack Stash by bitmask, see 4.B.
+STR 01010000 01......  BP_STK          Stack Restore by bitmask, see 4.B.
+BRK 01010000 10......  BP_PRX          Breakpoint #imm6
+xxx 01010000 11......  BP_PRX          Processor function #imm6, see 2.L.
+                                       $00: RTS
+                                       $01: RTI
+                                       $02: SWI
+                                       $03: SLP
+                                       $04: --- RESERVED
+                                       $05: NOP
+                                       $06: --- RESERVED (memory barrier)
+                                       $07: --- RESERVED (instruction sync)
+                                       $08: SFV
+                                       $09: CFV
+                                       $0A: SFC
+                                       $0B: CFC
+                                       $0C: SFZ
+                                       $0D: CFZ
+                                       $0E: SFN
+                                       $0F: CFN
+                                       $10-$3F: RESERVED
+MRS 01010001 ........  BP_MRS          Rd = special register #s, See 3.B.2.
+MSR 01010010 ........  BP_MRS          special register #s = Rd, See 3.B.2.
+JMP 01010011 00000...  BP_JMP          PC = Rm
+JSR 01010011 00001...  BP_JMP          PC = Rm, Save PC + 2 to stack
+--- 01010011 0001....  ---             RESERVED
+--- 01010011 001.....  ---             RESERVED
+HWQ 01010011 01......  BP_HWQ          Hardware Query #imm6
+PTL 01010011 100.....  BP_PTX          Rd,Rd+1 = PTE at virtual address Rm
+PTL 01010011 101.....  BP_PTX          Rd,Rd+1 = PTE at index Rm
+PTS 01010011 110.....  BP_PTX          PTE at virtual address Rm = Rd,Rd+1
+PTS 01010011 111.....  BP_PTX          PTE at index Rm = Rd,Rd+1
+STX 01010100 ........  BP_STX          SP (current stack pointer SU/SS) += imm8s*2
+--- 01010101 ........  ---             RESERVED
+--- 0101011. ........  ...             RESERVED
+--- 01011... ........  ...             RESERVED
+Bxx 0110.... ........  BP_BRC          Branch Condition, PC = PC + imm9s * 2
+BRA 0111.... ........  BP_BRA          Branch Always, PC = PC + imm12s * 2
+--- 1....... ........  ...             RESERVED
+
+
+=== 4.B. Encoding of Instructions by Family ======================================
+
+This Section details exactly how the lower bits of each program word define the
+operands of each instruction. These lower bits are decoded by the processor to
+reference specific instructions, registers, and immediate values.
+
+BP_ALA Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOon nnmmmddd
+    0000000. ........ = ADD Rd, Rm, Rn
+    0000001. ........ = ADC Rd, Rm, Rn
+    0000010. ........ = SUB Rd, Rm, Rn
+    0000011. ........ = SBC Rd, Rm, Rn
+
+    d: Destination register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
+    n: Operand register Rn (R0-R7)
+    o: When set, this operation uses carry
+    O: Opcode
+
+BP_ALC Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO Oonnnmmm
+    01000011 10...... = CMP Rm, Rn
+    01000011 11...... = CMP Rm, imm3
+
+    m: Operand register M (R0-R7)
+    n: Operand register N (R0-R7)
+    o: When set, N is immediate 3-bit number
+    O: Opcode
+
+BP_ALI Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOo iiiiiddd
+    01000100 ........ = ADD Rd, imm5i
+    01000101 ........ = ADC Rd, imm5i
+    01000110 ........ = SUB Rd, imm5i
+    01000111 ........ = SBC Rd, imm5i
+
+    d: Destination register Rd (R0-R7)
+    i: Immediate 5-bit number (range 1-32)
+    o: When set, this operation uses carry
+    O: Opcode
+
+BP_ALM Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOn nnmmmddo
+    0000100. .......0 = MUL Rd, Rm, Rn
+    0000100. .......1 = MLI Rd, Rm, Rn
+    0000101. .......0 = DIV Rd, Rm, Rn
+    0000101. .......1 = DVI Rd, Rm, Rn
+
+    o: When set, this is a signed operation
+    d: Destination register D (R0, R2, R4, R6)
+    m: Operand register M (R0-R7)
+    n: Operand register N (R0-R7)
+    O: Opcode
+
+BP_ALN Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOmmmddd
+    01001000 00...... = MOV Rd, Rm
+    01001000 01...... = NEG Rd, Rm
+
+    d: Destination register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
+    O: Opcode
+
+BP_BIN Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOmmmddd
+    01001000 11...... = NOT Rd, Rm
+
+    d: Destination register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
+    O: Opcode
+
+BP_BIT Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOn nnmmmddd
+    0100101. ........ = AND Rd, Rm, Rn
+    0100110. ........ = ORR Rd, Rm, Rn
+    0100111. ........ = EOR Rd, Rm, Rn
+
+    d: Destination register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
+    n: Operand register Rn (R0-R7)
+    O: Opcode
+
+BP_BRA Bit Pattern
+    FEDCBA98 76543210
+    OOOOiiii iiiiiiii
+    0111.... ........ = BRA imm12s
+
+    i: Offset to branch, immediate signed 12-bit number
+    
+
+BP_BRC Bit Pattern
+    FEDCBA98 76543210
+    OOOOccci iiiiiiii
+    0110000. ........ = BVS imm9s
+    0110001. ........ = BVC imm9s
+    0110010. ........ = BCS imm9s
+    0110011. ........ = BCC imm9s
+    0110100. ........ = BEQ imm9s
+    0110101. ........ = BNE imm9s
+    0110110. ........ = BMI imm9s
+    0110111. ........ = BPL imm9s
+
+    c: condition type
+    i: Offset to branch, immediate signed 9-bit number
+
+BP_BTI Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO oiiiiddd
+    00001100 0....... = BTT   Rd, imm4
+    00001100 1....... = BTT.M Rd, imm4
+    00001101 0....... = BTX   Rd, imm4
+    00001101 1....... = BTX.M Rd, imm4
+    00001110 0....... = BTC   Rd, imm4
+    00001110 1....... = BTC.M Rd, imm4
+    00001111 0....... = BTS   Rd, imm4
+    00001111 1....... = BTS.M Rd, imm4
+
+    d: Register containing value or address of memory to check (R0-R7)
+    i: Index of bit to check, value is 0-15
+    o: When clear, tests a bit in register Rd
+    o: When set, atomically test memory at [Rd]
+    O: Opcode
+
+BP_HWQ Bit Pattern
+    FEDCBA98 76543210                             
+    OOOOOOOO OOiiiiii
+    i: Immediate 6-bit number
+    O: Opcode
+
+BP_IMM Bit Pattern
+    FEDCBA98 76543210                             
+    OOOOoiii iiiiiddd
+    00010... ........ = MVI.L Rd, imm8
+    00011... ........ = MVI.H Rd, imm8
+
+    d: Register of value to check Rd (R0-R7)
+    i: Immediate 8-bit number
+    o: When clear, move to low octet; when set, move to high octet
+    O: Opcode
+
+BP_JMP Bit Pattern
+    FEDCBA98 76543210                             
+    OOOOOOOO OOOOsmmm
+    01010011 00000... = JMP Rm
+    01010011 00001... = JSR Rm
+
+    m: Register Rm holding address (R0-R7)
+    s: When s=0, this is JMP; when s=1, this is JSR.
+    O: Opcode
+
+BP_MEM Bit Pattern
+    FEDCBA98 76543210
+    OOOOtton nnmmmddd
+    0010000. ........ = LOD.B Rd, Rm, Rn
+    0010001. ........ = LOD.B Rd, Rm, imm3
+    0010010. ........ = LOD   Rd, Rm, Rn
+    0010011. ........ = LOD   Rd, Rm, imm3
+    0010100. ........ = RESERVED
+    0010101. ........ = RESERVED
+    0010110. ........ = LOD   Rd, PC, imm6s
+    0010111. ........ = LOD   Rd, SP, imm6s
+    0011000. ........ = STO.B Rd, Rm, Rn
+    0011001. ........ = STO.B Rd, Rm, imm3
+    0011010. ........ = STO   Rd, Rm, Rn
+    0011011. ........ = STO   Rd, Rm, imm3
+    0011100. ........ = RESERVED
+    0011101. ........ = RESERVED
+    0011110. ........ = STO   Rd, PC, imm6s
+    0011111. ........ = STO   Rd, SP, imm6s
+
+    d: Destination/source register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
+    n: Operand register Rn (R0-R7) or imm3
+    *: For PC/SP relative, imm6s encoded in bits of m and n.
+    O: Opcode
+
+BP_MRS Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO mmmmmddd
+    01010001 ........ = MRS Rd, Rm
+    01010010 ........ = MSR Rm, Rd
+
+    d: Destination/source register Rd (R0-R7)
+    m: Special register
+    O: Opcode
+
+BP_PRX Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOiiiiii
+    01010000 10...... = BRK imm6
+    01010000 11000000 = RTS
+    01010000 11000001 = RTI
+    01010000 11000010 = SWI
+    01010000 11000011 = SLP
+    01010000 11000100 = RESERVED
+    01010000 11000101 = NOP
+    01010000 11000110 = RESERVED
+    01010000 11000111 = RESERVED
+    01010000 11001000 = Set flag V
+    01010000 11001001 = Clear flag V
+    01010000 11001010 = Set flag C
+    01010000 11001011 = Clear flag C
+    01010000 11001100 = Set flag Z
+    01010000 11001101 = Clear flag Z
+    01010000 11001110 = Set flag N
+    01010000 11001111 = Clear flag N
+    01010000 1101.... = RESERVED
+    01010000 111..... = RESERVED
+
+    i: Index of break or processor function index
+    O: Opcode
+
+BP_PTX Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO Ooimmmdd
+    01010011 100..... = PTL.V Rd, Rm
+    01010011 101..... = PTL.I Rd, Rm
+    01010011 110..... = PTS.V Rd, Rm
+    01010011 111..... = PTS.I Rd, Rm
+
+    d: Destination/Source register D (R0, R2, R4, R6)
+    m: Operand register M (R0-R7)
+    i: When clear, Rm is a virtual address; When set, Rm is an index
+    o: When set, this is a store operation
+    O: Opcode
+
+BP_REV Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOOooddd
+    01001000 10100... = REV.B Rd
+    01001000 10101... = REV.T Rd
+    01001000 10110... = RESERVED
+    01001000 10111... = RESERVED
+
+    d: Operand register D (R0-R7)
+    o: Sub-opcode
+    O: Opcode
+
+BP_REX Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOOooddd
+    01001000 10000... = REX.SB Rd
+    01001000 10001... = REX.UB Rd
+    01001000 10010... = RESERVED
+    01001000 10011... = RESERVED
+
+    d: Operand register D (R0-R7)
+    o: Sub-opcode
+    O: Opcode
+
+BP_SHF Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO Oommmddd
+    01000000 00...... = LSL Rd, Rm
+    01000000 01...... = LSL Rd, imm3i
+    01000000 10...... = ROL Rd, Rm
+    01000000 11...... = ROL Rd, imm3i
+    01000001 00...... = RNL Rd, Rm
+    01000001 01...... = RNL Rd, imm3i
+    01000001 10...... = ASR Rd, Rm
+    01000001 11...... = ASR Rd, imm3i
+    01000010 00...... = LSR Rd, Rm
+    01000010 01...... = LSR Rd, imm3i
+    01000010 10...... = ROR Rd, Rm
+    01000010 11...... = ROR Rd, imm3i
+    01000011 00...... = RNR Rd, Rm
+    01000011 01...... = RNR Rd, imm3i
+
+    d: Destination/Source register D (R0-R7)
+    m: Operand register M (R0-R7)
+    o: When set, imm3i in encoded in m bits.
+    O: Opcode
+
+BP_STK Bit Pattern
+    FEDCBA98 76543210        Bitmask_______   
+    OOOOOOOO OOoorrrr        0_  1_  2_  3_
+    01010000 0000.... = STS [R0, R1, R2, R3]
+    01010000 0001.... = STS [R4, R5, R6, R7]
+    01010000 0010.... = STS [PC, PS, SU, SS]
+    01010000 0011.... = RESERVED
+    01010000 0100.... = STR [R0, R1, R2, R3]
+    01010000 0101.... = STR [R4, R5, R6, R7]
+    01010000 0110.... = STR [PC, PS, SU, SS]
+    01010000 0111.... = RESERVED
+
+    r: Register bitmask. As reflected above:
+       imm4[0] = R0, R4, PC
+       imm4[1] = R1, R5, PS
+       imm4[2] = R2, R6, SU
+       imm4[3] = R3, R7, SS
+    o: Register bitmask select
+       oo = 00: Register group 0
+       oo = 01: Register group 1
+       oo = 10: Register group 2 (see Section 5 for User mode limits on PS/SS)
+       oo = 11: RESERVED
+    O: Opcode
+
+BP_STX Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO iiiiiiii
+    01010100 ........ = STX imm8s
+
+    i: imm8s
+    O: Opcode
+
+
+### 5. Instruction Operation Reference #########################################
+
+This section describes the exact function of every instruction, including how
+execution of instructions effect processor state, memory, and flags.
+
+--- Preface: Immediate Value Encodings -----------------------------------------
+
+Several instructions use immediate fields. These fields, and how they are
+encoded, are described in this preface:
+
+imm3:
+Encoded as a 3-bit unsigned value in the range 0–7 in the instruction word.
+At execution time the hardware computes Imm = imm3. Assemblers should
+accept a programmer-visible immediate Imm in the range 0–7 and encode:
+imm3 = Imm.
+
+imm3i:
+Encoded as a 3-bit unsigned value in the range 0–7 in the instruction word.
+At execution time the hardware computes Imm = imm3i + 1, so the effective
+immediate range Imm is 1–8. Assemblers should accept a programmer-visible
+immediate Imm in the range 1–8 and encode: imm3i = Imm - 1.
+
+imm4:
+Encoded as a 4-bit unsigned value in the range 0–15 in the instruction word.
+At execution time the hardware computes Imm = imm4. Assemblers should
+accept a programmer-visible immediate Imm in the range 0–15 and encode:
+imm4 = Imm.
+
+imm5i:
+Encoded as a 5-bit unsigned value in the range 0–31 in the instruction word.
+At execution time the hardware computes Imm = imm5i + 1, so the effective
+immediate range Imm is 1–32. Assemblers should accept a programmer-visible
+immediate Imm in the range 1–32 and encode: imm5i = Imm - 1.
+
+imm6:
+Encoded as a 6-bit unsigned value in the range 0–63 in the instruction word.
+At execution time the hardware computes Imm = imm6. Assemblers should
+accept a programmer-visible immediate Imm in the range 0–63 and encode:
+imm6 = Imm.
+
+imm6s:
+Encoded as a 6-bit signed value in the range -32 to +31 in the instruction word.
+The immediate field is stored as a 6-bit two’s-complement value. At execution
+time the hardware sign-extends imm6s to 16 bits. Assemblers should accept a
+programmer-visible immediate Imm in the range -32 to +31 and encode Imm as a
+6-bit two’s-complement value.
+
+imm8:
+Encoded as an 8-bit unsigned value in the range 0–255 in the instruction word.
+At execution time the hardware computes Imm = imm8. Assemblers should
+accept a programmer-visible immediate Imm in the range 0–255 and encode:
+imm8 = Imm.
+
+imm8s:
+Encoded as an 8-bit signed value in the range -128 to +127 in the instruction
+word. The immediate field is stored as an 8-bit two’s-complement value. At
+execution time the hardware sign-extends imm8s to 16 bits. Assemblers should
+accept a programmer-visible immediate Imm in the range -128 to +127 and encode
+Imm as an 8-bit two’s-complement value.
+
+imm9s:
+Encoded as a 9-bit signed value in the range -256 to +255 in the instruction
+word. The immediate field is stored as a 9-bit two’s-complement value. At
+execution time the hardware sign-extends imm9s to 16 bits. Assemblers should
+accept a programmer-visible immediate Imm in the range -256 to +255 and encode
+Imm as a 9-bit two’s-complement value.
+
+imm12s:
+Encoded as a 12-bit signed value in the range -2048 to +2047 in the instruction
+word. The immediate field is stored as a 12-bit two’s-complement value. At
+execution time the hardware sign-extends imm12s to 16 bits. Assemblers should
+accept a programmer-visible immediate Imm in the range -2048 to +2047 and
+encode Imm as a 12-bit two’s-complement value.
+
+
+--- ADC ------------------------------------------------------------------------
+Add two registers with carry
+Privilege: User/Supervisor
+Syntax:    ADC    Rd, Rm, Rn
+Operation: Rm + Rn + C -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+The carry input C is the value of the C flag in PS before execution.
+
+Outputs:
+The operands are added as 16-bit values. The 16-bit sum (modulo 2^16) is written
+to Rd, and the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the addition produces an unsigned carry out of bit 15
+                  (the 17th bit of the full result is 1); otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit sum (Rm + Rn + C) overflows:
+                  Rm and Rn, interpreted as signed 16-bit values, have the same
+                  sign and the resulting Rd has the opposite sign; otherwise
+                  cleared.
+
+
+--- ADC (Immediate) ------------------------------------------------------------
+Add immediate to register with carry
+Privilege: User/Supervisor
+Syntax:    ADC    Rd, #Imm
+Operation: Rd + Imm + C -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd is a general purpose register in the range R0–R7.
+#Imm is an immediate in the range of 1 to 32.
+The carry input C is the value of the C flag in PS before execution.
+
+Outputs:
+The 16-bit sum (modulo 2^16) is written to Rd, and the condition flags are
+updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the addition produces an unsigned carry out of bit 15
+                  (the 17th bit of the full result is 1); otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit sum (Rd + Imm + C) overflows:
+                  Rd (before the addition) and Imm, interpreted as signed
+                  16-bit values (Imm is zero-extended from its 5-bit encoding),
+                  have the same sign and the resulting Rd has the opposite
+                  sign; otherwise cleared.
+
+Notes:
+The immediate is encoded in as imm5i. See Immediate Encodings for details.
+
+
+--- ADD ------------------------------------------------------------------------
+Add two registers, carry is ignored
+Privilege: User/Supervisor
+Syntax:    ADD    Rd, Rm, Rn
+Operation: Rm + Rn -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are added as 16-bit values. The 16-bit sum (modulo 2^16) is
+written to Rd, and the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the addition produces an unsigned carry out of bit 15
+                  (the 17th bit of the full result is 1); otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit sum (Rm + Rn) overflows:
+                  Rm and Rn, interpreted as signed 16-bit values, have the same
+                  sign and the resulting Rd has the opposite sign; otherwise
+                  cleared.
+
+Notes:
+No carry-in is used for this instruction. The previous value of the C flag in
+PS is ignored.
+
+
+--- ADD (Immediate) ------------------------------------------------------------
+Add immediate to register, carry is ignored
+Privilege: User/Supervisor
+Syntax:    ADD    Rd, #Imm
+Operation: Rd + Imm -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd is a general purpose register in the range R0–R7.
+#Imm is an immediate in the range 1 to 32.
+
+Outputs:
+The 16-bit sum (modulo 2^16) is written to Rd, and the condition flags are
+updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the addition produces an unsigned carry out of bit 15
+                  (the 17th bit of the full result is 1); otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit sum (Rd + Imm) overflows:
+                  Rd (before the addition) and Imm, interpreted as signed
+                  16-bit values (Imm is zero-extended from its 5-bit encoding),
+                  have the same sign and the resulting Rd has the opposite
+                  sign; otherwise cleared.
+
+Notes:
+No carry-in is used for this instruction. The previous value of the C flag in
+PS is ignored.
+
+The immediate is encoded in as imm5i. See Immediate Encodings for details.
+
+    
+--- AND ------------------------------------------------------------------------
+Bitwise AND two registers
+Privilege: User/Supervisor
+Syntax:    AND    Rd, Rm, Rn
+Operation: Rm AND Rn -> Rd    (N, Z)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are combined with a bitwise AND as 16-bit values. For each bit
+position i (0–15), bit i of Rd is set to 1 if and only if bit i of Rm and bit i
+of Rn are both 1; otherwise bit i of Rd is cleared. The condition flags are
+updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Not changed.
+    V [Overflow]  Not changed.
+    
+    
+--- ASR ------------------------------------------------------------------------
+Arithmetic shift right
+Privilege: User/Supervisor
+Syntax:    ASR    Rd, Rm
+           ASR    Rd, #Imm
+Operation: Rd >>  X -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no shift.
+
+For the immediate form, #Imm is an immediate in the range 1 to 8.
+
+Outputs:
+Rd is treated as a signed 16-bit value and shifted arithmetically right by X
+bits. Bit 15 (the sign bit) is replicated into vacated high bits; low bits are
+shifted out toward bit 0. Interpreted as a signed 16-bit integer, this is
+equivalent to dividing Rd by 2^X, rounding toward -1 for negative values and
+toward 0 for non-negative values.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the shift is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     If X > 0, set if any of the bits shifted out (the X least-
+                  significant bits of the original Rd) were 1; otherwise
+                  cleared. If X = 0, C is cleared.
+    V [Overflow]  Set if the input value was not -1 (0xFFFF) and the result
+                  after the shift is -1 (0xFFFF); otherwise cleared.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- BCC ------------------------------------------------------------------------
+Branch if carry clear
+Privilege: User/Supervisor
+Syntax:    BCC    #Imm
+Operation: if C == 0: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of the
+next sequential instruction.
+
+Outputs:
+If the carry flag C is clear (C == 0), execution branches to the target address:
+
+    PC = PC + (Imm * 2)
+
+If C is set (C == 1), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BCC label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2. 
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BCS ------------------------------------------------------------------------
+Branch if carry set
+Privilege: User/Supervisor
+Syntax:    BCS    #Imm
+Operation: if C == 1: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of the
+next sequential instruction.
+
+
+Outputs:
+If the carry flag C is set (C == 1), execution branches to the target address:
+
+    PC = PC + (Imm * 2)
+
+If C is clear (C == 0), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BCS label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2. 
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BEQ ------------------------------------------------------------------------
+Branch if equal (zero set)
+Privilege: User/Supervisor
+Syntax:    BEQ    #Imm
+Operation: if Z == 1: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the zero flag Z is set (Z == 1), execution branches to the target address:
+
+    PC = PC + (Imm * 2)
+
+If Z is clear (Z == 0), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BEQ label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BMI ------------------------------------------------------------------------
+Branch if minus (negative set)
+Privilege: User/Supervisor
+Syntax:    BMI    #Imm
+Operation: if N == 1: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the negative flag N is set (N == 1), execution branches to the target
+address:
+
+    PC = PC + (Imm * 2)
+
+If N is clear (N == 0), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BMI label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BNE ------------------------------------------------------------------------
+Branch if not equal (zero clear)
+Privilege: User/Supervisor
+Syntax:    BNE    #Imm
+Operation: if Z == 0: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the zero flag Z is clear (Z == 0), execution branches to the target address:
+
+    PC = PC + (Imm * 2)
+
+If Z is set (Z == 1), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BNE label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BPL ------------------------------------------------------------------------
+Branch if positive (negative clear)
+Privilege: User/Supervisor
+Syntax:    BPL    #Imm
+Operation: if N == 0: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the negative flag N is clear (N == 0), execution branches to the target
+address:
+
+    PC = PC + (Imm * 2)
+
+If N is set (N == 1), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BPL label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BRA ------------------------------------------------------------------------
+Branch always
+Privilege: User/Supervisor
+Syntax:    BRA    #Imm
+Operation: PC + (Imm * 2) -> PC
+
+Inputs:
+#Imm is a signed immediate in the range -2048 to +2047, encoded as imm12s.
+At execution time the hardware sign extends (imm12s * 2). The input PC will be
+the address of the branxg instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+Execution unconditionally branches to the target address:
+
+    PC = PC + (Imm * 2)
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BRA label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2. 
+The immediate is encoded as imm12s. See Immediate Encodings for details.
+
+
+--- BRK ------------------------------------------------------------------------
+Breakpoint
+Privilege: User/Supervisor
+Syntax:    BRK    #Imm
+Operation: Raise breakpoint exception #Imm; transfer control to handler
+
+Inputs:
+#Imm is an unsigned immediate in the range 0–63, encoded as imm6.
+
+Outputs:
+       IC is set as described in 3.E.1.
+
+Execution of BRK raises a breakpoint exception. The processor performs the
+standard  exception entry sequence as described in Section 3, then transfers
+control to the Breakpoint interrupt handler.
+
+The condition flags are not modified.
+
+
+--- BTC ------------------------------------------------------------------------
+Test and clear a bit in a register or memory
+Privilege: User/Supervisor
+Syntax:    BTC    Rd, #Imm
+           BTC.M  Rd, #Imm
+
+Operation (BTC):   bit(Rd, Imm) -> b0
+                   0 -> b1
+                   b1 -> bit(Rd, Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b0 != b1 ? 1 : 0) -> C
+          (BTC.M): bit([Rd], Imm) -> b0
+                   0 -> b1
+                   b1 -> bit([Rd], Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b0 != b1 ? 1 : 0) -> C
+
+Inputs:
+Rd is a general purpose register R0–R7.
+
+In the register form (BTC), the tested value is Rd.
+
+In the memory form (BTC.M), the tested value is the 16-bit word in memory at
+address [Rd]. The word in memory will be modified and written back to memory.
+
+#Imm is an unsigned immediate in the range 0–15, selecting which bit is tested.
+Imm is encoded as imm4 in the instruction word.
+
+Outputs:
+Let b0 be the value of the selected bit (0 or 1) in the source value (register
+or memory) before the instruction executes, and let b1 == 0. In the register form
+(BTC), bit Imm of Rd is replaced with b1. In the memory form (BTC.M), bit Imm of
+the 16-bit word at [Rd] is replaced with b1. All other bits are unchanged.
+
+The condition flags are updated as follows:
+    N [Negative]  Unchanged.
+    Z [Zero]      Set if b0 == 0 (bit clear); clear if b0 == 1 (bit set).
+    C [Carry]     Set if b0 != b1 (bit changed); clear if b0 == b1 (bit same).
+    V [Overflow]  Unchanged.
+
+Notes:
+The bit index immediate is encoded as imm4. See Immediate Encodings for details.
+
+For BTC.M the read of the 16-bit word and the update of flags and the memory are 
+performed as a single atomic operation with respect to the bus and interrupts.
+
+
+--- BTS ------------------------------------------------------------------------
+Test and set a bit in a register or memory
+Privilege: User/Supervisor
+Syntax:    BTS    Rd, #Imm
+           BTS.M  Rd, #Imm
+
+Operation (BTS):   bit(Rd, Imm) -> b0
+                   1 -> b1
+                   b1 -> bit(Rd, Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b0 != b1 ? 1 : 0) -> C
+          (BTS.M): bit([Rd], Imm) -> b0
+                   1 -> b1
+                   b1 -> bit([Rd], Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b0 != b1 ? 1 : 0) -> C
+
+Inputs:
+Rd is a general purpose register R0–R7.
+
+In the register form (BTS), the tested value is Rd.
+
+In the memory form (BTS.M), the tested value is the 16-bit word in memory at
+address [Rd]. The word in memory will be modified and written back to memory.
+
+#Imm is an unsigned immediate in the range 0–15, selecting which bit is tested.
+Imm is encoded as imm4 in the instruction word.
+
+Outputs:
+Let b0 be the value of the selected bit (0 or 1) in the source value (register
+or memory) before the instruction executes, and let b1 == 1. In the register form
+(BTS), bit Imm of Rd is replaced with b1. In the memory form (BTS.M), bit Imm of
+the 16-bit word at [Rd] is replaced with b1. All other bits are unchanged.
+
+The condition flags are updated as follows:
+    N [Negative]  Unchanged.
+    Z [Zero]      Set if b0 == 0 (bit clear); clear if b0 == 1 (bit set).
+    C [Carry]     Set if b0 != b1 (bit changed); clear if b0 == b1 (bit same).
+    V [Overflow]  Unchanged.
+
+Notes:
+The bit index immediate is encoded as imm4. See Immediate Encodings for details.
+
+For BTS.M the read of the 16-bit word and the update of flags and the memory are 
+performed as a single atomic operation with respect to the bus and interrupts.
+
+
+--- BTT ------------------------------------------------------------------------
+Test a bit in a register or memory
+Privilege: User/Supervisor
+Syntax:    BTT    Rd, #Imm
+           BTT.M  Rd, #Imm
+
+Operation (BTT):   bit(Rd, Imm)  -> Z
+          (BTT.M): bit([Rd],Imm) -> Z
+
+Inputs:
+Rd is a general purpose register R0–R7.
+
+In the register form (BTT), the tested value is Rd.
+
+In the memory form (BTT.M), the tested value is the 16-bit word in memory at
+address [Rd]. The value is not modified.
+
+#Imm is an unsigned immediate in the range 0–15, selecting which bit is tested.
+Imm is encoded as imm4 in the instruction word.
+
+Outputs:
+Let b0 be the value of the selected bit (0 or 1) in the source value (register
+or memory) before the instruction executes.
+
+The condition flags are updated as follows:
+    N [Negative]  Unchanged.
+    Z [Zero]      Set if b0 == 0 (bit clear); cleared if b0 == 1 (bit set).
+    C [Carry]     Unchanged.
+    V [Overflow]  Unchanged.
+
+Notes:
+The bit index immediate is encoded as imm4. See Immediate Encodings for details.
+
+For BTT.M the read of the 16-bit word and the update of Z are performed as a
+single atomic operation with respect to the bus and interrupts.
+
+
+--- BTX ------------------------------------------------------------------------
+Test and change a bit in a register or memory
+Privilege: User/Supervisor
+Syntax:    BTX    Rd, #Imm
+           BTX.M  Rd, #Imm
+
+Operation (BTX):   bit(Rd, Imm) -> b0
+                   !b0 -> b1
+                   b1 -> bit(Rd, Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b1 == 1 ? 1 : 0) -> C
+          (BTX.M): bit([Rd], Imm) -> b0
+                   !b0 -> b1
+                   b1 -> bit([Rd], Imm)
+                   (b0 == 0 ? 1 : 0) -> Z
+                   (b1 == 1 ? 1 : 0) -> C
+
+Inputs:
+Rd is a general purpose register R0–R7.
+
+In the register form (BTX), the tested value is Rd.
+
+In the memory form (BTX.M), the tested value is the 16-bit word in memory at
+address [Rd]. The word in memory will be modified and written back to memory.
+
+#Imm is an unsigned immediate in the range 0–15, selecting which bit is tested.
+Imm is encoded as imm4 in the instruction word.
+
+Outputs:
+Let b0 be the value of the selected bit (0 or 1) in the source value (register
+or memory) before the instruction executes, and let b1 == !b0. In the register
+form (BTX), bit Imm of Rd is replaced with b1. In the memory form (BTX.M), bit
+Imm of the 16-bit word at [Rd] is replaced with b1. All other bits are unchanged.
+
+The condition flags are updated as follows:
+    N [Negative]  Unchanged.
+    Z [Zero]      Set if b0 == 0 (bit clear); clear if b0 == 1 (bit set).
+    C [Carry]     Set if b1 == 1 (bit set); clear if b1 == 0 (bit clear).
+    V [Overflow]  Unchanged.
+
+Notes:
+The bit index immediate is encoded as imm4. See Immediate Encodings for details.
+
+For BTX.M the read of the 16-bit word and the update of flags and the memory are 
+performed as a single atomic operation with respect to the bus and interrupts.
+
+
+--- BVC ------------------------------------------------------------------------
+Branch if overflow clear
+Privilege: User/Supervisor
+Syntax:    BVC    #Imm
+Operation: if V == 0: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the overflow flag V is clear (V == 0), execution branches to the target
+address:
+
+    PC = PC + (Imm * 2)
+
+If V is set (V == 1), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BVC label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- BVS ------------------------------------------------------------------------
+Branch if overflow set
+Privilege: User/Supervisor
+Syntax:    BVS    #Imm
+Operation: if V == 1: PC + (Imm * 2) -> PC
+                else: No effect
+
+Inputs:
+#Imm is a signed immediate in the range -256 to +255, encoded as imm9s.
+At execution time the hardware sign extends (imm9s * 2). The input PC will be
+the address of the branch instruction + 2, as PC always holds the address of
+the next sequential instruction.
+
+Outputs:
+If the overflow flag V is set (V == 1), execution branches to the target
+address:
+
+    PC = PC + (Imm * 2)
+
+If V is clear (V == 0), execution continues without any change.
+
+The condition flags are not modified.
+
+Notes:
+Assemblers typically accept "BVS label" and compute Imm as the difference
+between the address of the label and the address of the branch instruction,
+divided by 2.
+The immediate is encoded as imm9s. See Immediate Encodings for details.
+
+
+--- CFC ------------------------------------------------------------------------
+Clear carry flag
+Privilege: User/Supervisor
+Syntax:    CFC
+Operation: 0 -> C    (N, Z, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The carry flag C in PS is cleared to 0.
+The other condition flags are not modified.
+
+
+--- CFN ------------------------------------------------------------------------
+Clear negative flag
+Privilege: User/Supervisor
+Syntax:    CFN
+Operation: 0 -> N    (Z, C, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The negative flag N in PS is cleared to 0.
+The other condition flags are not modified.
+
+
+--- CFV ------------------------------------------------------------------------
+Clear overflow flag
+Privilege: User/Supervisor
+Syntax:    CFV
+Operation: 0 -> V    (N, Z, C unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The overflow flag V in PS is cleared to 0.
+The other condition flags are not modified.
+
+
+--- CFZ ------------------------------------------------------------------------
+Clear zero flag
+Privilege: User/Supervisor
+Syntax:    CFZ
+Operation: 0 -> Z    (N, C, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The zero flag Z in PS is cleared to 0.
+The other condition flags are not modified.
+
+
+--- CMP ------------------------------------------------------------------------
+Compare two registers and set flags
+Privilege: User/Supervisor
+Syntax:    CMP    Rm, Rn
+Operation: Rm - Rn -> (N, Z, C)
+
+Inputs:
+Rm and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Rn) is conceptually performed, but the arithmetic result is not saved. Only the
+condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of the 16-bit subtraction result is 1
+                  (Rm - Rn, interpreted as a signed 16-bit value, is negative);
+                  otherwise cleared.
+    Z [Zero]      Set if the 16-bit subtraction result is zero; otherwise
+                  cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in
+                  unsigned arithmetic, i.e., if Rm >= Rn when interpreted as
+                  unsigned 16-bit values; otherwise cleared.
+    V [Overflow]  Not affected.
+
+
+--- CMP (Immediate) ------------------------------------------------------------
+Compare register with small immediate and set flags
+Privilege: User/Supervisor
+Syntax:    CMP    Rm, #Imm
+Operation: Rm - Imm -> (N, Z, C)
+
+Inputs:
+Rm is a general purpose register in the range R0–R7.
+
+#Imm is an unsigned immediate in the range 0–7, encoded as imm3. At execution
+time the hardware zero-extends Imm3 to 16 bits before the subtraction.
+
+Outputs:
+The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Imm) is conceptually performed, but the arithmetic result is not saved. Only the
+condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of the 16-bit subtraction result is 1
+                  (Rm - Imm, interpreted as a signed 16-bit value, is
+                  negative); otherwise cleared.
+    Z [Zero]      Set if the 16-bit subtraction result is zero; otherwise
+                  cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in
+                  unsigned arithmetic, i.e., if Rm >= Imm when interpreted as
+                  unsigned 16-bit values; otherwise cleared.
+    V [Overflow]  Not affected.
+
+Notes:
+The immediate is encoded as imm3. See Immediate Encodings for details.
+
+
+--- DIV ------------------------------------------------------------------------
+Unsigned divide with remainder
+Privilege: User/Supervisor
+Syntax:    DIV    Rd, Rm, Rn
+Operation: Rm / Rn -> Rd
+           Rm % Rn -> Rd+1     (N, Z)
+
+Inputs:
+Rd is the destination register, a general purpose register. For DIV, Rd must be
+even (R0, R2, R4, or R6) and denotes the low half of a register pair (Rd, Rd+1).
+The quotient is written to Rd and the remainder to Rd+1.
+
+Rm and Rn are general purpose registers in the range R0–R7. For DIV they are
+interpreted as unsigned 16-bit integers:
+    Dividend = Rm
+    Divisor  = Rn
+
+Outputs:
+If Rn == 0 (divide by zero), the processor raises the DivZeroFault interrupt.
+In this case:
+    Rd and Rd+1 are not modified.
+    The condition flags N, Z, C, and V are not modified.
+
+Otherwise an unsigned 16-bit division is performed:
+    Quotient  Q = floor(Dividend / Divisor)
+    Remainder R = Dividend - Q * Divisor
+
+with:
+    0 <= Q <= 0xFFFF
+    0 <= R < Divisor
+
+The results are written:
+    Rd   = Q      (quotient)
+    Rd+1 = R      (remainder / modulus)
+
+The condition flags are updated as follows:
+    N [Negative]  Always cleared (N = 0).
+    Z [Zero]      Set if Q == 0; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Not affected.
+
+Notes:
+Using an odd register as Rd will raise UndefFault, and should be rejected by
+assemblers.
+
+
+--- DVI ------------------------------------------------------------------------
+Signed divide with remainder
+Privilege: User/Supervisor
+Syntax:    DVI    Rd, Rm, Rn
+Operation: Rm / Rn -> Rd
+           Rm % Rn -> Rd+1     (N, Z, C, V)
+
+Inputs:
+Rd is the destination register, a general purpose. For DVI, Rd must be even
+(R0, R2, R4, or R6) and denotes the low half of a register pair (Rd, Rd+1).
+The quotient is written to Rd and the remainder to Rd+1.
+
+Rm and Rn are general purpose registers in the range R0–R7. For DVI they are
+interpreted as signed 16-bit two’s-complement integers:
+    Dividend = Rm
+    Divisor  = Rn
+
+Outputs:
+If Rn == 0 (divide by zero), the processor raises the DivZeroFault interrupt.
+In this case:
+    Rd and Rd+1 are not modified.
+    The condition flags N, Z, C, and V are not modified.
+
+Otherwise a signed 16-bit division is performed, with truncation toward zero:
+    Quotient  Q = trunc(Dividend / Divisor)
+    Remainder R = Dividend - Q * Divisor
+
+with:
+    Q interpreted as a signed 16-bit value (-32768 to +32767),
+    R having the same sign as Dividend or zero.
+
+If Q is representable as a signed 16-bit value:
+    Rd   = Q      (quotient, as signed 16-bit two’s-complement)
+    Rd+1 = R      (remainder / modulus, as signed 16-bit two’s-complement)
+
+    N [Negative]  Set if bit 15 of Rd (the quotient) is 1; otherwise cleared.
+    Z [Zero]      Set if Rd (the quotient) is 0; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Cleared.
+
+If the signed division overflows (the only case is Dividend = 0x8000
+(-32768) and Divisor = 0xFFFF (-1)), the quotient cannot be represented.
+In this overflow case:
+
+    Rd   = 0x8000 (implementation-defined saturated result)
+    Rd+1 is undefined (do not rely on its value).
+
+    N [Negative]  Set (bit 15 of Rd is 1).
+    Z [Zero]      Cleared (Rd != 0).
+    C [Carry]     Not affected.
+    V [Overflow]  Set.
+
+Notes:
+Using an odd register as Rd will raise UndefFault, and should be rejected
+by assemblers.
+
+
+--- EOR ------------------------------------------------------------------------
+Bitwise exclusive OR two registers
+Privilege: User/Supervisor
+Syntax:    EOR    Rd, Rm, Rn
+Operation: Rm EOR Rn -> Rd    (N, Z)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are combined with a bitwise exclusive OR as 16-bit values. For
+each bit position i (0–15), bit i of Rd is set to 1 if and only if exactly one
+of bit i of Rm or bit i of Rn is 1; otherwise bit i of Rd is cleared.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Not changed.
+    V [Overflow]  Not changed.
+
+
+--- HWQ ------------------------------------------------------------------------
+Hardware query to System Bus Controller
+Privilege: Supervisor only
+Syntax:    HWQ #imm6
+Operation: Initiate System Bus Controller (SBC) operation #imm6. SBC may read
+           general purpose registers to construct a message. When message is
+           complete, SBC will issue an operation either internal to the
+           controller or to the system bus. SBC may modify general purpose 
+           registers to reflect the result of the operation.
+
+Inputs:
+    imm6     HWQ operation index. The defined indices and their meanings are
+             listed in Section 3.D.2.
+
+    General-purpose registers (R0–R7) may be interpreted as input parameters
+    depending on the selected operation index, as described in the HWQ
+    operation table (Section 3.D.2.).
+
+Outputs:
+    If HWQ is executed in User mode:
+    UnprivFault is raised.
+
+    If HWQ is executed in Supervisor mode with an undefined operation index:
+    The Undefined Fault is raised.
+
+    If HWQ is executed in Supervisor mode with a defined operation index:
+    The System Bus Controller performs the requested operation.
+    R0–R7 are updated according to the per-operation definitions in
+    Section 3.D.2. Unless otherwise noted for a specific operation, any
+    registers not explicitly listed as outputs are preserved.
+    The condition flags are not modified.
+
+Notes:
+The detailed semantics, required inputs, and returned outputs for each HWQ
+operation index are defined in Section 3.D.2.
+
+
+--- LOD -----------------------------------------------------------------------
+Load word or byte from memory
+Privilege: User/Supervisor
+Syntax:    LOD    Rd, Rm, Rn
+           LOD    Rd, Rm, #Imm3
+           LOD.B  Rd, Rm, Rn
+           LOD.B  Rd, Rm, #Imm3
+           LOD    Rd, PC, #Imm6s
+           LOD    Rd, SP, #Imm6s
+
+Operation (LOD):   [EA] -> Rd
+          (LOD.B): [EA] -> Rd[0:7],
+                    0   -> Rd[8:15]     (N, Z)
+
+Inputs:
+Rd is the destination register, a general purpose register R0–R7.
+
+Rm is the base register for general-purpose addressing, a general purpose
+register R0–R7. For PC-relative and SP-relative addressing, the base register is
+PC or the stack pointer for the current mode, SU or SS.
+
+Rn is the offset register for general-purpose addressing, a general purpose
+register R0–R7.
+
+#Imm3 is an unsigned immediate in the range 0–7.
+
+#Imm6s is a signed immediate in the range -32 to +31.
+
+Outputs:
+LOD reads from memory at an effective address EA and writes the result to Rd.
+
+For word loads (LOD), a 16-bit word is read from memory at EA and written to Rd
+as a 16-bit value. The effective address EA must be word aligned.
+
+For byte loads (LOD.B), an 8-bit byte is read from memory at EA and written to
+bits [7:0] of Rd. Bits [15:8] of Rd are cleared to zero. The effective address
+EA may be byte aligned.
+
+The condition flags are updated as follows:
+    N [Negative]  Set if bit 15 of Rd is set.
+    Z [Zero]      Set if Rd == 0.
+    C [Carry]     Unchanged.
+    V [Overflow]  Unchanged.
+
+Effective address computation:
+
+For a general-purpose base register (Rm = R0–R7):
+
+    Register-offset word load:
+    Syntax:    LOD    Rd, Rm, Rn
+    EA = Rm + Rn
+    A 16-bit word at EA is loaded into Rd.
+
+    Small-constant-offset word load:
+    Syntax:    LOD    Rd, Rm, #Imm
+    EA = Rm + (Imm * 2)
+    A 16-bit word at EA is loaded into Rd.
+    Imm is in the range 0–7 (encoded as imm3). The offset is in words; each
+    increment of Imm advances the address by 2 bytes.
+    The calculated effective address EA must be word aligned. Unaligned word
+    loads will raise the AlignFault interrupt.
+
+    Register-offset byte load:
+    Syntax:    LOD.B  Rd, Rm, Rn
+    EA = Rm + Rn
+    The 8-bit byte at EA is loaded into Rd[7:0]; Rd[15:8] is cleared. 
+
+    Small-constant-offset byte load:
+    Syntax:    LOD.B  Rd, Rm, #Imm
+    EA = Rm + Imm
+    The 8-bit byte at EA is loaded into Rd[7:0]; Rd[15:8] is cleared.
+    Imm is in the range 0–7 (encoded as imm3). The offset is in bytes.
+
+For PC-relative addressing:
+
+    Syntax:    LOD    Rd, PC, #Imm
+    EA = PC + (Imm * 2)
+    The 16-bit word at EA is loaded into Rd.
+    PC is the address of the next instruction.
+    Imm is in the range -32 to +31 (encoded as imm6s). The offset is in words;
+    each increment of Imm advances the EA by 2 bytes.
+
+For SP-relative addressing:
+
+    Syntax:    LOD    Rd, SP, #Imm
+    EA = SP + (Imm * 2)
+    The 16-bit word at EA is loaded into Rd.
+    SP is the value of the stack pointer for the current mode at the start of
+    the instruction.
+    Imm is in the range -32 to +31 (encoded as imm6s). The offset is in words;
+    each increment of Imm advances the address by 2 bytes.
+
+Notes:
+8-bit forms are selected by appending the ".B" flag to the mnemonic.
+The small constant offsets for general-purpose bases are encoded as imm3.
+PC/SP-relative offsets are encoded as imm6s and scaled by 2 at execution time.
+
+
+--- LSL ------------------------------------------------------------------------
+Logical shift left
+Privilege: User/Supervisor
+Syntax:    LSL    Rd, Rm
+           LSL    Rd, #Imm
+Operation: Rd << X -> Rd    (C, N, Z)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no shift.
+
+For the immediate form, #Imm is an immediate shift amount in the range 1 to 8.
+
+Outputs:
+Rd is treated as a 16-bit value and shifted logically left by X bits. Bits are
+shifted toward bit 15; bit 0 is filled with 0 on each shift. Bits shifted out
+past bit 15 are discarded. Interpreted as an unsigned 16-bit integer, this is
+equivalent to multiplying Rd by 2^X and discarding any bits beyond 16 bits.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the shift is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     If X > 0, set if any of the bits shifted out (the X most-
+                  significant bits of the original Rd) were 1; otherwise
+                  cleared. If X = 0, C is cleared.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- LSR ------------------------------------------------------------------------
+Logical shift right
+Privilege: User/Supervisor
+Syntax:    LSR    Rd, Rm
+           LSR    Rd, #Imm
+Operation: Rd >> X -> Rd    (C, N, Z)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no shift.
+
+For the immediate form, #Imm is an immediate shift amount in the range 1 to 8.
+
+Outputs:
+Rd is treated as an unsigned 16-bit value and shifted logically right by X
+bits. Bits are shifted toward bit 0; bit 15 is filled with 0 on each shift.
+Bits shifted out past bit 0 are discarded. Interpreted as an unsigned 16-bit
+integer, this is equivalent to dividing Rd by 2^X and truncating toward 0.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the shift is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     If X > 0, set if any of the bits shifted out (the X least-
+                  significant bits of the original Rd) were 1; otherwise
+                  cleared. If X = 0, C is cleared.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- JMP ------------------------------------------------------------------------
+Unconditional jump to address in register
+Privilege: User/Supervisor
+Syntax:    JMP    Rm
+Operation: Rm -> PC
+
+Inputs:
+Rm is a general purpose register in the range R0–R7. It holds the target address
+of the next instruction to execute.
+
+Outputs:
+Execution continues from the instruction at the address specified by Rm:
+
+    PC = Rm
+
+The condition flags are not modified.
+
+
+--- JSR ------------------------------------------------------------------------
+Jump to subroutine and save return address
+Privilege: User/Supervisor
+Syntax:    JSR    Rm
+Operation: PC pushed to current stack
+           Rm -> PC
+
+Inputs:
+Rm is a general purpose register in the range R0–R7. It holds the target address
+of the next instruction to execute.
+
+SP is the stack pointer for the current mode, SU or SS.
+
+Outputs:
+JSR performs two actions:
+
+    1. It takes the PC (the address of the next sequential instruction after the
+       JSR), and pushes this 16-bit value onto the current stack.
+
+    2. It then loads PC from Rm:
+
+           PC = Rm
+
+Execution continues from the instruction at the address specified by Rm.
+
+The condition flags are not modified.
+
+Notes:
+The saved return address is the pre-jump PC + 2, so the subroutine can return
+to the instruction immediately following the JSR by executing RTS (see
+Processor Functions in Section 2.L).
+
+
+--- MLI ------------------------------------------------------------------------
+Signed 16×16 multiply with 32-bit result
+Privilege: User/Supervisor
+Syntax:    MLI    Rd, Rm, Rn
+Operation: (signed) Rm * Rn -> Rd (low 16), Rd+1 (high 16)    (N, Z, C)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+For MLI, Rd must be an even-numbered register (R0, R2, R4, or R6) and denotes
+the low half of a register pair (Rd, Rd+1). The 32-bit signed product is
+written to this pair:
+    Rd   = low 16 bits of the product
+    Rd+1 = high 16 bits of the product
+
+Rm and Rn are interpreted as signed 16-bit two’s-complement integers.
+
+Outputs:
+A full 32-bit signed product is computed:
+
+    (int32)P = (int16)Rm * (int16)Rn
+
+The low and high halves of P are written:
+    Rd   = P[15:0]
+    Rd+1 = P[31:16]
+
+The condition flags are updated as follows:
+    N [Negative]  Set if bit 15 of Rd+1 (the high 16 bits of P) is 1;
+                  otherwise cleared.
+    Z [Zero]      Set if the full 32-bit product is zero
+                  (Rd == 0 and Rd+1 == 0); otherwise cleared.
+    C [Carry]     Set if the high 16 bits of the product are non-zero
+                  (Rd+1 != 0); otherwise cleared.
+    V [Overflow]  Not affected.
+
+Rm and Rn are not modified.
+
+Notes:
+Using an odd register as Rd will raise UndefFault, and should be rejected
+by assemblers.
+
+
+--- MOV ------------------------------------------------------------------------
+Move register to register
+Privilege: User/Supervisor
+Syntax:    MOV    Rd, Rm
+Operation: Rm -> Rd
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+Rm is the source register; Rd is the destination register.
+
+Outputs:
+The 16-bit value in Rm is copied to Rd:
+
+    Rd = Rm
+
+Rm is not modified.
+The condition flags are not modified.
+
+
+--- MRS ------------------------------------------------------------------------
+Move from special register to general-purpose register
+Privilege: User*/Supervisor (some special registers privileged, see 3.B.2.)
+Syntax:    MRS    Rd, S
+Operation: (16-bit S) S -> Rd
+
+           (32-bit S) S[15:0]  -> Rd
+                      S[31:16] -> Rd+1
+
+Inputs:
+Rd is the destination register, a general purpose register in the range R0–R7.
+
+S is a special register specified by a numeric index. An assembler maps an index
+to the name of the register. The mapping from S to a numeric index, its name,
+and the width (16-bit or 32-bit) is defined in Section 3.
+
+If S is a 16-bit special register, any Rd is allowed.
+
+If S is a 32-bit special register, Rd must be even (R0, R2, R4, or R6). In this
+case, (Rd, Rd+1) form a register pair that receives the full 32-bit value.
+
+Outputs:
+If S is 16 bits wide:
+
+    Rd = S[15:0]
+
+If S is 32 bits wide:
+
+    Rd   = S[15:0]   (low 16 bits)
+    Rd+1 = S[31:16]  (high 16 bits)
+
+The condition flags are not modified by MRS.
+
+Notes:
+If S is 32 bits wide and Rd is odd, the processor will raise UndefFault; this
+should be rejected by assemblers.
+The numeric index of S is encoded in the instruction word as imm5. Assemblers
+must translate symbolic names to this encoding.
+
+
+--- MSR ------------------------------------------------------------------------
+Move from general-purpose register to special register
+Privilege: User*/Supervisor (some special registers privileged, see 3.B.2.)
+Syntax:    MSR    S, Rd
+Operation: (16-bit S) Rd -> S
+
+           (32-bit S) Rd, Rd+1 -> S
+
+Inputs:
+Rd is a general purpose register in the range R0–R7 and is the source of the
+value to be written.
+
+S is a special register specified by name. The mapping from S to a numeric
+index and its width (16-bit or 32-bit) is defined in Section 3.
+
+If S is a 16-bit special register, any Rd is allowed.
+
+If S is a 32-bit special register, Rd must be even (R0, R2, R4, or R6). In this
+case, (Rd, Rd+1) form a register pair from which is taken the full 32-bit value.
+
+Outputs:
+The addressed special register S is updated with the new value as described
+above.
+
+If S is 16 bits wide:
+
+    S[15:0] = Rd
+
+If S is 32 bits wide:
+
+    S[15:0] = Rd     (low 16 bits)
+    S[31:16] = Rd+1  (high 16 bits)
+
+The condition flags are not modified by MSR itself. However, if S is the PS
+register, writing it via MSR updates the condition flags and other PS fields
+according to the description of PS in Section 3.
+
+Notes:
+If S is 32 bits wide and Rd is odd, the processor will raise UndefFault; this
+should be rejected by assemblers.
+The numeric index of S is encoded in the instruction word as imm5. Assemblers
+must translate symbolic names to this encoding.
+Writing certain special registers (such as PS, stack pointers, page table base,
+timers, and interrupt control registers) may immediately affect execution,
+interrupt handling, or paging. These effects are described in detail for each
+register in Section 3.
+
+
+--- MUL ------------------------------------------------------------------------
+Unsigned 16×16 multiply with 32-bit result
+Privilege: User/Supervisor
+Syntax:    MUL    Rd, Rm, Rn
+Operation: (unsigned) Rm * Rn -> Rd (low 16), Rd+1 (high 16)    (N, Z, C)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+For MUL, Rd must be an even-numbered register (R0, R2, R4, or R6) and denotes
+the low half of a register pair (Rd, Rd+1). The 32-bit unsigned product is
+written to this pair:
+    Rd   = low 16 bits of the product
+    Rd+1 = high 16 bits of the product
+
+Rm and Rn are interpreted as unsigned 16-bit integers.
+
+Outputs:
+A full 32-bit unsigned product is computed:
+
+    (uint32)P = (uint16)Rm * (uint16)Rn
+
+The low and high halves of P are written:
+    Rd   = P[15:0]
+    Rd+1 = P[31:16]
+
+The condition flags are updated as follows:
+    N [Negative]  Always cleared (N = 0).
+    Z [Zero]      Set if the full 32-bit product is zero
+                  (Rd == 0 and Rd+1 == 0); otherwise cleared.
+    C [Carry]     Set if the high 16 bits of the product are non-zero
+                  (Rd+1 != 0); otherwise cleared.
+    V [Overflow]  Not affected.
+
+Rm and Rn are not modified.
+
+Notes:
+Using an odd register as Rd will raise UndefFault; this should be rejected by
+assemblers.
+
+--- MVI ------------------------------------------------------------------------
+Move 8-bit immediate into low or high octet of register
+Privilege: User/Supervisor
+Syntax:    MVI.L  Rd, #Imm
+           MVI.H  Rd, #Imm
+Operation (MVI.L):  Imm8 -> Rd[7:0]   (low octet)
+                    Rd[15:8] unchanged
+          (MVI.H):  Imm8 -> Rd[15:8]  (high octet)
+                    Rd[7:0]  unchanged
+
+Inputs:
+Rd is a general purpose register in the range R0–R7.
+Imm is an unsigned immediate in the range 0–255.
+
+Outputs:
+For MVI.L:
+
+    Rd[7:0]  = Imm
+    Rd[15:8] = previous Rd[15:8]
+
+For MVI.H:
+
+    Rd[7:0]  = previous Rd[7:0]
+    Rd[15:8] = Imm
+
+Only the selected byte of Rd is modified; all other registers are unchanged.
+
+The condition flags are not modified:
+    N [Negative]  Unchanged.
+    Z [Zero]      Unchanged.
+    C [Carry]     Unchanged.
+    V [Overflow]  Unchanged.
+
+Notes:
+The immediate value is encoded as imm8. See Immediate Encodings for details.
+
+
+--- NEG ------------------------------------------------------------------------
+Two’s-complement negate
+Privilege: User/Supervisor
+Syntax:    NEG    Rd, Rm
+Operation: 0 - Rm -> Rd    (N, Z, V)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+Rm is interpreted as a signed 16-bit two’s-complement value.
+
+Outputs:
+A 16-bit subtraction is performed:
+
+    Result = (0 - Rm) mod 2^16
+
+The 16-bit Result is written to Rd.
+
+Special case: For Rm == 0x8000, the result written to Rd is 0x8000, and V is
+set to indicate the overflow condition.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise clear.
+    Z [Zero]      Set if Rd == 0x0000; otherwise clear.
+    C [Carry]     Not affected.
+    V [Overflow]  Set if the negation overflows in signed 16-bit arithmetic.
+                  For two’s-complement, the only overflowing case is:
+                      Rm == 0x8000  and  Rd == 0x8000
+                  In this case V is set; otherwise V is cleared.
+
+
+--- NOP ------------------------------------------------------------------------
+No operation
+Privilege: User/Supervisor
+Syntax:    NOP
+Operation: No effect; advance to next instruction.
+
+Inputs:
+None.
+
+Outputs:
+NOP completes without modifying any state. PC advances.
+
+
+--- NOT ------------------------------------------------------------------------
+Bitwise NOT of register
+Privilege: User/Supervisor
+Syntax:    NOT    Rd, Rm
+Operation: NOT Rm -> Rd    (N, Z)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+Outputs:
+Each bit of Rm is inverted and written to Rd as a 16-bit value. For each bit
+position i (0–15):
+
+    Rd[i] = NOT Rm[i]
+
+Rm is not modified.
+
+The condition flags are updated as follows:
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if Rd == 0x0000; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Not affected.
+
+
+--- ORR ------------------------------------------------------------------------
+Bitwise OR of two registers
+Privilege: User/Supervisor
+Syntax:    ORR    Rd, Rm, Rn
+Operation: Rm OR Rn -> Rd    (N, Z)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are combined with a bitwise OR as 16-bit values. For each bit
+position i (0–15):
+
+    Rd[i] = Rm[i] OR Rn[i]
+
+Rm and Rn are not modified.
+
+The condition flags are updated as follows:
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if Rd == 0x0000; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Not affected.
+
+
+--- PTL ------------------------------------------------------------------------
+Page Table Load – read page table entry from TU page table
+Privilege: Supervisor only
+Syntax:    PTL.V  Rd, Rm
+           PTL.I  Rd, Rm
+Operation (PTL.V): PTE for virtual address Rm  -> Rd (low 16), Rd+1 (high 16)
+          (PTL.I): PTE at index Rm             -> Rd (low 16), Rd+1 (high 16)
+
+Inputs:
+Rd is a general purpose register in the range R0–R7. For PTL, Rd must be an
+even-numbered register (R0, R2, R4, or R6) and denotes the low half of a
+register pair (Rd, Rd+1). The 32-bit Page Table Entry (PTE) is returned in this
+pair.
+
+Rm is a general purpose register in the range R0–R7 and selects which PTE to
+load, depending on the form:
+
+    PTL.V  (virtual-address form):
+        Rm contains a full virtual address.
+        The hardware uses the current User Page Table base (TU) and the
+        virtual address in Rm to locate the corresponding PTE. The exact
+        mapping from virtual address to PTE index (e.g., which high-order
+        bits select the entry) is defined in the MMU and page table
+        description in Section 3.
+
+    PTL.I  (index form):
+        Rm contains a 16-bit PTE index.
+        The hardware uses TU and the index in Rm to select the PTE at that
+        index in the user page table.
+
+TU is the User Page Table base register. PTL always operates on the page table
+rooted at TU and never on the supervisor page table (TS).
+
+Outputs:
+If PTL is executed in User mode:
+UnprivFault is raised.
+
+If PTL is executed in Supervisor mode:
+PTL reads a 32-bit Page Table Entry from the TU page table and returns it in
+the register pair (Rd, Rd+1):
+
+    Rd   = PTE[15:0]   (low 16 bits)
+    Rd+1 = PTE[31:16]  (high 16 bits)
+
+No memory translation or data access is performed beyond reading the PTE
+structure itself. TU, TS, and all other general purpose and special registers
+are not modified.
+
+The condition flags are not modified.
+
+Notes:
+Using an odd register as Rd will raise UndefFault, this should be rejected by
+assemblers.
+PTL does not perform a translation of Rm; it only reads the page table entry
+that would be used (PTL.V) or the entry at a specific index (PTL.I).
+PTL always operates on the user page table (TU). To manipulate the supervisor
+page table, use normal LOD/STO operations on the memory that backs TS, or
+temporarily copy TS to TU and then use PTL/PTS as described in Section 2.L.3.
+TU must be a valid encoding, and Rm must be within the range of 0-15, or PTL
+will raise PageFault as described in Section 2.L.3.
+
+
+--- PTS ------------------------------------------------------------------------
+Page Table Store – write page table entry into TU page table
+Privilege: Supervisor only
+Syntax:    PTS.V  Rd, Rm
+           PTS.I  Rd, Rm
+Operation (PTS.V): Rd (low 16), Rd+1 (high 16) -> PTE for virtual address Rm
+          (PTS.I): Rd (low 16), Rd+1 (high 16) -> PTE at index Rm
+
+Inputs:
+Rd is a general purpose register in the range R0–R7. For PTS, Rd must be an
+even-numbered register (R0, R2, R4, or R6) and denotes the low half of a
+register pair (Rd, Rd+1). Together they supply the 32-bit Page Table Entry
+value to be written:
+
+    PTE[15:0]  = Rd
+    PTE[31:16] = Rd+1
+
+Rm is a general purpose register in the range R0–R7 and selects which PTE to
+write, depending on the form:
+
+    PTS.V  (virtual-address form):
+        Rm contains a full virtual address.
+        The hardware uses the current User Page Table base (TU) and the
+        virtual address in Rm to locate the corresponding PTE to update. The
+        exact mapping from virtual address to PTE index is defined in the MMU
+        and page table description in Section 3.
+
+    PTS.I  (index form):
+        Rm contains a 16-bit PTE index.
+        The hardware uses TU and the index in Rm to select the PTE at that
+        index in the user page table.
+
+TU is the User Page Table base register. PTS always operates on the page table
+rooted at TU and never on the supervisor page table (TS).
+
+Outputs:
+If PTS is executed in User mode:
+UnprivFault is raised.
+
+If PTS is executed in Supervisor mode:
+PTS writes a 32-bit Page Table Entry into the TU page table at the location
+specified by Rm (virtual address or index):
+
+    PTE <- { high: Rd+1, low: Rd }
+
+The write affects only the page table entry; it does not immediately perform any
+address translation or memory access. TU, TS, and all general purpose registers
+(including Rd and Rm) are not modified.
+
+The condition flags are not modified.
+
+Notes:
+Using an odd register as Rd will raise UndefFault, this should be rejected by
+assemblers.
+PTS is used to update PTEs while the MMU is active.
+PTS always operates on the user page table (TU). To modify entries in the
+supervisor page table, use normal LOD/STO on the memory that backs TS, or
+temporarily copy TS into TU and use PTL/PTS as described in Section 2.L.3.
+TU must be a valid encoding, and Rm must be within the range of 0-15, or PTS
+will raise PageFault as described in Section 2.L.3.
+
+
+--- REV ------------------------------------------------------------------------
+Reverse bytes or bits in a register
+Privilege: User/Supervisor
+Syntax:    REV.B  Rd
+           REV.T  Rd
+Operation:(REV.B) Rd bytes swapped: Rd[15:8] <-> Rd[7:0]
+          (REV.T) Rd bits reversed: Rd[i] = old Rd[15 - i]
+
+Inputs:
+Rd is a general purpose register in the range R0–R7. Rd is both the source and
+destination of the operation.
+
+Outputs:
+For REV.B (reverse bytes):
+
+    Rd[15:8] = old Rd[7:0]
+    Rd[7:0] = old Rd[15:8]
+
+For REV.T (reverse bits):
+
+    For each bit position i in 0–15:
+        new Rd[i] = old Rd[15 - i]
+
+The condition flags are not modified.
+
+
+--- REX ------------------------------------------------------------------------
+Extend low byte of register
+Privilege: User/Supervisor
+Syntax:    REX.SB  Rd
+           REX.UB  Rd
+Operation (REX.SB): Sign-extend Rd[7:0] into bits 15–8
+          (REX.UB): Zero-extend Rd[7:0] into bits 15–8
+
+Inputs:
+Rd is a general purpose register in the range R0–R7. Rd is both the source and
+destination of the operation.
+
+Outputs:
+For REX.SB (sign-extend byte):
+
+    Let b = Rd[7] (the sign bit of the low byte before the instruction).
+    After execution:
+        Rd[7:0]  = previous Rd[7:0]
+        Rd[15:8] = {b, b, b, b, b, b, b, b}  (each bit 8–15 set to b)
+
+This treats the low byte Rd[7:0] as a signed 8-bit value and sign-extends it to
+a full signed 16-bit value in Rd.
+
+For REX.UB (zero-extend byte):
+
+    After execution:
+        Rd[7:0]  = previous Rd[7:0]
+        Rd[15:8] = 0x00
+
+This treats the low byte Rd[7:0] as an unsigned 8-bit value and zero-extends it
+to a full 16-bit value in Rd.
+
+The condition flags are not modified.
+
+
+--- RNL ------------------------------------------------------------------------
+Rotate left without carry
+Privilege: User/Supervisor
+Syntax:    RNL    Rd, Rm
+           RNL    Rd, #Imm
+Operation: ROTL_no_carry(Rd, X) -> Rd    (N, Z)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no shift.
+
+For the immediate form, #Imm is an immediate rotate amount in the range 1 to 8.
+
+Outputs:
+Rd is treated as a 16-bit value and rotated left by X bits without using the
+carry flag. For X > 0, bits are rotated toward bit 15 and wrap around into bit 0.
+Conceptually:
+
+    Let k = X modulo 16.
+    If k == 0: Rd is unchanged.
+    Otherwise: for each bit position i (0–15),
+        new_Rd[i] = old_Rd[(i - k) mod 16]
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the rotate is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- RNR ------------------------------------------------------------------------
+Rotate right without carry
+Privilege: User/Supervisor
+Syntax:    RNR    Rd, Rm
+           RNR    Rd, #Imm
+Operation: ROTR_no_carry(Rd, X) -> Rd    (N, Z)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no shift.
+
+For the immediate form, #Imm is an immediate rotate amount in the range 1 to 8.
+
+Outputs:
+Rd is treated as a 16-bit value and rotated right by X bits without using the
+carry flag. For X > 0, bits are rotated toward bit 0 and wrap around into bit 15.
+Conceptually:
+
+    Let k = X modulo 16.
+    If k == 0: Rd is unchanged.
+    Otherwise: for each bit position i (0–15),
+        new_Rd[i] = old_Rd[(i + k) mod 16]
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the rotate is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Not affected.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- ROL ------------------------------------------------------------------------
+Rotate left through carry
+Privilege: User/Supervisor
+Syntax:    ROL    Rd, Rm
+           ROL    Rd, #Imm
+Operation: ROTL_through_carry(Rd, C, X) -> Rd, C    (N, Z, C, V)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+
+C is the carry flag in PS before execution.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no rotation and leaves C unchanged.
+
+For the immediate form, #Imm is an immediate rotate amount in the range 1 to 8.
+
+Outputs:
+Rd and C are treated as a 17-bit shift register:
+
+    [C | Rd[15:0]]
+
+For X > 0, this 17-bit value is rotated left by X one-bit steps. Each step:
+
+    1. temp = Rd[15]
+    2. Rd   = (Rd << 1) | C
+    3. C    = temp
+
+After X steps, the resulting Rd and C are written back. For X = 0, Rd and C are
+unchanged.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the rotate is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     If X > 0, set to the last bit shifted out of bit 15 during
+                  the rotate sequence; if X = 0, C is unchanged.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- ROR ------------------------------------------------------------------------
+Rotate right through carry
+Privilege: User/Supervisor
+Syntax:    ROR    Rd, Rm
+           ROR    Rd, #Imm
+Operation: ROTR_through_carry(Rd, C, X) -> Rd, C    (N, Z, C)
+
+Inputs:
+Rd and Rm are general purpose registers in the range R0–R7.
+C is the carry flag in PS before execution.
+
+For the register form, X is the shift amount taken from Rm, interpreted as an
+unsigned 16-bit value. The value is clamped to the range of 0 to 15. A value of
+0 performs no rotation and leaves C unchanged.
+
+For the immediate form, #Imm is an immediate rotate amount in the range 1 to 8.
+
+Outputs:
+Rd and C are treated as a 17-bit shift register:
+
+    [C | Rd[15:0]]
+
+For X > 0, this 17-bit value is rotated right by X one-bit steps. Each step:
+
+    1. temp = Rd[0]
+    2. Rd   = (C << 15) | (Rd >> 1)
+    3. C    = temp
+
+After X steps, the resulting Rd and C are written back. For X = 0, Rd and C are
+unchanged.
+
+The condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd after the rotate is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     If X > 0, set to the last bit shifted out of bit 0 during
+                  the rotate sequence; if X = 0, C is unchanged.
+    V [Overflow]  Not affected.
+
+Notes:
+For the immediate form, the immediate is encoded as imm3i. See Immediate
+Encodings for details.
+
+
+--- RTI ------------------------------------------------------------------------
+Return from interrupt
+Privilege: Supervisor only
+Syntax:    RTI
+Operation: Restore PC, PS, and IC from stack frame and resume execution.
+
+Inputs:
+RTI is a privileged instruction. Executing RTI in User mode raises UnprivFault;
+in that case, no state is restored and the stacked interrupt frame is left
+unchanged.
+
+When executed in Supervisor mode, RTI expects the stack pointer, SS, to point
+to an interrupt stack frame created by the hardware on interrupt entry, as
+defined in Section 3.E.7.
+
+Outputs:
+If executed in Supervisor mode with a valid interrupt frame, the processor will
+execute the return from interrupt handler in 3.E.8, restoring IC, PS, and PC.
+
+After RTI completes, execution resumes at the restored PC, in the mode and
+with the flags specified by the restored PS.
+
+Effect on condition flags:
+    N [Negative]  Becomes the N bit from the restored PS.
+    Z [Zero]      Becomes the Z bit from the restored PS.
+    C [Carry]     Becomes the C bit from the restored PS.
+    V [Overflow]  Becomes the V bit from the restored PS.
+
+Notes:
+RTI does not compute new flag values; it merely restores them from the
+saved PS image.
+
+
+--- RTS ------------------------------------------------------------------------
+Return from subroutine
+Privilege: User/Supervisor
+Syntax:    RTS
+Operation: Pop return address from current stack into PC
+
+Inputs:
+SP is the stack pointer for the current mode, SU or SS. The layout and growth
+direction of the stack are defined in 3.B.2.
+
+JSR saves a return address (PC + 2) on the current stack. RTS assumes that SP
+points to such a saved 16-bit return address.
+
+Outputs:
+RTS pops one 16-bit word from the current stack and loads it into PC:
+
+    ReturnAddress = [SP]
+    SP updated by one word
+    PC = ReturnAddress
+
+Execution then continues from the restored PC.
+
+The condition flags are not modified.
+
+
+--- SBC ------------------------------------------------------------------------
+Subtract with borrow (carry as “no borrow”)
+Privilege: User/Supervisor
+Syntax:    SBC    Rd, Rm, Rn
+Operation: Rm - Rn - (1 - C_in) -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+C_in is the value of the C flag in PS before execution.
+
+Outputs:
+The operands are subtracted as 16-bit values with an extra borrow term derived
+from the carry flag. A 17-bit subtraction
+
+    Rm - Rn - (1 - C_in)
+
+is conceptually performed; the low 16 bits of the result are written to Rd, and
+the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in unsigned
+                  arithmetic, i.e., if
+
+                      Rm >= Rn + (1 - C_in)
+
+                  when interpreted as unsigned 16-bit values; otherwise
+                  cleared.
+    V [Overflow]  Set if the signed 16-bit subtraction
+                  (Rm - Rn - (1 - C_in)) overflows:
+                  Rm and (Rn + (1 - C_in)), interpreted as signed 16-bit
+                  values, have different signs and the resulting Rd has the
+                  same sign as (Rn + (1 - C_in)); otherwise cleared.
+
+Notes:
+If C_in = 1, SBC performs a plain subtraction:
+
+    Rd = Rm - Rn
+
+If C_in = 0, SBC subtracts an additional 1 (a borrow):
+
+    Rd = Rm - Rn - 1
+
+This follows the common convention that C = 1 means “no borrow,” C = 0 means
+“borrow occurred” in previous operations.
+
+
+--- SBC (Immediate) ------------------------------------------------------------
+Subtract immediate with borrow
+Privilege: User/Supervisor
+Syntax:    SBC    Rd, #Imm
+Operation: Rd_before - Imm - (1 - C_in) -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd is a general purpose register in the range R0–R7.
+#Imm is an immediate in the range 1 to 32, encoded as imm5i. At execution time
+the hardware computes Imm = imm5i + 1.
+C_in is the value of the C flag in PS before execution.
+
+Outputs:
+The operands are subtracted as 16-bit values with an extra borrow term derived
+from the carry flag. A 17-bit subtraction
+
+    Rd_before - Imm - (1 - C_in)
+
+is conceptually performed; the low 16 bits of the result are written to Rd, and
+the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in unsigned
+                  arithmetic, i.e., if
+
+                      Rd_before >= Imm + (1 - C_in)
+
+                  when interpreted as unsigned 16-bit values; otherwise
+                  cleared.
+    V [Overflow]  Set if the signed 16-bit subtraction
+                  (Rd_before - Imm - (1 - C_in)) overflows:
+                  Rd_before and (Imm + (1 - C_in)), interpreted as signed
+                  16-bit values (Imm zero-extended from its 5-bit encoding),
+                  have different signs and the resulting Rd has the same sign
+                  as (Imm + (1 - C_in)); otherwise cleared.
+
+Notes:
+If C_in = 1, SBC Rd,#Imm behaves like SUB Rd,#Imm.
+If C_in = 0, SBC Rd,#Imm subtracts an additional 1, allowing multi-word
+borrow chains.
+The immediate is encoded as imm5i. See Immediate Encodings for details.
+
+
+--- SFC ------------------------------------------------------------------------
+Set carry flag
+Privilege: User/Supervisor
+Syntax:    SFC
+Operation: 1 -> C    (N, Z, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The carry flag C in PS is set to 1.
+The other condition flags are not modified.
+
+
+--- SFN ------------------------------------------------------------------------
+Set negative flag
+Privilege: User/Supervisor
+Syntax:    SFN
+Operation: 1 -> N    (Z, C, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The negative flag N in PS is set to 1.
+The other condition flags are not modified.
+
+
+--- SFV ------------------------------------------------------------------------
+Set overflow flag
+Privilege: User/Supervisor
+Syntax:    SFV
+Operation: 1 -> V    (N, Z, C unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The overflow flag V in PS is set to 1.
+The other condition flags are not modified.
+
+
+--- SFZ ------------------------------------------------------------------------
+Set zero flag
+Privilege: User/Supervisor
+Syntax:    SFZ
+Operation: 1 -> Z    (N, C, V unchanged)
+
+Inputs:
+None.
+
+Outputs:
+The zero flag Z in PS is set to 1.
+The other condition flags are not modified.
+
+
+--- SLP ------------------------------------------------------------------------
+Sleep until interrupt
+Privilege: Supervisor only
+Syntax:    SLP
+Operation: Enter low-power halted state until an interrupt or fault occurs;
+           on wake, service the event and then resume after SLP.
+
+Inputs:
+SLP is a privileged instruction. Executing SLP in User mode raises UnprivFault;
+in that case, the processor does not enter the halted state and execution
+continues via the fault handler.
+
+Outputs:
+If executed in Supervisor mode, the processor enters a halted / low-power
+sleep state. Instruction execution stops; the PC has been updated to point to
+the next program word, the one immediately following SLP.
+
+The processor exits the halted state when an enabled interrupt is asserted
+(e.g., Clock interrupt, hardware device interrupt), or a non-maskable fault
+or reset event occurs.
+
+On wake due to an interrupt, the normal interrupt entry sequence is performed,
+the appropriate interrupt handler executes, and an RTI should eventually restore
+the pre-interrupt state. After RTI, execution resumes at the instruction
+immediately following SLP.
+
+Notes:
+If interrupts are masked or no wake-capable sources are configured, the
+processor may remain halted indefinitely until a reset or non-maskable
+event occurs (platform behavior).
+
+--- STO ------------------------------------------------------------------------
+Store word or byte to memory
+Privilege: User/Supervisor
+Syntax:    STO    Rd, Rm, Rn
+           STO    Rd, Rm, #Imm3
+           STO.B  Rd, Rm, Rn
+           STO.B  Rd, Rm, #Imm3
+           STO    Rd, PC, #Imm6s
+           STO    Rd, SP, #Imm6s
+
+Operation (STO):   Rd      -> [EA]
+          (STO.B): Rd[0:7] -> [EA]
+
+Inputs:
+Rd is the source register, a general purpose register R0–R7.
+
+Rm is the base register for general-purpose addressing, a general purpose
+register R0–R7. For PC-relative and SP-relative addressing, the base register is
+PC or the stack pointer for the current mode, SU or SS.
+
+Rn is the offset register for general-purpose addressing, a general purpose
+register R0–R7.
+
+#Imm3 is an unsigned immediate in the range 0–7.
+
+#Imm6s is a signed immediate in the range -32 to +31.
+
+Outputs:
+STO writes a value from Rd into memory at an effective address EA.
+
+For word stores (STO), the 16-bit value in Rd is written to memory at EA as a
+16-bit word. The effective address EA must be word aligned.
+
+For byte stores (STO.B), the 8-bit value in Rd[7:0] is written to memory at EA
+as a single byte. The high bits Rd[15:8] are ignored. The effective address EA
+may be byte aligned.
+
+The condition flags are not modified.
+
+Effective address computation:
+
+For a general-purpose base register (Rm = R0–R7):
+
+    Register-offset word store:
+    Syntax:    STO    Rd, Rm, Rn
+    EA = Rm + Rn
+    The 16-bit value in Rd is stored as a word at EA.
+    The calculated effective address EA must be word aligned. Unaligned word
+    stores will raise the AlignFault interrupt.
+
+    Small-constant-offset word store:
+    Syntax:    STO    Rd, Rm, #Imm
+    EA = Rm + (Imm * 2)
+    The 16-bit value in Rd is stored as a word at EA.
+    Imm is in the range 0–7 (encoded as imm3). The offset is in words; each
+    increment of Imm advances the address by 2 bytes.
+    The calculated effective address EA must be word aligned. Unaligned word
+    stores will raise the AlignFault interrupt.
+
+    Register-offset byte store:
+    Syntax:    STO.B  Rd, Rm, Rn
+    EA = Rm + Rn
+    The 8-bit value in Rd[7:0] is stored as a byte at EA.
+
+    Small-constant-offset byte store:
+    Syntax:    STO.B  Rd, Rm, #Imm
+    EA = Rm + Imm
+    The 8-bit value in Rd[7:0] is stored as a byte at EA.
+    Imm is in the range 0–7 (encoded as imm3). The offset is in bytes.
+
+For PC-relative addressing:
+
+    Syntax:    STO    Rd, PC, #Imm
+    EA = PC + (Imm * 2)
+    The 16-bit value in Rd is stored as a word at EA.
+    PC is the address of the next instruction.
+    Imm is in the range -32 to +31 (encoded as imm6s). The offset is in words;
+    each increment of Imm advances the EA by 2 bytes.
+    The calculated effective address EA must be word aligned. Unaligned word
+    stores will raise the AlignFault interrupt.
+
+For SP-relative addressing:
+
+    Syntax:    STO    Rd, SP, #Imm
+    EA = SP + (Imm * 2)
+    The 16-bit value in Rd is stored as a word at EA.
+    SP is the value of the stack pointer for the current mode at the start of
+    the instruction.
+    Imm is in the range -32 to +31 (encoded as imm6s). The offset is in words;
+    each increment of Imm advances the address by 2 bytes.
+    The calculated effective address EA must be word aligned. Unaligned word
+    stores will raise the AlignFault interrupt.
+
+Notes:
+Stores of 8-bit bytes do not need to be aligned to 16-bit addresses, and do not
+raise Align faults. Other stores must be aligned to 16-bit addresses.
+The small constant offsets for general-purpose bases are encoded as imm3.
+PC/SP-relative offsets are encoded as imm6s and scaled by 2 at execution time.
+
+
+--- STR ------------------------------------------------------------------------
+Restore registers from stack
+Privilege: User*/Supervisor (some registers privileged, see Notes)
+Syntax:    STR    {Rlist}
+
+Operation: Pop values from the current stack into selected registers,
+           in descending register order.
+
+Inputs:
+Rlist is a non-empty subset of one of the following register groups:
+
+    Group 0: {R0, R1, R2, R3}
+    Group 1: {R4, R5, R6, R7}
+    Group 2: {PC, PS, SU, SS}
+
+All registers in a single STR must belong to the same group. The encoding uses
+a 4-bit mask to select which registers in that group are included; the textual
+Rlist is an assembler convenience.
+
+SP is the stack pointer for the current mode, SU or SS, and must point to a
+stack frame compatible with a previous STS which pushed the same registers.
+
+Outputs:
+The processor pops 16-bit values from the current stack and writes them into
+the selected registers. Within the group, registers are always popped in
+descending register order (from “highest” to “lowest” index), regardless of the
+order in which they are written in the assembly source.
+
+Conceptually, for a given group:
+
+    1. The hardware determines which registers are selected from the mask.
+    2. It orders them from highest to lowest (e.g., R3, R2, R1, R0).
+    3. For each selected register in that order, it pops a 16-bit value from
+       the stack and loads it into the register, updating SP according to the
+       standard pop semantics.
+
+After STR, SP has been adjusted to remove one 16-bit word per selected
+register from the stack.
+
+The condition flags are not modified.
+
+Notes:
+When PC is included in Rlist, loading it via STR causes control flow to
+resume at the restored address once the instruction completes.
+When PS is included, restoring it via STR updates the condition flags and
+any other PS fields as described for PS in Section 3.
+Correct use of STS/STR pairs with matching masks and groups is required to
+maintain a consistent stack frame layout.
+
+In User mode, restoring PS will pop only the NZCV bits, and all other bits will
+be ignored, equivalent to the operation of MSR PS as described in 3.B.2.
+
+In User mode, restoring SS will pop SU instead, as SS is privileged. STR SU, SS
+will pop SU twice.
+
+
+--- STS ------------------------------------------------------------------------
+Stash registers to stack
+Privilege: User*/Supervisor (some registers privileged, see Notes)
+Syntax:    STS    {Rlist}
+
+Operation: Push selected registers in ascending register order onto
+           the current stack.
+
+Inputs:
+Rlist is a non-empty subset of one of the following register groups:
+
+    Group 0: {R0, R1, R2, R3}
+    Group 1: {R4, R5, R6, R7}
+    Group 2: {PC, PS, SU, SS}
+
+All registers in a single STS must belong to the same group. The encoding uses
+a 4-bit mask to select which registers in that group are included; the textual
+Rlist is an assembler convenience.
+
+SP is the stack pointer for the current mode, SU or SS.
+
+Outputs:
+For each register in the selected group that appears in Rlist, the processor
+pushes its 16-bit value onto the current stack. Within the group, registers are
+always pushed in ascending register order (from “lowest” to “highest” index),
+regardless of the order in which they are written in the assembly source.
+
+Conceptually, for a given group:
+
+    1. The hardware determines which registers are selected from the mask.
+    2. It orders them from lowest to highest (e.g., R0, R1, R2, R3).
+    3. For each selected register in that order, it pushes its 16-bit value
+       onto the stack and updates the stack pointer for the current mode
+       as defined in 3.B.2.
+
+All selected registers retain their original values; only SP and memory are
+modified.
+
+The condition flags are not modified.
+
+Notes:
+In User mode, pushing PS will push only the NZCV bits, and all other bits will
+be masked to zero, equivalent to the operation of MRS PS as described in 3.B.2.
+
+In User mode, pushing SS will push SU instead, as SS is privileged. STS SU, SS
+will push SU twice.
+
+--- STX ------------------------------------------------------------------------
+Adjust stack pointer by signed immediate
+Privilege: User/Supervisor
+Syntax:    STX    #Imm8s
+Operation: SP + (Imm * 2) -> SP      (N, Z, C, V unchanged)
+
+Inputs:
+#Imm8s is a signed immediate in the range -128 to +127, encoded as imm8s.
+
+SP is the stack pointer for the current mode, SU or SS. Stack layout and growth
+direction are defined in the 3.B.2.
+
+Outputs:
+The immediate is sign-extended to 16 bits and scaled by 2 (because the stack
+stores 16-bit words), then added to SP:
+
+    EffectiveOffset = Imm * 2      ; in bytes
+    SP = SP + EffectiveOffset
+
+No memory access is performed by STX itself; it only updates SP.
+
+The condition flags are not modified.
+
+Notes:
+STX is typically used to allocate or deallocate stack frame space.
+The immediate uses the imm8s encoding. See Immediate Encodings for details.
+
+
+--- SUB ------------------------------------------------------------------------
+Subtract two registers, carry is ignored
+Privilege: User/Supervisor
+Syntax:    SUB    Rd, Rm, Rn
+Operation: Rm - Rn -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd, Rm, and Rn are general purpose registers in the range R0–R7.
+
+Outputs:
+The operands are subtracted as 16-bit values. A 17-bit subtraction
+(Rm - Rn) is conceptually performed; the low 16 bits of the result are written
+to Rd, and the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in unsigned
+                  arithmetic, i.e., if Rm >= Rn when interpreted as unsigned
+                  16-bit values; otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit subtraction (Rm - Rn) overflows:
+                  Rm and Rn, interpreted as signed 16-bit values, have
+                  different signs and the resulting Rd has the same sign as
+                  Rn; otherwise cleared.
+
+Notes:
+No carry-in is used for this instruction. The previous value of the C flag in
+PS is ignored.
+
+
+--- SUB (Immediate) ------------------------------------------------------------
+Subtract immediate from register, carry is ignored
+Privilege: User/Supervisor
+Syntax:    SUB    Rd, #Imm
+Operation: Rd - Imm -> Rd    (C, N, Z, V)
+
+Inputs:
+Rd is a general purpose register in the range R0–R7.
+#Imm is an immediate in the range 1 to 32, encoded as imm5i. At execution time
+the hardware computes Imm = imm5i + 1.
+
+Outputs:
+The operands are subtracted as 16-bit values. A 17-bit subtraction
+(Rd_before - Imm) is conceptually performed; the low 16 bits of the result are
+written to Rd, and the condition flags are updated as follows:
+
+    N [Negative]  Set if bit 15 of Rd is 1; otherwise cleared.
+    Z [Zero]      Set if the 16-bit result in Rd is zero; otherwise cleared.
+    C [Carry]     Set if the subtraction does not require a borrow in unsigned
+                  arithmetic, i.e., if Rd_before >= Imm when interpreted as
+                  unsigned 16-bit values; otherwise cleared.
+    V [Overflow]  Set if the signed 16-bit subtraction (Rd_before - Imm)
+                  overflows: Rd_before and Imm, interpreted as signed 16-bit
+                  values (Imm is zero-extended from its 5-bit encoding), have
+                  different signs and the resulting Rd has the same sign as
+                  Imm; otherwise cleared.
+
+Notes:
+No carry-in is used for this instruction. The previous value of the C flag in
+PS is ignored.
+The immediate is encoded as imm5i. See Immediate Encodings for details.
+
+
+--- SWI ------------------------------------------------------------------------
+Software interrupt
+Privilege: User/Supervisor
+Syntax:    SWI
+Operation: Raise software interrupt; transfer control to software interrupt
+           handler.
+
+Inputs:
+None.
+
+Outputs:
+SWI raises a software interrupt. The processor performs the standard interrupt
+sequence as defined by 3.E.7. Execution then continues at the software interrupt
+handler. In most cases, the handler will eventually return control to the
+interrupted context by executing RTI, which restores the state of the original
+thread.
+
+Notes:
+SWI may be used as a mechanism for system calls.
