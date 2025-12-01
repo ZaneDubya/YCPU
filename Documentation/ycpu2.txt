@@ -1,19 +1,5 @@
 YCPU2 Programmer's Reference and Processor Specification
-Version 2.0.0 (Alpha)
-
-TODO:
-[X] Get all content in.
-[X] Finish instruction operation reference
-[X] First pass on text.
-[X] Replace all kilobyte (KB) references with "KiB", same for megabyte "MiB".
-[X] Check for TODOs.
-[X] Double check all headers.
-[X] Double check all references.
-[X] Second pass on text.
-[X] Third pass on text.
-[X] Fourth pass on text.
-[X] Fifth pass on text.
-[ ] Final(?) check. <--- Current stage
+Version 2.0.0
 
 ### Table of Contents ##########################################################
 
