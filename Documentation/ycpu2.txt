@@ -69,7 +69,7 @@ instructions.
 Section 4 details how instructions are encoded into 16-bit program words.
 
 Section 5 describes the exact function of every instruction, including how
-execution of instructions effect processor state, memory, and flags.
+execution of instructions effect processor state, memory, and status flags.
 
 Terminology in this Document:
 
@@ -87,11 +87,11 @@ are followed to describe the reference assembler syntax:
     - Immediate numbers are prefixed by #.
     - Immediate hexadecimal numbers are prefixed by #$.
     - The general purpose registers are named R0-R7.
-    - Some instructions can be postfixed with flags to indicate modal
-      functions. For example, the MVI instruction can be used to move an
-      immediate byte value into the high octet of a general purpose register
-      with the flag "MVI.H", or move an immediate byte value into the low
-      octet of a general purpose register with the flag "MVI.L".
+    - Some instructions can be suffixed to indicate modal functions. For
+      example, the MVI instruction, when suffixed "MVI.H", is used to move an
+      immediate byte value into the high octet of a general purpose register.
+      When suffixed "MVI.L", the same instruction is used to move an immediate
+      byte value into the low octet of a general purpose register.
 
 
 === 1.A. Public Domain Dedication ==============================================
@@ -237,7 +237,7 @@ The format of the Load/Store instructions is:
 
     XXX is the three-letter instruction code ("LOD" or "STO"). When the base
         register is a general purpose register, you may select the 8-bit mode
-        by adding the flag ".B" to the end of XXX (ex. "LOD.B   Rd, Rm, V").
+        by adding the suffix ".B" to the end of XXX (ex. "LOD.B   Rd, Rm, V").
     Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates the destination of a Load instruction or the source of a
         Store instruction.
@@ -282,7 +282,7 @@ The format of the MVI instruction is:
     Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates the destination of the result of the Move instruction.
     M   is a constant value from 0 to 255.
-    F   is a flag value that is either "L" or "H".
+    F   is a suffix that is either "L" or "H".
         "MVI.L" copies M into the low 8-bits of Rd; high 8-bits are unchanged.
         "MVI.H" copies M into the high 8-bits of Rd; low 8-bits are unchanged.
 
@@ -376,7 +376,7 @@ of the REX instruction is:
 
     Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
     designates both the source and destination of the Extend operation.
-    F   is a flag value that selects the extend behavior:
+    F   is a suffix that selects the extend behavior:
         - "REX.SB" sign-extends the low 8-bits of Rd into bits 15–8.
           Bit 7 is copied into bits 8–15; bits 7–0 are unchanged.
         - "REX.UB" zero-extends the low 8-bits of Rd into bits 15–8.
@@ -391,7 +391,7 @@ the REV instruction is:
 
     Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates both the source and destination of the Reverse operation.
-    F   is a flag value that selects the reverse behavior:
+    F   is a suffix that selects the reverse behavior:
         - "REV.B" reverses the bytes of Rd. The low byte and high byte are
           swapped: Rd[15:8] and Rd[7:0] exchange positions.
         - "REV.T" reverses the bits of Rd. Bit 0 becomes bit 15, bit 1 becomes
@@ -458,8 +458,8 @@ The format of Bit-testing instructions is:
     Rd  is the general purpose register that is used as either the value to be
         tested or the address of a 16-bit word in memory that will be tested. Rd
         has the value of R0, R1, R2, R3, R4, R5, R6, or R7. When the programmer
-        omits the ".M" flag, this instruction addresses the value of the
-        register. When the programmer appends the ".M" flag, the instruction
+        omits the ".M" suffix, this instruction addresses the value of the
+        register. When the programmer appends the ".M" suffix, the instruction
         will test the value of a 16-bit word in memory at the address of Rd.
     Imm is a number from 0-15, the index of the bit that will be tested and,
         depending on the instruction, changed.
@@ -535,7 +535,7 @@ from -128 to +127). The format of the STX instruction is:
 
 A negative V reserves space on the stack (the stack grows downward), and a
 positive V releases space (the stack shrinks upward). STX does not push or
-pop any values and does not modify the NZCV flags; it only changes SP.
+pop any values and does not modify the condition flags; it only changes SP.
 
 
 === 2.J. Jump Instructions  ====================================================
@@ -562,9 +562,9 @@ The jump instructions are:
 === 2.K. Branch Instructions  ==================================================
 
 Branch instructions change the address of the next instruction to be executed,
-based on the condition of the flag bits in the processor status register (PS).
-These flags are set by instructions as a result of executing an ALU, increment,
-bit shifting, or bit testing instruction.
+based on the state of the condition flag bits in the processor status (PS)
+register. These flags are set by instructions as a result of executing an ALU,
+increment, bit shifting, or bit testing instruction.
 
 Each branch instruction defines a condition and an instruction offset. When a
 branch instruction is executed, the processor checks the status of the flag bits
@@ -667,8 +667,8 @@ The Processor Control instructions are:
     Rd  is a general purpose register with the value of R0, R2, R4, or R6.
         Rd and Rd+1 together hold the Page Table Entry value on load or store.
     Rm  indicates which Page Table Entry should be operated on. Depending on the
-        F flag, Rm provides either a virtual address or the index of the entry. 
-    F   is either ".V" or ".I".
+        F suffix, Rm is either a virtual address, or the index of the entry. 
+    F   is a suffix that is either ".V" or ".I".
         ".V" indicates that Rm contains a full virtual address. The instruction
              uses this virtual address to locate the page table entry that
              translates the address. Specifically, the upper four bits of Rm will
@@ -3080,7 +3080,8 @@ Inputs:
 Rm and Rn are general purpose registers in the range R0–R7.
 
 Outputs:
-The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Rn) is conceptually performed, but the arithmetic result is not saved. Only the
+The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Rn) is
+conceptually performed, but the arithmetic result is not saved. Only the
 condition flags are updated as follows:
 
     N [Negative]  Set if bit 15 of the 16-bit subtraction result is 1
@@ -3107,7 +3108,8 @@ Rm is a general purpose register in the range R0–R7.
 time the hardware zero-extends Imm3 to 16 bits before the subtraction.
 
 Outputs:
-The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Imm) is conceptually performed, but the arithmetic result is not saved. Only the
+The operands are subtracted as 16-bit values. A 17-bit subtraction (Rm - Imm) is
+conceptually performed, but the arithmetic result is not saved. Only the
 condition flags are updated as follows:
 
     N [Negative]  Set if bit 15 of the 16-bit subtraction result is 1
@@ -3379,7 +3381,7 @@ For SP-relative addressing:
     each increment of Imm advances the address by 2 bytes.
 
 Notes:
-8-bit forms are selected by appending the ".B" flag to the mnemonic.
+8-bit forms are selected by appending the ".B" suffix to the mnemonic.
 The small constant offsets for general-purpose bases are encoded as imm3.
 PC/SP-relative offsets are encoded as imm6s and scaled by 2 at execution time.
 
