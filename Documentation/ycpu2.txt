@@ -1,5 +1,5 @@
 YCPU2 Programmer's Reference and Processor Specification
-Version 2.0.0
+Version 2.0.1
 
 ### Table of Contents ##########################################################
 
@@ -204,8 +204,19 @@ raise UndefFault, and should be rejected by assemblers.
 === 2.A. Load/Store Instructions  ==============================================
 
 Load/Store instructions allow the programmer to Load values from memory into
-registers, and Store values from registers into memory. Addressing modes allow
-the programmer to load/store to addresses based on a base register and an 
+registers, and Store values from registers into memory.
+
+There are two types of load/store instructions: general purpose load/stores
+allow the programmer to access the memory space of the current user/supervisor
+mode with a variety of addressing modes, while user-specific load/stores allow
+the programmer to access the user memory space from supervisor mode but only
+have a single addressing mode.
+
+2.A.1. General purpose Load/Store Instructions
+
+General purpose Load/Stores are the most commonly used instructions used to
+manipulate memory. These instructions have a variety of addressing modes that
+allow the programmer to load/store to addresses based on a base register and an 
 offset value.
 
 The base register can be a general purpose register. In this case, the address
@@ -231,13 +242,13 @@ the address of the memory referenced is the value of the base register offset
 by a constant value from -32 to +31 words. Referencing an 8-bit byte when the
 base register is a control register is not possible.
 
-The format of the Load/Store instructions is:
+The format of the general purpose Load/Store instructions is:
 
     XXX     Rd, Rm, N
 
     XXX is the three-letter instruction code ("LOD" or "STO"). When the base
         register is a general purpose register, you may select the 8-bit mode
-        by adding the suffix ".B" to the end of XXX (ex. "LOD.B   Rd, Rm, V").
+        by adding the suffix ".B" to the end of XXX (ex. "LOD.B").
     Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates the destination of a Load instruction or the source of a
         Store instruction.
@@ -247,7 +258,7 @@ The format of the Load/Store instructions is:
         a second general purpose register or a small constant value 0-7. When
         Rm is a control register, N is always a constant value -32 to +31.
                                             
-The Load/Store instructions are:
+The general purpose Load/Store instructions are:
 
     LOD     Rd, Rm, N     Sets Rd equal to value of the memory at [Rm + N]
     STO     Rd, Rm, N     Sets memory at [Rm + N] equal to Rd.
@@ -255,6 +266,29 @@ The Load/Store instructions are:
 Notes:
 Loads of 8-bit bytes do not need to be aligned to 16-bit addresses, and do not
 raise Align faults. Other loads must be aligned to 16-bit addresses.
+
+2.A.2. User-specific Load/Store Instructions
+
+User-specific Load/Stores allow the programmer to access user memory from
+supervisor mode. This mode only has one addressing mode: the address in user
+memory is the value of the base register, which is always a general purpose
+register.
+
+The format of the user-specific Load/Store instructions is:
+
+    XXX     Rd, Rm
+
+    XXX is the three-letter instruction code "LOU", "STU"). You may select the
+        8-bit mode by adding the suffix ".B" to the end of XXX (ex. "LOU.B").
+    Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
+        designates the destination of a Load instruction or the source of a
+        Store instruction.
+    Rm  is the base register. Rm is a general purpose register (R0-R7).
+                                            
+The user-specific Load/Store instructions are:
+
+    LOU     Rd, Rm        Sets Rd equal to value of the memory at user[Rm]
+    STU     Rd, Rm        Sets memory at user[Rm] equal to Rd.
 
 
 === 2.B. Move Instructions  ====================================================
@@ -277,12 +311,12 @@ The format of the MOV instruction is:
 
 The format of the MVI instruction is:
 
-    MVI.F   Rd, M
+    MVI.S   Rd, M
 
     Rd  is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates the destination of the result of the Move instruction.
     M   is a constant value from 0 to 255.
-    F   is a suffix that is either "L" or "H".
+    S   is a suffix that is either "L" or "H".
         "MVI.L" copies M into the low 8-bits of Rd; high 8-bits are unchanged.
         "MVI.H" copies M into the high 8-bits of Rd; low 8-bits are unchanged.
 
@@ -372,11 +406,11 @@ There are two REX variants: one sign-extends the low 8 bits of a register to
 fill the full 16-bit register, and one zero-extends the low 8 bits. The format
 of the REX instruction is:
 
-    REX.F   Rd
+    REX.S   Rd
 
     Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
     designates both the source and destination of the Extend operation.
-    F   is a suffix that selects the extend behavior:
+    S   is a suffix that selects the extend behavior:
         - "REX.SB" sign-extends the low 8-bits of Rd into bits 15–8.
           Bit 7 is copied into bits 8–15; bits 7–0 are unchanged.
         - "REX.UB" zero-extends the low 8-bits of Rd into bits 15–8.
@@ -387,11 +421,11 @@ There are two REV variants: one reverses the byte order of the 16-bit register
 register (bit 0 becomes bit 15, bit 1 becomes bit 14, and so on). The format of
 the REV instruction is:
 
-    REV.F   Rd
+    REV.S   Rd
 
     Rd   is a register with the value of R0, R1, R2, R3, R4, R5, R6, or R7. Rd
         designates both the source and destination of the Reverse operation.
-    F   is a suffix that selects the reverse behavior:
+    S   is a suffix that selects the reverse behavior:
         - "REV.B" reverses the bytes of Rd. The low byte and high byte are
           swapped: Rd[15:8] and Rd[7:0] exchange positions.
         - "REV.T" reverses the bits of Rd. Bit 0 becomes bit 15, bit 1 becomes
@@ -662,13 +696,13 @@ The Processor Control instructions are:
     standard memory operations; or store TS into TU, and then use PTL/PTS.
 
     The format of the PTL/PTS instruction is:
-    XXX.F   Rd, Rm
+    XXX.S   Rd, Rm
 
     Rd  is a general purpose register with the value of R0, R2, R4, or R6.
         Rd and Rd+1 together hold the Page Table Entry value on load or store.
     Rm  indicates which Page Table Entry should be operated on. Depending on the
-        F suffix, Rm is either a virtual address, or the index of the entry. 
-    F   is a suffix that is either ".V" or ".I".
+        suffix, Rm is either a virtual address, or the index of the entry. 
+    S   is a suffix that is either ".V" or ".I".
         ".V" indicates that Rm contains a full virtual address. The instruction
              uses this virtual address to locate the page table entry that
              translates the address. Specifically, the upper four bits of Rm will
@@ -1988,11 +2022,12 @@ PTS 01010011 110.....  BP_PTX          PTE at virtual address Rm = Rd,Rd+1
 PTS 01010011 111.....  BP_PTX          PTE at index Rm = Rd,Rd+1
 STX 01010100 ........  BP_STX          SP (current stack pointer SU/SS) += imm8s*2
 --- 01010101 ........  ---             RESERVED
---- 0101011. ........  ...             RESERVED
---- 01011... ........  ...             RESERVED
+LOU 01010110 ........  BP_MEU          Rd = user[Rm]
+SOU 01010111 ........  BP_MEU          user[Rm] = Rd
+--- 01011... ........  ---             RESERVED
 Bxx 0110.... ........  BP_BRC          Branch Condition, PC = PC + imm9s * 2
 BRA 0111.... ........  BP_BRA          Branch Always, PC = PC + imm12s * 2
---- 1....... ........  ...             RESERVED
+--- 1....... ........  ---             RESERVED
 
 
 === 4.B. Encoding of Instructions by Family ======================================
@@ -2154,7 +2189,7 @@ BP_JMP Bit Pattern
 
 BP_MEM Bit Pattern
     FEDCBA98 76543210
-    OOOOtton nnmmmddd
+    OOOOOOOn nnmmmddd
     0010000. ........ = LOD.B Rd, Rm, Rn
     0010001. ........ = LOD.B Rd, Rm, imm3
     0010010. ........ = LOD   Rd, Rm, Rn
@@ -2176,6 +2211,22 @@ BP_MEM Bit Pattern
     m: Operand register Rm (R0-R7)
     n: Operand register Rn (R0-R7) or imm3
     *: For PC/SP relative, imm6s encoded in bits of m and n.
+    O: Opcode
+    
+BP_MEU Bit Pattern
+    FEDCBA98 76543210
+    OOOOOOOO OOmmmddd
+    01010110 00...... = LOU.B Rd, Rm
+    01010110 01...... = LOU   Rd, Rm
+    01010110 10...... = RESERVED
+    01010110 11...... = RESERVED
+    01010111 00...... = SOU.B Rd, Rm
+    01010111 01...... = SOU   Rd, Rm
+    01010111 10...... = RESERVED
+    01010111 11...... = RESERVED
+
+    d: Destination/source register Rd (R0-R7)
+    m: Operand register Rm (R0-R7)
     O: Opcode
 
 BP_MRS Bit Pattern
