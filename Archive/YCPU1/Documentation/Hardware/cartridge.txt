@@ -1,0 +1,175 @@
+
+                        YPSILONTECH's CRW600
+                      A data cartridge drive for
+                        all your storage needs
+
+    Shipping manifests. Asteroid field navigation maps. The latest software. At
+    YPSILONTECH, we know you need storage that is portable and reliable. That's
+    why you need the CRW600 - the revolutionary solid state storage device that
+    is readable, writable, and hardened against anomolous bit flips.
+
+=== Cartridges =================================================================
+    
+    A standard cartridge is composed of a protective casing with a central
+    aperture that exposes the cartridge medium contained within. The medium is
+    a highly oriented polymer substrate. An anti-static liner is placed between
+    the medium and protective casing, minimizing friction and dust accumulation
+    that might otherwise occur during use. When not placed within the CRW600
+    drive, a spring-loaded slider covers the central aperture, protecting the
+    medium. When the cartridge is inserted into the drive, the slider retracts,
+    exposing the medium through the central aperture.
+
+    The cartridge medium is uniformly coated with a high-coercivity magnetic
+    material. The CRW600 drive contains an electromagnet that interacts with
+    this magnetic material to read and write binary data. Although the magnetic
+    medium is a standard size, different magnetic materials allow storage 
+    of more or less data. The CRW600 drive detects how much storage the 
+    medium is rated for, and then precisely operates its motors to read and 
+    write binary data at the appropriate magnetic density.
+
+    Organizationally, a standard data cartridge will contain a number of data
+    cylinders, with each data cylinder containing 128 data sectors. A data
+    sector will always contain a standard 4,096 binary bits (512 bytes).
+    
+    For example, a cartridge with 128 cylinders will have a total data storage
+    size of 128 cylinders x 128 sectors x 512 bytes = 8,388,608 bytes.
+
+=== Drive mechanism =============================================================
+
+    At the heart of the CRW600 is an electromechanical mechanism which can read
+    and write data to and from a compatible cartridge. The key components of the
+    mechanism are a spindle motor, read/write head assembly, and data/control
+    interface. When a cartridge is inserted into the mechanism, the spindle motor
+    engages with the cartridge medium and spins it at 600 RPM. The read/write
+    head, mounted on an actuator assembly, is moved close to the cartridge
+    medium. A stepper motor maneuvers the read/write head across the surface of
+    the medium, allowing exact interaction between the heads and data stored
+    within the cartridge.
+    
+    In write mode, the digital data to be written is passed to the data/control
+    interface, converting the data into electrical current pulses. These pulses
+    are conveyed to the read/write head's electromagnet, creating a magnetic
+    field that changes polarity according to the binary data (0's or 1's). The
+    magnetic field alters the magnetization of the medium as it passes over it,
+    writing the data in the form of magnetic patterns.
+    
+    In read mode, the read/write head detects changes in the magnetic field
+    caused by the magnetized areas on the disk's surface. These areas represent
+    binary data (0's and 1's). The head converts these magnetic field changes
+    into electrical signals, which are then amplified and processed by the
+    data/control interface to reconstruct the original digital data.
+    
+    It is the precise engineering of the motors supoporting the eletromagnet
+    that allows storage of data in the unifom magnetic medium. The read/write
+    head is driven by a stepper motor, which allows for precise linear movement
+    across the radius of the cartridge medium. Each individual step of the motor
+    places the read/write head in a position to interact with a specific 
+    concentric circle of the cartridge medium. Each circle is referred to as a
+    data cylinder. Each data cylinder is divided into data sectors, which are the
+    smallest unit of data that is addressable by devices that are connected
+    to the drive through the data/control interface.
+    
+    To access a particular data cylinder and sector, the stepper motor moves the
+    read/write head to the appropriate linear position over the magnetic medium.
+    With the read/write head positioned over the correct data cylinder, the 
+    rotation of the cartridge medium, caused by engagement with the drive's spindle
+    motor, will inevitably bring the desired data sector under the head. The head
+    will then read or write data as it passes over the data sector.
+
+=== Interfacing details ========================================================
+
+    DeviceType:     0x0003 (Storage, removable)
+    ManufacturerID: 0x0000 (Ypsilon)
+    DeviceID:       0x0200
+    DeviceRevision: 0x000A
+    
+    HWQ $02 Message:
+    
+    R1      Message
+    $00     Query state. R0 is set to state bitfield:
+            fedcba98 76543210
+            eib..... .....pwm
+            e = error code nonzero.
+            i = interrupt enabled.
+            b = drive is busy.
+            p = drive motor engaged and ready.
+            w = cartridge is write protected.
+            m = cartridge present in drive.
+            
+            R2 is used to set/disable interrupt. If R2 is 0, interrupt is
+            disabled. If R2 is nonzero, interrupt is enabled. While interrupt
+            is enabled, drive will cause hardware interrupt when:
+            * Error bit goes from 0 -> 1,
+            * Drive motor ready bit goes from 0 -> 1,
+            * Busy bit goes from 1 -> 0, or 
+            * MediaPresent bit changes.
+            
+    $01     Query error code. Last error code is returned in R0. Error status
+            cleared on read.
+
+            0x0000 ERROR_NONE       No error since last query.
+            0x0001 ERROR_BUSY       Attempted read/write while drive busy.
+            0x0002 ERROR_NO_MEDIA   Attempted read/write without cartridge present.
+            0x0003 ERROR_PROTECTED  Attempted write to write protected cartridge.
+            0x0004 ERROR_EJECT      Cartridge removed while reading or writing.
+            0x0005 ERROR_BAD_SECTOR Requested sector is bad, data on it is lost.
+            0xffff ERROR_BROKEN     Attempted read/write failed due to hardware.
+    
+    $02     Engage drive motor. The spindle motor contacts the cartridge medium and
+            begins to spin. It takes approximately 25 ms for the drive to reach the
+            angular velocity necessary to access the medium. When the drive motor has
+            reached the appropriate angular speed, the 'drive motor ready' bit will be set.
+            If interrupts are enabled, the drive will issue a hardware interrupt 
+            when the drive motor is ready.
+            
+            If the drive motor is already engaged, the drive motor read bit will 
+            already be set, and this command will have no effect.
+            
+            The drive motor will be automatically disengage approximately 10 
+            seconds after the last command to the drive has completed. It takes 
+            approximately 75 ms to spin down the motor. The 'drive motor ready'
+            bit will be cleared immediately when the drive motor begins to spin
+            down. If an 'engage drive motor' command is received while the drive
+            is spinning down, the drive will complete the spin down process and
+            then immediately spin up again.
+    
+    $03     Seek to cylinder. Move cartridge reader head to cylinder in R0.
+            The drive will immediately set 'drive busy' in its state bitfield.
+            When the reader head has moved to the appropriate cylinder, the 'drive
+            busy' bit will be cleared. If interrupts are enabled, the drive
+            will issue a hardware interrupt when the drive is ready.
+            
+            If the reader head is already located on the correct cylinder, this
+            operation will end after approximately 0.5ms. Otherwise, a period
+            of 1-32 ms of seek time will transpire before the 'drive busy' bit
+            is cleared. 
+    
+    $04     Read sector. Begin read of a sector of index R2 on the current cylinder.
+            The contents of the sector will be read to memory address ES:R3.
+            R0 is set to 0 if reading is possible and started, else set to 1 and
+            internal error code set. Reading is only possible if media is present,
+            and the drive is not busy. If reading is possible and no errors are
+            encountered, the drive will complete reading the sector in 1-101 ms.
+            When the read is in progress, the 'drive busy' bit will be set.
+            When the read is complete, the 'drive busy' will be cleared.
+            
+    $05     Write sector. Begin write of data in memory to a sector of index R2
+            on the current cylinder. R0 is set to 0 if writing is possible and
+            started, else set to 1 and internal error code set. Writing is only
+            possible if media is present, the media is not write-protected, and
+            the drive is not busy. If writing is possible and no errors are
+            encountered, the drive will commence writing the 512 bytes in memory
+            at ES:R3 to the sector. Writing takes a duration of 1-101 ms.
+            When the write is in progress, the 'drive busy' bit will be set.
+            When the write is complete, the 'drive busy' will be cleared.
+    
+    $06     Read multiple sectors. Begin read of sectors starting at index R2 on
+            the current cylinder, for R3 number of cylinders. Generally, this 
+            proceeds as command $04. The first sector will be read after 1-101
+            ms, and each subsequent sector will be read in approximately 1 ms.
+            
+            
+    $07     Read multiple sectors. Begin write of sectors starting at index R2 on
+            the current cylinder, for R3 number of cylinders. Generally, this 
+            proceeds as command $05. The first sector will be written after 1-101
+            ms, and each subsequent sector will be written in approximately 1 ms.

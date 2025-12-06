@@ -1,0 +1,41 @@
+
+                          April 1, 1978
+
+                        For Immediate Release
+
+                          YPSILONTECH's Y100
+                     Designed for the Computers of
+                    Yesterday, Today, and Tomorrow.
+    
+    The Y100 is a a huge leap forward in the microcomputer arena. It is fast
+and flexible, with a simple yet comprehensive instruction set and enhanced
+memory addressing modes, and at less than #300, exceptionally affordable. Each
+Y100 includes a powerful memory management unit, on-chip ROM and RAM, built-in
+and user-modifiable interrupt handling routines, and an modular bi-directional
+hardware bus that allows communication with up to 15 devices, including
+additional Random Access Modules, storage, communication links, input devices,
+printing and visual output devices, real- time clocks, and anything else our
+engineers and third parties can dream up. And these features only scratch the
+surface. Y100 is an amazing 16-bit CPU for the computers of Yesterday, Today, &
+Tomorrow.
+
+Each Y100 comes with the following features:
+    Core processor running at tens of kilohertz!
+    64 kilobytes of on-chip RAM.
+    16-64 kilobytes of on-chip ROM, configurable by the developer.
+    Memory Management Unit.
+    YBUS expandable to 15+ Hardware Devices.
+
+The use cases for the Y100 are manifold. Institutions of higher learning are
+using Y100-based networks to stay in touch with their colleagues. Businesses
+are using the Y100 to handle bookkeeping. Researchers are using the Y100 to
+process and store research data. Consumers are using Y100 to manage their
+personal affairs and play games. Most excitingly, our radiation-hardened Y100
+is in use in modern star-going vessels!
+
+There's a YPSILONTECH salesman ready to help you keep up with the leaders in
+modern computer development. Get in contact with us today by writing to
+YPSILONTECH Products, Inc., P.O. Box 4178, Savannah, GA 31404. Discover why
+the Y100 is the benchmark against which all other processors must be measured.
+
+

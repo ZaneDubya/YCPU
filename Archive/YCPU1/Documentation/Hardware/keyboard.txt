@@ -1,0 +1,49 @@
+Keyboard
+
+DeviceType:     0x0002 (Input, Keyboard)
+ManufacturerID: 0
+DeviceID:       0
+DeviceRevision: 0
+
+Behaviour:
+HWQ
+R1      Message
+
+$00     Set mode based on R2. Clear all pending events. R0 set to MSG_ACK.
+        R2: FEDC BA98 7654 3210
+            .... .... .... .TPE
+            E = 0: Do not report key down and key up events.
+                1: Report key down and key up events.
+            P = 0: Do not report key press events.
+                1: Report key press events.
+            T = 0: Where possible, translate key press events to ASCII.
+                1: Do not translate key press events to ASCII.
+                Default: get only press events.
+                R2 & $01 = get press, up, and down events.
+            
+            
+$01         Get pending event buffer. Returns number of events in R0.
+            Expected values in R0 are 0 - 16. If there is an error, R0 will
+            be MSG_ERROR ($FFFF).
+            Memory at DS[R2] set as follows:
+                + $0000 = event 0
+                + $0002 = event 1
+                + $0004 = event 2
+                   ...
+                + $001E = event 15
+            If event count is less than 15, only memory up to the number
+            of pending events will be set.
+                
+Format of keyboard events:
+    FEDC BA98 7654 3210
+    TSAC EEEE KKKK KKKK
+        T = key code has been translated to ASCII
+        S = shift down
+        A = alt down
+        C = ctrl down
+        E = event type (1 = up, 2 = down, 3 = press)
+        K = key-code.
+            k is either ASCII (if T bit is set), or a virtual key code.
+            VKs are detailed at https://msdn.microsoft.com/en-us/library/ms927178.aspx.
+            Some VK->ASCII are at http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
+        

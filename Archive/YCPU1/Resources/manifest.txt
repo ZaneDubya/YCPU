@@ -1,0 +1,4 @@
+// reads files from Import folder, writes results to Export folder
+// format of this file is:
+// file_id, file_type, [args,args,if any,...], in_file_path, out_file_path
+lem1802charset, png, , lem1802_charset.png, lem1802_charset.bin
