@@ -1,14 +1,14 @@
+Ypsilon File System Version 1.0
+
 === 1. Overview ================================================================
 
-YFS (Ypsilon File System) is a bitmap-based filesystem with per-file allocation
-tables, hierarchical directories, and rich metadata.
+YFS (Ypsilon File System) is a bitmap-based filesystem with per-file allocation tables, hierarchical directories, and rich metadata. This is version 1.0 of the specification. 
 
 Sectors are 512 bytes and are addressed linearly from sector index 0.
 
-A volume may contain up to 2^16 sectors, giving a maximum capacity of 32 MiB.
+A volume may contain up to 2^16 sectors, with a maximum capacity of 32 MiB.
 
-The logical volume layout consists of four types of data: boot sector, bitmap
-region, root directory, and general data.
+The logical volume layout consists of four types of data: boot sector, bitmap region, root directory, and general data.
 
 All 16-bit and 32-bit values in the boot sector and filesystem are little-endian.
 
@@ -29,10 +29,11 @@ The boot sector is located at sector 0 and may optionally be duplicated. Sector 
 
 0x000-0x17F (384 bytes): Reserved for boot code
 0x180-0x1FF (128 bytes): YFS Superblock
+Bytes   Field Description
     4   Magic "YFS0"
     2   Version (version 1.0 = 0x0100)
     2   Bootable, 0x5AA5 means this sector contains valid boot code
-    4   Flags
+    4   Flags, for version=0x0100, this field is reserved, should be written as all zero, and must be ignored when read
     4   Volume ID (randomized at creation)
     4   Sector size in bytes (0x00000200 = 512)
     4   Sectors count (0x00010000 = 2^16)
@@ -41,7 +42,7 @@ The boot sector is located at sector 0 and may optionally be duplicated. Sector 
     2   Bitmap Sector count
     2   Root directory first Sector index
     2   Stage-1 directory first Sector index
-    2   Stage-1 file index (in indicated directory)
+    2   Stage-1 file entry index (in indicated directory, must point to file)
     4   Time volume creation (YTime)
     4   Time volume last mount (YTime)
     4   Time volume last check (YTime)
@@ -49,8 +50,49 @@ The boot sector is located at sector 0 and may optionally be duplicated. Sector 
     2   Clean flag, 0xA55A means last unmount was clean
     16  Volume name, padded with 0x00
     56  Padding 0x00
-    2   Checksum of boot code
-    2   Checksum of superblock
+    2   Checksum of boot code (covers bytes 0x000–0x17F, 384 bytes)
+    2   Checksum of superblock (covers bytes 0x180–0x1FB, 124 bytes)
+
+--- 3.1 Superblock and boot code checksums -------------------------------------
+
+The boot sector contains two 16-bit checksums:
+
+    - Boot code checksum: covers bytes 0x000–0x17F (boot code area).
+    - Superblock checksum: covers bytes 0x180–0x1FB (the 128-byte superblock
+      except the final four bytes that store the two checksum fields).
+
+The checksum algorithm is TODO.
+
+Validation rules:
+
+    1. Verify the superblock checksum. If it fails, the boot sector is invalid
+       and must not be used for mounting or booting. If a duplicate boot sector
+       exists, an implementation may attempt to validate the duplicate instead.
+    2. If booting is desired, verify the boot code checksum. If it fails, the
+       Bootable field must be ignored and the sector treated as non-bootable,
+       even if the filesystem itself can be mounted.
+
+The superblock checksum protects filesystem metadata; the boot code checksum
+protects executable stage-0 code.
+
+--- 3.2 Clean flag and mount-time checks --------------------------------------
+
+The Clean flag indicates whether the last unmount was clean:
+
+    - If Clean flag == 0xA55A, the last unmount was clean.
+    - Any other value means the volume is dirty.
+
+This flag is not used by stage-0 boot code. It is intended for the operating
+system and filesystem checkers. Typical policies:
+
+    - On a clean volume, mount read/write without a full scan.
+    - On a dirty volume, perform an integrity check, mount read-only, or refuse
+      to mount, as implementation policy dictates.
+
+When a volume is mounted read/write, the implementation must set the Clean flag
+to a non-clean value before modifying metadata, and may set it back to 0xA55A
+only after all pending updates are committed and the volume is cleanly
+unmounted.
     
 === 4. Bitmap ==================================================================
 
@@ -59,6 +101,8 @@ The bitmap represents allocation status for every sector on the volume, includin
 One sector of bitmap covers 512 * 8 = 4096 sectors. For a maximum YFS volume of 2^16 sectors, at most 16 sectors of bitmap are required.
 
 The boot sector identifies the starting sector of the bitmap and may also point to a duplicate bitmap if present. Bitmap sectors may be placed anywhere on the volume. Duplicates, if used, must be exact copies and may also reside anywhere on the volume.
+
+The bitmap Sector count in the boot sector must be equal to sector count / 4096, rounded up. Bits that correspond to sector indices greater than the count of sectors should be set to 1 (unavilable) and never cleared, as these are not real sectors.
 
 === 5. Root directory ==========================================================
 
@@ -74,17 +118,17 @@ Each directory is represented by one or more directory sectors. Each directory s
 
 The header of the first sector in a directory chain is 6 bytes and has the following fields in order:
 
-    Flags (2 bytes). Bit 0 set to 1 indicates this is the first sector of the directory. Remaining bits are reserved.
-    First name-table sector (2 bytes). This is the sector index of the first name table sector for this directory, or 0 if the directory currently has no name table.
-    Next directory data sector (2 bytes). This is the sector index of the next directory sector in the chain. A value of 0 indicates that this is the only sector in the directory.
+    - Flags (2 bytes). Bit 0 set to 1 indicates this is the first sector of the directory. Remaining bits are reserved and must be zero
+    - First name-table sector (2 bytes). This is the sector index of the first name table sector for this directory, or 0 if the directory currently has no name table.
+    - Next directory data sector (2 bytes). This is the sector index of the next directory sector in the chain. A value of 0 indicates that this is the only sector in the directory.
 
 --- 6.2 Subsequent directory sector header -------------------------------------
 
 Any additional sectors belonging to the same directory have a similar 6-byte header with fields reordered for linkage:
 
-    Flags (2 bytes). Bit 0 set to 0 indicates this is a subsequent sector. Remaining bits are reserved.
-    Previous directory sector (2 bytes). This is the sector index of the preceding sector in the directory chain.
-    Next directory sector (2 bytes). This is the sector index of the next sector in the directory chain. A value of 0 indicates that this is the last sector in the directory chain.
+    - Flags (2 bytes). Bit 0 set to 0 indicates this is a subsequent sector. Remaining bits are reserved and must be zero.
+    - Previous directory sector (2 bytes). This is the sector index of the preceding sector in the directory chain.
+    - Next directory sector (2 bytes). This is the sector index of the next sector in the directory chain. A value of 0 indicates that this is the last sector in the directory chain.
 
 --- 6.3 Directory file entries -------------------------------------------------
 
@@ -123,19 +167,30 @@ Each directory file entry is 22 bytes, with fields stored in this order: flags (
 The flags field is a 16-bit bitfield with the following semantics:
     bit 0 indicates whether the entry is in use (0 means empty, 1 means in use); 
     bit 1 selects the object type (0 means file, 1 means directory); 
-    bit 2 indicates file storage type (0 means single-sector file, 1 means PFAT-backed file); 
+    bit 2 indicates file storage type (0 means single-sector file or directory, 1 means PFAT-backed file); 
     bit 3 indicates write protection (0 means not write protected, 1 means write protected); 
     bit 4 indicates whether the entry is a symlink (0 means normal file or directory, 1 means symlink); 
-    bits 5 and 6 are reserved; 
-    bits 7 through 15 represent permission bits for owner, group, and others (read, write, execute).
+    bits 5 and 6 are reserved and must be zero;
+    bits 7 through 15 represent permission bits for owner, group, and others (read, write, execute):
+        bit 7: owner read
+        bit 8: owner write
+        bit 9: owner execute
+        bit 10: group read
+        bit 11: group write
+        bit 12: group execute
+        bit 13: all read
+        bit 14: all write
+        bit 15: all execute
 
 The owner ID and group ID fields are 16-bit integers identifying the owning user and group.
 
-The name pointer is a 16-bit index into the directory’s name table. Its interpretation as an offset or index is defined by the name table format and compaction rules.
+The name pointer is a 16-bit absolute index into the directory’s name table byte stream. Its interpretation as an offset or index is defined by the name table format and compaction rules.
 
 The root sector field is the primary storage pointer. A value of 0 indicates that the file has no data sectors and is an empty file. A nonzero value identifies either the first data sector of a single-sector file or directory, or the first PFAT sector for a PFAT-backed file.
 
 The file size field is a 32-bit length in bytes, which must be no greater than the  number of allocated data sectors referenced either directly (single-sector file) or indirectly through the PFAT chain, multiplied by sector size.
+
+For version 0x0100, a Symlink is stored internally as a text path, stored as a normal small/large file.
 
 The created and modified timestamps are 32-bit values encoded using the YTime scheme, with a resolution of four seconds and a representable date range from 1 January 1990 through 31 December 2155. Created time stores the time of creation and modified time stores the last modification time of the file or directory entry.
 
@@ -156,7 +211,7 @@ A PFAT sector is a 512-byte sector that contains an array of 2-byte sector indic
 
 Entry 255 is the PFAT continuation field. A value of 0x0000 indicates that there are no further PFAT sectors and this sector is the last PFAT for the file. A nonzero value is the sector index of the next PFAT sector in the chain.
 
-If entry 0 is 0x0000 in a PFAT sector, that PFAT describes no data sectors. This situation corresponds to a file that has no data, which should normally be represented as an empty file with root sector 0 rather than as a PFAT-backed file.
+If entry 0 is 0x0000 in a PFAT sector, that PFAT describes no data sectors. This situation corresponds to a file that has no data, which should be an empty file with root sector equal to 0x0000, rather than as a PFAT-backed file.
 
 === 11. Bitmap interaction with files and directories ==========================
 
@@ -170,6 +225,19 @@ All filesystem operations that modify directory entries, PFAT chains, or name ta
 
 All timestamps in directory file entries use a compact YTime representation. YTime provides four-second granularity and covers the date range from 1 January 1990 through 31 December 2155. Created and modified timestamps must be initialized and updated consistently according to the semantics of file and directory creation and modification operations.
 
+The YTime format is:
+
+Byte    3       2        1       0
+Bit     FEDCBA9876543210 FEDCBA9876543210
+        YYYYYYYYMMMMDDDD Dhhhhhmmmmmmssss
+
+    Year:    8 bits (0-255)
+    Month:   4 bits (0-11)
+    Day:     5 bits (0-30)
+    Hour:    5 bits (0-23)
+    Minute:  6 bits (0-59)
+    Second:  4 bits (4 second granularity: interpretted as Second = s << 2)
+
 === 13. Example volume organizations ===========================================
 
 For a maximum volume of 2^16 sectors (32 MiB) with duplicated boot sector and bitmap, one possible layout is: sector 0 as boot sector A, sector 1 as boot sector B, sector 2 as bitmap A, sector 18 as bitmap B, sector 34 as the beginning of the root directory chain, sectors following the root directory chain as additional root directory sectors as needed, and the remaining sectors as the data area.
@@ -177,3 +245,73 @@ For a maximum volume of 2^16 sectors (32 MiB) with duplicated boot sector and bi
 For a smaller volume of 2^11 sectors (1 MiB) with unduplicated boot sector and bitmap, one possible layout is: sector 0 as boot sector, sector 1 as bitmap, sector 2 as the beginning of the root directory chain, sectors 3 onward as additional root directory sectors, and the first unused sector after the root directory chain as the start of the data area.
 
 These examples are illustrative; actual sector placements for bitmap, root directory, and data may vary as long as the boot sector and superblock information describe their locations correctly.
+
+=== 14. Boot behavior ===========================================================
+
+This section defines how a YFS volume behaves as a boot device and how the
+boot sector fields are interpreted during boot.
+
+Boot behavior consists of: recognizing a YFS volume, validating checksums,
+interpreting the Bootable and Stage-1 fields, and using the Clean flag.
+
+--- 14.1 YFS volume recognition -------------------------------------------------
+
+To treat sector 0 as a YFS volume:
+
+    1. Read sector 0.
+    2. Check bytes at 0x180–0x183 for the ASCII magic "YFS0".
+    3. Verify Version is supported (for this document, 0x0100).
+    4. Verify Sector size in bytes matches the device (e.g. 512 for CRW600).
+    5. Verify Sectors count is non-zero and does not exceed device capacity.
+    6. For Version 0x0100, verify Flags == 0. Any non-zero Flags value indicates
+       an unsupported or corrupted volume.
+
+If any check fails, the device must not treat sector 0 as a valid YFS volume.
+
+If a duplicate boot sector exists at sector 1, it must be a byte-for-byte copy
+of sector 0. Implementations may fall back to sector 1 if sector 0 cannot be
+read, but sector 0 is authoritative when its superblock checksum is valid.
+
+--- 14.2 Bootable flag ----------------------------------------------------------
+
+The Bootable field controls whether sector 0 is considered executable:
+
+    - If Bootable == 0x5AA5 and both checksums are valid, sector 0 is declared
+      to contain valid stage-0 boot code.
+    - Any other Bootable value means the volume is not bootable. In this case
+      the boot code area (0x000–0x17F) is undefined and must not be executed.
+
+Non-bootable YFS volumes may still be mounted and used normally by software
+that understands YFS.
+
+--- 14.3 Locating the Stage-1 loader -------------------------------------------
+
+If the volume is bootable, stage-0 code may use the Stage-1 fields:
+
+    - Stage-1 directory first Sector index
+    - Stage-1 file index (in indicated directory)
+
+For Version 0x0100, these have the following semantics:
+
+    - Stage-1 directory first Sector index:
+        – 0 means no Stage-1 loader is configured.
+        – Non-zero must be a valid sector index whose contents are a directory
+          sector with the “first sector” flag (bit 0) set in its header. If not,
+          the Stage-1 configuration is invalid.
+
+    - Stage-1 file index:
+        – Sector offset = index / 23; entry offset within sector = index % 23.
+        – If the directory chain does not extend far enough to reach this entry,
+          the configuration is invalid.
+        – The selected entry must be “in use” and type=file. Otherwise, the
+          configuration is invalid.
+
+Once located, the Stage-1 file entry is interpreted like any other directory
+file entry: its root sector and storage type bit indicate whether the loader is
+a single-sector file or PFAT-backed; its file size specifies how many bytes to
+load. Load address and entry point are platform-specific and outside the scope
+of this specification.
+
+For Version 0x0100, if Stage-1 directory first Sector index is 0, or if any of
+the rules above fail, the boot sector does not define a usable Stage-1 loader
+and stage-0 code must abort booting from this volume.
