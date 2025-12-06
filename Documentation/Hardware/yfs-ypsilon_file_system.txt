@@ -1,0 +1,179 @@
+=== 1. Overview ================================================================
+
+YFS (Ypsilon File System) is a bitmap-based filesystem with per-file allocation
+tables, hierarchical directories, and rich metadata.
+
+Sectors are 512 bytes and are addressed linearly from sector index 0.
+
+A volume may contain up to 2^16 sectors, giving a maximum capacity of 32 MiB.
+
+The logical volume layout consists of four types of data: boot sector, bitmap
+region, root directory, and general data.
+
+All 16-bit and 32-bit values in the boot sector and filesystem are little-endian.
+
+
+=== 2. Volume layout ===========================================================
+
+Sector 0 is always the primary boot sector. Optionally, a duplicate of the boot sector may be present in Sector 1 for data redundancy.
+
+The bitmap region is a contiguous region of sectors that describes allocation for all sectors on the volume.
+
+The root directory is stored using the same on-disk directory format as non-root directories and may itself occupy multiple sectors chained together.
+
+The data region occupies all remaining sectors on the volume and holds file data, non-root directories, PFAT sectors, name tables, and any additional metadata structures.
+
+=== 3. Boot sector =============================================================
+
+The boot sector is located at sector 0 and may optionally be duplicated. Sector 0 is always considered authoritative unless it fails a checksum. A hardware error that causes Sector 0 to be unaccessible will cause the entire volume to be unreadable absent data recovery efforts, even if it has been duplicated. If a duplicate boot sector exists, it must be a copy of the primary boot sector and will reside at sector 1.
+
+0x000-0x17F (384 bytes): Reserved for boot code
+0x180-0x1FF (128 bytes): YFS Superblock
+    4   Magic "YFS0"
+    2   Version (version 1.0 = 0x0100)
+    2   Bootable, 0x5AA5 means this sector contains valid boot code
+    4   Flags
+    4   Volume ID (randomized at creation)
+    4   Sector size in bytes (0x00000200 = 512)
+    4   Sectors count (0x00010000 = 2^16)
+    2   Bitmap A first Sector index
+    2   Bitmap B first Sector index
+    2   Bitmap Sector count
+    2   Root directory first Sector index
+    2   Stage-1 directory first Sector index
+    2   Stage-1 file index (in indicated directory)
+    4   Time volume creation (YTime)
+    4   Time volume last mount (YTime)
+    4   Time volume last check (YTime)
+    2   Mount count
+    2   Clean flag, 0xA55A means last unmount was clean
+    16  Volume name, padded with 0x00
+    56  Padding 0x00
+    2   Checksum of boot code
+    2   Checksum of superblock
+    
+=== 4. Bitmap ==================================================================
+
+The bitmap represents allocation status for every sector on the volume, including metadata sectors. Each bit corresponds to a single sector: bit value 0 indicates the sector is available, and bit value 1 indicates the sector is in use.
+
+One sector of bitmap covers 512 * 8 = 4096 sectors. For a maximum YFS volume of 2^16 sectors, at most 16 sectors of bitmap are required.
+
+The boot sector identifies the starting sector of the bitmap and may also point to a duplicate bitmap if present. Bitmap sectors may be placed anywhere on the volume. Duplicates, if used, must be exact copies and may also reside anywhere on the volume.
+
+=== 5. Root directory ==========================================================
+
+The root directory is the primary directory on the volume. It uses the same directory sector format as non-root directories. The root directory may occupy multiple directory sectors linked together.
+
+The boot sector identifies the first directory sector of the root directory.
+
+=== 6. Directory sectors =======================================================
+
+Each directory is represented by one or more directory sectors. Each directory sector is 512 bytes and begins with a 6-byte header followed by 23 directory file entries of 22 bytes each. This exactly fills the 512-byte sector.
+
+--- 6.1 First directory sector header ------------------------------------------
+
+The header of the first sector in a directory chain is 6 bytes and has the following fields in order:
+
+    Flags (2 bytes). Bit 0 set to 1 indicates this is the first sector of the directory. Remaining bits are reserved.
+    First name-table sector (2 bytes). This is the sector index of the first name table sector for this directory, or 0 if the directory currently has no name table.
+    Next directory data sector (2 bytes). This is the sector index of the next directory sector in the chain. A value of 0 indicates that this is the only sector in the directory.
+
+--- 6.2 Subsequent directory sector header -------------------------------------
+
+Any additional sectors belonging to the same directory have a similar 6-byte header with fields reordered for linkage:
+
+    Flags (2 bytes). Bit 0 set to 0 indicates this is a subsequent sector. Remaining bits are reserved.
+    Previous directory sector (2 bytes). This is the sector index of the preceding sector in the directory chain.
+    Next directory sector (2 bytes). This is the sector index of the next sector in the directory chain. A value of 0 indicates that this is the last sector in the directory chain.
+
+--- 6.3 Directory file entries -------------------------------------------------
+
+Each directory sector contains 23 directory file entries, stored immediately after the 6-byte header. Each entry is 22 bytes. Each directory file entry describes either a file, a subdirectory, or a symbolic link and includes ownership, permissions, naming information, and storage information.
+
+--- 6.4 Directory behavior -----------------------------------------------------
+
+Directories themselves are always stored as chains of directory sectors and are never PFAT-backed. The chain is navigated via the next and previous sector fields in the directory sector headers.
+
+A directory entry can describe a small directory that fits in a single directory sector or a larger directory spanning multiple chained sectors.
+
+When a file or directory is deleted, its directory file entry must have its in-use flag cleared and all metadata fields nulled.
+
+When the file associated with a directory file entry is deleted, all of the file’s data sectors and PFAT sectors must have their contents cleared to 0x00 and their corresponding bits in the bitmap reset to 0 to mark them free.
+
+New files and directories are preferentially placed into unused (empty) file entries in existing directory sectors. Additional directory sectors are allocated for a directory only when existing sectors have no empty entries available.
+
+--- 6.5 Name tables ------------------------------------------------------------
+
+Each directory owns exactly one name table, which is a chain of one or more sectors. Name tables are not shared between directories.
+
+The first two bytes of each name table sector store the sector index of the next name table data sector. A value of 0 indicates that this is the last sector in the name table chain.
+
+The remainder of each name table sector stores a sequence of length-prefixed strings. Each name is stored as a one-byte length followed by between one and thirty-two bytes of name data. A length of zero indicates null or unused space and may be used for padding or as a tombstone indicating a deleted name. Names must always fit entirely within a single sector; cross-sector names are not allowed.
+
+The name pointer in a directory file entry is a 16-bit absolute offset into this logical sequence of names. A name pointer that points to the first or second byte of a name table sector is invalid, as these bytes contain non-name data.
+
+When a file or directory is deleted, the corresponding name entry is nulled by setting the length byte to 0 and clearing its payload bytes to 0x00.
+
+Name tables may be compacted by relocating strings, which will change the offsets of names. Any compaction must update all affected name pointers in the owning directory’s file entries to preserve correctness.
+
+=== 7. Directory file entry format =============================================
+
+Each directory file entry is 22 bytes, with fields stored in this order: flags (2 bytes), owner ID (2 bytes), group ID (2 bytes), name pointer (2 bytes), root sector (2 bytes), file size (4 bytes), created timestamp (4 bytes), modified timestamp (4 bytes).
+
+The flags field is a 16-bit bitfield with the following semantics:
+    bit 0 indicates whether the entry is in use (0 means empty, 1 means in use); 
+    bit 1 selects the object type (0 means file, 1 means directory); 
+    bit 2 indicates file storage type (0 means single-sector file, 1 means PFAT-backed file); 
+    bit 3 indicates write protection (0 means not write protected, 1 means write protected); 
+    bit 4 indicates whether the entry is a symlink (0 means normal file or directory, 1 means symlink); 
+    bits 5 and 6 are reserved; 
+    bits 7 through 15 represent permission bits for owner, group, and others (read, write, execute).
+
+The owner ID and group ID fields are 16-bit integers identifying the owning user and group.
+
+The name pointer is a 16-bit index into the directory’s name table. Its interpretation as an offset or index is defined by the name table format and compaction rules.
+
+The root sector field is the primary storage pointer. A value of 0 indicates that the file has no data sectors and is an empty file. A nonzero value identifies either the first data sector of a single-sector file or directory, or the first PFAT sector for a PFAT-backed file.
+
+The file size field is a 32-bit length in bytes, which must be no greater than the  number of allocated data sectors referenced either directly (single-sector file) or indirectly through the PFAT chain, multiplied by sector size.
+
+The created and modified timestamps are 32-bit values encoded using the YTime scheme, with a resolution of four seconds and a representable date range from 1 January 1990 through 31 December 2155. Created time stores the time of creation and modified time stores the last modification time of the file or directory entry.
+
+
+=== 10. PFAT and file storage ==================================================
+
+YFS supports three logical file states with respect to data allocation: empty file, small file, and large file.
+
+An empty file has a root sector of 0 and a file size of 0 bytes. No data sectors or PFAT sectors are allocated.
+
+A small file stores its entire contents in a single data sector. The directory file entry’s root sector field points directly to this sector, and the file size must be between 1 and 512 bytes inclusive. Small files do not use PFAT sectors.
+
+A large file uses a PFAT (Per-File Allocation Table). In this case the root sector field points to the first PFAT sector rather than to file data. The file size must be larger than 512 bytes or otherwise designated as PFAT-backed according to implementation rules.
+
+--- 10.1 PFAT format -----------------------------------------------------------
+
+A PFAT sector is a 512-byte sector that contains an array of 2-byte sector indices. Entries 0 through 254 are 16-bit sector indices referencing file data sectors. An entry value of 0x0000 in this range indicates the end of the file’s data sectors within this PFAT block. Remaining entries after the first 0x0000 should also be 0x0000.
+
+Entry 255 is the PFAT continuation field. A value of 0x0000 indicates that there are no further PFAT sectors and this sector is the last PFAT for the file. A nonzero value is the sector index of the next PFAT sector in the chain.
+
+If entry 0 is 0x0000 in a PFAT sector, that PFAT describes no data sectors. This situation corresponds to a file that has no data, which should normally be represented as an empty file with root sector 0 rather than as a PFAT-backed file.
+
+=== 11. Bitmap interaction with files and directories ==========================
+
+Every time a data sector, PFAT sector, directory sector, name table sector, or metadata sector is allocated, its corresponding bit in the bitmap must be set to 1.
+
+Every time such a sector is freed, its corresponding bit in the bitmap must be cleared to 0.
+
+All filesystem operations that modify directory entries, PFAT chains, or name tables must keep the bitmap in sync to avoid orphaned sectors or double allocation.
+
+=== 12. Timestamps =============================================================
+
+All timestamps in directory file entries use a compact YTime representation. YTime provides four-second granularity and covers the date range from 1 January 1990 through 31 December 2155. Created and modified timestamps must be initialized and updated consistently according to the semantics of file and directory creation and modification operations.
+
+=== 13. Example volume organizations ===========================================
+
+For a maximum volume of 2^16 sectors (32 MiB) with duplicated boot sector and bitmap, one possible layout is: sector 0 as boot sector A, sector 1 as boot sector B, sector 2 as bitmap A, sector 18 as bitmap B, sector 34 as the beginning of the root directory chain, sectors following the root directory chain as additional root directory sectors as needed, and the remaining sectors as the data area.
+
+For a smaller volume of 2^11 sectors (1 MiB) with unduplicated boot sector and bitmap, one possible layout is: sector 0 as boot sector, sector 1 as bitmap, sector 2 as the beginning of the root directory chain, sectors 3 onward as additional root directory sectors, and the first unused sector after the root directory chain as the start of the data area.
+
+These examples are illustrative; actual sector placements for bitmap, root directory, and data may vary as long as the boot sector and superblock information describe their locations correctly.
